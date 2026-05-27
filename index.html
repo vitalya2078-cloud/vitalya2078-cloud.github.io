@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ферма-кликер</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Шапка (неподвижная) -->
+        <header class="header">
+            <button class="burger-menu" id="burgerMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="coins-display">
+                <span id="coinCount">100</span>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <div class="content-wrapper">
+            <!-- Боковое меню (открывается под шапкой) -->
+            <nav class="sidebar">
+                <div class="menu-items">
+                    <a href="#farm" class="menu-item active">Ферма</a>
+                    <a href="#store" class="menu-item">Магазин</a>
+                    <a href="#stats" class="menu-item">Статистика</a>
+                    <a href="#achievements" class="menu-item">Достижения</a>
+                </div>
+                <div class="bottom-menu">
+                    <a href="#profile" class="bottom-item">
+                        <span class="icon">👤</span>
+                        Профиль
+                    </a>
+                    <a href="#settings" class="bottom-item">
+                        <span class="icon">⚙️</span>
+                        Настройки
+                    </a>
+                    <button class="theme-toggle bottom-item">
+                        <span class="icon">🌞/🌙</span>
+                        Тема
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Основная область фермы -->
+            <main class="main-content">
+                <div class="farm-area">
+                    <h2>Добро пожаловать на ферму!</h2>
+                    <p>Нажмите на участок земли, чтобы начать выращивать урожай!</p>
+                    <div class="click-area" id="clickArea">🌾</div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
