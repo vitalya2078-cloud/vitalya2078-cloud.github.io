@@ -1,14 +1,13 @@
-:root {
-    --bg-primary: #1a1a2e;
-    --bg-secondary: #16213e;
-    --text-primary: #e6e6e6;
-    --text-secondary: #a8a8c0;
-    --accent-green: #4ade80;
-    --accent-yellow: #facc15;
-    --accent-purple: #a78bfa;
-    --border-color: #2d3748;
+/* Подключение кастомного шрифта */
+@font-face {
+    font-family: 'Shonen';
+    src: url('font/shonen.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }
 
+/* Сброс стилей и базовые настройки */
 * {
     margin: 0;
     padding: 0;
@@ -16,161 +15,361 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    overflow-x: hidden;
+    font-family: 'Shonen', sans-serif;
+    color: #ffffff;
+    height: 100vh;
+    overflow: hidden;
+
+    /* Убираем синее выделение на мобильных устройствах */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
-.app {
-    display: flex;
+/* Тёмная тема с цветами с картинки */
+.telegram-theme {
+    background-color: #1a1a1a; /* Тёмно‑серый фон как на макете */
     min-height: 100vh;
+    display: none; /* Изначально скрыт */
 }
 
-/* Боковое меню */
-.sidebar {
-    width: 280px;
-    background: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
+/* Заглушка ПК */
+#pc-warning {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 20px 0;
-    transition: transform 0.3s ease;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    color: #ffffff;
+    padding: 20px;
+    background-color: #1a1a1a;
 }
 
-.menu-items {
-    padding: 0 20px;
+#pc-warning h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Стили игровой кнопки */
+.game-button-container {
+    position: fixed;
+    bottom: 88px; /* 8px отступа от меню + высота меню 80px */
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 999;
+}
+
+.game-button {
+    width: calc(100% - 32px); /* Отступы по 16px с каждой стороны */
+    max-width: 340px; /* Максимальная ширина — от первой до последней иконки меню */
+    height: 50px; /* Уменьшенная высота кнопки */
+    background: linear-gradient(145deg, #2ecc71, #27ae60);
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow:
+        0 6px 12px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-button:active {
+    transform: translateY(2px);
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.button-text {
+    font-family: 'Shonen', sans-serif;
+    font-size: 1.4rem; /* Уменьшен размер шрифта пропорционально высоте кнопки */
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(255, 255, 255, 0.3);
+    letter-spacing: 2px;
+}
+
+/* Стили нижней панели меню */
+.bottom-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    padding: 8px 16px;
+    gap: 8px;
 }
 
 .menu-item {
-    display: block;
-    padding: 16px 20px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    border-left: 3px solid transparent;
-    transition: all 0.2s;
-}
-
-.menu-item.active,
-.menu-item:hover {
-    color: var(--accent-green);
-    background: rgba(74, 234, 128, 0.1);
-    border-left-color: var(--accent-green);
-}
-
-.bottom-menu {
-    padding: 0 20px;
-}
-
-.bottom-item {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    border-radius: 8px;
-    transition: background 0.2s;
-}
-
-.bottom-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.icon {
-    font-size: 1.2em;
-}
-
-/* Основной контент */
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Шапка */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-/* Бургер-меню */
-.burger-menu {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 24px;
-    height: 18px;
-    background: none;
-    border: none;
     cursor: pointer;
+    padding: 10px;
+
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    background-color: #252525;
+    transition: all 0.15s ease-in-out;
+    flex-shrink: 0;
+
+    /* Усиленная мягкая тень для кнопок */
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.burger-menu span {
+/* Стиль активной вкладки */
+.menu-item.active {
+    background-color: rgba(46, 204, 113, 0.25);
+    transform: scale(1.05);
+    box-shadow:
+        0 6px 12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Эффект нажатия через класс pressed */
+.menu-item.pressed {
+    transform: scale(0.95) !important;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.3) !important,
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Дополнительно: убираем выделение текста и эффекты для ссылок */
+.menu-item a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ФИКСИРОВАННЫЕ РАЗМЕРЫ ИКОНОК */
+.menu-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    max-width: 32px;
+    max-height: 32px;
+    min-width: 32px;
+    min-height: 32px;
     display: block;
-    height: 2px;
+}
+
+/* Дополнительные меры против «раздувания» иконок */
+.menu-item img {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain !important;
+}
+
+/* Контейнер полосы прогресса */
+.level-progress-container {
+    position: fixed;
+    bottom: 148px; /* 88px (кнопка) + 60px (высота графика) */
+    left: 0;
     width: 100%;
-    background: var(--text-primary);
-    transition: all 0.3s ease;
+    padding: 0 16px;
+    box-sizing: border-box;
+    z-index: 998;
 }
 
-.burger-menu.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
+/* Строка с текстом уровня и прогресса */
+.level-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #b0b0b0;
 }
 
-.burger-menu.active span:nth-child(2) {
-    opacity: 0;
+/* Внешний контейнер полосы прогресса */
+.progress-bar {
+    height: 8px;
+    background-color: #2d2d2d;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
-.burger-menu.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
+/* Заполняющая часть полосы */
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #3498db);
+    width: 0%;
+    transition: width 0.3s ease;
 }
 
-/* Отображение монет */
-.coins-display {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: var(--accent-yellow);
-    padding: 8px 16px;
-    background: rgba(250, 204, 21, 0.1);
-    border-radius: 12px;
+/* Стили для экранов */
+.screen {
+    display: none;
+    padding: 20px;
+    height: calc(100vh - 168px); /* 100% высоты минус высота меню и прогресс-бара */
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 997;
 }
 
-/* Область фермы */
-.farm-area {
-    flex: 1;
-    padding: 30px;
+.screen.active {
+    display: block;
+}
+
+/* Контент экранов */
+.screen-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.screen h2 {
+    font-size: 1.5rem;
     text-align: center;
+    margin-bottom: 20px;
+    color: #2ecc71;
 }
 
-.farm-area h2 {
-    color: var(--accent-green);
-    margin-bottom: 16px;
+/* Магазин */
+.store-items, .upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.farm-area p {
-    color: var(--text-secondary);
+.store-item, .upgrade-item {
+    background: #2d2d2d;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: -280px;
-        height: 100vh;
-        z-index: 100;
-    }
-    
-    .sidebar.active {
-        transform: translateX(280px);
-    }
-    
-    .main-content {
-        padding-left: 0;
-    }
+.store-item h3, .upgrade-item h3 {
+    color: #3498db;
+    margin-bottom: 5px;
+}
+
+.store-buy-btn, .upgrade-btn {
+    background: linear-gradient(145deg, #2ecc71, #27ae60);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 15px;
+    color: white;
+    font-family: 'Shonen', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.store-buy-btn:hover, .upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Статистика */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: #2d2d2d;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+    margin-bottom: 5px;
+}
+
+.stat-card span {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2ecc71;
+}
+
+/* Профиль */
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #2d2d2d;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-details h3 {
+    margin-bottom: 5px;
+    color: #3498db;
+}
+
+.user-details p {
+    color: #b0b0b0;
+    font-size: 0.9rem;
+}
+
+.social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.social-btn {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    font-family: 'Shonen', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Анимация перехода между экранами */
+.screen {
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.screen.active {
+    opacity: 1;
+    transform: translateX(0);
 }

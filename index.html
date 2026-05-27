@@ -2,61 +2,143 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ферма-кликер</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Clicker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app">
-        <!-- Шапка (неподвижная) -->
-        <header class="header">
-            <button class="burger-menu" id="burgerMenu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="coins-display">
-                <span id="coinCount">100</span>
+    <!-- Заглушка для ПК -->
+    <div id="pc-warning">
+        <h1>Игра доступна только на мобильных устройствах</h1>
+        <p>Откройте в мобильном браузере или Telegram</p>
+    </div>
+
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="telegram-theme">
+
+        <!-- ПОЛОСА ПРОГРЕССА УРОВНЯ -->
+        <div class="level-progress-container">
+            <div class="level-info">
+                <span class="level-text">Уровень 1</span>
+                <span class="progress-text">0 / 100</span>
             </div>
-        </header>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
 
-        <!-- Основной контент -->
-        <div class="content-wrapper">
-            <!-- Боковое меню (открывается под шапкой) -->
-            <nav class="sidebar">
-                <div class="menu-items">
-                    <a href="#farm" class="menu-item active">Ферма</a>
-                    <a href="#store" class="menu-item">Магазин</a>
-                    <a href="#stats" class="menu-item">Статистика</a>
-                    <a href="#achievements" class="menu-item">Достижения</a>
-                </div>
-                <div class="bottom-menu">
-                    <a href="#profile" class="bottom-item">
-                        <span class="icon">👤</span>
-                        Профиль
-                    </a>
-                    <a href="#settings" class="bottom-item">
-                        <span class="icon">⚙️</span>
-                        Настройки
-                    </a>
-                    <button class="theme-toggle bottom-item">
-                        <span class="icon">🌞/🌙</span>
-                        Тема
-                    </button>
-                </div>
-            </nav>
+        <!-- ИГРОВАЯ КНОПКА -->
+        <div class="game-button-container">
+            <button class="game-button">
+                <span class="button-text">КЛИКЕР</span>
+            </button>
+        </div>
 
-            <!-- Основная область фермы -->
-            <main class="main-content">
-                <div class="farm-area">
-                    <h2>Добро пожаловать на ферму!</h2>
-                    <p>Нажмите на участок земли, чтобы начать выращивать урожай!</p>
-                    <div class="click-area" id="clickArea">🌾</div>
+        <!-- КОНТЕЙНЕРЫ ЭКРАНОВ -->
+        <div id="screen-game" class="screen active">
+            <!-- Основной игровой экран уже есть выше -->
+        </div>
+
+        <div id="screen-store" class="screen">
+            <div class="screen-content">
+                <h2>Магазин</h2>
+                <p>Здесь будут доступны покупки за игровую валюту</p>
+                <div class="store-items">
+                    <div class="store-item">
+                        <h3>Ускоритель кликов</h3>
+                        <p>Автоматически кликает раз в 5 секунд</p>
+                        <button class="store-buy-btn">Купить за 500 монет</button>
+                    </div>
+            <div class="store-item">
+                <h3>Мультикликер</h3>
+                <p>Каждый клик даёт +2 очка</p>
+                <button class="store-buy-btn">Купить за 1000 монет</button>
+            </div>
                 </div>
-            </main>
+            </div>
+        </div>
+
+        <div id="screen-upgrades" class="screen">
+            <div class="screen-content">
+                <h2>Улучшения</h2>
+                <p>Улучшайте свои способности и множитель очков</p>
+                <div class="upgrade-list">
+                    <div class="upgrade-item">
+                <h3>Сила клика +1</h3>
+                <p>Увеличивает очки за клик</p>
+                <button class="upgrade-btn">Улучшить за 200 монет</button>
+            </div>
+            <div class="upgrade-item">
+                <h3>Автокликер</h3>
+                <p>Автоматический клик каждую секунду</p>
+                <button class="upgrade-btn">Разблокировать за 800 монет</button>
+            </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-stats" class="screen">
+            <div class="screen-content">
+                <h2>Статистика</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                <h3>Всего кликов</h3>
+                <span id="total-clicks">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Максимальный уровень</h3>
+                <span id="max-level">1</span>
+            </div>
+            <div class="stat-card">
+                <h3>Общее количество очков</h3>
+                <span id="total-points">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Время в игре</h3>
+                <span id="play-time">0 мин</span>
+            </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-profile" class="screen">
+            <div class="screen-content">
+                <h2>Профиль</h2>
+                <div class="profile-info">
+            <img src="icons/avatar.png" alt="Аватар" class="avatar">
+            <div class="user-details">
+                <h3 id="username">Игрок</h3>
+                <p>Уровень: <span id="user-level">1</span></p>
+                <p>Очки: <span id="user-points">0</span></p>
+            </div>
+        </div>
+        <div class="social-links">
+            <button class="social-btn">Поделиться результатом</button>
+            <button class="social-btn">Добавить друга</button>
+        </div>
+            </div>
+        </div>
+
+        <!-- НИЖНЕЕ МЕНЮ -->
+        <div id="bottom-menu" class="bottom-menu">
+            <a href="#" class="menu-item" data-screen="store">
+                <img src="icons/shop.png" alt="Магазин" class="menu-icon">
+            </a>
+            <a href="#" class="menu-item" data-screen="upgrades">
+                <img src="icons/upgrades.png" alt="Улучшения" class="menu-icon">
+            </a>
+            <a href="#" class="menu-item active" data-screen="game">
+                <img src="icons/game.png" alt="Игра" class="menu-icon">
+            </a>
+            <a href="#" class="menu-item" data-screen="stats">
+                <img src="icons/statistics.png" alt="Статистика" class="menu-icon">
+            </a>
+            <a href="#" class="menu-item" data-screen="profile">
+                <img src="icons/profile.png" alt="Профиль" class="menu-icon">
+            </a>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
