@@ -1,1 +1,0 @@
-# vitalya2078-cloud.github.io
