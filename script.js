@@ -1,338 +1,283 @@
-// Переменные игры
-let currentLevel = 1;
-let currentPoints = 0;
-let nextLevelPoints = 100;
-let totalClicks = 0;
-let playTime = 0;
-let gameTimer;
+document.addEventListener('DOMContentLoaded', () => {
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand(); // Растягиваем на весь экран
 
-const basePoints = 100;
-const levelMultiplier = 1.5;
+  // Подстраиваем фон под тему Telegram, если она задана
+  if (tg.themeParams.bg_color) {
+    document.body.style.backgroundColor = tg.themeParams.bg_color;
+  }
 
-// Улучшенная функция определения мобильного устройства
-function isMobileDevice() {
-    return (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(navigator.userAgent) ||
-        'ontouchstart' in window ||
-        navigator.maxTouchPoints > 0 ||
-        screen.width <= 768
-    );
-}
+  const el = (id) => document.getElementById(id);
 
-// Проверка устройства
-function checkDevice() {
-    const isMobile = isMobileDevice();
-    const pcWarning = document.getElementById('pc-warning');
-    const gameContainer = document.getElementById('game-container');
+  // Элементы
+  const dayTrigger = el('dayTrigger');
+  const monthTrigger = el('monthTrigger');
+  const yearTrigger = el('yearTrigger');
 
-    if (isMobile) {
-        pcWarning.style.display = 'none';
-        gameContainer.style.display = 'block';
-        console.log('Определено: мобильное устройство');
+  const dayDisplay = el('dayDisplay');
+  const monthDisplay = el('monthDisplay');
+  const yearDisplay = el('yearDisplay');
+
+  const dayDropdown = el('dayDropdown');
+  const monthDropdown = el('monthDropdown');
+  const yearDropdown = el('yearDropdown');
+
+  const calculateBtn = el('calculateBtn');
+  const resultBlock = el('resultBlock');
+  const emptyState = el('emptyState');
+
+  const daysUntilBirthdayEl = el('daysUntilBirthday');
+  const unitTextEl = el('unitText');
+  const percentText = el('percentText');
+  const progressFill = el('progressFill');
+  const mottoText = el('mottoText');
+  const shareBtn = el('shareBtn');
+
+  const unitBtns = document.querySelectorAll('.unit-btn');
+
+  let activeUnit = 'days';
+  let selectedDay = null;
+  let selectedMonth = null; // 0–11
+  let selectedYear = null;
+
+  function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  }
+
+  // Месяцы
+  const monthsRu = [
+    'Январь','Февраль','Март','Апрель','Май','Июнь',
+    'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'
+  ];
+  monthDropdown.innerHTML = '';
+  monthsRu.forEach((name, idx) => {
+    const option = document.createElement('div');
+    option.className = 'dropdown-option';
+    option.dataset.value = idx;
+    option.textContent = name;
+    option.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const value = parseInt(option.dataset.value, 10);
+      monthDisplay.textContent = name;
+      selectedMonth = value;
+      rebuildDays();
+      monthDropdown.closest('.input-group').classList.remove('open');
+    });
+    monthDropdown.appendChild(option);
+  });
+
+  // Годы (текущий + 15 вперёд)
+  const currentYear = new Date().getFullYear();
+  yearDropdown.innerHTML = '';
+  for (let i = 0; i <= 15; i++) {
+    const y = currentYear + i;
+    const option = document.createElement('div');
+    option.className = 'dropdown-option';
+    option.dataset.value = y;
+    option.textContent = y;
+    option.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const value = parseInt(option.dataset.value, 10);
+      yearDisplay.textContent = value;
+      selectedYear = value;
+      rebuildDays();
+      yearDropdown.closest('.input-group').classList.remove('open');
+    });
+    yearDropdown.appendChild(option);
+  }
+
+  // Дни (перестраивается при смене месяца/года)
+  function rebuildDays() {
+    dayDropdown.innerHTML = '';
+
+    if (selectedMonth === null || selectedYear === null) {
+      dayDisplay.textContent = '--';
+      selectedDay = null;
+      return;
+    }
+
+    let maxDays = 31;
+    switch (selectedMonth) {
+      case 1: maxDays = isLeapYear(selectedYear) ? 29 : 28; break;
+      case 3: case 5: case 8: case 10: maxDays = 30; break;
+    }
+
+    // Сброс дня, если он стал невозможен
+    if (selectedDay !== null && selectedDay > maxDays) {
+      selectedDay = null;
+      dayDisplay.textContent = '--';
+    }
+
+    for (let d = 1; d <= maxDays; d++) {
+      const option = document.createElement('div');
+      option.className = 'dropdown-option';
+      option.dataset.value = d;
+      option.textContent = String(d).padStart(2, '0');
+
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const value = parseInt(option.dataset.value, 10);
+        dayDisplay.textContent = option.textContent;
+
+        dayDropdown.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+
+        selectedDay = value;
+        dayDropdown.closest('.input-group').classList.remove('open');
+      });
+
+      dayDropdown.appendChild(option);
+    }
+  }
+
+  // Открытие/закрытие меню
+  function toggleMenu(trigger, dropdown) {
+    // Закрываем все открытые
+    document.querySelectorAll('.input-group.open').forEach(grp => grp.classList.remove('open'));
+
+    const inputGroup = dropdown.closest('.input-group');
+    const isOpen = inputGroup.classList.contains('open');
+
+    if (!isOpen) {
+      setTimeout(() => inputGroup.classList.add('open'), 10);
     } else {
-        pcWarning.style.display = 'flex';
-        gameContainer.style.display = 'none';
-        console.log('Определено: ПК');
+      inputGroup.classList.remove('open');
     }
-}
+  }
 
-// Надёжная загрузка с преобразованием типов
-function loadGame() {
-    try {
-        currentLevel = parseInt(localStorage.getItem('currentLevel')) || 1;
-        currentPoints = parseInt(localStorage.getItem('currentPoints')) || 0;
-        nextLevelPoints = parseInt(localStorage.getItem('nextLevelPoints')) || calculateNextLevelPoints(currentLevel);
-        totalClicks = parseInt(localStorage.getItem('totalClicks')) || 0;
-        playTime = parseInt(localStorage.getItem('playTime')) || 0;
+  dayTrigger.addEventListener('click', () => toggleMenu(dayTrigger, dayDropdown));
+  monthTrigger.addEventListener('click', () => toggleMenu(monthTrigger, monthDropdown));
+  yearTrigger.addEventListener('click', () => toggleMenu(yearTrigger, yearDropdown));
 
-        console.log('Прогресс загружен:', { currentLevel, currentPoints, totalClicks, playTime });
-    } catch (e) {
-        console.error('Ошибка загрузки из localStorage:', e);
-        resetGame();
+  // Закрытие при клике вне
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.input-group')) {
+      document.querySelectorAll('.input-group.open').forEach(grp => grp.classList.remove('open'));
     }
-}
+  });
 
-// Сброс игры на начальное состояние
-function resetGame() {
-    currentLevel = 1;
-    currentPoints = 0;
-    nextLevelPoints = calculateNextLevelPoints(1);
-    totalClicks = 0;
-    playTime = 0;
-}
-
-// Улучшенное сохранение с проверкой
-function saveGame() {
-    try {
-        localStorage.setItem('currentLevel', currentLevel);
-        localStorage.setItem('currentPoints', currentPoints);
-        localStorage.setItem('nextLevelPoints', nextLevelPoints);
-        localStorage.setItem('totalClicks', totalClicks);
-        localStorage.setItem('playTime', playTime);
-
-        console.log('Прогресс сохранён:', { currentLevel, currentPoints, totalClicks });
-    } catch (e) {
-        console.error('Ошибка сохранения в localStorage:', e);
-        alert('Не удалось сохранить прогресс. Проверьте настройки браузера.');
-    }
-}
-
-// Расчёт очков для следующего уровня
-function calculateNextLevelPoints(level) {
-    return Math.floor(basePoints * Math.pow(levelMultiplier, level - 1));
-}
-
-// Проверка повышения уровня
-function checkLevelUp() {
-    if (currentPoints >= nextLevelPoints) {
-        currentLevel++;
-        currentPoints = 0;
-        nextLevelPoints = calculateNextLevelPoints(currentLevel);
-        saveGame();
-        updateUI();
-        showLevelUpAnimation();
-    }
-}
-
-// Анимация повышения уровня
-function showLevelUpAnimation() {
-    const levelText = document.querySelector('.level-text');
-    levelText.style.transform = 'scale(1.2)';
-    levelText.style.color = '#2ecc71';
-
-    setTimeout(() => {
-        levelText.style.transform = '';
-        levelText.style.color = '';
-    }, 500);
-}
-
-// Обновление полосы прогресса
-function updateProgress() {
-    const progressFill = document.querySelector('.progress-fill');
-    const levelText = document.querySelector('.level-text');
-    const progressText = document.querySelector('.progress-text');
-
-    const percentage = (currentPoints / nextLevelPoints) * 100;
-
-    progressFill.style.width = `${Math.min(percentage, 100)}%`;
-    levelText.textContent = `Уровень ${currentLevel}`;
-    progressText.textContent = `${currentPoints} / ${nextLevelPoints}`;
-}
-
-// Обновление статистики
-function updateStats() {
-    document.getElementById('total-clicks').textContent = totalClicks;
-    document.getElementById('max-level').textContent = currentLevel;
-    document.getElementById('total-points').textContent = totalClicks;
-    document.getElementById('play-time').textContent =
-        Math.floor(playTime / 60) + ' мин';
-}
-
-// Обновление профиля
-function updateProfile() {
-    document.getElementById('user-level').textContent = currentLevel;
-    document.getElementById('user-points').textContent = currentPoints;
-}
-
-// Обновление всего интерфейса
-function updateUI() {
-    updateProgress();
-    updateStats();
-    updateProfile();
-}
-
-// Обработчик клика по игровой кнопке
-function setupGameButton() {
-    const gameButton = document.querySelector('.game-button');
-    if (gameButton) {
-        gameButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            currentPoints++;
-            totalClicks++;
-            checkLevelUp();
-            updateUI();
-            saveGame();
-        });
-    }
-}
-
-// Функция переключения экранов
-function switchScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
+  // Переключатель единиц
+  unitBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      unitBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeUnit = btn.dataset.unit;
+      recalculateDisplay();
     });
+  });
 
-    const targetScreen = document.getElementById(`screen-${screenId}`);
-    if (targetScreen) {
-        targetScreen.classList.add('active');
+  // Кнопка расчёта (если вдруг захочешь вернуть обычную кнопку)
+  if (calculateBtn) {
+    calculateBtn.addEventListener('click', recalculateDisplay);
+  }
+
+  // Отправка в чат Telegram
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      if (!selectedDay || selectedMonth === null || !selectedYear) return;
+
+      const days = daysUntilBirthdayEl.textContent;
+      const unit = unitTextEl.textContent;
+      const message = `🎉 До события осталось ${days} ${unit}`;
+
+      // Отправляем текст боту и закрываем мини‑приложение
+      tg.sendData(message);
+    });
+  }
+
+  // Основная функция расчёта
+  function recalculateDisplay() {
+    if (!selectedDay || selectedMonth === null || !selectedYear) {
+      resultBlock.style.display = 'none';
+      emptyState.style.display = 'flex';
+      return;
     }
 
-    if (screenId === 'stats' || screenId === 'profile') {
-        updateUI();
+    resultBlock.style.display = 'flex';
+    emptyState.style.display = 'none';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const target = new Date(selectedYear, selectedMonth, selectedDay);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Прогресс года (сколько % года уже прошло)
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const daysInYear = isLeapYear(today.getFullYear()) ? 366 : 365;
+    const dayOfYear = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+    const percent = Math.min(100, Math.max(0, (dayOfYear / daysInYear) * 100));
+
+    // Формируем результат в зависимости от активной единицы
+    let value, label;
+    if (activeUnit === 'weeks') {
+      value = Math.ceil(diffDays / 7);
+      label = 'недель';
+    } else if (activeUnit === 'months') {
+      // Грубый расчёт месяцев (для простоты)
+      value = Math.max(0, Math.ceil(diffDays / 30));
+      label = 'месяцев';
+    } else {
+      value = diffDays;
+      label = diffDays === 1 ? 'день' : (diffDays >= 2 && diffDays <= 4 ? 'дня' : 'дней');
     }
-}
 
-// Настройка переключения вкладок меню
-function setupMenu() {
-    const menuItems = document.querySelectorAll('.menu-item');
+    daysUntilBirthdayEl.textContent = value;
+    unitTextEl.textContent = label;
+    percentText.textContent = `${Math.round(percent)}%`;
+    progressFill.style.width = `${percent}%`;
 
-    menuItems.forEach(item => {
-        const iconImg = item.querySelector('.menu-icon');
-        const originalSrc = iconImg.src;
-        const activeSrc = originalSrc.replace('icons/', 'icons/active-');
+    mottoText.textContent = getMotto(diffDays);
+  }
 
-        iconImg.setAttribute('data-original-src', originalSrc);
-        iconImg.setAttribute('data-active-src', activeSrc);
-    });
+  function getMotto(days) {
+    if (days < 0) return 'Событие уже прошло — но это повод запланировать новое!';
+    if (days === 0) return 'Сегодня тот самый день! 🎉';
+    if (days <= 7) return 'Уже совсем скоро — заряжайтесь энергией!';
+    if (days <= 30) return 'Месяц — это быстро, успевайте всё подготовить.';
+    if (days <= 90) return 'Время есть, но лучше не откладывать.';
+    return 'Впереди много дней — используйте их с пользой.';
+  }
 
-    menuItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
+  // Предзаполнение из URL (?day=25&month=12&year=2025)
+  const params = new URLSearchParams(window.location.search);
+  const urlDay = params.get('day');
+  const urlMonth = params.get('month');
+  const urlYear = params.get('year');
 
-            menuItems.forEach(i => {
-                i.classList.remove('active');
-                const img = i.querySelector('.menu-icon');
-                img.src = img.getAttribute('data-original-src');
-            });
+  if (urlDay && urlMonth && urlYear) {
+    const d = parseInt(urlDay, 10);
+    const m = parseInt(urlMonth, 10) - 1; // в JS месяцы 0–11
+    const y = parseInt(urlYear, 10);
 
-            this.classList.add('active');
-            const currentImg = this.querySelector('.menu-icon');
-            currentImg.src = currentImg.getAttribute('data-active-src');
+    if (!isNaN(d) && !isNaN(m) && !isNaN(y) && m >= 0 && m <= 11 && d >= 1 && d <= 31) {
+      // Находим нужные элементы в выпадашках и «нажимаем» их
+      // Сначала год
+      const yearOption = yearDropdown.querySelector(`.dropdown-option[data-value="${y}"]`);
+      if (yearOption) {
+        yearOption.click();
+      }
 
-            const screen = this.getAttribute('data-screen');
-            switchScreen(screen);
-        });
-    });
-}
-
-// Функция для добавления эффекта нажатия
-function addPressEffect() {
-    const menuItems = document.querySelectorAll('.menu-item');
-
-    menuItems.forEach(item => {
-        item.addEventListener('touchstart', function() {
-            this.classList.add('pressed');
-        });
-
-        item.addEventListener('mousedown', function() {
-            this.classList.add('pressed');
-        });
-
-        item.addEventListener('touchend', function() {
-            setTimeout(() => {
-                this.classList.remove('pressed');
-            }, 150);
-        });
-
-        item.addEventListener('mouseup', function() {
-                    this.classList.remove('pressed');
-        });
-
-        item.addEventListener('touchcancel', function() {
-            this.classList.remove('pressed');
-        });
-    });
-}
-
-// Запуск таймера игры
-function startGameTimer() {
-    gameTimer = setInterval(() => {
-        playTime++;
-        if (playTime % 60 === 0) { // Сохраняем каждую минуту
-            saveGame();
+      // Потом месяц (чтобы перестроились дни)
+      setTimeout(() => {
+        const monthOption = monthDropdown.querySelector(`.dropdown-option[data-value="${m}"]`);
+        if (monthOption) {
+          monthOption.click();
         }
-    }, 1000);
-}
+      }, 50);
 
-// Остановка таймера игры
-function stopGameTimer() {
-    if (gameTimer) {
-        clearInterval(gameTimer);
-    }
-}
-
-// Обработчики для кнопок магазина (заглушки)
-function setupStoreButtons() {
-    const buyButtons = document.querySelectorAll('.store-buy-btn');
-    buyButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Функция покупки пока в разработке!');
-        });
-    });
-}
-
-// Обработчики для кнопок улучшений (заглушки)
-function setupUpgradeButtons() {
-    const upgradeButtons = document.querySelectorAll('.upgrade-btn');
-    upgradeButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Функция улучшения пока в разработке!');
-        });
-    });
-}
-
-// Обработчики для социальных кнопок профиля (заглушки)
-function setupProfileButtons() {
-    const socialButtons = document.querySelectorAll('.social-btn');
-    socialButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const buttonText = this.textContent.toLowerCase();
-            if (buttonText.includes('поделиться')) {
-                alert('Функция поделиться пока в разработке!');
-            } else if (buttonText.includes('добавить')) {
-                alert('Функция добавления друга пока в разработке!');
-            }
-        });
-    });
-}
-
-// Запуск при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    loadGame(); // Загружаем сохранённый прогресс
-    checkDevice(); // Проверяем устройство
-    setupMenu(); // Инициализируем меню
-    addPressEffect(); // Инициализируем эффект нажатия
-    setupGameButton(); // Инициализируем игровую кнопку
-    updateUI(); // Обновляем интерфейс с текущими данными
-    startGameTimer(); // Запускаем таймер игры
-
-    // Принудительно устанавливаем активную иконку для вкладки «Игра» при загрузке
-    const gameItem = document.querySelector('.menu-item[data-screen="game"]');
-    if (gameItem) {
-        const iconImg = gameItem.querySelector('.menu-icon');
-        const activeSrc = iconImg.getAttribute('data-active-src');
-        if (activeSrc) {
-            iconImg.src = activeSrc;
+      // И день
+      setTimeout(() => {
+        const dayOption = dayDropdown.querySelector(`.dropdown-option[data-value="${d}"]`);
+        if (dayOption) {
+          dayOption.click();
+          recalculateDisplay();
         }
+      }, 100);
     }
-
-    // Инициализация обработчиков кнопок на страницах
-    setTimeout(() => {
-        setupStoreButtons();
-        setupUpgradeButtons();
-        setupProfileButtons();
-    }, 100); // Небольшая задержка для гарантии загрузки всех элементов
+  }
 });
-
-// Дополнительная проверка при изменении размера окна
-window.addEventListener('resize', checkDevice);
-window.addEventListener('orientationchange', checkDevice);
-
-// Сохранение при закрытии страницы
-window.addEventListener('beforeunload', saveGame);
-
-// Очистка при закрытии страницы
-window.addEventListener('unload', function() {
-    stopGameTimer();
-});
-
-// Отладка: функция для ручного сброса прогресса (для тестирования)
-function resetProgress() {
-    localStorage.clear();
-    resetGame();
-    updateUI();
-    console.log('Прогресс сброшен вручную');
-}

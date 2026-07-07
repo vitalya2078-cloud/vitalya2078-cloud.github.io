@@ -1,375 +1,314 @@
-/* Подключение кастомного шрифта */
-@font-face {
-    font-family: 'Shonen';
-    src: url('font/shonen.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+:root {
+  --bg-body: #0b0d12;
+  --surface: #14171e;
+  --text-main: #ffffff;
+  --text-muted: #8a94a6;
+  --accent: #4caf50;
+  --accent-hover: #388e3c;
+  --input-bg: #1a1e25;
+  --border: #2a2f3a;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* Сброс стилей и базовые настройки */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 body {
-    font-family: 'Shonen', sans-serif;
-    color: #ffffff;
-    height: 100vh;
-    overflow: hidden;
-
-    /* Убираем синее выделение на мобильных устройствах */
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  margin: 0;
 }
 
-/* Тёмная тема с цветами с картинки */
-.telegram-theme {
-    background-color: #1a1a1a; /* Тёмно‑серый фон как на макете */
-    min-height: 100vh;
-    display: none; /* Изначально скрыт */
+.app-wrapper {
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Заглушка ПК */
-#pc-warning {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
-    color: #ffffff;
-    padding: 20px;
-    background-color: #1a1a1a;
+.container {
+  flex: 1;
+  width: 100%;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-#pc-warning h1 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+.card-header { text-align: center; }
+h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
-/* Стили игровой кнопки */
-.game-button-container {
-    position: fixed;
-    bottom: 88px; /* 8px отступа от меню + высота меню 80px */
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    z-index: 999;
+.date-picker-block {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 360px) {
+  .date-picker-block { grid-template-columns: 1fr; }
 }
 
-.game-button {
-    width: calc(100% - 32px); /* Отступы по 16px с каждой стороны */
-    max-width: 340px; /* Максимальная ширина — от первой до последней иконки меню */
-    height: 50px; /* Уменьшенная высота кнопки */
-    background: linear-gradient(145deg, #2ecc71, #27ae60);
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    box-shadow:
-        0 6px 12px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
 }
 
-.game-button:active {
-    transform: translateY(2px);
-    box-shadow:
-        0 4px 8px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+.label-custom {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.button-text {
-    font-family: 'Shonen', sans-serif;
-    font-size: 1.4rem; /* Уменьшен размер шрифта пропорционально высоте кнопки */
-    font-weight: bold;
-    color: #ffffff;
-    text-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.5),
-        0 0 10px rgba(255, 255, 255, 0.3);
-    letter-spacing: 2px;
+.custom-dropdown-trigger {
+  width: 100%;
+  padding: 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  transition: border-color 0.2s;
 }
 
-/* Стили нижней панели меню */
-.bottom-menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 80px;
-    background-color: #1a1a1a;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 1000;
-    padding: 8px 16px;
-    gap: 8px;
+.trigger-arrow {
+  color: var(--text-muted);
+  font-size: 10px;
+  margin-left: 8px;
+  transition: transform 0.2s;
 }
 
-.menu-item {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    padding: 10px;
-
-    width: 56px;
-    height: 56px;
-    border-radius: 10px;
-    background-color: #252525;
-    transition: all 0.15s ease-in-out;
-    flex-shrink: 0;
-
-    /* Усиленная мягкая тень для кнопок */
-    box-shadow:
-        0 4px 8px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
+.input-group.open .custom-dropdown-trigger .trigger-arrow {
+  transform: rotate(180deg);
 }
 
-/* Стиль активной вкладки */
-.menu-item.active {
-    background-color: rgba(46, 204, 113, 0.25);
-    transform: scale(1.05);
-    box-shadow:
-        0 6px 12px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+.custom-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  z-index: 100;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  padding: 6px;
 }
 
-/* Эффект нажатия через класс pressed */
-.menu-item.pressed {
-    transform: scale(0.95) !important;
-    box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.3) !important,
-        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+.input-group.open > .custom-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
-/* Дополнительно: убираем выделение текста и эффекты для ссылок */
-.menu-item a {
-    text-decoration: none;
-    color: inherit;
+.dropdown-option {
+  padding: 10px 12px;
+  color: var(--text-main);
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: background 0.15s, color 0.15s;
 }
 
-/* ФИКСИРОВАННЫЕ РАЗМЕРЫ ИКОНОК */
-.menu-icon {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-    max-width: 32px;
-    max-height: 32px;
-    min-width: 32px;
-    min-height: 32px;
-    display: block;
+.dropdown-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
 }
 
-/* Дополнительные меры против «раздувания» иконок */
-.menu-item img {
-    width: 32px !important;
-    height: 32px !important;
-    object-fit: contain !important;
+.dropdown-option.selected {
+  background: var(--accent);
+  color: white;
 }
 
-/* Контейнер полосы прогресса */
-.level-progress-container {
-    position: fixed;
-    bottom: 148px; /* 88px (кнопка) + 60px (высота графика) */
-    left: 0;
-    width: 100%;
-    padding: 0 16px;
-    box-sizing: border-box;
-    z-index: 998;
+/* Скроллбар */
+.custom-dropdown-menu::-webkit-scrollbar { width: 6px; }
+.custom-dropdown-menu::-webkit-scrollbar-track { background: transparent; }
+.custom-dropdown-menu::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
 }
 
-/* Строка с текстом уровня и прогресса */
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-    color: #b0b0b0;
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-secondary {
+  width: 100%;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--text-muted); color: white; }
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+  flex-shrink: 0;
 }
 
-/* Внешний контейнер полосы прогресса */
+.result-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+.countdown-visual { position: relative; z-index: 2; }
+.countdown-label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.big-number-wrapper { position: relative; }
+.big-number {
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-main);
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  animation: popIn 0.6s cubic-bezier(0.17, 0.67, 0.12, 1) forwards;
+}
+.unit-text {
+  display: block;
+  color: var(--text-muted);
+  font-size: 16px;
+  margin-top: 6px;
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards 0.3s;
+}
+@keyframes popIn { to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes fadeIn { to { opacity: 1; } }
+
+.unit-switcher {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.unit-btn {
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.unit-btn.active, .unit-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.motto-text {
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards 0.4s;
+}
+
+.progress-area { width: 100%; margin-top: 18px; }
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.percent-val { color: var(--accent); font-weight: 600; }
 .progress-bar {
-    height: 8px;
-    background-color: #2d2d2d;
-    border-radius: 4px;
-    overflow: hidden;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
 }
-
-/* Заполняющая часть полосы */
 .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #2ecc71, #3498db);
-    width: 0%;
-    transition: width 0.3s ease;
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Стили для экранов */
-.screen {
-    display: none;
-    padding: 20px;
-    height: calc(100vh - 168px); /* 100% высоты минус высота меню и прогресс-бара */
-    overflow-y: auto;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 997;
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
 }
+.icon-calendar { width: 40px; height: 40px; margin-bottom: 12px; }
 
-.screen.active {
-    display: block;
-}
-
-/* Контент экранов */
-.screen-content {
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.screen h2 {
-    font-size: 1.5rem;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2ecc71;
-}
-
-/* Магазин */
-.store-items, .upgrade-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.store-item, .upgrade-item {
-    background: #2d2d2d;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.store-item h3, .upgrade-item h3 {
-    color: #3498db;
-    margin-bottom: 5px;
-}
-
-.store-buy-btn, .upgrade-btn {
-    background: linear-gradient(145deg, #2ecc71, #27ae60);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 15px;
-    color: white;
-    font-family: 'Shonen', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 10px;
-}
-
-.store-buy-btn:hover, .upgrade-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Статистика */
-.stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.stat-card {
-    background: #2d2d2d;
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.stat-card h3 {
-    font-size: 0.9rem;
-    color: #b0b0b0;
-    margin-bottom: 5px;
-}
-
-.stat-card span {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #2ecc71;
-}
-
-/* Профиль */
-.profile-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: #2d2d2d;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.user-details h3 {
-    margin-bottom: 5px;
-    color: #3498db;
-}
-
-.user-details p {
-    color: #b0b0b0;
-    font-size: 0.9rem;
-}
-
-.social-links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.social-btn {
-    background: linear-gradient(145deg, #3498db, #2980b9);
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    color: white;
-    font-family: 'Shonen', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.social-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Анимация перехода между экранами */
-.screen {
-    opacity: 0;
-    transform: translateX(100%);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.screen.active {
-    opacity: 1;
-    transform: translateX(0);
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 11px;
 }
