@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#05060c">
+  <title>CORE</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- Экран загрузки -->
+    <section id="loading" class="screen loading-screen">
+      <div class="ambient ambient-a"></div>
+      <div class="ambient ambient-b"></div>
+
+      <div class="loading-content">
+        <div class="loading-core">
+          <div class="energy-haze"></div>
+          <div class="atom-orbit atom-orbit-a"><i></i></div>
+          <div class="atom-orbit atom-orbit-b"><i></i></div>
+          <div class="atom-orbit atom-orbit-c"><i></i></div>
+          <div class="atom-orbit atom-orbit-d"><i></i></div>
+          <div class="loading-core-shell">
+            <div class="loading-nucleus">
+              <span></span>
+              <b></b>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-logo">
+          <strong>CORE</strong>
+        </div>
+
+        <div class="loading-status">СИНХРОНИЗАЦИЯ СИСТЕМЫ</div>
+        <div class="loading-bar"><span id="progress"></span></div>
+        <div class="loading-percent"><span id="percent">0</span>%</div>
+      </div>
+
+      <div class="loading-footer">СИСТЕМА ГОТОВАЕТСЯ К ЗАПУСКУ</div>
+    </section>
+
+    <!-- Основная игра -->
+    <section id="game" class="screen game-screen hidden">
+
+      <div class="background-grid"></div>
+      <div class="top-glow"></div>
+
+
+
+      <main class="main-content">
+        <div class="season">
+          <span class="live-dot"></span>
+          СЕЗОН 01
+          <span class="season-line"></span>
+          14 ДНЕЙ
+        </div>
+
+        <div class="core-area">
+          <div class="orbit orbit-outer"></div>
+          <div class="orbit orbit-middle"></div>
+          <div class="orbit orbit-inner"></div>
+
+          <div class="core-glow"></div>
+
+          <button class="core-button" aria-label="Энергетическое ядро">
+            <span class="core-aura"></span>
+            <span class="core-atom core-atom-a"><i></i></span>
+            <span class="core-atom core-atom-b"><i></i></span>
+            <span class="core-atom core-atom-c"><i></i></span>
+            <span class="core-nucleus">
+              <span class="core-nucleus-hot"></span>
+            </span>
+            <span class="core-level">ЯДРО</span>
+            <span class="core-number" id="core-level">1</span>
+          </button>
+
+          <div class="floating-particle p1"></div>
+          <div class="floating-particle p2"></div>
+          <div class="floating-particle p3"></div>
+          <div class="floating-particle p4"></div>
+          <div class="tap-feedback" id="tap-feedback" aria-hidden="true"></div>
+        </div>
+
+        <div class="tap-label">
+          <strong>ЭНЕРГЕТИЧЕСКОЕ ЯДРО</strong>
+          <span>СОБИРАЙ ЭНЕРГИЮ</span>
+        </div>
+
+        <div class="production">
+          <span class="production-icon">⚡</span>
+          <span id="production-value">+2</span>
+          <small>ЭНЕРГИИ В СЕКУНДУ</small>
+        </div>
+      </main>
+
+
+
+    </section>
+
+      <!-- Профиль открывается по нажатию на аватар -->
+      <section id="profile-screen" class="sub-screen hidden" data-title="ПРОФИЛЬ" aria-label="Профиль">
+        <div class="sub-screen-bg"></div>
+<main class="sub-content">
+          <div class="profile-hero">
+            <div class="profile-avatar-large"><span>ДС</span><i></i></div>
+            <div>
+              <div class="profile-name">ТЕНЕВОЙ_ИГРОК</div>
+              <div class="profile-level">УРОВЕНЬ 12 <span>•</span> НЕОНОВЫЙ ИНИЦИАТ</div>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><small>ЭНЕРГИЯ</small><strong id="profile-balance">100</strong><span>текущий баланс</span></div>
+            <div class="stat-card"><small>ЯДРО</small><strong id="profile-core-level">1</strong><span>уровень ядра</span></div>
+            <div class="stat-card"><small>СЕРИЯ</small><strong>7</strong><span>дней активности</span></div>
+            <div class="stat-card"><small>СЕЗОН</small><strong>01</strong><span>14 дней осталось</span></div>
+          </div>
+          <div class="section-label">ДОСТИЖЕНИЯ</div>
+          <div class="empty-panel"><div class="empty-icon"><i class="fa-solid fa-atom"></i></div><strong>СТАТИСТИКА РАЗВИВАЕТСЯ</strong><span>Здесь появятся достижения, рекорды и история развития ядра.</span></div>
+        </main>
+      </section>
+
+      <!-- Экран настроек -->
+      <section id="settings-screen" class="sub-screen hidden" data-title="НАСТРОЙКИ" aria-label="Настройки">
+        <div class="sub-screen-bg"></div>
+<main class="sub-content settings-content">
+          <div class="settings-tabs" role="tablist">
+            <button class="settings-tab active" data-tab="sound" role="tab">АУДИО</button>
+            <button class="settings-tab" data-tab="visual" role="tab">ИНТЕРФЕЙС</button>
+            <button class="settings-tab" data-tab="game" role="tab">ИГРА</button>
+            <button class="settings-tab" data-tab="data" role="tab">СИСТЕМА</button>
+          </div>
+
+          <div class="settings-panel active" data-panel="sound">
+            <div class="section-label">АУДИО И ТАКТИЛИКА</div>
+            <div class="settings-card">
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-volume-high"></i></span><span class="setting-copy"><strong>Звуки</strong><small>Интерфейс, клики и игровые события</small></span><input class="switch" type="checkbox" data-setting="sounds" checked><i></i></label>
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-music"></i></span><span class="setting-copy"><strong>Музыка</strong><small>Фоновый саундтрек во время игры</small></span><input class="switch" type="checkbox" data-setting="music" checked><i></i></label>
+              <div class="setting-row slider-row"><span class="setting-icon"><i class="fa-solid fa-sliders"></i></span><span class="setting-copy"><strong>Громкость</strong><small>Общая громкость аудио</small></span><output id="volume-value">70%</output></div>
+              <input class="range" id="volume-range" type="range" min="0" max="100" value="70" aria-label="Громкость">
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-mobile-screen-button"></i></span><span class="setting-copy"><strong>Тактильный отклик</strong><small>Импульс при касании элементов</small></span><input class="switch" type="checkbox" data-setting="vibration" checked><i></i></label>
+              <div class="settings-note">Вибрация зависит от поддержки браузером и системных настроек телефона.</div>
+            </div>
+          </div>
+
+          <div class="settings-panel" data-panel="visual">
+            <div class="section-label">ИНТЕРФЕЙС И ВИЗУАЛ</div>
+            <div class="settings-card">
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="setting-copy"><strong>Неоновая анимация</strong><small>Орбиты, свечение и фоновые движения</small></span><input class="switch" type="checkbox" data-setting="animations" checked><i></i></label>
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-table-cells"></i></span><span class="setting-copy"><strong>Фоновая сетка</strong><small>Технологический фон главного экрана</small></span><input class="switch" type="checkbox" data-setting="grid" checked><i></i></label>
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-universal-access"></i></span><span class="setting-copy"><strong>Уменьшение движения</strong><small>Снижает плавные перемещения и вспышки</small></span><input class="switch" type="checkbox" data-setting="reducedMotion"><i></i></label>
+              <button class="setting-row setting-button" data-action="density"><span class="setting-icon"><i class="fa-solid fa-mobile-screen"></i></span><span class="setting-copy"><strong>Плотность интерфейса</strong><small id="density-value">Стандартная</small></span><b>›</b></button>
+            </div>
+            <div class="section-label">ПРОИЗВОДИТЕЛЬНОСТЬ</div>
+            <div class="settings-card">
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-battery-half"></i></span><span class="setting-copy"><strong>Экономный режим</strong><small>Уменьшает фоновые эффекты и нагрузку</small></span><input class="switch" type="checkbox" data-setting="batterySaver"><i></i></label>
+            </div>
+          </div>
+
+          <div class="settings-panel" data-panel="game">
+            <div class="section-label">ИГРОВОЙ ПРОЦЕСС</div>
+            <div class="settings-card">
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-hashtag"></i></span><span class="setting-copy"><strong>Эффекты чисел</strong><small>Всплывающий отклик при добыче энергии</small></span><input class="switch" type="checkbox" data-setting="numberEffects" checked><i></i></label>
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-bolt"></i></span><span class="setting-copy"><strong>Критические эффекты</strong><small>Усиленный визуальный отклик при серии тапов</small></span><input class="switch" type="checkbox" data-setting="criticalEffects" checked><i></i></label>
+              <label class="setting-row"><span class="setting-icon"><i class="fa-solid fa-shield-halved"></i></span><span class="setting-copy"><strong>Подтверждение действий</strong><small>Запрашивать подтверждение там, где действие необратимо</small></span><input class="switch" type="checkbox" data-setting="confirmPurchases" checked><i></i></label>
+            </div>
+          </div>
+
+          <div class="settings-panel" data-panel="data">
+            <div class="section-label">СИСТЕМА И ДАННЫЕ</div>
+            <div class="settings-card">
+              <div class="setting-row info-row"><span class="setting-icon"><i class="fa-solid fa-hard-drive"></i></span><span class="setting-copy"><strong>Локальное сохранение</strong><small>Параметры сохраняются автоматически на этом устройстве</small></span><b class="good" id="save-status">АКТИВНО</b></div>
+              <button class="setting-row setting-button" data-action="export"><span class="setting-icon"><i class="fa-solid fa-file-export"></i></span><span class="setting-copy"><strong>Экспорт настроек</strong><small>Скачать резервную копию параметров CORE</small></span><b>›</b></button>
+              <button class="setting-row setting-button" data-action="import"><span class="setting-icon"><i class="fa-solid fa-file-import"></i></span><span class="setting-copy"><strong>Импорт настроек</strong><small>Восстановить параметры из файла</small></span><b>›</b></button>
+              <button class="setting-row setting-button danger" data-action="reset"><span class="setting-icon"><i class="fa-solid fa-rotate-left"></i></span><span class="setting-copy"><strong>Сбросить настройки</strong><small>Вернуть все параметры к исходным значениям</small></span><b>›</b></button>
+            </div>
+            <input id="settings-import" type="file" accept="application/json,.json" hidden>
+            <div class="danger-note">Сброс настроек не удаляет игровой прогресс.</div>
+          </div>
+          <div class="settings-footer">CORE • SYSTEM 0.6.2</div>
+        </main>
+      </section>
+
+      <section id="upgrade-screen" class="sub-screen hidden" data-title="ПРОКАЧКА" aria-label="Прокачка"><div class="sub-screen-bg"></div>
+<main class="sub-content upgrade-content">
+  <div class="upgrade-title-row">
+    <div>
+      <div class="upgrade-kicker">РАЗВИТИЕ СИСТЕМЫ</div>
+      <h1>ПРОКАЧКА</h1>
+    </div>
+    <div class="upgrade-energy-chip"><i class="fa-solid fa-atom"></i><span id="upgrade-energy-chip">100</span></div>
+  </div>
+
+  <div class="upgrade-panel">
+    <div class="upgrade-head">
+      <div><small>ТЕКУЩИЙ УРОВЕНЬ</small><strong id="upgrade-level">1</strong></div>
+      <div class="upgrade-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div><small>СЛЕДУЮЩИЙ</small><strong id="upgrade-next-level">2</strong></div>
+    </div>
+    <div class="upgrade-stats">
+      <div><span>ПРОИЗВОДСТВО</span><b id="upgrade-production">0 → 0 / СЕК</b></div>
+      <div><span>СИЛА ИМПУЛЬСА</span><b id="upgrade-tap">3 → 4</b></div>
+    </div>
+    <div class="upgrade-cost"><span>СТОИМОСТЬ УРОВНЯ</span><strong><i class="fa-solid fa-atom"></i><b id="upgrade-cost">75</b></strong></div>
+    <button class="upgrade-buy" id="upgrade-buy"><span>УСИЛИТЬ ЯДРО</span><small>+ следующий уровень</small></button>
+    <div class="upgrade-note" id="upgrade-note">Уровень усиливает ручную добычу. Автодобыча приобретается отдельно.</div>
+  </div>
+
+  <div class="upgrade-section-label">МОДУЛИ СИСТЕМЫ <span>2 В РЯД</span></div>
+  <div class="upgrade-cards">
+    <button class="upgrade-card" data-module="auto">
+      <span class="upgrade-card-icon"><i class="fa-solid fa-gears"></i></span>
+      <span class="upgrade-card-copy"><strong class="module-title">АВТОДОБЫЧА</strong><small class="module-desc">Пассивная добыча энергии. Следующий уровень повышает скорость.</small></span>
+      <span class="module-level">УР. 0/5</span>
+      <span class="upgrade-card-bottom"><b class="module-price">250</b><em>ЭНЕРГИИ</em></span>
+    </button>
+    <button class="upgrade-card" data-module="tap">
+      <span class="upgrade-card-icon"><i class="fa-solid fa-hand-pointer"></i></span>
+      <span class="upgrade-card-copy"><strong class="module-title">ИМПУЛЬСНЫЙ УСИЛИТЕЛЬ</strong><small class="module-desc">Увеличивает энергию за каждый ручной импульс.</small></span>
+      <span class="module-level">УР. 0/5</span>
+      <span class="upgrade-card-bottom"><b class="module-price">200</b><em>ЭНЕРГИИ</em></span>
+    </button>
+    <button class="upgrade-card" data-module="combo">
+      <span class="upgrade-card-icon"><i class="fa-solid fa-link"></i></span>
+      <span class="upgrade-card-copy"><strong class="module-title">КОМБО-МАТРИЦА</strong><small class="module-desc">Повышает потолок бонуса серии тапов.</small></span>
+      <span class="module-level">УР. 0/5</span>
+      <span class="upgrade-card-bottom"><b class="module-price">350</b><em>ЭНЕРГИИ</em></span>
+    </button>
+    <button class="upgrade-card" data-module="offline">
+      <span class="upgrade-card-icon"><i class="fa-solid fa-battery-full"></i></span>
+      <span class="upgrade-card-copy"><strong class="module-title">КОНТУР ХРАНЕНИЯ</strong><small class="module-desc">Увеличивает время, эффективность и лимит офлайн-накопления.</small></span>
+      <span class="module-level">УР. 0/5</span>
+      <span class="upgrade-card-bottom"><b class="module-price">500</b><em>ЭНЕРГИИ</em></span>
+    </button>
+  </div>
+  <div class="upgrade-footnote">Все модули развиваются до 5 уровня. Автодобыча на 1 уровне работает медленно.</div>
+</main></section>
+      <section id="quests-screen" class="sub-screen hidden" data-title="ЗАДАНИЯ" aria-label="Задания"><div class="sub-screen-bg"></div>
+<main class="sub-content"><div class="empty-panel"><div class="empty-icon"><i class="fa-solid fa-list-check"></i></div><strong>ЗАДАНИЯ ЗАГРУЗЯТСЯ ПОЗЖЕ</strong><span>Ежедневные и сезонные задачи будут собираться здесь.</span></div></main></section>
+      <section id="inventory-screen" class="sub-screen hidden" data-title="ИНВЕНТАРЬ" aria-label="Инвентарь"><div class="sub-screen-bg"></div>
+<main class="sub-content"><div class="empty-panel"><div class="empty-icon"><i class="fa-solid fa-box-open"></i></div><strong>ХРАНИЛИЩЕ ПУСТО</strong><span>Модули, артефакты и усилители появятся после запуска экономики.</span></div></main></section>
+
+    <!-- Общий UI-каркас: шапка и меню остаются на всех вкладках -->
+    <div id="common-ui" class="common-ui hidden">
+      <header class="header">
+        <div class="profile">
+          <button class="header-back" data-back aria-label="Назад">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button class="avatar avatar-button" data-profile aria-label="Открыть профиль">
+            <span>ДС</span>
+            <i></i>
+          </button>
+          <div class="profile-text">
+            <div class="nickname">ТЕНЕВОЙ_ИГРОК</div>
+            <div class="level">УРОВЕНЬ <b id="player-level">1</b></div>
+          </div>
+        </div>
+
+        <div class="balance" aria-label="Баланс энергии">
+          <div class="balance-icon" aria-hidden="true">
+            <span class="mini-core"><i class="fa-solid fa-atom"></i></span>
+          </div>
+          <div class="balance-copy">
+            <div class="balance-label">ЭНЕРГИЯ</div>
+            <div class="balance-value" id="balance">100</div>
+          </div>
+        </div>
+      </header>
+      <nav class="bottom-nav" aria-label="Основная навигация">
+        <span class="nav-energy-line" aria-hidden="true"></span>
+        <span class="nav-active-lens" aria-hidden="true"></span>
+        <button class="nav-item" data-screen="upgrade" aria-label="Прокачка">
+          <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
+          <span>Прокачка</span>
+        </button>
+        <button class="nav-item" data-screen="quests" aria-label="Задания">
+          <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
+          <span>Задания</span>
+        </button>
+        <button class="nav-item nav-home" data-screen="home" aria-label="Ядро">
+          <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-atom"></i></span>
+          <span>Ядро</span>
+        </button>
+        <button class="nav-item" data-screen="inventory" aria-label="Инвентарь">
+          <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></span>
+          <span>Инвентарь</span>
+        </button>
+        <button class="nav-item" data-screen="settings" aria-label="Настройки">
+          <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span>
+          <span>Настройки</span>
+        </button>
+      </nav>
+    </div>
+
+    <audio id="core-music" src="audio/core-ambient-seamless.wav" loop preload="auto" playsinline aria-hidden="true"></audio>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
