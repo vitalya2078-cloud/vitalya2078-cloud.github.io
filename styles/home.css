@@ -1,0 +1,1171 @@
+/* CORE 1.0 — рабочая зона ядра */
+.home-zone{position:absolute;inset:0;pointer-events:none;z-index:3}
+.home-zone .zone-ring{position:absolute;left:50%;top:43%;width:min(86vw,420px);aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid rgba(147,139,255,.10);border-radius:50%;box-shadow:0 0 55px rgba(111,101,255,.06) inset}
+.home-zone .zone-ring:after{content:"";position:absolute;inset:13%;border:1px dashed rgba(126,133,198,.10);border-radius:50%;animation:zone-spin 34s linear infinite}
+@keyframes zone-spin{to{transform:rotate(360deg)}}
+.zone-node{position:absolute;pointer-events:auto;width:72px;height:72px;border:1px solid rgba(157,151,221,.17);border-radius:22px;background:rgba(11,13,25,.68);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#c9c6e8;display:grid;place-items:center;gap:2px;padding:7px;box-shadow:0 10px 35px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035);transition:.18s ease}
+.zone-node:active{transform:scale(.94);border-color:rgba(166,157,255,.45);box-shadow:0 0 28px rgba(113,102,255,.18)}
+.zone-node i{font-size:15px;color:#9d94ef}.zone-node b{font-size:7px;letter-spacing:1.3px;font-weight:900}.zone-node small{font-size:6px;color:#666a82;letter-spacing:.7px}
+.zone-node.n1{left:calc(50% - min(43vw,210px));top:31%}.zone-node.n2{right:calc(50% - min(43vw,210px));top:31%}.zone-node.n3{left:calc(50% - min(43vw,210px));top:54%}.zone-node.n4{right:calc(50% - min(43vw,210px));top:54%}.zone-node.n5{left:50%;bottom:19%;transform:translateX(-50%)}
+.zone-node.n5:active{transform:translateX(-50%) scale(.94)}
+.core-metrics{position:absolute;left:50%;top:calc(43% + min(29vw,140px));transform:translateX(-50%);display:flex;gap:7px;pointer-events:none}
+.core-metric{min-width:72px;padding:6px 8px;border:1px solid rgba(145,145,190,.08);border-radius:10px;background:rgba(7,8,16,.48);text-align:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.core-metric span{display:block;font-size:6px;letter-spacing:1px;color:#555970}.core-metric b{display:block;margin-top:2px;font-size:9px;color:#bcb9d9}
+.core-energy-ring{position:absolute;left:50%;top:43%;width:min(62vw,300px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;z-index:-1;opacity:.55;background:conic-gradient(from -90deg,rgba(142,132,255,.38) var(--energy-progress,0%),transparent 0);-webkit-mask:radial-gradient(circle,transparent 73%,#000 74%,#000 75%,transparent 76%);mask:radial-gradient(circle,transparent 73%,#000 74%,#000 75%,transparent 76%)}
+.home-zone.active .zone-ring{border-color:rgba(155,146,255,.22);box-shadow:0 0 80px rgba(110,99,255,.11) inset}.home-zone.active .core-energy-ring{filter:drop-shadow(0 0 8px rgba(133,122,255,.35))}
+@media (max-width:390px){.zone-node{width:62px;height:62px;border-radius:18px}.zone-node b{font-size:6px}.zone-node small{display:none}.zone-node.n1,.zone-node.n3{left:4%}.zone-node.n2,.zone-node.n4{right:4%}.core-metric{min-width:64px}.core-metrics{gap:4px}}
+@media (prefers-reduced-motion:reduce){.home-zone .zone-ring:after{animation:none}}
+
+/* ===== CORE 1.1 — главный экран без повторяющейся навигации ===== */
+.home-identity{position:absolute;z-index:12;left:18px;top:max(18px,calc(env(safe-area-inset-top) + 10px));display:flex;align-items:center;gap:10px}
+.home-avatar{width:44px;height:44px;display:grid;place-items:center;position:relative;border:1px solid rgba(150,140,255,.55);border-radius:15px;background:linear-gradient(145deg,rgba(100,92,190,.42),rgba(26,28,51,.7));color:#efedff;box-shadow:0 8px 25px rgba(0,0,0,.25);font-size:11px;font-weight:900}
+.home-avatar i{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border:2px solid #080912;border-radius:50%;background:#55e7a2;box-shadow:0 0 9px rgba(85,231,162,.8)}
+.home-identity-copy{display:flex;flex-direction:column;gap:4px}.home-identity-copy strong{font-size:10px;letter-spacing:1.4px}.home-identity-copy span{font-size:7px;letter-spacing:1.5px;color:#5e6379}.home-identity-copy b{color:#b9b2ff}
+.home-settings{position:absolute;z-index:12;right:18px;top:max(22px,calc(env(safe-area-inset-top) + 14px));width:38px;height:38px;border:1px solid rgba(145,145,190,.12);border-radius:13px;background:rgba(12,14,27,.55);color:#8f91aa;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.home-settings:active{transform:scale(.94);color:#c9c3ff}
+.game-screen .main-content{justify-content:flex-start;padding:0;overflow:hidden}
+.game-screen .season{position:absolute;z-index:8;top:max(88px,calc(env(safe-area-inset-top) + 70px));left:50%;transform:translateX(-50%);margin:0;padding:7px 11px;border:1px solid rgba(145,145,190,.08);border-radius:999px;background:rgba(8,10,19,.34);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);white-space:nowrap}
+.game-screen .core-area{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:min(62vw,292px);height:min(62vw,292px);margin:0}
+.game-screen .core-area .orbit-outer{inset:0}.game-screen .core-area .orbit-middle{inset:12%}.game-screen .core-area .orbit-inner{inset:26%}
+.game-screen .core-button{width:44%;height:44%}
+.game-screen .tap-label{position:absolute;z-index:5;left:50%;top:calc(46% + min(31vw,148px));transform:translateX(-50%);white-space:nowrap}
+.game-screen .tap-label strong{font-size:10px;letter-spacing:2.4px}.game-screen .tap-label span{font-size:6px;letter-spacing:1.8px}
+.home-stat-dock{position:absolute;z-index:9;left:50%;bottom:max(82px,calc(env(safe-area-inset-bottom) + 64px));transform:translateX(-50%);width:min(92vw,420px);display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.home-stat{min-width:0;padding:9px 7px;border:1px solid rgba(145,145,190,.10);border-radius:14px;background:rgba(10,12,23,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.03);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);text-align:center;color:#c7c4dd}
+.home-stat span{display:block;font-size:6px;letter-spacing:1.5px;color:#62677d}.home-stat strong{display:block;margin-top:3px;font-size:13px;letter-spacing:.4px}.home-stat small{display:block;margin-top:2px;font-size:6px;color:#50566c}.home-stat.primary{border-color:rgba(141,128,255,.20)}.home-stat.primary strong{color:#d7d1ff}.home-stat-action{cursor:pointer}.home-stat-action:active{transform:scale(.97)}
+.home-zone{z-index:6}
+.home-zone .zone-ring{width:min(66vw,310px);top:46%;opacity:.8}.home-zone .zone-ring:after{inset:11%}
+.home-zone .core-energy-ring{top:46%;width:min(54vw,252px)}
+.zone-node{width:64px;height:64px;border-radius:18px;padding:6px;background:rgba(9,11,22,.78);box-shadow:0 9px 28px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.035)}
+.zone-node b{font-size:6.5px;letter-spacing:1px}.zone-node small{font-size:5.5px}.zone-node i{font-size:14px}
+.zone-node.n1{left:calc(50% - min(37vw,174px));top:36%}.zone-node.n2{right:calc(50% - min(37vw,174px));top:36%}.zone-node.n3{left:calc(50% - min(37vw,174px));top:57%}.zone-node.n4{right:calc(50% - min(37vw,174px));top:57%}.zone-node.n5{display:none}
+.core-metrics{display:none}
+@media(max-width:390px){.home-identity{left:13px}.home-settings{right:13px}.game-screen .core-area{width:58vw;height:58vw}.zone-node{width:58px;height:58px}.zone-node.n1,.zone-node.n3{left:5%}.zone-node.n2,.zone-node.n4{right:5%}.home-stat-dock{width:94vw;gap:5px}.home-stat{padding:8px 5px}.home-stat strong{font-size:12px}}
+
+/* ===== CORE 1.2 — чистая рабочая зона ===== */
+.home-zone{position:absolute;inset:0;z-index:6;pointer-events:none}
+.home-zone .zone-halo{position:absolute;left:50%;top:45%;width:min(52vw,238px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(103,88,255,.16) 0%,rgba(67,59,180,.08) 36%,transparent 68%);filter:blur(8px);opacity:.95}
+.home-zone .zone-grid{position:absolute;left:50%;top:45%;width:min(56vw,258px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(132,125,211,.08);box-shadow:0 0 0 24px rgba(107,99,190,.018),0 0 0 48px rgba(107,99,190,.012);opacity:.9}
+.home-zone .zone-grid:before,.home-zone .zone-grid:after{content:"";position:absolute;inset:11%;border:1px solid rgba(131,126,207,.055);border-radius:50%}
+.home-zone .zone-grid:after{inset:23%;border-style:dashed;opacity:.55}
+.zone-node{position:absolute;pointer-events:auto;width:46px;height:46px;padding:0;border-radius:15px;border:1px solid rgba(154,148,220,.15);background:rgba(11,13,26,.48);color:#a9a3d9;display:grid;place-items:center;box-shadow:0 12px 32px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.zone-node i{font-size:14px;opacity:.9}.zone-node:active{transform:scale(.91);border-color:rgba(164,154,255,.42);background:rgba(24,22,47,.62);box-shadow:0 0 26px rgba(111,96,255,.16)}
+.zone-node .node-badge{position:absolute;right:-4px;top:-4px;min-width:14px;height:14px;padding:0 3px;display:grid;place-items:center;border:1px solid rgba(8,10,19,.95);border-radius:8px;background:rgba(35,32,69,.92);color:#c9c3ff;font-size:6px;font-weight:900;letter-spacing:.2px}
+.zone-node.n1{left:8%;top:38%}.zone-node.n2{right:8%;top:38%}.zone-node.n3{left:8%;top:56%}.zone-node.n4{right:8%;top:56%}.zone-node.resonance-node{left:50%;top:63%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;opacity:.86}
+.zone-node.resonance-node:active{transform:translateX(-50%) scale(.91)}
+.zone-node.resonance-node i{font-size:13px}
+.core-pulse-line{position:absolute;left:50%;top:45%;width:min(48vw,220px);height:min(48vw,220px);transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;opacity:.5}
+.core-pulse-line span{position:absolute;left:50%;top:-1px;width:3px;height:3px;border-radius:50%;background:#8cdbff;box-shadow:0 0 9px #8cdbff;transform-origin:50% calc(min(24vw,110px));animation:coreOrbitPulse 8s linear infinite}
+@keyframes coreOrbitPulse{to{transform:rotate(360deg)}}
+.home-zone.active .zone-grid{border-color:rgba(152,142,255,.16);box-shadow:0 0 42px rgba(115,100,255,.10),0 0 0 24px rgba(107,99,190,.03),0 0 0 48px rgba(107,99,190,.018)}
+.home-zone.active .zone-halo{opacity:1;filter:blur(5px);transform:translate(-50%,-50%) scale(1.06)}
+.game-screen .core-area{left:50%;top:45%;width:min(48vw,220px);height:min(48vw,220px);transform:translate(-50%,-50%)}
+.game-screen .core-area .orbit-outer{inset:0}.game-screen .core-area .orbit-middle{inset:13%}.game-screen .core-area .orbit-inner{inset:28%}
+.game-screen .core-button{width:50%;height:50%}
+.game-screen .season{top:max(78px,calc(env(safe-area-inset-top) + 62px));padding:6px 10px;background:rgba(8,10,19,.24);border-color:rgba(145,145,190,.07);font-size:9px;letter-spacing:2px}
+.game-screen .home-stat-dock{bottom:max(72px,calc(env(safe-area-inset-bottom) + 56px));width:min(92vw,430px);gap:8px}
+.home-stat{min-height:66px;padding:10px 7px;border-radius:16px;background:rgba(10,12,23,.52);border-color:rgba(145,145,190,.09)}
+.home-stat span{font-size:6px;letter-spacing:1.6px}.home-stat strong{font-size:15px;margin-top:4px}.home-stat small{font-size:5.5px;letter-spacing:.5px}
+@media(max-width:390px){.game-screen .core-area{width:50vw;height:50vw}.home-zone .zone-grid{width:58vw}.zone-node{width:43px;height:43px;border-radius:14px}.zone-node.n1,.zone-node.n3{left:6%}.zone-node.n2,.zone-node.n4{right:6%}.zone-node.n1,.zone-node.n2{top:38%}.zone-node.n3,.zone-node.n4{top:57%}.zone-node.resonance-node{top:64%;width:40px;height:40px}.core-pulse-line{width:50vw;height:50vw}.home-stat{min-height:62px;padding:9px 5px}.home-stat strong{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.core-pulse-line span{animation:none}}
+
+/* ===== CORE 2.0 — новая композиция главного экрана ===== */
+.game-screen{
+  background:
+    radial-gradient(circle at 50% 42%,rgba(93,82,224,.11),transparent 31%),
+    radial-gradient(circle at 50% 78%,rgba(61,112,166,.055),transparent 34%),
+    #05060c;
+}
+.game-screen .background-grid{
+  opacity:.24;
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 16%,#000 78%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 16%,#000 78%,transparent 100%);
+}
+.game-screen .top-glow{opacity:.65}
+
+/* Верхняя зона — лёгкая, без отдельной панели. */
+.game-screen .home-identity{
+  left:16px;
+  top:max(14px,calc(env(safe-area-inset-top) + 8px));
+  gap:9px;
+}
+.game-screen .home-avatar{
+  width:42px;height:42px;flex-basis:42px;
+  border-radius:14px;
+  border-color:rgba(164,154,255,.38);
+  background:rgba(13,15,29,.54);
+  box-shadow:0 8px 26px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.game-screen .home-avatar i{background:#55e7a2;box-shadow:0 0 10px rgba(85,231,162,.72)}
+.game-screen .home-identity-copy{gap:3px}
+.game-screen .home-identity-copy strong{font-size:9px;letter-spacing:1.5px}
+.game-screen .home-identity-copy span{font-size:6px;letter-spacing:1.6px;color:#656a80}
+.game-screen .home-settings{
+  right:16px;
+  top:max(16px,calc(env(safe-area-inset-top) + 10px));
+  width:38px;height:38px;
+  border-radius:13px;
+  background:rgba(10,12,22,.42);
+  border-color:rgba(145,145,190,.12);
+}
+
+/* Сезон становится информационной меткой, а не вторым заголовком. */
+.game-screen .season{
+  top:max(72px,calc(env(safe-area-inset-top) + 58px));
+  padding:6px 10px;
+  border-color:rgba(145,145,190,.075);
+  background:rgba(8,10,19,.20);
+  color:#777b92;
+  font-size:7px;
+  letter-spacing:2px;
+  box-shadow:none;
+}
+.game-screen .season .live-dot{width:5px;height:5px;box-shadow:0 0 8px rgba(85,231,162,.7)}
+.game-screen .season-line{opacity:.35}
+
+/* Ядро — главный и почти единственный доминирующий объект. */
+.game-screen .core-area{
+  left:50%;
+  top:44.5%;
+  width:min(66vw,330px);
+  height:min(66vw,330px);
+}
+.game-screen .core-area .core-canvas{filter:saturate(1.08)}
+.game-screen .core-button{width:47%;height:47%}
+.game-screen .core-button .core-level{font-size:7px;letter-spacing:2.5px}
+.game-screen .core-button .core-number{font-size:20px}
+
+/* Убираем ощущение «набора карточек»: показатели образуют единый нижний блок. */
+.game-screen .home-stat-dock{
+  left:50%;
+  bottom:max(18px,calc(env(safe-area-inset-bottom) + 10px));
+  width:min(92vw,430px);
+  grid-template-columns:1.15fr 1fr 1fr;
+  gap:0;
+  padding:0;
+  border:1px solid rgba(145,145,190,.10);
+  border-radius:18px;
+  overflow:hidden;
+  background:rgba(8,10,19,.54);
+  box-shadow:0 14px 38px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.035);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.game-screen .home-stat{
+  min-height:62px;
+  padding:10px 7px;
+  border:0;
+  border-right:1px solid rgba(145,145,190,.075);
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.game-screen .home-stat:last-child{border-right:0}
+.game-screen .home-stat.primary{border-color:rgba(145,145,190,.075)}
+.game-screen .home-stat span{font-size:6px;letter-spacing:1.7px;color:#686d82}
+.game-screen .home-stat strong{font-size:14px;margin-top:5px;color:#d0cceb}
+.game-screen .home-stat.primary strong{color:#ddd8ff}
+.game-screen .home-stat small{font-size:5.5px;color:#555b70}
+.game-screen .home-stat-action:active{background:rgba(145,135,255,.05)}
+
+/* На узких экранах ядро остаётся крупным, но не перекрывает показатели. */
+@media(max-width:390px){
+  .game-screen .home-identity{left:12px}
+  .game-screen .home-settings{right:12px}
+  .game-screen .core-area{top:44%;width:63vw;height:63vw}
+  .game-screen .home-stat-dock{width:94vw}
+  .game-screen .home-stat{min-height:58px;padding:9px 4px}
+  .game-screen .home-stat strong{font-size:12px}
+}
+
+@media(min-height:800px){
+  .game-screen .core-area{top:45%;width:min(68vw,340px);height:min(68vw,340px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .game-screen .core-area .core-canvas{filter:none}
+}
+
+
+/* ===== CORE 2.0.5 — Ресурсы под настройками ===== */
+.game-screen .home-currency-stack{
+  position:absolute;
+  z-index:14;
+  top:max(66px,calc(env(safe-area-inset-top) + 54px));
+  right:18px;
+  left:auto;
+  transform:none;
+  width:38px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+.game-screen .home-currency{
+  width:38px;
+  min-height:42px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:3px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.game-screen .currency-icon{width:25px;height:25px;display:grid;place-items:center;border:0;border-radius:0;background:none;flex:0 0 25px}
+.game-screen .currency-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px currentColor)}
+.game-screen .currency-copy{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;text-align:center}
+.game-screen .currency-copy small{font-size:5px;line-height:1;color:#666b80;letter-spacing:.9px;font-weight:800;white-space:nowrap}
+.game-screen .currency-copy strong{font-size:13px;line-height:1;color:#d8d5e9;letter-spacing:.1px;font-weight:900;white-space:nowrap}
+.game-screen .home-currency.energy .currency-icon{color:#bcb5ff}
+.game-screen .home-currency.resonance .currency-icon{color:#9fddff}
+.game-screen .home-currency.signals .currency-icon{color:#8fe9bf}
+.game-screen .home-currency.resonance .currency-icon svg{animation:core-resonance-spin 9s linear infinite}
+.game-screen .home-currency.signals .currency-icon svg{animation:core-signal-pulse 2.8s ease-in-out infinite}
+@keyframes core-resonance-spin{to{transform:rotate(360deg)}}
+@keyframes core-signal-pulse{0%,100%{opacity:.62;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}
+.game-screen .home-stat-dock{display:none!important}
+@media(max-width:390px){
+  .game-screen .home-currency-stack{right:13px;top:max(63px,calc(env(safe-area-inset-top) + 51px));width:34px;gap:10px}
+  .game-screen .home-currency{width:34px;min-height:39px}
+  .game-screen .currency-icon{width:23px;height:23px;flex-basis:23px}
+  .game-screen .currency-icon svg{width:17px;height:17px}
+  .game-screen .currency-copy small{font-size:4.5px;letter-spacing:.75px}
+  .game-screen .currency-copy strong{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.game-screen .home-currency.resonance .currency-icon svg,.game-screen .home-currency.signals .currency-icon svg{animation:none}}
+
+/* Главный экран: баланс живёт только в вертикальном блоке ресурсов. */
+.game-screen ~ .common-ui .header.home-header .balance{display:none!important}
+.common-ui.is-home .header.home-header .balance{display:none!important}
+
+
+/* ===== CORE 2.1.1 — Состояние ядра ===== */
+.game-screen .core-state-field{
+  position:absolute;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
+  perspective:720px;
+}
+.game-screen .core-state-panel{
+  position:absolute;
+  width:108px;
+  padding:7px 8px 8px;
+  color:#c9c6df;
+  transform-style:preserve-3d;
+  opacity:.72;
+  filter:blur(.05px);
+  transition:opacity .5s ease,filter .5s ease;
+}
+.game-screen .core-state-panel .state-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.game-screen .core-state-panel small{font-size:6px;letter-spacing:1.65px;color:#676c82;font-weight:800;white-space:nowrap}
+.game-screen .core-state-panel strong{font-size:9px;letter-spacing:.4px;color:#bdb8dc;font-weight:900;white-space:nowrap}
+.game-screen .core-state-panel .state-line{height:1px;margin-top:6px;position:relative;background:rgba(146,139,190,.14);overflow:hidden}
+.game-screen .core-state-panel .state-line span{position:absolute;left:0;top:0;height:100%;width:0;background:currentColor;box-shadow:0 0 7px currentColor;transition:width .28s ease}
+.game-screen .core-state-panel.heat{left:7%;top:36%;color:#bca8ff;animation:core-state-drift-a 11s ease-in-out infinite}
+.game-screen .core-state-panel.wear{right:7%;top:31%;color:#8fb8ff;opacity:.55;transform:translateZ(-70px) scale(.9);animation:core-state-drift-b 14s ease-in-out infinite}
+.game-screen .core-state-panel.stability{left:55%;top:61%;color:#8de0bd;opacity:.62;transform:translateZ(-35px) scale(.94);animation:core-state-drift-c 13s ease-in-out infinite}
+.game-screen .core-state-panel.heat .state-line span{background:linear-gradient(90deg,#8379ff,#c9a7ff)}
+.game-screen .core-state-panel.wear .state-line span{background:linear-gradient(90deg,#7087d9,#9db7ff)}
+.game-screen .core-state-panel.stability .state-line span{background:linear-gradient(90deg,#62cda7,#a0efd0)}
+@keyframes core-state-drift-a{0%,100%{margin-left:0;transform:translate3d(0,0,20px) rotate(-1deg)}50%{margin-left:7px;transform:translate3d(0,-5px,20px) rotate(1deg)}}
+@keyframes core-state-drift-b{0%,100%{margin-right:0;transform:translate3d(0,0,-70px) scale(.9) rotate(1deg)}50%{margin-right:8px;transform:translate3d(0,7px,-70px) scale(.9) rotate(-1deg)}}
+@keyframes core-state-drift-c{0%,100%{margin-left:0;transform:translate3d(0,0,-35px) scale(.94) rotate(1deg)}50%{margin-left:-7px;transform:translate3d(0,5px,-35px) scale(.94) rotate(-1deg)}}
+.game-screen.system-hot .core-button{filter:saturate(calc(1 + var(--system-heat)*.12)) drop-shadow(0 0 10px rgba(255,145,190,.12))}
+.game-screen.system-critical .core-state-panel{opacity:.86}
+.game-screen.system-worn .core-state-panel.wear{opacity:.78}
+@media(max-width:390px){
+  .game-screen .core-state-panel{width:94px;padding:6px 7px 7px}
+  .game-screen .core-state-panel small{font-size:5.3px;letter-spacing:1.35px}
+  .game-screen .core-state-panel strong{font-size:8px}
+  .game-screen .core-state-panel.heat{left:4%;top:36%}
+  .game-screen .core-state-panel.wear{right:4%;top:31%}
+  .game-screen .core-state-panel.stability{left:51%;top:61%}
+}
+@media(prefers-reduced-motion:reduce){
+  .game-screen .core-state-panel.heat,.game-screen .core-state-panel.wear,.game-screen .core-state-panel.stability{animation:none}
+}
+
+/* ===== CORE 2.1.2 — Радиальное меню и телеметрия ===== */
+.game-screen .core-telemetry-field{
+  position:absolute;
+  inset:0;
+  z-index:11;
+  pointer-events:none;
+  perspective:820px;
+}
+.game-screen .core-telemetry-panel{
+  position:absolute;
+  width:104px;
+  padding:6px 7px 7px;
+  opacity:.42;
+  transform-style:preserve-3d;
+  color:#a8a1d8;
+  filter:blur(.05px);
+  animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite;
+}
+.game-screen .core-telemetry-panel small{display:block;font-size:5.4px;letter-spacing:1.35px;color:#60647b;font-weight:800;white-space:nowrap}
+.game-screen .core-telemetry-panel strong{display:block;margin-top:3px;font-size:9px;letter-spacing:.45px;color:#aaa5c9;font-weight:900}
+.game-screen .core-telemetry-panel .telemetry-line{height:1px;margin-top:5px;background:rgba(145,137,190,.10);overflow:hidden}
+.game-screen .core-telemetry-panel .telemetry-line span{display:block;width:48%;height:100%;background:currentColor;box-shadow:0 0 7px currentColor;animation:telemetry-pulse 4.5s ease-in-out infinite}
+.game-screen .core-telemetry-panel.power{left:9%;top:24%;color:#9d91e8;animation:telemetry-drift-power 12s infinite}
+.game-screen .core-telemetry-panel.flow{right:10%;top:55%;color:#83b8dd;opacity:.34;transform:translateZ(-90px) scale(.88);animation:telemetry-drift-flow 15s infinite}
+.game-screen .core-telemetry-panel.level{left:58%;top:27%;color:#8fd0ba;opacity:.30;transform:translateZ(-125px) scale(.82);animation:telemetry-drift-level 17s infinite}
+@keyframes telemetry-drift-power{0%,100%{transform:translate3d(0,0,30px) rotate(-1deg)}50%{transform:translate3d(7px,-5px,30px) rotate(1deg)}}
+@keyframes telemetry-drift-flow{0%,100%{transform:translate3d(0,0,-90px) scale(.88) rotate(1deg)}50%{transform:translate3d(-8px,6px,-90px) scale(.88) rotate(-1deg)}}
+@keyframes telemetry-drift-level{0%,100%{transform:translate3d(0,0,-125px) scale(.82) rotate(-1deg)}50%{transform:translate3d(6px,8px,-125px) scale(.82) rotate(1deg)}}
+@keyframes telemetry-pulse{0%,100%{opacity:.35;transform:translateX(-8%)}50%{opacity:.9;transform:translateX(65%)}}
+
+.game-screen .core-radial-menu{
+  position:absolute;
+  right:max(16px,env(safe-area-inset-right));
+  bottom:max(18px,env(safe-area-inset-bottom));
+  width:54px;
+  height:54px;
+  z-index:40;
+}
+.game-screen .radial-toggle{
+  position:absolute;
+  inset:0;
+  width:54px;
+  height:54px;
+  border:1px solid rgba(145,133,235,.26);
+  border-radius:50%;
+  background:rgba(8,9,20,.68);
+  color:#b7b0ff;
+  box-shadow:0 0 22px rgba(100,86,220,.10),inset 0 0 18px rgba(140,124,255,.05);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+  display:grid;
+  place-items:center;
+  font-size:17px;
+  transition:transform .28s ease,background .28s ease,border-color .28s ease,box-shadow .28s ease;
+}
+.game-screen .radial-toggle:active{transform:scale(.94)}
+.game-screen .core-radial-menu.is-open .radial-toggle{background:rgba(22,20,42,.84);border-color:rgba(155,144,255,.52);box-shadow:0 0 26px rgba(111,95,235,.22),inset 0 0 20px rgba(140,124,255,.08)}
+.game-screen .radial-items{position:absolute;inset:0;pointer-events:none}
+.game-screen .radial-item{
+  position:absolute;
+  width:52px;
+  height:52px;
+  padding:0;
+  border:1px solid rgba(140,132,202,.22);
+  border-radius:50%;
+  background:rgba(7,8,17,.80);
+  color:#aaa4d4;
+  box-shadow:0 0 18px rgba(80,70,170,.08);
+  opacity:0;
+  transform:translate(0,0) scale(.45);
+  pointer-events:none;
+  transition:transform .42s cubic-bezier(.2,.8,.2,1),opacity .24s ease,border-color .25s ease,color .25s ease;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.game-screen .radial-item span{display:grid;place-items:center;width:100%;height:100%;font-size:15px}
+.game-screen .radial-item small{position:absolute;right:58px;top:50%;transform:translateY(-50%);font-size:5.5px;letter-spacing:1.2px;white-space:nowrap;color:#676b83;opacity:0;transition:opacity .2s ease}
+.game-screen .core-radial-menu.is-open .radial-items{pointer-events:auto}
+.game-screen .core-radial-menu.is-open .radial-item{opacity:1;pointer-events:auto}
+.game-screen .core-radial-menu.is-open .radial-item:hover,.game-screen .core-radial-menu.is-open .radial-item:focus-visible{color:#d2cdff;border-color:rgba(154,144,255,.58);box-shadow:0 0 20px rgba(120,104,240,.20)}
+.game-screen .core-radial-menu.is-open .radial-item small{opacity:1}
+/* Дуга раскрывается вверх и влево, не заходя на ядро. */
+.game-screen .core-radial-menu.is-open .item-profile{transform:translate(-180px,0) scale(1)}
+.game-screen .core-radial-menu.is-open .item-quests{transform:translate(-176px,-34px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-upgrade{transform:translate(-167px,-68px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-shop{transform:translate(-149px,-101px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-research{transform:translate(-127px,-127px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-resonance{transform:translate(-101px,-149px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-inventory{transform:translate(-70px,-166px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-season{transform:translate(-34px,-176px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-settings{transform:translate(0,-180px) scale(1)}
+@media(max-width:390px){
+  .game-screen .core-telemetry-panel{width:91px}
+  .game-screen .core-telemetry-panel.power{left:5%;top:24%}
+  .game-screen .core-telemetry-panel.flow{right:4%;top:55%}
+  .game-screen .core-telemetry-panel.level{left:57%;top:27%}
+  .game-screen .core-radial-menu{right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom))}
+  .game-screen .radial-item{width:48px;height:48px}
+  .game-screen .core-radial-menu.is-open .item-profile{transform:translate(-145px,0) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-quests{transform:translate(-142px,-27px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-upgrade{transform:translate(-134px,-55px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-shop{transform:translate(-120px,-82px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-research{transform:translate(-103px,-103px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-resonance{transform:translate(-82px,-120px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-inventory{transform:translate(-57px,-134px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-season{transform:translate(-27px,-142px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-settings{transform:translate(0,-145px) scale(1)}
+  .game-screen .radial-item small{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .game-screen .core-telemetry-panel,.game-screen .core-telemetry-panel .telemetry-line span{animation:none!important}
+  .game-screen .radial-item{transition-duration:.01ms!important}
+}
+
+
+
+/* ===== CORE 2.1.4 — возвращаем шапку, убираем старые узлы, компактное меню ===== */
+/* Профиль, уровень и настройки снова являются частью основной композиции. */
+.game-screen .home-identity{display:flex!important}
+.game-screen .home-settings{display:grid!important;place-items:center!important}
+.game-screen .season{display:flex!important}
+
+/* Старые кнопки/панели главного экрана не участвуют в новой навигации. */
+.game-screen .zone-node,
+.game-screen .home-stat-dock,
+.game-screen .home-stat-action,
+.game-screen .bottom-nav{display:none!important}
+
+/* Радиальное меню жёстко привязано к правому нижнему углу.
+   Точка раскрытия — сама кнопка, а не центр контейнера. */
+.game-screen .core-radial-menu{
+  right:max(12px,env(safe-area-inset-right));
+  bottom:max(12px,env(safe-area-inset-bottom));
+  width:46px;
+  height:46px;
+  z-index:80;
+}
+.game-screen .radial-toggle{width:46px;height:46px;font-size:14px}
+.game-screen .radial-items{
+  position:absolute;
+  left:0;top:0;
+  width:1px;height:1px;
+  overflow:visible;
+  pointer-events:none;
+}
+.game-screen .radial-item{
+  width:42px;height:42px;
+  padding:3px;
+  gap:2px;
+  border-radius:50%;
+}
+.game-screen .radial-item span{font-size:12px}
+.game-screen .radial-item small{font-size:4.1px;max-width:36px;letter-spacing:.45px}
+
+/* Внешний ряд — 5 пунктов. */
+.game-screen .core-radial-menu.is-open .item-profile{transform:translate(-126px,0) scale(1)}
+.game-screen .core-radial-menu.is-open .item-quests{transform:translate(-114px,-37px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-upgrade{transform:translate(-91px,-66px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-shop{transform:translate(-57px,-86px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-research{transform:translate(-18px,-94px) scale(1)}
+
+/* Внутренний ряд — 4 пункта, короче внешнего. */
+.game-screen .core-radial-menu.is-open .item-resonance{transform:translate(-91px,-5px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-inventory{transform:translate(-80px,-38px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-season{transform:translate(-58px,-65px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-settings{transform:translate(-28px,-80px) scale(1)}
+
+@media(max-width:390px){
+  .game-screen .core-radial-menu{right:max(9px,env(safe-area-inset-right));bottom:max(9px,env(safe-area-inset-bottom));width:42px;height:42px}
+  .game-screen .radial-toggle{width:42px;height:42px;font-size:13px}
+  .game-screen .radial-item{width:38px;height:38px;padding:2px}
+  .game-screen .radial-item span{font-size:11px}
+  .game-screen .radial-item small{font-size:3.7px;max-width:33px}
+  .game-screen .core-radial-menu.is-open .item-profile{transform:translate(-110px,0) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-quests{transform:translate(-100px,-34px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-upgrade{transform:translate(-80px,-59px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-shop{transform:translate(-50px,-76px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-research{transform:translate(-16px,-83px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-resonance{transform:translate(-79px,-4px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-inventory{transform:translate(-69px,-33px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-season{transform:translate(-51px,-57px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-settings{transform:translate(-25px,-70px) scale(1)}
+}
+
+
+/* ===== CORE 2.1.5 — радиальное меню без дублирования шапки ===== */
+/* Профиль и настройки доступны из шапки и не повторяются в радиальном меню. */
+.game-screen .radial-item.item-profile,
+.game-screen .radial-item.item-settings{display:none!important}
+
+/* Два компактных ряда: 4 внешних пункта + 3 внутренних. */
+.game-screen .core-radial-menu.is-open .item-quests{transform:translate(-128px,0) scale(1)}
+.game-screen .core-radial-menu.is-open .item-upgrade{transform:translate(-113px,-48px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-shop{transform:translate(-82px,-88px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-research{transform:translate(-38px,-108px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-resonance{transform:translate(-92px,-7px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-inventory{transform:translate(-74px,-49px) scale(1)}
+.game-screen .core-radial-menu.is-open .item-season{transform:translate(-40px,-80px) scale(1)}
+
+/* Подписи находятся внутри круга, чтобы больше не пересекаться между рядами. */
+.game-screen .radial-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  box-sizing:border-box;
+}
+.game-screen .radial-item span{
+  width:auto;
+  height:auto;
+  font-size:11px;
+  line-height:1;
+}
+.game-screen .radial-item small{
+  position:static;
+  transform:none;
+  max-width:34px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:3.7px;
+  line-height:1;
+  letter-spacing:.45px;
+  opacity:1;
+}
+
+@media(max-width:390px){
+  .game-screen .core-radial-menu.is-open .item-quests{transform:translate(-108px,0) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-upgrade{transform:translate(-96px,-40px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-shop{transform:translate(-70px,-73px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-research{transform:translate(-33px,-90px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-resonance{transform:translate(-78px,-6px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-inventory{transform:translate(-62px,-41px) scale(1)}
+  .game-screen .core-radial-menu.is-open .item-season{transform:translate(-34px,-66px) scale(1)}
+}
+
+/* ===== CORE 2.1.12 — глубина, космический фон и квадратное меню ===== */
+.game-screen{overflow:hidden!important;isolation:isolate;background:radial-gradient(circle at 50% 54%,rgba(72,58,190,.12),transparent 38%),#03040b!important}
+.game-screen::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 50% 55%,transparent 25%,rgba(0,0,0,.34) 78%,rgba(0,0,0,.72) 100%)}
+.game-screen .core-space-canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:1!important;pointer-events:none;opacity:.95;filter:saturate(1.16) contrast(1.05);mix-blend-mode:screen}
+.game-screen .core-area{z-index:12!important}
+.game-screen .core-state-field,.game-screen .core-telemetry-field{z-index:18!important}
+.game-screen .home-currency-stack{z-index:30!important}
+
+/* Глубина и мягкие тени у телеметрии */
+.game-screen .core-state-panel,.game-screen .core-telemetry-panel{filter:drop-shadow(0 8px 13px rgba(0,0,0,.55)) drop-shadow(0 0 8px currentColor)}
+.game-screen .home-currency{filter:drop-shadow(0 7px 10px rgba(0,0,0,.6));animation:currency-weight 5.8s ease-in-out infinite}
+.game-screen .home-currency:nth-child(2){animation-duration:6.7s;animation-delay:-1.7s}
+.game-screen .home-currency:nth-child(3){animation-duration:5.2s;animation-delay:-3.1s}
+@keyframes currency-weight{0%,100%{transform:translate3d(0,0,0) rotate(-.5deg)}50%{transform:translate3d(3px,-5px,0) rotate(.6deg)}}
+
+/* Меню: квадратные плитки со скруглением, 4 сверху + 3 снизу. */
+.game-screen .core-radial-menu{right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:56px;height:56px;z-index:90}
+.game-screen .radial-toggle{width:56px;height:56px;border-radius:16px;background:rgba(9,10,23,.48);border:1px solid rgba(153,143,245,.32);box-shadow:0 12px 32px rgba(0,0,0,.45),0 0 24px rgba(95,79,240,.14),inset 0 0 18px rgba(150,140,255,.05)}
+.game-screen .radial-items{left:0;top:0;width:1px;height:1px;overflow:visible}
+.game-screen .radial-item{width:70px;height:58px;border-radius:15px!important;border:1px solid rgba(145,135,222,.28);background:linear-gradient(145deg,rgba(17,18,39,.58),rgba(5,7,18,.34));box-shadow:0 12px 26px rgba(0,0,0,.46),0 0 18px rgba(86,72,210,.10),inset 0 1px 0 rgba(255,255,255,.035);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:opacity .28s ease,border-color .25s ease,box-shadow .25s ease;color:#aaa5d2;transform:translate(0,0) scale(.82)}
+.game-screen .radial-item span{font-size:17px!important;line-height:1;color:#c0baff;text-shadow:0 0 11px rgba(139,125,255,.42)}
+.game-screen .radial-item small{position:static!important;transform:none!important;display:block!important;max-width:62px!important;font-size:5.5px!important;letter-spacing:1px!important;color:#77758e;opacity:1!important;line-height:1.1;margin-top:5px}
+.game-screen .core-radial-menu.is-open .radial-item{opacity:1;pointer-events:auto;animation:menu-weight 5.6s ease-in-out infinite}
+.game-screen .core-radial-menu.is-open .item-quests{--x:-244px;--y:-138px;--wx:2px;--wy:-4px}
+.game-screen .core-radial-menu.is-open .item-upgrade{--x:-162px;--y:-138px;--wx:-3px;--wy:3px;animation-delay:-1.1s}
+.game-screen .core-radial-menu.is-open .item-shop{--x:-80px;--y:-138px;--wx:2px;--wy:4px;animation-delay:-2.2s}
+.game-screen .core-radial-menu.is-open .item-research{--x:2px;--y:-138px;--wx:-2px;--wy:-3px;animation-delay:-3.3s}
+.game-screen .core-radial-menu.is-open .item-resonance{--x:-203px;--y:-61px;--wx:-2px;--wy:3px;animation-delay:-.7s}
+.game-screen .core-radial-menu.is-open .item-inventory{--x:-121px;--y:-61px;--wx:3px;--wy:-2px;animation-delay:-2.8s}
+.game-screen .core-radial-menu.is-open .item-season{--x:-39px;--y:-61px;--wx:-2px;--wy:4px;animation-delay:-4s}
+@keyframes menu-weight{0%,100%{transform:translate(calc(var(--x) + var(--wx)),calc(var(--y) + var(--wy))) scale(1) rotate(-.25deg)}50%{transform:translate(calc(var(--x) - var(--wx)),calc(var(--y) - var(--wy))) scale(1.012) rotate(.25deg)}}
+.game-screen .core-radial-menu.is-open .radial-item:hover,.game-screen .core-radial-menu.is-open .radial-item:focus-visible{border-color:rgba(174,163,255,.58);box-shadow:0 15px 30px rgba(0,0,0,.52),0 0 25px rgba(116,98,255,.22),inset 0 1px 0 rgba(255,255,255,.05)}
+@media(max-width:700px){
+ .game-screen .radial-item{width:62px;height:54px;border-radius:14px!important}
+ .game-screen .core-radial-menu.is-open .item-quests{--x:-216px;--y:-124px}.game-screen .core-radial-menu.is-open .item-upgrade{--x:-144px;--y:-124px}.game-screen .core-radial-menu.is-open .item-shop{--x:-72px;--y:-124px}.game-screen .core-radial-menu.is-open .item-research{--x:0;--y:-124px}.game-screen .core-radial-menu.is-open .item-resonance{--x:-180px;--y:-58px}.game-screen .core-radial-menu.is-open .item-inventory{--x:-108px;--y:-58px}.game-screen .core-radial-menu.is-open .item-season{--x:-36px;--y:-58px}
+}
+@media(prefers-reduced-motion:reduce){.game-screen .home-currency,.game-screen .core-radial-menu.is-open .radial-item{animation:none!important}}
+
+/* ===== CORE 2.1.13 — живое космическое пространство ===== */
+.game-screen .background-grid{opacity:0!important;visibility:hidden!important}
+.game-screen .core-space-canvas{opacity:.98!important;filter:saturate(1.18) contrast(1.04)}
+.game-screen .home-zone .zone-grid{border-color:rgba(132,125,211,.035);box-shadow:0 0 0 24px rgba(107,99,190,.012),0 0 0 48px rgba(107,99,190,.008)}
+.game-screen .home-zone .zone-grid:before{border-color:rgba(131,126,207,.028)}
+.game-screen .home-zone .zone-grid:after{opacity:.28;border-color:rgba(131,126,207,.026)}
+@media(prefers-reduced-motion:reduce){.game-screen .core-space-canvas{opacity:.78!important}}
+
+/* ===== CORE 2.1.16 — визуальный рост ядра по стадиям ===== */
+.game-screen .core-button{
+  --core-scale:1;
+  transform:scale(var(--core-scale));
+  transform-origin:50% 50%;
+  transition:transform 1.2s cubic-bezier(.2,.75,.25,1),filter .8s ease;
+  will-change:transform;
+}
+.game-screen .core-button:active{transform:scale(calc(var(--core-scale) * .94));}
+.game-screen .core-button .core-aura{
+  opacity:calc(.72 + var(--core-stage,0) * .018);
+}
+@media(prefers-reduced-motion:reduce){
+  .game-screen .core-button{transition:none!important}
+}
+
+/* ===== CORE 2.1.21 — жидкое физическое ядро ===== */
+.game-screen .home-identity-copy{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.game-screen .home-identity-copy .home-core-level{
+  color:#7f86a8;
+  opacity:.82;
+  animation:coreLevelFloat 5.6s ease-in-out infinite;
+  will-change:transform,opacity;
+}
+.game-screen .core-button{
+  --core-scale:1;
+  --float-x:0px;
+  --float-y:0px;
+  --impact-x:50%;
+  --impact-y:50%;
+  --impact-dx:0px;
+  --impact-dy:0px;
+  --fluid-energy:1;
+  transform:translate3d(var(--float-x),var(--float-y),0) scale(1)!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  border-radius:48% 52% 54% 46% / 51% 46% 54% 49%!important;
+  isolation:isolate;
+  will-change:transform;
+}
+.game-screen .core-button .core-volume{
+  position:absolute;
+  left:50%;top:50%;
+  display:block;
+  border:0!important;
+  pointer-events:none;
+  transform-origin:50% 50%;
+  will-change:transform,border-radius,filter;
+}
+.game-screen .core-button .core-volume-a{
+  width:92%;height:90%;
+  opacity:.94;
+  filter:blur(1.4px);
+  background:
+    radial-gradient(ellipse at 31% 25%,rgba(255,255,255,.23),transparent 19%),
+    radial-gradient(ellipse at 70% 68%,rgba(65,225,255,.18),transparent 31%),
+    radial-gradient(ellipse at 44% 48%,rgba(132,112,255,.30),rgba(54,44,151,.17) 48%,rgba(5,7,18,.97) 82%);
+  box-shadow:
+    inset 13px 12px 24px rgba(255,255,255,.08),
+    inset -18px -21px 31px rgba(0,0,0,.52),
+    inset 0 0 36px rgba(112,94,255,.18),
+    0 0 26px rgba(108,95,255,.40),
+    0 0 58px rgba(73,209,255,.10),
+    0 20px 35px rgba(0,0,0,.50);
+  border-radius:47% 53% 55% 45% / 54% 44% 56% 46%!important;
+  animation:blobA 7.1s ease-in-out infinite;
+}
+.game-screen .core-button .core-volume-b{
+  width:75%;height:82%;
+  opacity:.82;
+  filter:blur(2.8px);
+  background:
+    radial-gradient(ellipse at 63% 39%,rgba(91,231,255,.22),rgba(108,89,255,.12) 34%,transparent 70%),
+    radial-gradient(ellipse at 32% 72%,rgba(157,136,255,.12),transparent 45%);
+  box-shadow:inset 9px 8px 18px rgba(255,255,255,.035),inset -13px -16px 22px rgba(0,0,0,.28);
+  border-radius:55% 45% 42% 58% / 43% 57% 47% 53%!important;
+  animation:blobB 8.3s ease-in-out infinite reverse;
+}
+.game-screen .core-button .core-volume-c{
+  width:86%;height:61%;
+  opacity:.70;
+  filter:blur(3.8px);
+  background:
+    radial-gradient(ellipse at 45% 49%,rgba(192,177,255,.18),rgba(80,214,255,.08) 35%,transparent 70%);
+  border-radius:40% 60% 55% 45% / 58% 42% 52% 48%!important;
+  animation:blobC 9.1s ease-in-out infinite;
+}
+.game-screen .core-button::before{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:94%;height:92%;
+  z-index:6;
+  pointer-events:none;
+  transform:translate3d(calc(-50% + var(--impact-dx)),calc(-50% + var(--impact-dy)),0);
+  border:1px solid rgba(208,202,255,.26);
+  border-radius:49% 51% 56% 44% / 53% 45% 55% 47%;
+  background:
+    radial-gradient(ellipse at var(--impact-x) var(--impact-y),rgba(255,255,255,.20),transparent 13%),
+    radial-gradient(ellipse at 30% 28%,rgba(255,255,255,.10),transparent 22%),
+    linear-gradient(135deg,rgba(255,255,255,.035),transparent 34%,rgba(0,0,0,.25) 86%);
+  box-shadow:
+    inset 10px 12px 24px rgba(255,255,255,.055),
+    inset -17px -20px 32px rgba(0,0,0,.46),
+    inset 0 0 24px rgba(116,102,255,.12),
+    0 0 24px rgba(106,94,255,.30),
+    0 18px 34px rgba(0,0,0,.44);
+  animation:liquidSurface 7.8s ease-in-out infinite;
+}
+.game-screen .core-button::after{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:70%;height:70%;
+  z-index:8;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 36% 29%,rgba(255,255,255,.42) 0 2%,rgba(219,214,255,.16) 8%,transparent 24%),
+    radial-gradient(ellipse at 61% 56%,rgba(106,226,255,.16),transparent 37%),
+    radial-gradient(ellipse at 50% 50%,rgba(92,73,224,.13),rgba(7,8,21,.04) 57%,transparent 76%);
+  filter:blur(.7px);
+  box-shadow:
+    inset 7px 8px 17px rgba(255,255,255,.06),
+    inset -9px -12px 18px rgba(0,0,0,.34),
+    0 0 20px rgba(116,100,255,.14);
+  animation:liquidDepth 5.9s ease-in-out infinite;
+}
+.game-screen .core-button .core-nucleus{
+  width:24%;height:24%;
+  z-index:10;
+  border:0!important;
+  background:
+    radial-gradient(ellipse at 31% 24%,#fff 0 4%,#e9e6ff 10%,#aaa0ff 25%,#6e61dc 45%,#302873 68%,#070814 100%);
+  box-shadow:
+    inset 5px 6px 12px rgba(255,255,255,.18),
+    inset -7px -9px 14px rgba(0,0,0,.54),
+    0 0 18px rgba(172,160,255,.92),
+    0 0 42px rgba(101,85,255,.34);
+  border-radius:48% 52% 55% 45% / 51% 44% 56% 49%!important;
+  filter:blur(.15px);
+  animation:coreHeart 4.7s ease-in-out infinite;
+}
+.game-screen .core-button .core-nucleus-hot{
+  position:absolute;
+  inset:15%;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0 7%,rgba(206,198,255,.7) 20%,rgba(111,96,238,.22) 52%,transparent 76%);
+  filter:blur(1px);
+  animation:coreHeartHot 2.9s ease-in-out infinite;
+}
+.game-screen .core-button .core-aura{
+  z-index:2;
+  opacity:.68;
+  filter:blur(9px);
+}
+.game-screen .core-button.liquid-hit::before{
+  animation:liquidImpact .72s cubic-bezier(.16,.76,.25,1),liquidSurface 7.8s ease-in-out infinite .72s;
+}
+.game-screen .core-button.liquid-hit .core-volume-a{
+  animation:blobImpact .74s cubic-bezier(.16,.78,.24,1),blobA 7.1s ease-in-out infinite .74s;
+}
+.game-screen .core-button.liquid-hit .core-volume-b{
+  animation:blobImpactB .86s cubic-bezier(.14,.72,.26,1),blobB 8.3s ease-in-out infinite .86s;
+}
+.game-screen .core-button.liquid-hit .core-volume-c{
+  animation:blobImpactC .98s cubic-bezier(.14,.70,.26,1),blobC 9.1s ease-in-out infinite .98s;
+}
+@keyframes coreLevelFloat{
+  0%,100%{transform:translate3d(0,0,0);opacity:.72}
+  50%{transform:translate3d(2px,-1px,0);opacity:.92}
+}
+@keyframes liquidSurface{
+  0%,100%{border-radius:49% 51% 56% 44% / 53% 45% 55% 47%;transform:translate3d(calc(-50% + var(--impact-dx)),calc(-50% + var(--impact-dy)),0) rotate(-1deg) scale(1,1)}
+  25%{border-radius:58% 42% 47% 53% / 45% 58% 42% 55%;transform:translate3d(calc(-50% + var(--impact-dx)),calc(-50% + var(--impact-dy)),0) rotate(2deg) scale(1.018,.982)}
+  50%{border-radius:42% 58% 54% 46% / 59% 41% 55% 45%;transform:translate3d(calc(-50% + var(--impact-dx)),calc(-50% + var(--impact-dy)),0) rotate(-1.6deg) scale(.986,1.024)}
+  75%{border-radius:55% 45% 41% 59% / 43% 56% 44% 57%;transform:translate3d(calc(-50% + var(--impact-dx)),calc(-50% + var(--impact-dy)),0) rotate(.7deg) scale(1.012,.992)}
+}
+@keyframes liquidDepth{
+  0%,100%{border-radius:50% 46% 54% 48% / 48% 55% 45% 52%;transform:translate(-50%,-50%) rotate(0) scale(1)}
+  50%{border-radius:42% 58% 47% 53% / 57% 43% 57% 43%;transform:translate(-50%,-50%) rotate(9deg) scale(1.028,.974)}
+}
+@keyframes blobA{
+  0%,100%{border-radius:47% 53% 55% 45% / 54% 44% 56% 46%;transform:translate(-50%,-50%) rotate(-6deg) scale(1,.99)}
+  50%{border-radius:59% 41% 46% 54% / 43% 57% 47% 53%;transform:translate(-50%,-50%) rotate(9deg) scale(.97,1.035)}
+}
+@keyframes blobB{
+  0%,100%{border-radius:55% 45% 42% 58% / 43% 57% 47% 53%;transform:translate(-50%,-50%) rotate(8deg) scale(.98,1.02)}
+  50%{border-radius:43% 57% 56% 44% / 58% 42% 54% 46%;transform:translate(-50%,-50%) rotate(-12deg) scale(1.04,.96)}
+}
+@keyframes blobC{
+  0%,100%{border-radius:40% 60% 55% 45% / 58% 42% 52% 48%;transform:translate(-50%,-50%) rotate(-4deg) scale(1.02,.97)}
+  50%{border-radius:58% 42% 43% 57% / 41% 59% 45% 55%;transform:translate(-50%,-50%) rotate(11deg) scale(.97,1.045)}
+}
+@keyframes liquidImpact{
+  0%{transform:translate3d(calc(-50% + var(--impact-dx)),calc(-50% + var(--impact-dy)),0) scale(1)}
+  28%{transform:translate3d(calc(-50% + var(--impact-dx) * 1.9),calc(-50% + var(--impact-dy) * 1.9),0) scale(.93,1.05)}
+  62%{transform:translate3d(calc(-50% - var(--impact-dx) * .8),calc(-50% - var(--impact-dy) * .8),0) scale(1.035,.97)}
+  100%{transform:translate3d(-50%,-50%,0) scale(1)}
+}
+@keyframes blobImpact{
+  0%{transform:translate(-50%,-50%) scale(1)}
+  30%{transform:translate(calc(-50% + var(--impact-dx)),calc(-50% + var(--impact-dy))) scale(.91,1.07)}
+  65%{transform:translate(calc(-50% - var(--impact-dx)*.45),calc(-50% - var(--impact-dy)*.45)) scale(1.04,.96)}
+  100%{transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes blobImpactB{
+  0%{transform:translate(-50%,-50%) scale(1)}
+  34%{transform:translate(calc(-50% + var(--impact-dx)*.65),calc(-50% + var(--impact-dy)*.65)) scale(1.07,.91)}
+  72%{transform:translate(calc(-50% - var(--impact-dx)*.3),calc(-50% - var(--impact-dy)*.3)) scale(.96,1.05)}
+  100%{transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes blobImpactC{
+  0%{transform:translate(-50%,-50%) scale(1)}
+  38%{transform:translate(calc(-50% + var(--impact-dx)*.35),calc(-50% + var(--impact-dy)*.35)) scale(.94,1.08)}
+  76%{transform:translate(calc(-50% - var(--impact-dx)*.2),calc(-50% - var(--impact-dy)*.2)) scale(1.06,.95)}
+  100%{transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes coreHeart{
+  0%,100%{transform:translate(-50%,-50%) scale(1);border-radius:48% 52% 55% 45% / 51% 44% 56% 49%}
+  50%{transform:translate(-50%,-50%) scale(1.045,.965);border-radius:56% 44% 47% 53% / 43% 57% 45% 55%}
+}
+@keyframes coreHeartHot{0%,100%{transform:scale(.94);opacity:.72}50%{transform:scale(1.13);opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  .game-screen .home-identity-copy .home-core-level,
+  .game-screen .core-button,
+  .game-screen .core-button::before,
+  .game-screen .core-button::after,
+  .game-screen .core-button .core-volume,
+  .game-screen .core-button .core-nucleus,
+  .game-screen .core-button .core-nucleus-hot{animation:none!important}
+}
+
+/* ===== CORE 2.1.23 — физическая жидкость и уровни под аватаром ===== */
+.game-screen .home-avatar-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto}
+.game-screen .home-identity-copy{margin-left:0!important}
+.game-screen .home-level-stack{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px;pointer-events:none;transform:translateY(1px);will-change:transform}
+.game-screen .home-level-item{display:flex;align-items:baseline;justify-content:center;gap:3px;font-size:6px;line-height:1;letter-spacing:1.2px;color:#686d84;animation:levelWeightA 5.4s ease-in-out infinite}
+.game-screen .home-level-item small{font-size:5px;letter-spacing:1px;color:#62677e}
+.game-screen .home-level-item b{font-size:8px;letter-spacing:.4px;color:#b9b2ff;text-shadow:0 0 8px rgba(153,140,255,.28)}
+.game-screen .home-level-item.core-level{animation:levelWeightB 6.2s ease-in-out infinite;animation-delay:-1.8s}
+.game-screen .core-button{transform:translate3d(var(--float-x),var(--float-y),0)!important}
+.game-screen .core-button:active{transform:translate3d(var(--float-x),var(--float-y),0)!important}
+.game-screen .core-fluid-surface{position:absolute;left:50%;top:50%;width:100%;height:100%;transform:translate(-50%,-50%);z-index:7;pointer-events:none;overflow:visible;opacity:.82}
+.game-screen .core-button .core-volume-a,.game-screen .core-button .core-volume-b,.game-screen .core-button .core-volume-c,.game-screen .core-button .core-nucleus{animation:none!important}
+.game-screen .core-button.liquid-hit::before,.game-screen .core-button.liquid-hit .core-volume-a,.game-screen .core-button.liquid-hit .core-volume-b,.game-screen .core-button.liquid-hit .core-volume-c{animation:none!important}
+@keyframes levelWeightA{0%,100%{transform:translate3d(-1px,0,0);opacity:.72}50%{transform:translate3d(1.5px,-1px,0);opacity:.94}}
+@keyframes levelWeightB{0%,100%{transform:translate3d(1px,0,0);opacity:.68}50%{transform:translate3d(-1.5px,-1.2px,0);opacity:.92}}
+@media(prefers-reduced-motion:reduce){
+ .game-screen .home-level-item{animation:none!important}
+ .game-screen .core-fluid-surface{opacity:.58}
+}
+
+/* ===== CORE 2.1.24 — спокойное жидкое ядро и новая шапка ===== */
+.game-screen .core-fluid-canvas,
+.game-screen .core-fluid-surface{display:none!important}
+
+/* Старые внутренние геометрические элементы больше не являются частью жидкости. */
+.game-screen .core-button .core-atom,
+.game-screen .core-button .core-crystal,
+.game-screen .core-button .core-shell-ring{display:none!important}
+
+/* Объём создаётся светом, внутренним затемнением и несколькими мягкими слоями. */
+.game-screen .core-button{
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:46% 54% 51% 49% / 53% 45% 55% 47%!important;
+  filter:drop-shadow(0 16px 22px rgba(0,0,0,.42)) drop-shadow(0 0 24px rgba(91,78,255,.18));
+}
+.game-screen .core-button::before{
+  width:96%;height:96%;
+  border:1px solid rgba(202,196,255,.36)!important;
+  border-radius:46% 54% 51% 49% / 53% 45% 55% 47%!important;
+  background:
+    radial-gradient(ellipse at 27% 21%,rgba(255,255,255,.25),transparent 17%),
+    radial-gradient(ellipse at 72% 70%,rgba(66,225,255,.14),transparent 30%),
+    radial-gradient(ellipse at 45% 47%,rgba(137,113,255,.28),rgba(48,39,130,.25) 43%,rgba(5,7,18,.94) 82%);
+  box-shadow:
+    inset 12px 10px 26px rgba(255,255,255,.08),
+    inset -20px -22px 34px rgba(0,0,0,.48),
+    inset 0 0 42px rgba(117,102,255,.18),
+    0 0 20px rgba(112,99,255,.34),
+    0 0 55px rgba(92,78,255,.14),
+    0 18px 38px rgba(0,0,0,.5);
+  animation:coreLiquidShell 10s ease-in-out infinite;
+  transform:translate(-50%,-50%);
+}
+.game-screen .core-button::after{
+  width:82%;height:82%;
+  border:0!important;
+  border-radius:52% 48% 44% 56% / 48% 57% 43% 52%!important;
+  background:
+    radial-gradient(ellipse at 36% 34%,rgba(228,224,255,.13),transparent 23%),
+    radial-gradient(ellipse at 66% 59%,rgba(74,225,255,.12),transparent 31%),
+    conic-gradient(from 28deg,rgba(126,109,255,.11),transparent 20%,rgba(78,220,255,.08) 38%,transparent 57%,rgba(158,140,255,.10) 76%,transparent 90%);
+  box-shadow:inset 0 0 30px rgba(104,89,255,.13),inset -10px -12px 24px rgba(0,0,0,.22);
+  filter:blur(1.2px);
+  animation:coreLiquidInner 8.2s ease-in-out infinite reverse;
+}
+.game-screen .core-button .core-volume{
+  border:0!important;
+  mix-blend-mode:screen;
+  will-change:transform,border-radius;
+}
+.game-screen .core-button .core-volume-a{
+  width:77%;height:75%;
+  opacity:.9;
+  background:
+    radial-gradient(ellipse at 34% 29%,rgba(242,238,255,.24),rgba(135,112,255,.15) 27%,rgba(57,45,145,.08) 53%,transparent 73%),
+    radial-gradient(ellipse at 72% 67%,rgba(84,225,255,.09),transparent 43%);
+  filter:blur(3px);
+  animation:coreLiquidA 8.4s ease-in-out infinite;
+}
+.game-screen .core-button .core-volume-b{
+  width:63%;height:82%;
+  opacity:.82;
+  background:
+    radial-gradient(ellipse at 62% 43%,rgba(86,230,255,.17),rgba(108,88,255,.10) 31%,transparent 68%),
+    radial-gradient(ellipse at 35% 72%,rgba(137,116,255,.09),transparent 44%);
+  filter:blur(4px);
+  animation:coreLiquidB 9.6s ease-in-out infinite reverse;
+}
+.game-screen .core-button .core-volume-c{
+  width:84%;height:54%;
+  opacity:.68;
+  background:radial-gradient(ellipse at 47% 50%,rgba(179,163,255,.13),rgba(82,214,255,.06) 35%,transparent 69%);
+  filter:blur(5px);
+  animation:coreLiquidC 10.5s ease-in-out infinite;
+}
+.game-screen .core-button .core-nucleus{
+  width:25%;height:25%;
+  border:0!important;
+  background:radial-gradient(ellipse at 32% 24%,#fff 0 4%,#e5e1ff 11%,#aaa0ff 27%,#7064e4 46%,#302876 70%,#080a19 100%);
+  box-shadow:
+    0 0 18px rgba(161,149,255,.82),
+    0 0 48px rgba(100,85,255,.28),
+    inset 7px 8px 14px rgba(255,255,255,.16),
+    inset -9px -11px 17px rgba(0,0,0,.48);
+  animation:coreLiquidNucleus 6.2s ease-in-out infinite;
+}
+.game-screen .core-button .core-nucleus-hot{display:block!important;opacity:.72}
+.game-screen .core-button.core-hit::before,
+.game-screen .core-button.core-hit::after,
+.game-screen .core-button.core-hit .core-volume-a,
+.game-screen .core-button.core-hit .core-volume-b,
+.game-screen .core-button.core-hit .core-volume-c{animation:inherit!important}
+
+@keyframes coreLiquidShell{
+  0%,100%{border-radius:46% 54% 51% 49% / 53% 45% 55% 47%;transform:translate(-50%,-50%) rotate(-1deg) scale(1,1)}
+  25%{border-radius:53% 47% 44% 56% / 46% 58% 42% 54%;transform:translate(-50%,-50%) rotate(1deg) scale(1.012,.992)}
+  50%{border-radius:42% 58% 57% 43% / 58% 42% 53% 47%;transform:translate(-50%,-50%) rotate(-1.3deg) scale(.994,1.016)}
+  75%{border-radius:58% 42% 47% 53% / 44% 55% 45% 56%;transform:translate(-50%,-50%) rotate(.7deg) scale(1.008,.997)}
+}
+@keyframes coreLiquidInner{
+  0%,100%{border-radius:52% 48% 44% 56% / 48% 56% 44% 52%;transform:translate(-50%,-50%) rotate(0deg) scale(1)}
+  50%{border-radius:43% 57% 55% 45% / 57% 43% 57% 43%;transform:translate(-50%,-50%) rotate(12deg) scale(1.025,.978)}
+}
+@keyframes coreLiquidA{
+  0%,100%{border-radius:49% 51% 44% 56% / 55% 44% 56% 45%;transform:translate(-50%,-50%) rotate(-7deg) scale(1,.985)}
+  33%{border-radius:58% 42% 52% 48% / 43% 57% 47% 53%;transform:translate(-50%,-50%) rotate(5deg) scale(.975,1.025)}
+  66%{border-radius:43% 57% 59% 41% / 58% 46% 54% 42%;transform:translate(-50%,-50%) rotate(-10deg) scale(1.02,.98)}
+}
+@keyframes coreLiquidB{
+  0%,100%{border-radius:45% 55% 53% 47% / 57% 43% 57% 43%;transform:translate(-50%,-50%) rotate(10deg) scale(.985,1.015)}
+  50%{border-radius:58% 42% 45% 55% / 43% 57% 45% 55%;transform:translate(-50%,-50%) rotate(-9deg) scale(1.025,.975)}
+}
+@keyframes coreLiquidC{
+  0%,100%{border-radius:52% 48% 56% 44% / 46% 56% 44% 54%;transform:translate(-50%,-50%) rotate(-4deg) scale(1.01,.975)}
+  50%{border-radius:40% 60% 43% 57% / 59% 41% 56% 44%;transform:translate(-50%,-50%) rotate(9deg) scale(.975,1.03)}
+}
+@keyframes coreLiquidNucleus{
+  0%,100%{transform:translate(-50%,-50%) scale(1,.98);filter:brightness(1)}
+  50%{transform:translate(-50%,-50%) scale(1.035,.975);filter:brightness(1.07)}
+}
+
+/* Уровни под аватаром: два самостоятельных невесомых мини-блока в стиле баланса. */
+.game-screen .home-avatar-wrap{align-items:flex-start;gap:7px}
+.game-screen .home-level-stack{display:flex;flex-direction:column;align-items:stretch;gap:5px;width:108px;min-width:108px;margin-left:0;transform:none}
+.game-screen .home-level-item{
+  width:108px;min-height:32px;box-sizing:border-box;
+  display:grid;grid-template-columns:30px 1fr;align-items:center;column-gap:7px;
+  padding:5px 8px 5px 6px;
+  border:1px solid rgba(135,139,190,.12);
+  border-radius:13px;
+  background:rgba(14,16,29,.50);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 7px 18px rgba(0,0,0,.18);
+  animation:levelWeightA 5.4s ease-in-out infinite;
+}
+.game-screen .home-level-item.core-level{animation:levelWeightB 6.2s ease-in-out infinite;animation-delay:-1.8s}
+.game-screen .home-level-item .level-icon{width:30px;height:30px;display:grid;place-items:center;color:#a89dff;font-size:14px;text-shadow:0 0 11px rgba(127,117,255,.72)}
+.game-screen .home-level-item.core-level .level-icon{color:#69dfff;text-shadow:0 0 11px rgba(105,224,255,.58)}
+.game-screen .home-level-item .level-copy{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.game-screen .home-level-item small{font-size:6px;line-height:1;font-weight:900;letter-spacing:1.3px;color:#62687d}
+.game-screen .home-level-item b{font-size:13px;line-height:1;font-weight:900;letter-spacing:.2px;color:#d1ccff;text-shadow:0 0 8px rgba(153,140,255,.28)}
+@keyframes levelWeightA{0%,100%{transform:translate3d(-1px,0,0);opacity:.74}50%{transform:translate3d(1.5px,-1px,0);opacity:.96}}
+@keyframes levelWeightB{0%,100%{transform:translate3d(1px,0,0);opacity:.70}50%{transform:translate3d(-1.5px,-1.2px,0);opacity:.94}}
+
+/* Имя сверху, идентификатор сразу под ним; аватар не меняется. */
+.game-screen .home-identity{align-items:flex-start}
+.game-screen .home-identity-copy{padding-top:1px;gap:4px}
+.game-screen .home-identity-copy strong{order:1}
+.game-screen .home-identity-copy span{order:2;display:block;font-size:6px;line-height:1;letter-spacing:1.5px;color:#62677d}
+
+@media(max-width:390px){
+  .game-screen .home-level-stack{width:94px;min-width:94px}
+  .game-screen .home-level-item{width:94px;grid-template-columns:27px 1fr;column-gap:6px;padding:5px 7px 5px 5px}
+  .game-screen .home-level-item .level-icon{width:27px;height:27px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .game-screen .core-button::before,.game-screen .core-button::after,
+  .game-screen .core-button .core-volume,.game-screen .core-button .core-nucleus,
+  .game-screen .home-level-item{animation:none!important}
+}
+
+/* ===== CORE 2.1.25 — уровни в том же формате, что и ресурсы ===== */
+.game-screen .home-avatar-wrap{align-items:flex-start;gap:7px}
+.game-screen .home-level-stack{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  width:38px;
+  min-width:38px;
+  margin:0;
+  transform:none;
+}
+.game-screen .home-level-item,
+.game-screen .home-level-item.core-level{
+  width:38px;
+  min-height:42px;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:3px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  box-shadow:none;
+  animation:levelWeightA 5.4s ease-in-out infinite;
+}
+.game-screen .home-level-item.core-level{animation:levelWeightB 6.2s ease-in-out infinite;animation-delay:-1.8s}
+.game-screen .home-level-item .level-icon{
+  width:25px;
+  height:25px;
+  flex:0 0 25px;
+  display:grid;
+  place-items:center;
+  color:#bcb5ff;
+  font-size:14px;
+  text-shadow:0 0 7px currentColor;
+}
+.game-screen .home-level-item.core-level .level-icon{
+  color:#69dfff;
+  text-shadow:0 0 7px currentColor;
+}
+.game-screen .home-level-item .level-copy{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:2px;
+  text-align:center;
+}
+.game-screen .home-level-item small{
+  font-size:5px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:.9px;
+  color:#666b80;
+  white-space:nowrap;
+}
+.game-screen .home-level-item b{
+  font-size:13px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.1px;
+  color:#d8d5e9;
+  text-shadow:0 0 7px rgba(153,140,255,.25);
+}
+@media(max-width:390px){
+  .game-screen .home-level-stack{width:38px;min-width:38px}
+  .game-screen .home-level-item,.game-screen .home-level-item.core-level{width:38px;min-height:42px}
+  .game-screen .home-level-item .level-icon{width:25px;height:25px;flex-basis:25px;font-size:14px}
+}
+
+/* CORE 2.1.26 — уровни чуть плотнее */
+.game-screen .home-level-stack{gap:4px}
+
+/* CORE 2.1.27 — уровни ещё ближе друг к другу */
+.game-screen .home-level-stack{gap:1px}
+
+/* ===== CORE 2.2 — аномалии: лёгкий событийный слой ===== */
+#core-anomaly{position:fixed;inset:0;z-index:180;display:grid;place-items:center;pointer-events:none;opacity:0;transition:opacity .22s ease;background:radial-gradient(circle at 50% 45%,rgba(102,91,255,.08),transparent 36%,rgba(0,0,0,.18) 100%)}
+#core-anomaly.show{opacity:1;pointer-events:auto}
+#core-anomaly .core-anomaly-panel{width:min(86vw,340px);padding:20px 18px 16px;border:1px solid rgba(154,145,255,.22);border-radius:22px;background:rgba(6,7,18,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 22px 70px rgba(0,0,0,.55),0 0 40px rgba(92,80,255,.12);text-align:center}
+#core-anomaly small{display:block;font-size:7px;letter-spacing:2px;color:#7f86a0;margin-bottom:8px}
+#core-anomaly strong{display:block;font-size:17px;letter-spacing:1px;color:#e8e5ff;text-shadow:0 0 14px rgba(151,138,255,.35)}
+#core-anomaly span{display:block;margin:8px auto 16px;max-width:280px;font-size:10px;line-height:1.5;color:#8e93aa}
+#core-anomaly .core-anomaly-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#core-anomaly button{min-height:40px;padding:8px 10px;border:1px solid rgba(150,143,244,.2);border-radius:12px;background:rgba(16,17,34,.54);color:#c8c5df;font-size:8px;font-weight:800;letter-spacing:1px;box-shadow:inset 0 0 18px rgba(139,127,255,.035),0 8px 22px rgba(0,0,0,.25)}
+#core-anomaly button:active{transform:translateY(1px);background:rgba(31,30,60,.62)}
+@media(max-width:390px){#core-anomaly .core-anomaly-panel{width:min(90vw,330px);padding:18px 14px 14px}#core-anomaly strong{font-size:15px}}
+@media(prefers-reduced-motion:reduce){#core-anomaly{transition:none}#core-anomaly .core-anomaly-panel{backdrop-filter:none;-webkit-backdrop-filter:none}}
+
+
+/* ===== CORE 2.2.3 — живой отклик аномалий ===== */
+.game-screen.anomaly-flow{--anomaly-strength:1}
+.game-screen.anomaly-overload{--anomaly-strength:1}
+.game-screen.anomaly-quiet{--anomaly-strength:1}
+.game-screen.anomaly-rupture{--anomaly-strength:1}
+.game-screen.anomaly-flow .core-state-panel.stability,
+.game-screen.anomaly-rupture .core-state-panel.stability{filter:drop-shadow(0 8px 13px rgba(0,0,0,.55)) drop-shadow(0 0 12px rgba(139,128,255,.34))}
+.game-screen.anomaly-overload .core-state-panel.heat{filter:drop-shadow(0 8px 13px rgba(0,0,0,.55)) drop-shadow(0 0 15px rgba(255,132,196,.38))}
+.game-screen.anomaly-quiet .core-state-panel{opacity:.72}
+.game-screen.anomaly-flow .core-space-canvas{opacity:.9;filter:saturate(1.08) contrast(1.02)}
+.game-screen.anomaly-overload .core-space-canvas{opacity:1;filter:saturate(1.28) contrast(1.08)}
+.game-screen.anomaly-quiet .core-space-canvas{opacity:.72;filter:saturate(.82) contrast(.98)}
+.game-screen.anomaly-rupture .core-space-canvas{opacity:.94;filter:saturate(1.12) contrast(1.06)}
+.game-screen.anomaly-flow .core-button::before{filter:saturate(1.16) hue-rotate(3deg)}
+.game-screen.anomaly-overload .core-button::before{filter:saturate(1.3) brightness(1.08)}
+.game-screen.anomaly-quiet .core-button::before{filter:saturate(.72) brightness(.9)}
+.game-screen.anomaly-rupture .core-button::before{filter:saturate(1.18) contrast(1.08)}
+.game-screen.anomaly-overload .core-button .core-nucleus{box-shadow:0 0 22px rgba(161,149,255,.96),0 0 56px rgba(100,85,255,.44),inset 6px 7px 13px rgba(255,255,255,.18),inset -7px -9px 15px rgba(0,0,0,.45)}
+.game-screen.anomaly-quiet .core-button .core-nucleus{opacity:.72}
+.game-screen.anomaly-rupture .core-button .core-nucleus{filter:saturate(1.18) contrast(1.14)}
+
+/* CORE 2.2.7 — логика уровня:
+   текущий уровень получает перелистывание и мини-салют;
+   следующий уровень — зелёный неоновый ориентир и не перелистывается. */
+.game-screen .upgrade-level-block.next .level-roller{
+  color:#8dff9d;
+  text-shadow:0 0 7px rgba(96,255,126,.38),0 0 18px rgba(72,255,105,.18);
+}
+.game-screen .upgrade-level-block.next small{
+  color:rgba(112,255,137,.72);
+}
+
+/* CORE 2.2.13 — фикс кнопки ИССЛЕДОВАНИЯ в радиальном меню.
+   Исследования всегда занимают отдельную верхнюю позицию и не перекрываются
+   другими пунктами меню. */
+@media(max-width:700px){
+  .game-screen .core-radial-menu.is-open .item-quests{--x:-216px;--y:-124px;z-index:4}
+  .game-screen .core-radial-menu.is-open .item-upgrade{--x:-144px;--y:-124px;z-index:4}
+  .game-screen .core-radial-menu.is-open .item-shop{--x:-72px;--y:-124px;z-index:4}
+  .game-screen .core-radial-menu.is-open .item-research{--x:0;--y:-124px;z-index:5;display:flex!important;visibility:visible!important;opacity:1!important}
+  .game-screen .core-radial-menu.is-open .item-resonance{--x:-180px;--y:-58px;z-index:4}
+  .game-screen .core-radial-menu.is-open .item-inventory{--x:-108px;--y:-58px;z-index:4}
+  .game-screen .core-radial-menu.is-open .item-season{--x:-36px;--y:-58px;z-index:4}
+}
+@media(min-width:701px){
+  .game-screen .core-radial-menu.is-open .item-research{transform:translate(-127px,-127px) scale(1);display:flex!important;visibility:visible!important;opacity:1!important;z-index:5}
+}
+
+/* ===== CORE 2.2.14 — радиальное меню: 4 пункта в верхнем ряду ===== */
+@media(min-width:701px){
+  .game-screen .core-radial-menu.is-open .item-quests{--x:-300px;--y:-138px}
+  .game-screen .core-radial-menu.is-open .item-upgrade{--x:-220px;--y:-138px}
+  .game-screen .core-radial-menu.is-open .item-shop{--x:-140px;--y:-138px}
+  .game-screen .core-radial-menu.is-open .item-research{--x:-60px;--y:-138px}
+}
+@media(max-width:700px){
+  .game-screen .core-radial-menu.is-open .item-quests{--x:-255px;--y:-124px}
+  .game-screen .core-radial-menu.is-open .item-upgrade{--x:-190px;--y:-124px}
+  .game-screen .core-radial-menu.is-open .item-shop{--x:-125px;--y:-124px}
+  .game-screen .core-radial-menu.is-open .item-research{--x:-60px;--y:-124px}
+}
+/* Исследовательское дерево: больше воздуха между уровнями и безопасные ширины узлов. */
+#research-screen .research-tree-v2{height:1200px;min-height:1200px}
+#research-screen .research-links{height:1200px}
+#research-screen .research-node{top:calc(var(--layer) * 150px);width:88px;min-height:88px}
+@media(max-width:390px){
+  #research-screen .research-tree-v2{height:1200px;min-height:1200px}
+  #research-screen .research-node{width:82px}
+}

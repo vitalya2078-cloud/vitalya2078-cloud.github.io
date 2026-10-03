@@ -1,0 +1,553 @@
+/* CORE 1.9 — стили внутренних экранов и финальных навигационных исправлений */
+/* ===== CORE 1.1 — полноэкранные разделы ===== */
+.common-ui.is-home{display:none!important}
+.common-ui .header{left:0;right:0;top:0;height:58px;padding:max(8px,env(safe-area-inset-top)) 14px 8px;background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
+.common-ui .header-back{pointer-events:auto;position:absolute;left:14px;top:max(9px,calc(env(safe-area-inset-top) + 7px));width:42px;height:42px;border-radius:14px;background:rgba(10,12,23,.64);border-color:rgba(145,145,190,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.common-ui .profile{display:block!important}.common-ui .profile-text,.common-ui .avatar,.common-ui .balance{display:none!important}
+.common-ui .header-context{position:absolute;left:50%;top:max(15px,calc(env(safe-area-inset-top) + 13px));transform:translateX(-50%);min-width:0}
+.common-ui .header-context strong{font-size:10px;letter-spacing:2.4px}.common-ui .header-context span{font-size:6px;letter-spacing:1px;color:#555b71}
+.common-ui .bottom-nav{display:none!important}
+.common-ui .sub-content{height:100%;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 18px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.common-ui .sub-screen{overflow:hidden}
+.common-ui .sub-screen-bg{background:radial-gradient(circle at 50% 6%,rgba(101,91,255,.11),transparent 29%),linear-gradient(180deg,#070812,#05060c)}
+.common-ui .feature-screen-head{padding-top:40px}
+.common-ui .feature-screen-head h2{font-size:23px}
+.common-ui .feature-screen-head small{font-size:7px}
+#upgrade-screen .sub-content,#quests-screen .sub-content,#inventory-screen .sub-content,#settings-screen .sub-content,#profile-screen .sub-content{padding-top:calc(env(safe-area-inset-top) + 22px)}
+#upgrade-screen .upgrade-title-row{padding-top:34px}.upgrade-content{padding-bottom:24px!important}
+
+/* Новый профиль: одна понятная карточка + переключатель разделов. */
+.profile-hero-v2{margin-top:34px;min-height:112px;display:grid;grid-template-columns:62px minmax(0,1fr) auto;align-items:center;gap:12px;padding:15px 14px}
+.profile-hero-v2 .profile-avatar{width:62px;height:62px;border-radius:18px}.profile-energy{text-align:right}.profile-energy small{display:block;font-size:6px;letter-spacing:1.5px;color:#62687f}.profile-energy strong{display:block;margin-top:5px;font-size:19px;color:#d9d4ff}
+.profile-stats{margin-top:9px}.profile-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:16px 0 10px;padding:4px;border:1px solid rgba(145,145,190,.08);border-radius:14px;background:rgba(10,12,22,.65)}.profile-switch button{height:38px;border-radius:10px;color:#62677d;font-size:7px;font-weight:900;letter-spacing:1.5px}.profile-switch button.active{color:#e6e2ff;background:rgba(125,111,255,.16);box-shadow:inset 0 0 0 1px rgba(140,124,255,.12)}.profile-tab{display:none}.profile-tab.active{display:block}.journal-summary{display:flex;justify-content:space-between;align-items:center;margin:7px 3px 8px}.journal-summary span{font-size:7px;letter-spacing:1.8px;color:#62687f}.journal-summary small{font-size:6px;color:#4d5368}.log-list{border:1px solid rgba(145,145,190,.08);border-radius:16px;background:rgba(10,12,23,.46);overflow:hidden}
+
+@media(max-width:390px){.common-ui .header-back{left:10px}.profile-hero-v2{grid-template-columns:56px minmax(0,1fr);margin-top:34px}.profile-hero-v2 .profile-avatar{width:56px;height:56px}.profile-energy{grid-column:2;text-align:left}.profile-energy strong{font-size:15px}.profile-stats .stat-card{padding:12px}.profile-stats .stat-card strong{font-size:18px}}
+
+/* ===== CORE 1.4 — ВНУТРЕННИЕ РАЗДЕЛЫ: ТОЛЬКО КНОПКА НАЗАД ===== */
+.common-ui .header.contextual-header{
+  position:absolute!important;
+  top:max(10px,calc(env(safe-area-inset-top) + 8px))!important;
+  left:10px!important;
+  right:auto!important;
+  width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  display:block!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  z-index:100!important;
+}
+.common-ui .header.contextual-header .profile,
+.common-ui .header.contextual-header .header-context,
+.common-ui .header.contextual-header .balance{
+  display:none!important;
+}
+.common-ui .header.contextual-header .header-back{
+  display:grid!important;
+  position:relative!important;
+  width:40px!important;
+  height:40px!important;
+  border:1px solid rgba(145,145,190,.14)!important;
+  border-radius:50%!important;
+  background:rgba(12,14,26,.54)!important;
+  box-shadow:0 6px 22px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  color:rgba(230,228,248,.88)!important;
+}
+.common-ui .header.contextual-header .header-back i{font-size:13px!important}
+.common-ui .header.contextual-header .header-back:active{transform:scale(.94)}
+
+/* Внутренние экраны больше не резервируют место под псевдошапку. */
+.common-ui .sub-content{
+  height:100%!important;
+  padding-top:max(60px,calc(env(safe-area-inset-top) + 52px))!important;
+  padding-bottom:max(18px,calc(env(safe-area-inset-bottom) + 18px))!important;
+}
+.common-ui .feature-screen{
+  padding-top:max(60px,calc(env(safe-area-inset-top) + 52px))!important;
+}
+
+@media(max-width:430px){
+  .common-ui .header.contextual-header{
+    top:max(8px,calc(env(safe-area-inset-top) + 6px))!important;
+    left:8px!important;
+  }
+  .common-ui .header.contextual-header .header-back{width:38px!important;height:38px!important}
+  .common-ui .sub-content{padding-top:max(56px,calc(env(safe-area-inset-top) + 48px))!important}
+  .common-ui .feature-screen{padding-top:max(56px,calc(env(safe-area-inset-top) + 48px))!important}
+}
+
+/* ===== CORE 1.4 — чистая навигация разделов ===== */
+/* На главном экране общий каркас не рисует шапку: там используется собственная композиция. */
+.common-ui .header{display:none!important}
+
+/* Внутри разделов сверху остаётся только кнопка назад. */
+.common-ui:not(.is-home) .header{
+  display:block!important;
+  position:absolute!important;
+  top:max(12px,env(safe-area-inset-top) + 8px)!important;
+  left:12px!important;
+  right:auto!important;
+  width:42px!important;
+  height:42px!important;
+  z-index:90!important;
+}
+.common-ui:not(.is-home) .header .profile,
+.common-ui:not(.is-home) .header .header-context,
+.common-ui:not(.is-home) .header .balance{
+  display:none!important;
+}
+.common-ui:not(.is-home) .header .header-back{
+  display:grid!important;
+  position:relative!important;
+  width:42px!important;
+  height:42px!important;
+  margin:0!important;
+  border-radius:50%!important;
+  background:rgba(12,14,27,.52)!important;
+  border:1px solid rgba(150,150,205,.16)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  backdrop-filter:blur(14px)!important;
+  -webkit-backdrop-filter:blur(14px)!important;
+}
+.common-ui:not(.is-home) .header .header-back i{font-size:14px!important}
+
+/* Контент начинается ниже единственной кнопки и больше не зависит от шапки. */
+.sub-content,
+#profile-screen .sub-content,
+#settings-screen .sub-content,
+#upgrade-screen .sub-content,
+#quests-screen .sub-content,
+#inventory-screen .sub-content{
+  padding-top:max(68px,calc(env(safe-area-inset-top) + 58px))!important;
+  padding-bottom:max(24px,calc(env(safe-area-inset-bottom) + 24px))!important;
+}
+
+/* Нижняя навигация не принадлежит внутренним разделам. */
+.common-ui:not(.is-home) .bottom-nav{display:none!important}
+
+
+/* ===== CORE 1.4 FIX — отдельная кнопка назад поверх разделов ===== */
+#section-back{
+  display:none;
+  position:fixed!important;
+  top:max(10px,calc(env(safe-area-inset-top) + 8px))!important;
+  left:10px!important;
+  z-index:10000!important;
+  width:42px!important;
+  height:42px!important;
+  padding:0!important;
+  margin:0!important;
+  place-items:center!important;
+  border:1px solid rgba(150,150,205,.16)!important;
+  border-radius:50%!important;
+  background:rgba(10,12,24,.62)!important;
+  color:rgba(235,232,250,.92)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)!important;
+  backdrop-filter:blur(14px)!important;
+  -webkit-backdrop-filter:blur(14px)!important;
+  pointer-events:auto!important;
+  cursor:pointer;
+}
+#section-back:not(.hidden){display:grid!important}
+#section-back i{font-size:14px!important}
+#section-back:active{transform:scale(.93)}
+.common-ui:not(.is-home) #section-back{display:grid!important}
+.common-ui.is-home #section-back{display:none!important}
+@media(max-width:430px){
+  #section-back{top:max(8px,calc(env(safe-area-inset-top) + 6px))!important;left:8px!important;width:38px!important;height:38px!important}
+  #section-back i{font-size:13px!important}
+}
+
+
+/* ===== CORE 1.5 — чистая структура разделов ===== */
+/* Старый общий header удалён из разметки. Внутри разделов остаётся только #section-back. */
+.common-ui{position:static!important;display:block!important;pointer-events:none!important}
+.common-ui #section-back{pointer-events:auto!important}
+.common-ui:not(.is-home) #section-back{display:grid!important}
+.common-ui.is-home #section-back{display:none!important}
+#section-back{top:max(7px,calc(env(safe-area-inset-top) + 5px))!important;left:8px!important;width:38px!important;height:38px!important}
+#section-back i{font-size:13px!important}
+
+/* Минимальный безопасный отступ: кнопка не перекрывает содержимое, но не съедает верхнюю треть экрана. */
+.common-ui .sub-content,
+.common-ui #profile-screen .sub-content,
+.common-ui #settings-screen .sub-content,
+.common-ui #upgrade-screen .sub-content,
+.common-ui #quests-screen .sub-content,
+.common-ui #inventory-screen .sub-content,
+.sub-content{
+  padding-top:max(48px,calc(env(safe-area-inset-top) + 44px))!important;
+  padding-bottom:max(18px,calc(env(safe-area-inset-bottom) + 18px))!important;
+}
+.feature-screen{padding-top:max(48px,calc(env(safe-area-inset-top) + 44px))!important}
+#upgrade-screen .upgrade-title-row{padding-top:0!important}
+.profile-hero-v2{margin-top:0!important}
+.feature-screen-head{padding-top:0!important}
+
+/* На внутренних экранах не должно оставаться ни меню, ни старого контекстного каркаса. */
+.common-ui .header,.common-ui .bottom-nav{display:none!important}
+
+@media(max-width:430px){
+  #section-back{top:max(7px,calc(env(safe-area-inset-top) + 5px))!important;left:8px!important;width:38px!important;height:38px!important}
+  .common-ui .sub-content,.sub-content{padding-top:max(48px,calc(env(safe-area-inset-top) + 44px))!important}
+}
+
+
+/* ===== CORE 1.6 — плавное переключение экранов ===== */
+#screen-transition{
+  position:fixed;
+  inset:0;
+  z-index:99990;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(circle at 50% 45%,rgba(91,82,255,.08),transparent 34%),rgba(3,5,12,.28);
+  backdrop-filter:blur(0px);
+  -webkit-backdrop-filter:blur(0px);
+  transition:opacity .18s ease,backdrop-filter .18s ease,-webkit-backdrop-filter .18s ease;
+}
+#screen-transition.show{
+  opacity:1;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+@media (prefers-reduced-motion: reduce){
+  #screen-transition{transition:none!important}
+}
+
+/* ===== CORE 2.3 — ИССЛЕДОВАНИЯ: вертикальное энергетическое дерево ===== */
+#research-screen .feature-screen{padding-top:max(48px,calc(env(safe-area-inset-top) + 42px))!important;padding-left:12px!important;padding-right:12px!important}
+#research-screen .feature-screen-head{display:none!important}
+#research-screen .feature-screen-body{height:100%;min-height:0;display:flex;flex-direction:column}
+.research-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:4px 8px 10px;position:relative;z-index:5}
+.research-page-head small{display:block;font-size:7px;letter-spacing:2.2px;color:#6c7289}
+.research-page-head h2{margin:4px 0 3px;font-size:22px;line-height:1;letter-spacing:3px;color:#e9e6ff;font-weight:900}
+.research-page-head span{font-size:6px;letter-spacing:1.7px;color:#4f566d}
+.research-energy{text-align:right;min-width:72px;padding-top:3px}
+.research-energy small{font-size:6px;letter-spacing:1.6px;color:#555c73}
+.research-energy strong{display:block;margin-top:4px;font-size:15px;color:#d9d4ff;text-shadow:0 0 14px rgba(137,121,255,.24)}
+.research-viewport{position:relative;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 0 34px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.research-viewport::-webkit-scrollbar{display:none}
+.research-tree-v2{position:relative;width:100%;height:970px;min-height:970px;margin:0 auto}
+.research-links{position:absolute;inset:0;width:100%;height:970px;overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px rgba(120,110,255,.12))}
+.research-link{fill:none;stroke:rgba(122,116,184,.17);stroke-width:1.1;vector-effect:non-scaling-stroke;transition:stroke .45s ease,opacity .45s ease,filter .45s ease;opacity:.72}
+.research-link.active{stroke:rgba(119,244,187,.48);filter:drop-shadow(0 0 5px rgba(93,255,175,.25));opacity:1}
+.research-nodes{position:absolute;inset:0}
+.research-node{position:absolute;left:var(--x);top:calc(var(--layer) * 132px);transform:translateX(-50%);width:112px;min-height:88px;padding:0 2px;background:transparent;border:0;color:inherit;text-align:center;cursor:pointer;z-index:2;transition:transform .45s cubic-bezier(.2,.75,.2,1),opacity .35s ease}
+.research-node:hover{transform:translateX(-50%) translateY(-2px)}
+.research-node-glow{position:absolute;left:50%;top:8px;width:54px;height:54px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(122,109,255,.18),transparent 68%);opacity:.45;transition:opacity .35s ease,transform .45s ease}
+.research-node-core{position:relative;margin:0 auto;display:grid;place-items:center;width:44px;height:44px;border:1px solid rgba(146,137,219,.25);border-radius:50%;background:radial-gradient(circle at 38% 32%,rgba(131,119,255,.19),rgba(8,10,21,.74) 65%);box-shadow:0 7px 26px rgba(0,0,0,.24),inset 0 0 18px rgba(123,111,255,.07);color:#a8a1d8;transition:all .45s ease}
+.research-node-core i{font-size:13px;filter:drop-shadow(0 0 7px rgba(151,139,255,.25))}
+.research-node strong{display:block;margin-top:7px;font-size:6px;line-height:1.3;letter-spacing:1px;color:#9b9ab4;font-weight:900;white-space:normal}
+.research-node small{display:block;margin-top:3px;font-size:5px;letter-spacing:.7px;color:#51586f;white-space:normal}
+.research-node.locked{opacity:.36}
+.research-node.locked .research-node-core{border-color:rgba(129,127,163,.14);box-shadow:none}
+.research-node.done{opacity:1}
+.research-node.done .research-node-core{border-color:rgba(92,244,179,.48);background:radial-gradient(circle at 38% 32%,rgba(92,244,179,.22),rgba(8,15,19,.76) 68%);color:#7cf2bd;box-shadow:0 0 24px rgba(77,255,177,.12),inset 0 0 18px rgba(77,255,177,.07)}
+.research-node.done strong{color:#b6f7d8}
+.research-node:not(.locked):not(.done) .research-node-core{border-color:rgba(136,125,255,.46);color:#b4aff3;box-shadow:0 0 22px rgba(113,101,255,.09),inset 0 0 16px rgba(122,108,255,.08)}
+.research-node:not(.locked):not(.done) .research-node-glow{opacity:.8;animation:researchNodeBreath 3.6s ease-in-out infinite}
+@keyframes researchNodeBreath{0%,100%{transform:translateX(-50%) scale(.9);opacity:.38}50%{transform:translateX(-50%) scale(1.08);opacity:.78}}
+.research-detail{position:fixed;left:10px;right:10px;bottom:max(10px,calc(env(safe-area-inset-bottom) + 10px));z-index:1600;pointer-events:none;opacity:0;transform:translateY(18px) scale(.985);transition:opacity .24s ease,transform .32s cubic-bezier(.2,.75,.2,1)}
+.research-detail.show{display:block}
+.research-detail.visible{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.research-detail-inner{position:relative;max-height:min(52vh,430px);overflow:auto;padding:18px 16px 16px;border:1px solid rgba(142,132,221,.16);border-radius:22px;background:linear-gradient(145deg,rgba(10,12,25,.91),rgba(7,9,18,.84));box-shadow:0 18px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.035);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);scrollbar-width:none}
+.research-detail-inner::-webkit-scrollbar{display:none}
+.research-detail-close{position:absolute;right:10px;top:9px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(255,255,255,.035);color:#747991;display:grid;place-items:center}
+.research-detail-icon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;margin-bottom:9px;border:1px solid rgba(135,123,255,.22);background:rgba(112,98,255,.08);color:#a8a1f4;box-shadow:0 0 24px rgba(111,97,255,.09)}
+.research-detail-copy>small{font-size:6px;letter-spacing:1.8px;color:#646b82}
+.research-detail-copy h3{margin:4px 34px 7px 0;font-size:16px;letter-spacing:1.8px;color:#e9e6ff}
+.research-detail-copy p{margin:0;color:#8c91a7;font-size:10px;line-height:1.55}
+.research-detail-section{margin-top:13px;display:grid;gap:5px}
+.research-detail-section>span{font-size:6px;letter-spacing:1.7px;color:#555d74}
+.research-detail-section>strong,.research-detail-section>b{font-size:9px;line-height:1.4;color:#c1c0d2;font-weight:700}
+.research-detail-section>b{color:#9ce9c3}
+.research-detail-meta{display:flex;justify-content:space-between;gap:12px;margin-top:14px;padding-top:10px;border-top:1px solid rgba(145,135,210,.09)}
+.research-detail-meta span{font-size:6px;letter-spacing:1px;color:#565d73}.research-detail-meta b{display:block;margin-top:3px;font-size:9px;color:#d5d2ea}
+.research-action{width:100%;height:42px;margin-top:13px;border:1px solid rgba(123,239,181,.25);border-radius:13px;background:rgba(80,229,159,.07);color:#9bf0c3;font-size:8px;font-weight:900;letter-spacing:1.8px;box-shadow:0 0 24px rgba(70,235,158,.06);transition:transform .16s ease,background .2s ease,opacity .2s ease}
+.research-action:not(:disabled):active{transform:scale(.985)}
+.research-action:disabled{opacity:.55;cursor:default}
+.research-action.done{border-color:rgba(90,235,168,.14);background:rgba(90,235,168,.035);color:#74d7aa}
+@media(max-width:390px){
+  #research-screen .feature-screen{padding-left:8px!important;padding-right:8px!important}
+  .research-page-head{padding-left:6px;padding-right:6px}.research-page-head h2{font-size:20px}.research-energy strong{font-size:14px}
+  .research-tree-v2{height:970px}.research-node{width:98px}.research-node strong{font-size:5.5px}.research-node small{font-size:4.7px}
+}
+@media(prefers-reduced-motion:reduce){.research-node,.research-node-glow,.research-detail,.research-link{animation:none!important;transition:none!important}}
+
+/* CORE 2.2.14 — пространство исследовательского дерева */
+#research-screen .research-tree-v2{height:1200px;min-height:1200px}
+#research-screen .research-links{height:1200px}
+#research-screen .research-node{top:calc(var(--layer) * 150px);width:88px;min-height:88px}
+@media(max-width:390px){#research-screen .research-tree-v2{height:1200px;min-height:1200px}#research-screen .research-node{width:82px}}
+
+/* ===== CORE 2.2.16 — research branch spacing ===== */
+.research-node{width:96px}
+.research-node strong{font-size:5.7px;letter-spacing:.9px}
+
+/* CORE 2.2.16 — контекстная шапка исследований рядом с кнопкой назад */
+#research-screen .research-page-head{
+  position:fixed;
+  top:max(6px,calc(env(safe-area-inset-top) + 4px));
+  left:56px;
+  right:10px;
+  height:38px;
+  min-height:38px;
+  margin:0;
+  padding:0 2px 0 0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  z-index:95;
+  pointer-events:none;
+}
+#research-screen .research-page-head > div:first-child{
+  min-width:0;
+  overflow:hidden;
+}
+#research-screen .research-page-head small{
+  display:block;
+  margin:0 0 2px;
+  font-size:5px;
+  line-height:1;
+  letter-spacing:1.45px;
+  color:rgba(108,114,137,.72);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#research-screen .research-page-head h2{
+  margin:0 0 2px;
+  font-size:11px;
+  line-height:1;
+  letter-spacing:1.9px;
+  color:#e9e6ff;
+  font-weight:900;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#research-screen .research-page-head span{
+  display:block;
+  font-size:5px;
+  line-height:1;
+  letter-spacing:1.15px;
+  color:rgba(79,86,109,.9);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#research-screen .research-energy{
+  min-width:58px;
+  padding:0;
+  text-align:right;
+  white-space:nowrap;
+}
+#research-screen .research-energy small{
+  margin:0;
+  font-size:5px;
+  letter-spacing:1.1px;
+  color:rgba(85,92,115,.9);
+}
+#research-screen .research-energy strong{
+  display:block;
+  margin-top:3px;
+  font-size:11px;
+  line-height:1;
+  color:#d9d4ff;
+  text-shadow:0 0 12px rgba(137,121,255,.24);
+}
+#research-screen .research-viewport{padding-top:2px}
+
+@media(max-width:360px){
+  #research-screen .research-page-head{left:52px;right:7px;gap:6px}
+  #research-screen .research-page-head h2{font-size:10px;letter-spacing:1.5px}
+  #research-screen .research-page-head span{font-size:4.5px;letter-spacing:.9px}
+  #research-screen .research-energy{min-width:52px}
+}
+
+/* ===== CORE 2.2.17 — Профиль оператора: живая космическая система ===== */
+#profile-screen .sub-content{padding-top:max(56px,calc(env(safe-area-inset-top) + 50px))!important;padding-left:14px!important;padding-right:14px!important;background:radial-gradient(circle at 50% 16%,rgba(115,101,255,.12),transparent 30%),radial-gradient(circle at 12% 55%,rgba(70,150,255,.045),transparent 24%)}
+#profile-screen .sub-screen-bg{background:radial-gradient(circle at 50% 18%,rgba(102,91,255,.09),transparent 34%),linear-gradient(180deg,#070812,#04050b)!important}
+#profile-screen .profile-space{position:relative;min-height:154px;padding:16px 2px 12px;overflow:hidden}
+#profile-screen .profile-operator{position:relative;z-index:2;display:grid;grid-template-columns:62px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:78px}
+#profile-screen .profile-avatar-orb{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;position:relative;border:1px solid rgba(154,141,255,.56);background:radial-gradient(circle at 36% 30%,rgba(147,137,255,.48),rgba(31,29,62,.7) 52%,rgba(8,10,20,.88));box-shadow:0 0 30px rgba(102,91,255,.17),inset 0 0 24px rgba(127,116,255,.13);font-weight:900;color:#efedff;animation:profileOrbFloat 7s ease-in-out infinite}
+#profile-screen .profile-avatar-orb:before,#profile-screen .profile-avatar-orb:after{content:"";position:absolute;inset:-7px;border:1px solid rgba(140,124,255,.13);border-radius:50%;transform:rotate(24deg);}
+#profile-screen .profile-avatar-orb:after{inset:-12px;transform:rotate(-38deg);border-color:rgba(103,190,255,.08)}
+#profile-screen .profile-avatar-orb i{position:absolute;right:2px;bottom:4px;width:9px;height:9px;border:2px solid #070812;border-radius:50%;background:#55e7a2;box-shadow:0 0 10px rgba(85,231,162,.8)}
+#profile-screen .profile-kicker{font-size:6px;letter-spacing:2.3px;color:#5d637b}
+#profile-screen .profile-name{margin-top:4px;font-size:14px;letter-spacing:1.7px;color:#ece9ff;font-weight:900}
+#profile-screen .profile-level{margin-top:7px;font-size:6px;letter-spacing:1.1px;color:#666c83;white-space:nowrap}.profile-level b{color:#bdb7ff}.profile-level span{color:#6f63d9;margin:0 4px}
+#profile-screen .profile-live{align-self:start;margin-top:5px;display:flex;align-items:center;gap:5px;font-size:5px;letter-spacing:1.4px;color:#626981;white-space:nowrap}
+#profile-screen .profile-live i{width:6px;height:6px;border-radius:50%;background:#55e7a2;box-shadow:0 0 9px rgba(85,231,162,.75);animation:profileBreath 2.4s ease-in-out infinite}
+#profile-screen .profile-state-line{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding:7px 1px;border-top:1px solid rgba(145,145,190,.08);border-bottom:1px solid rgba(145,145,190,.06);font-size:5.5px;letter-spacing:1.5px;color:#656b82}.profile-state-line b{font-size:7px;color:#bbb6e8;letter-spacing:1px}
+#profile-screen .profile-orbit{position:absolute;border:1px solid rgba(126,113,255,.09);border-radius:50%;pointer-events:none}.profile-orbit-a{width:205px;height:76px;right:-66px;top:-16px;transform:rotate(-18deg)}.profile-orbit-b{width:145px;height:54px;left:-52px;bottom:5px;transform:rotate(22deg);border-color:rgba(76,181,255,.07)!important}
+#profile-screen .profile-metrics{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:2px 0 18px;border-top:1px solid rgba(145,145,190,.06);border-bottom:1px solid rgba(145,145,190,.06)}
+#profile-screen .profile-metrics>div{min-height:61px;padding:12px 9px 9px;border-right:1px solid rgba(145,145,190,.05);position:relative}.profile-metrics>div:nth-child(2n){border-right:0}.profile-metrics small{display:block;font-size:5px;letter-spacing:1.35px;color:#535a72}.profile-metrics strong{display:block;margin-top:7px;font-size:15px;line-height:1;color:#ddd9f8;text-shadow:0 0 14px rgba(137,121,255,.16)}
+#profile-screen .profile-section-head{display:flex;justify-content:space-between;align-items:center;margin:0 2px 9px}.profile-section-head span{font-size:7px;letter-spacing:2px;color:#7a8098}.profile-section-head b{font-size:5px;letter-spacing:1.1px;color:#4e556b}
+#profile-screen .profile-achievements{margin-top:2px}
+#profile-screen .profile-constellation{position:relative;height:245px;overflow:hidden;background:radial-gradient(circle at 50% 50%,rgba(106,93,255,.07),transparent 35%);border-top:1px solid rgba(145,145,190,.055);border-bottom:1px solid rgba(145,145,190,.055)}
+#profile-screen .profile-constellation:before{content:"";position:absolute;inset:18% 10%;background-image:radial-gradient(circle,rgba(255,255,255,.2) 0 1px,transparent 1.5px);background-size:47px 39px;opacity:.14;mask-image:radial-gradient(circle,black 15%,transparent 70%);-webkit-mask-image:radial-gradient(circle,black 15%,transparent 70%)}
+#profile-screen .profile-constellation-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border:1px solid rgba(147,135,255,.3);border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(112,99,255,.17),rgba(9,11,20,.1) 68%);box-shadow:0 0 32px rgba(101,91,255,.12)}
+#profile-screen .profile-constellation-core i{width:11px;height:11px;border-radius:50%;background:#b8b0ff;box-shadow:0 0 18px rgba(167,154,255,.9),0 0 34px rgba(105,92,255,.35);animation:profileBreath 3.2s ease-in-out infinite}.profile-constellation-core span{position:absolute;bottom:-17px;font-size:4.5px;letter-spacing:1.6px;color:#535a70;white-space:nowrap}
+#profile-screen .profile-star{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;border:0;background:transparent;padding:0;z-index:2}.profile-star i{display:block;margin:auto;width:8px;height:8px;border:1px solid rgba(140,129,255,.42);border-radius:50%;background:rgba(20,22,38,.8);box-shadow:0 0 9px rgba(118,105,255,.12);transition:.35s ease}.profile-star span{display:block;margin-top:4px;font-size:4px;letter-spacing:.5px;color:#4d5469;opacity:.75}.profile-star.done i{width:10px;height:10px;background:#9f96ff;border-color:rgba(206,200,255,.72);box-shadow:0 0 15px rgba(137,121,255,.6)}.profile-star.done span{color:#8880c5;opacity:1}
+#profile-screen .profile-history{margin:20px 0 8px}.profile-history-list{border-top:1px solid rgba(145,145,190,.06)}.profile-history-row{display:grid;grid-template-columns:43px 1fr;gap:8px;padding:11px 3px;border-bottom:1px solid rgba(145,145,190,.045)}.profile-history-row time{font-size:5px;color:#50576b;letter-spacing:.8px;padding-top:1px}.profile-history-row span{font-size:6px;line-height:1.5;color:#8389a0}.profile-history-empty{padding:20px 4px;text-align:center;font-size:5px;letter-spacing:1.4px;color:#4d5368}
+@keyframes profileOrbFloat{0%,100%{transform:translate3d(0,0,0) rotate(-1deg)}50%{transform:translate3d(0,-3px,0) rotate(1deg)}}
+@keyframes profileBreath{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}
+@media(max-width:390px){#profile-screen .profile-operator{grid-template-columns:55px minmax(0,1fr) auto;gap:9px}#profile-screen .profile-avatar-orb{width:55px;height:55px}#profile-screen .profile-name{font-size:12px}#profile-screen .profile-live{font-size:4.5px}.profile-constellation{height:225px!important}}
+
+/* ===== CORE 2.2.18 — объём и живая атмосфера исследовательского контура ===== */
+#research-screen .feature-screen{
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(95,82,255,.095), transparent 38%),
+    radial-gradient(ellipse at 18% 72%, rgba(34,196,164,.045), transparent 34%),
+    radial-gradient(ellipse at 84% 54%, rgba(117,88,255,.055), transparent 30%),
+    linear-gradient(180deg, rgba(4,6,15,.12), rgba(2,4,11,.48));
+  overflow:hidden;
+}
+#research-screen .feature-screen::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle at 50% 44%, transparent 0 22%, rgba(122,110,255,.025) 36%, transparent 64%),
+    linear-gradient(105deg, transparent 0 24%, rgba(151,141,255,.035) 36%, transparent 46% 67%, rgba(90,238,189,.022) 78%, transparent 88%);
+  mix-blend-mode:screen;animation:researchAtmosphereShift 16s ease-in-out infinite alternate;
+}
+#research-screen .feature-screen::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:8;
+  background:linear-gradient(180deg, rgba(2,4,11,.62), transparent 14%, transparent 76%, rgba(2,4,11,.78)),radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,.34) 100%);
+}
+.research-atmosphere{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.research-light{position:absolute;display:block;filter:blur(24px);opacity:.34;transform-origin:center;mix-blend-mode:screen}
+.research-light-a{width:46vw;height:120vh;left:-15%;top:-12%;background:linear-gradient(160deg,transparent 25%,rgba(110,93,255,.13),transparent 70%);transform:rotate(14deg);animation:researchBeamA 13s ease-in-out infinite alternate}
+.research-light-b{width:34vw;height:100vh;right:-10%;top:5%;background:linear-gradient(24deg,transparent 20%,rgba(68,220,190,.075),transparent 72%);transform:rotate(-18deg);animation:researchBeamB 17s ease-in-out infinite alternate}
+.research-light-c{width:70vw;height:36vh;left:15%;top:42%;background:radial-gradient(ellipse,rgba(102,88,255,.07),transparent 68%);filter:blur(32px);animation:researchPulse 8s ease-in-out infinite}
+.research-dust{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(188,193,255,.58);box-shadow:0 0 9px rgba(151,142,255,.42);opacity:.28}
+.research-dust-a{left:13%;top:31%;animation:researchDustA 11s ease-in-out infinite}
+.research-dust-b{left:78%;top:26%;animation:researchDustB 14s ease-in-out infinite}
+.research-dust-c{left:23%;top:69%;animation:researchDustC 12s ease-in-out infinite}
+.research-dust-d{left:87%;top:76%;animation:researchDustD 16s ease-in-out infinite}
+.research-depth{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.55;background:
+  repeating-linear-gradient(90deg,transparent 0 72px,rgba(132,120,255,.018) 73px,transparent 74px 145px),
+  repeating-linear-gradient(180deg,transparent 0 118px,rgba(132,120,255,.015) 119px,transparent 120px 238px);
+  mask-image:linear-gradient(180deg,transparent,black 16%,black 82%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,black 16%,black 82%,transparent);
+}
+#research-screen .research-viewport{z-index:2;padding-top:8px}
+#research-screen .research-tree-v2::before{
+  content:"";position:absolute;left:50%;top:16px;bottom:18px;width:54vw;max-width:260px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(ellipse,rgba(94,81,255,.055),transparent 68%);filter:blur(14px);pointer-events:none;animation:researchCoreField 7s ease-in-out infinite;
+}
+#research-screen .research-tree-v2::after{
+  content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;transform:translateX(-50%);background:linear-gradient(180deg,transparent,rgba(132,120,255,.06) 12%,rgba(132,120,255,.025) 50%,transparent 88%);pointer-events:none;opacity:.65;
+}
+#research-screen .research-links{filter:drop-shadow(0 0 5px rgba(120,110,255,.18));z-index:1}
+#research-screen .research-link{stroke:rgba(132,125,194,.24);stroke-width:1.25;stroke-linecap:round;opacity:.82;filter:drop-shadow(0 0 3px rgba(122,109,255,.16));}
+#research-screen .research-link.active{stroke:rgba(119,244,187,.62);filter:drop-shadow(0 0 7px rgba(93,255,175,.32));stroke-dasharray:3 7;animation:researchEnergyFlow 2.8s linear infinite;}
+#research-screen .research-nodes{z-index:3}
+#research-screen .research-node{filter:drop-shadow(0 10px 22px rgba(0,0,0,.25));}
+#research-screen .research-node-core{width:46px;height:46px;background:
+  radial-gradient(circle at 31% 27%,rgba(235,232,255,.11),transparent 16%),
+  radial-gradient(circle at 38% 32%,rgba(132,119,255,.23),rgba(8,10,21,.82) 62%,rgba(2,4,11,.94) 100%);
+  box-shadow:0 12px 34px rgba(0,0,0,.42),inset 0 1px 1px rgba(255,255,255,.09),inset 0 -10px 20px rgba(0,0,0,.22),0 0 0 1px rgba(145,135,230,.035);
+}
+#research-screen .research-node-glow{width:70px;height:70px;top:-4px;background:radial-gradient(circle,rgba(122,109,255,.23),rgba(89,76,220,.055) 38%,transparent 70%);filter:blur(1px)}
+#research-screen .research-node:not(.locked):not(.done) .research-node-core{box-shadow:0 12px 34px rgba(0,0,0,.4),0 0 28px rgba(113,101,255,.13),inset 0 1px 1px rgba(255,255,255,.1),inset 0 -11px 20px rgba(0,0,0,.25)}
+#research-screen .research-node.done .research-node-core{box-shadow:0 12px 34px rgba(0,0,0,.42),0 0 30px rgba(77,255,177,.18),inset 0 1px 1px rgba(255,255,255,.11),inset 0 -11px 20px rgba(0,0,0,.24)}
+#research-screen .research-node strong{text-shadow:0 1px 9px rgba(0,0,0,.75)}
+#research-screen .research-node small{text-shadow:0 1px 7px rgba(0,0,0,.8)}
+#research-screen .research-page-head{filter:drop-shadow(0 5px 18px rgba(0,0,0,.35))}
+#research-screen .research-energy strong{text-shadow:0 0 10px rgba(137,121,255,.2),0 3px 12px rgba(0,0,0,.55)}
+@keyframes researchAtmosphereShift{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(2%,1%,0) scale(1.04)}}
+@keyframes researchBeamA{0%{transform:rotate(14deg) translate3d(-8px,-5px,0);opacity:.22}100%{transform:rotate(18deg) translate3d(18px,12px,0);opacity:.38}}
+@keyframes researchBeamB{0%{transform:rotate(-18deg) translate3d(8px,0,0);opacity:.2}100%{transform:rotate(-12deg) translate3d(-18px,15px,0);opacity:.34}}
+@keyframes researchPulse{0%,100%{transform:scale(.92);opacity:.55}50%{transform:scale(1.08);opacity:1}}
+@keyframes researchDustA{0%,100%{transform:translate3d(0,0,0) scale(.7);opacity:.16}50%{transform:translate3d(18px,-12px,0) scale(1.35);opacity:.5}}
+@keyframes researchDustB{0%,100%{transform:translate3d(0,0,0) scale(.8);opacity:.12}50%{transform:translate3d(-15px,19px,0) scale(1.5);opacity:.46}}
+@keyframes researchDustC{0%,100%{transform:translate3d(0,0,0) scale(.7);opacity:.12}50%{transform:translate3d(11px,16px,0) scale(1.25);opacity:.4}}
+@keyframes researchDustD{0%,100%{transform:translate3d(0,0,0) scale(.8);opacity:.1}50%{transform:translate3d(-19px,-14px,0) scale(1.3);opacity:.38}}
+@keyframes researchCoreField{0%,100%{transform:translateX(-50%) scale(.94);opacity:.42}50%{transform:translateX(-50%) scale(1.07);opacity:.72}}
+@keyframes researchEnergyFlow{to{stroke-dashoffset:-20}}
+@media(prefers-reduced-motion:reduce){
+  .research-light,.research-dust,#research-screen .feature-screen::before,#research-screen .research-tree-v2::before,#research-screen .research-link.active{animation:none!important}
+}
+
+/* CORE 2.2.19 — загадочная звёздная атмосфера исследовательского контура */
+#research-screen .research-atmosphere{background:radial-gradient(ellipse at 50% 18%,rgba(104,89,255,.045),transparent 48%)}
+.research-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.9}
+.research-star{position:absolute;display:block;width:1.5px;height:1.5px;border-radius:50%;background:rgba(225,228,255,.8);box-shadow:0 0 5px rgba(171,164,255,.72);animation:researchStarDrift var(--sd,9s) ease-in-out infinite alternate, researchStarBlink var(--sb,4.5s) ease-in-out infinite}
+.research-star:nth-child(3n){width:2px;height:2px;box-shadow:0 0 8px rgba(174,164,255,.9)}
+.research-star:nth-child(5n){background:rgba(171,235,255,.72);box-shadow:0 0 7px rgba(120,220,255,.7)}
+.research-star:nth-child(7n){width:1px;height:1px;opacity:.7}
+.s1{left:7%;top:14%;--sd:12s;--sb:5s}.s2{left:19%;top:22%;--sd:8s;--sb:6s}.s3{left:31%;top:10%;--sd:15s;--sb:4s}.s4{left:44%;top:18%;--sd:10s;--sb:7s}.s5{left:58%;top:8%;--sd:13s;--sb:5.5s}.s6{left:73%;top:17%;--sd:9s;--sb:4.2s}.s7{left:89%;top:12%;--sd:14s;--sb:6.4s}.s8{left:11%;top:34%;--sd:11s;--sb:4.8s}.s9{left:25%;top:39%;--sd:16s;--sb:5.2s}.s10{left:39%;top:31%;--sd:9s;--sb:7s}.s11{left:54%;top:38%;--sd:12s;--sb:4s}.s12{left:68%;top:33%;--sd:10s;--sb:6s}.s13{left:82%;top:41%;--sd:15s;--sb:5s}.s14{left:95%;top:29%;--sd:11s;--sb:6.8s}.s15{left:5%;top:56%;--sd:13s;--sb:4.6s}.s16{left:18%;top:63%;--sd:9s;--sb:5.5s}.s17{left:34%;top:52%;--sd:14s;--sb:7.2s}.s18{left:49%;top:59%;--sd:11s;--sb:4.4s}.s19{left:64%;top:54%;--sd:16s;--sb:6s}.s20{left:79%;top:61%;--sd:10s;--sb:5s}.s21{left:92%;top:53%;--sd:13s;--sb:4s}.s22{left:8%;top:78%;--sd:15s;--sb:6s}.s23{left:23%;top:85%;--sd:10s;--sb:5s}.s24{left:38%;top:74%;--sd:12s;--sb:4.5s}.s25{left:53%;top:88%;--sd:9s;--sb:7s}.s26{left:67%;top:79%;--sd:14s;--sb:5.4s}.s27{left:84%;top:86%;--sd:11s;--sb:6.2s}.s28{left:96%;top:72%;--sd:16s;--sb:4.7s}.s29{left:14%;top:47%;--sd:13s;--sb:5.8s}.s30{left:46%;top:47%;--sd:17s;--sb:4.3s}.s31{left:61%;top:24%;--sd:8s;--sb:6.6s}.s32{left:76%;top:70%;--sd:12s;--sb:5.1s}.s33{left:28%;top:92%;--sd:15s;--sb:4.8s}.s34{left:72%;top:93%;--sd:10s;--sb:6.1s}.s35{left:4%;top:91%;--sd:14s;--sb:5.6s}.s36{left:91%;top:96%;--sd:9s;--sb:4.9s}
+@keyframes researchStarDrift{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(7px,-5px,0)}}
+@keyframes researchStarBlink{0%,100%{opacity:.25}50%{opacity:.95}}
+#research-screen .research-depth{opacity:.78;background:radial-gradient(circle at 50% 45%,rgba(106,92,255,.035),transparent 35%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 58px,rgba(137,125,255,.018) 59px 60px,transparent 61px 120px)}
+#research-screen .research-node-core{background:radial-gradient(circle at 30% 25%,rgba(242,239,255,.14),transparent 17%),radial-gradient(circle at 65% 70%,rgba(82,62,220,.13),rgba(7,9,20,.9) 66%,rgba(1,3,10,.98));}
+#research-screen .research-node:not(.locked):not(.done) .research-node-core{animation:researchNodeBreath 5.5s ease-in-out infinite}
+#research-screen .research-node.done .research-node-core{animation:researchNodeDone 4.8s ease-in-out infinite}
+@keyframes researchNodeBreath{0%,100%{box-shadow:0 12px 34px rgba(0,0,0,.4),0 0 24px rgba(113,101,255,.1),inset 0 1px 1px rgba(255,255,255,.1),inset 0 -11px 20px rgba(0,0,0,.25)}50%{box-shadow:0 14px 40px rgba(0,0,0,.44),0 0 38px rgba(125,111,255,.2),inset 0 1px 1px rgba(255,255,255,.12),inset 0 -11px 20px rgba(0,0,0,.27)}}
+@keyframes researchNodeDone{0%,100%{filter:brightness(.96)}50%{filter:brightness(1.14)}}
+@media(prefers-reduced-motion:reduce){.research-star,#research-screen .research-node-core{animation:none!important}}
+
+/* ===== CORE 2.2.20 — производительность исследовательского контура ===== */
+/* Звёздное поле остаётся плотным, но большую часть звёзд больше не нужно постоянно анимировать. */
+#research-screen .research-star{
+  animation:none;
+  will-change:auto;
+}
+#research-screen .research-star:nth-child(4n),
+#research-screen .research-star:nth-child(11n),
+#research-screen .research-star:nth-child(17n),
+#research-screen .research-star:nth-child(29n){
+  animation:researchStarBlinkSlow 7s ease-in-out infinite;
+}
+#research-screen .research-star:nth-child(17n),
+#research-screen .research-star:nth-child(29n){
+  animation-duration:9s;
+}
+#research-screen .research-light{
+  filter:blur(18px);
+  opacity:.25;
+}
+#research-screen .research-light-c{filter:blur(24px);opacity:.22}
+#research-screen .research-dust{animation-duration:18s;opacity:.18}
+#research-screen .research-link.active{animation-duration:3.8s}
+#research-screen .research-node:not(.locked):not(.done) .research-node-core,
+#research-screen .research-node.done .research-node-core{animation:none}
+#research-screen .research-node:nth-child(3n) .research-node-core{animation:researchNodeWhisper 8s ease-in-out infinite}
+@keyframes researchStarBlinkSlow{0%,100%{opacity:.3}50%{opacity:.9}}
+@keyframes researchNodeWhisper{0%,100%{filter:brightness(.98)}50%{filter:brightness(1.07)}}
+
+/* ===== CORE 2.2.20 — читаемая кнопка «ИССЛЕДОВАНИЯ» ===== */
+.game-screen .core-radial-menu.is-open .item-research{
+  width:76px;
+  height:58px;
+  --x:0px;
+  --y:-124px;
+  z-index:7;
+}
+.game-screen .core-radial-menu.is-open .item-research small{
+  max-width:72px!important;
+  font-size:5.2px!important;
+  letter-spacing:.65px!important;
+  line-height:1.15!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-align:center;
+}
+@media(max-width:390px){
+  .game-screen .core-radial-menu.is-open .item-research{
+    width:72px;
+    height:56px;
+    --x:0px;
+    --y:-118px;
+  }
+  .game-screen .core-radial-menu.is-open .item-research small{
+    max-width:68px!important;
+    font-size:4.9px!important;
+  }
+}
