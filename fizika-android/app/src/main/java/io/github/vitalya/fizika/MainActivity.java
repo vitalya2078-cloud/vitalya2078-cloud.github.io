@@ -69,7 +69,9 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
-                return loader.shouldInterceptRequest(r.getUrl());
+                Uri u = r.getUrl();
+                if (HOST.equals(u.getHost()) && u.getPath() != null && u.getPath().startsWith("/mirror/")) return mirror(u);
+                return loader.shouldInterceptRequest(u);
             }
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
@@ -98,6 +100,35 @@ public class MainActivity extends Activity {
         if (state != null) web.restoreState(state); else web.loadUrl(START);
     }
 
+    /**
+     * Прокси к зеркалам сайта: /mirror/gv/… → fizika.gitverse.site, /mirror/gh/… → GitHub Pages.
+     * Файлы отдаются странице как свои (тот же адрес), поэтому CORS не нужен — GitVerse его не отдаёт.
+     * Разрешены только эти два адреса; вызывается в фоновом потоке WebView.
+     */
+    private WebResourceResponse mirror(Uri u) {
+        String path = u.getPath(), base;
+        if (path.startsWith("/mirror/gv/")) { base = "https://fizika.gitverse.site/"; path = path.substring(11); }
+        else if (path.startsWith("/mirror/gh/")) { base = "https://vitalya2078-cloud.github.io/fizika/"; path = path.substring(11); }
+        else return new WebResourceResponse("text/plain", "utf-8", 404, "Not Found", null, null);
+        java.util.Map<String, String> hdr = new java.util.HashMap<>();
+        hdr.put("Cache-Control", "no-store");
+        try {
+            String q = u.getEncodedQuery();
+            java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(base + u.getEncodedPath().substring(11) + (q != null ? "?" + q : "")).openConnection();
+            c.setConnectTimeout(12000); c.setReadTimeout(30000); c.setUseCaches(false);
+            int code = c.getResponseCode();
+            String type = c.getContentType();
+            java.io.InputStream in = code < 400 ? c.getInputStream() : c.getErrorStream();
+            String mime = type != null ? type.split(";")[0].trim() : "application/octet-stream";
+            String cs = type != null && type.contains("charset=") ? type.substring(type.indexOf("charset=") + 8).trim() : null;
+            String reason = c.getResponseMessage(); if (reason == null || reason.isEmpty()) reason = code < 400 ? "OK" : "Error";
+            if (type != null) hdr.put("Content-Type", type);
+            return new WebResourceResponse(mime, cs, code, reason, hdr, in);
+        } catch (Exception e) {
+            return new WebResourceResponse("text/plain", "utf-8", 504, "Gateway Timeout", hdr, new java.io.ByteArrayInputStream(new byte[0]));
+        }
+    }
+
     private void openExternal(Uri u) {
         try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) { }
     }
@@ -115,6 +146,9 @@ public class MainActivity extends Activity {
         }
         @JavascriptInterface
         public void setDark(boolean dark) { runOnUiThread(() -> styleBars(dark)); }
+        /** Есть ли прокси /mirror/ (с версии 2.2): страница берёт файлы зеркал через него, без CORS. */
+        @JavascriptInterface
+        public boolean hasMirrorProxy() { return true; }
     }
 
     @Override

@@ -326,20 +326,23 @@ textarea{width:100%; margin:4px 0 10px; padding:10px 12px; border:1px solid var(
 'use strict';
 /* Физика — офлайн-приложение с вопросами, тестами и прогрессом.
    Одна кодовая база для сайта (PWA: iPhone, Windows) и Android-приложения (WebView). */
-const APP_BUILD = 38;
+const APP_BUILD = 40;
 // Откуда приложение берёт обновления. Первым — GitVerse (открывается в России без VPN), запасной — GitHub.
 const MIRRORS = ['https://fizika.gitverse.site/', 'https://vitalya2078-cloud.github.io/fizika/'];
 let REMOTE = (() => { try { const m = JSON.parse(localStorage.getItem('fz-mirror')); return MIRRORS.includes(m) ? m : MIRRORS[0]; } catch (e) { return MIRRORS[0]; } })();
 // Запрос к первому зеркалу, которое вернуло настоящий файл. Возвращает результат read(response).
 // Важно: GitVerse на отсутствующий файл отвечает кодом 200 и HTML-страницей «не найдено» —
 // поэтому для не-HTML файлов HTML-ответ считаем промахом, а read() дополнительно проверяет содержимое.
+// Android 2.2+: оболочка сама скачивает файлы зеркал и отдаёт их странице как свои — так не нужен CORS (GitVerse его не отдаёт)
+const hasProxy = () => { try { return !!(window.FizikaNative && window.FizikaNative.hasMirrorProxy && window.FizikaNative.hasMirrorProxy()); } catch (e) { return false; } };
+const viaProxy = base => !hasProxy() ? base : base.includes('gitverse') ? '/mirror/gv/' : '/mirror/gh/';
 async function fetchMirror(path, opt, read) {
   const order = [REMOTE, ...MIRRORS.filter(m => m !== REMOTE)], wantHtml = /\.html(\?|$)/.test(path);
   let last;
   for (const base of order) {
     try {
       const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
-      const r = await fetch(base + path, { ...(opt || {}), signal: ctl.signal }); clearTimeout(tm);
+      const r = await fetch(viaProxy(base) + path, { ...(opt || {}), signal: ctl.signal }); clearTimeout(tm);
       if (!r.ok) throw new Error(r.status);
       if (!wantHtml && (r.headers.get('content-type') || '').includes('text/html')) throw new Error('не тот файл');
       const out = read ? await read(r) : r;

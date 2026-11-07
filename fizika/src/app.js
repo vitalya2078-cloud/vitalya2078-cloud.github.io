@@ -8,13 +8,16 @@ let REMOTE = (() => { try { const m = JSON.parse(localStorage.getItem('fz-mirror
 // Запрос к первому зеркалу, которое вернуло настоящий файл. Возвращает результат read(response).
 // Важно: GitVerse на отсутствующий файл отвечает кодом 200 и HTML-страницей «не найдено» —
 // поэтому для не-HTML файлов HTML-ответ считаем промахом, а read() дополнительно проверяет содержимое.
+// Android 2.2+: оболочка сама скачивает файлы зеркал и отдаёт их странице как свои — так не нужен CORS (GitVerse его не отдаёт)
+const hasProxy = () => { try { return !!(window.FizikaNative && window.FizikaNative.hasMirrorProxy && window.FizikaNative.hasMirrorProxy()); } catch (e) { return false; } };
+const viaProxy = base => !hasProxy() ? base : base.includes('gitverse') ? '/mirror/gv/' : '/mirror/gh/';
 async function fetchMirror(path, opt, read) {
   const order = [REMOTE, ...MIRRORS.filter(m => m !== REMOTE)], wantHtml = /\.html(\?|$)/.test(path);
   let last;
   for (const base of order) {
     try {
       const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
-      const r = await fetch(base + path, { ...(opt || {}), signal: ctl.signal }); clearTimeout(tm);
+      const r = await fetch(viaProxy(base) + path, { ...(opt || {}), signal: ctl.signal }); clearTimeout(tm);
       if (!r.ok) throw new Error(r.status);
       if (!wantHtml && (r.headers.get('content-type') || '').includes('text/html')) throw new Error('не тот файл');
       const out = read ? await read(r) : r;
