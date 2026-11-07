@@ -1,0 +1,42 @@
+{
+ "1-kin.mp3": {
+  "hash": "42fd9bbd0d79e700",
+  "dur": 292.1,
+  "voice": "ru_RU-irina-medium"
+ },
+ "1-dyn.mp3": {
+  "hash": "58e4f843e42a7472",
+  "dur": 236.4,
+  "voice": "ru_RU-irina-medium"
+ },
+ "1-cons.mp3": {
+  "hash": "49d7086acb7f90d7",
+  "dur": 214.3,
+  "voice": "ru_RU-irina-medium"
+ },
+ "1-rot.mp3": {
+  "hash": "3e3fbedf2e11f652",
+  "dur": 176.5,
+  "voice": "ru_RU-irina-medium"
+ },
+ "1-grav.mp3": {
+  "hash": "2f13db5bb52d8766",
+  "dur": 176.6,
+  "voice": "ru_RU-irina-medium"
+ },
+ "1-fluid.mp3": {
+  "hash": "719457f689de82b7",
+  "dur": 146.3,
+  "voice": "ru_RU-irina-medium"
+ },
+ "1-def.mp3": {
+  "hash": "5cdf81204a7922c4",
+  "dur": 130.2,
+  "voice": "ru_RU-irina-medium"
+ },
+ "1-sto.mp3": {
+  "hash": "ef2c2f2b7224538b",
+  "dur": 134.0,
+  "voice": "ru_RU-irina-medium"
+ }
+}

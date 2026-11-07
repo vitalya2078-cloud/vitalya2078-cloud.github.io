@@ -12,11 +12,16 @@ meta = json.loads(rd('meta.json'))
 
 # вопросы и рисунки
 topics = json.loads(rd('data.json'))
+_ai = os.path.join(OUT, 'audio', 'index.json')
+AUDIO = json.load(open(_ai, encoding='utf-8')) if os.path.exists(_ai) else {}
 # обучение: конспект, пары, утверждения для игр — src/learn/<номер темы>.json
 for t in topics:
     f = os.path.join(D, 'learn', '%d.json' % t['id'])
     if os.path.exists(f):
-        L = json.load(open(f, encoding='utf-8')); L.setdefault('games', ['throw', 'pair', 'tf'] if t['id'] == 1 else ['pair', 'tf'])
+        L = json.load(open(f, encoding='utf-8'))
+        for n in L['notes']:  # озвучка лекции, если файл сгенерирован (src/tts.py)
+            a = AUDIO.get('%d-%s.mp3' % (t['id'], n['id']))
+            if a: n['audio'] = {'file': '%d-%s.mp3' % (t['id'], n['id']), 'dur': a['dur']}
         t['learn'] = L
 pics = json.loads(rd('pics.json'))
 used = sorted({q['p'] for t in topics for q in t['q'] if q.get('p')})

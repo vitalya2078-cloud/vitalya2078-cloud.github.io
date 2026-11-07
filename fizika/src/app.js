@@ -184,7 +184,7 @@ function route() {
   if (m && has(+m[1])) return { name: 'hub', tid: +m[1], tab: 'topics', parent: 'topics' };
   if ((m = /^t(\d+)q$/.exec(h)) && has(+m[1])) return { name: 'topic', tid: +m[1], tab: 'topics', parent: 't' + m[1] };
   if ((m = /^n(\d+)-(\d+)$/.exec(h)) && has(+m[1])) return { name: 'note', tid: +m[1], idx: +m[2], tab: 'topics', parent: 't' + m[1] };
-  if ((m = /^g(\d+)-(throw|pair|tf)$/.exec(h)) && has(+m[1])) return { name: 'game', tid: +m[1], game: m[2], tab: 'topics', parent: 't' + m[1] };
+  if ((m = /^g(\d+)-(\d+)-(sim|pair|tf)$/.exec(h)) && has(+m[1])) return { name: 'game', tid: +m[1], idx: +m[2], game: m[3], tab: 'topics', parent: 'n' + m[1] + '-' + m[2] };
   const map = { topics: ['topics'], test: ['test'], me: ['me'], err: ['me', 'me'], fav: ['me', 'me'], due: ['me', 'me'], hist: ['me', 'me'], settings: ['me', 'me'], backup: ['me', 'me'], search: ['home', ''] };
   if (map[h]) return { name: h, tab: map[h][0], parent: map[h][1] };
   return { name: 'home', tab: 'home' };
@@ -208,6 +208,7 @@ let searchOpen = false, searchText = '';
 function render() {
   stopTimer();
   const r = route();
+  if (r.name !== 'note') stopAudio(); // озвучка звучит, пока открыта её лекция
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.setAttribute('aria-current', a.dataset.tab === r.tab ? 'page' : 'false'));
   cardCtx = { ws: [], fz: false, opt: {} };
