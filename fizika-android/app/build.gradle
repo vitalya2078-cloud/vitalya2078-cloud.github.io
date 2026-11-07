@@ -1,0 +1,45 @@
+plugins { id 'com.android.application' }
+
+// Ключ подписи берётся из keystore.properties (в git не хранится). Без него сборка подписывается отладочным ключом.
+def ksFile = rootProject.file('keystore.properties')
+def ks = new Properties()
+if (ksFile.exists()) ksFile.withInputStream { ks.load(it) }
+
+android {
+    namespace 'io.github.vitalya.fizika'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'io.github.vitalya.fizika'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        release {
+            if (ksFile.exists()) {
+                storeFile rootProject.file(ks['storeFile']); storePassword ks['storePassword']
+                keyAlias ks['keyAlias']; keyPassword ks['keyPassword']
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            signingConfig ksFile.exists() ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    sourceSets { main { assets.srcDirs += ["$buildDir/web"] } }
+}
+
+// Веб-приложение берётся из ../fizika (тот же index.html, что и на сайте)
+def copyWeb = tasks.register('copyWeb', Copy) {
+    from(rootProject.file('../fizika')) { include 'index.html', 'icon-192.png' }
+    into "$buildDir/web/web"
+}
+tasks.named('preBuild') { dependsOn copyWeb }
+
+dependencies { implementation 'androidx.webkit:webkit:1.12.1' }
