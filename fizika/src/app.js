@@ -238,7 +238,7 @@ if (!['all', 'new', 'err', 'fav'].includes(cfg.src)) cfg.src = 'all';
 if (![30, 10, 0].includes(cfg.n)) cfg.n = 30;
 cfg.exam = cfg.exam === true;
 // таймер на вопрос: включён/выключен и длительность 100–180 с (шаг 10)
-cfg.tOn = cfg.tOn !== false;
+cfg.tOn = cfg.tPick === true && cfg.tOn === true; // выключен, пока пользователь сам не включит
 cfg.tSec = Math.min(180, Math.max(100, Math.round((+cfg.tSec || 120) / 10) * 10));
 const totTxt = () => { const n = cfg.n || pool(cfg).length; return `На ${nQ(n)} — не больше ${Math.ceil(n * cfg.tSec / 60)} мин.`; };
 const mmss = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
@@ -319,7 +319,7 @@ function renderSetup() {
     `<h2 class="sec">Какие вопросы</h2><div class="chips">${chip('src', 'all', 'Все')}${chip('src', 'new', 'Ещё не решал')}${chip('src', 'err', 'Мои ошибки')}${chip('src', 'fav', 'Избранное')}</div>` +
     `<div class="chips">${chip('mc', false, 'С вариантами и без')}${chip('mc', true, 'Только с вариантами')}</div>` +
     `<h2 class="sec">Сколько вопросов</h2><div class="chips">${chip('n', 30, '30, как на экзамене')}${chip('n', 10, '10, быстро')}${chip('n', 0, 'Все')}</div>` +
-    `<h2 class="sec">Таймер на вопрос</h2><div class="chips">${chip('tOn', true, 'С таймером')}${chip('tOn', false, 'Без таймера')}</div>` +
+    `<h2 class="sec">Таймер на вопрос</h2><div class="chips">${chip('tOn', false, 'Без таймера')}${chip('tOn', true, 'С таймером')}</div>` +
     (cfg.tOn ? `<label class="range"><span>Время на один вопрос: <b id="tsec">${cfg.tSec} с (${mmss(cfg.tSec)})</b></span><input id="tsl" type="range" min="100" max="180" step="10" value="${cfg.tSec}" aria-label="Секунд на вопрос"><span class="rl"><small>100 с</small><small>180 с</small></span></label><p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt()}</span></p>` : '') +
     `<h2 class="sec">Пояснения</h2><div class="chips">${chip('exam', false, 'Сразу после ответа')}${chip('exam', true, 'В конце, как на экзамене')}</div>` +
     '<div class="scale"><b>Оценка</b><span>60 баллов — «3»</span><span>75 баллов — «4»</span><span>90 баллов — «5»</span><small>Баллы — доля верных ответов от 100. В тесте из 30 вопросов каждый стоит ≈ 3,3 балла: «3» — от 18 верных, «4» — от 23, «5» — от 27.</small></div>' +
@@ -392,6 +392,7 @@ main.addEventListener('click', e => {
     case 'cfg': {
       const g = b.dataset.g;
       cfg[g] = g === 'src' ? v : (g === 'mc' || g === 'exam' || g === 'tOn') ? v === 'true' : +v;
+      if (g === 'tOn') cfg.tPick = true;
       LS.set('fz-testcfg', cfg); keepScroll(render); break;
     }
     case 'start': startTest(shuffle(pool(cfg)).slice(0, cfg.n || undefined)); render(); window.scrollTo(0, 0); break;
