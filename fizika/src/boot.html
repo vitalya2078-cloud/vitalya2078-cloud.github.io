@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F7F8F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Физика">
+<title>Физика: ответы и тесты</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>html,body{margin:0;height:100%;background:#F7F8F5;color:#5F6A74;font:16px system-ui,sans-serif}@media(prefers-color-scheme:dark){html,body{background:#10233F;color:#A2B5CD}}p{text-align:center;padding:40vh 24px 0}</style>
+<script>
+/* Загрузчик. Показывает интерфейс app.html. В Android-приложении, если с сайта уже скачана
+   более новая версия интерфейса, берёт её; если она не запустилась — возвращается к встроенной. */
+(function () {
+  var BUILD = __BUILD__, html = null, b = 0;
+  try {
+    if (/FizikaApp/.test(navigator.userAgent)) {
+      b = +(localStorage.getItem('fz-app-build') || 0);
+      if (b > BUILD && localStorage.getItem('fz-app-bad') !== String(b)) {
+        if (localStorage.getItem('fz-app-try') === String(b) && localStorage.getItem('fz-app-ok') !== String(b)) localStorage.setItem('fz-app-bad', String(b));
+        else { html = localStorage.getItem('fz-app-html'); localStorage.setItem('fz-app-try', String(b)); }
+      }
+    }
+  } catch (e) {}
+  function show(h) { document.open(); document.write(h); document.close(); }
+  function fail() { document.body.innerHTML = '<p>Не удалось открыть приложение. Проверь интернет и попробуй ещё раз.</p>'; }
+  if (html) {
+    // страховка: если скачанная версия не запустилась за 5 секунд — пометить её плохой и открыть встроенную
+    var guard = '<script>setTimeout(function(){try{if(localStorage.getItem("fz-app-ok")!=="' + b + '"){localStorage.setItem("fz-app-bad","' + b + '");location.reload()}}catch(e){}},5000)<\/script>';
+    html = html.replace('<head>', '<head>' + guard);
+    addEventListener('DOMContentLoaded', function () { show(html); }); return;
+  }
+  addEventListener('DOMContentLoaded', function () {
+    fetch('app.html', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(show).catch(fail);
+  });
+})();
+</script>
+</head>
+<body><p>Загрузка…</p></body>
+</html>

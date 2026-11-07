@@ -12,8 +12,8 @@ android {
         applicationId 'io.github.vitalya.fizika'
         minSdk 24
         targetSdk 35
-        versionCode 5
-        versionName '1.4'
+        versionCode 6
+        versionName '2.0'
     }
     signingConfigs {
         release {
@@ -31,13 +31,14 @@ android {
             signingConfig ksFile.exists() ? signingConfigs.release : signingConfigs.debug
         }
     }
+    buildFeatures { buildConfig true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     sourceSets { main { assets.srcDirs += ["$buildDir/web"] } }
 }
 
 // Веб-приложение берётся из ../fizika (тот же index.html, что и на сайте)
 def copyWeb = tasks.register('copyWeb', Copy) {
-    from(rootProject.file('../fizika')) { include 'index.html', 'icon-192.png' }
+    from(rootProject.file('../fizika')) { include 'index.html', 'app.html', 'content.json', 'version.json', 'icon-192.png', 'pics/**' }
     into "$buildDir/web/web"
 }
 tasks.named('preBuild') { dependsOn copyWeb }
