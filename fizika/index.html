@@ -15,13 +15,13 @@
 /* Приложение-справочник: шапка с поиском, экран тем, экран темы с сеткой номеров и карточками вопросов */
 :root{
   --bg:#F3F6F8; --card:#FFFFFF; --fg:#15212A; --muted:#5D6B76; --line:#DAE2E8;
-  --accent:#1D4E6E; --on-accent:#FFFFFF; --accent-soft:#E2ECF3; --ok:#1C7A33; --ok-soft:#E4F3E7; --hl:#FFE594;
+  --accent:#1D4E6E; --on-accent:#FFFFFF; --accent-soft:#E2ECF3; --ok:#1C7A33; --ok-soft:#E4F3E7; --hl:#FFE594; --bad:#B3261E; --bad-soft:#FBE7E5;
   --font:system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; --mono:ui-monospace, "Roboto Mono", Consolas, monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#0E151A; --card:#16202A; --fg:#E5EBF0; --muted:#93A2AD; --line:#283641;
-  --accent:#78B0D6; --on-accent:#0E151A; --accent-soft:#1D2E3B; --ok:#6CCB82; --ok-soft:#163023; --hl:#6A5912; color-scheme:dark}}
+  --accent:#78B0D6; --on-accent:#0E151A; --accent-soft:#1D2E3B; --ok:#6CCB82; --ok-soft:#163023; --hl:#6A5912; --bad:#F2A59E; --bad-soft:#3A1F1D; color-scheme:dark}}
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg); color:var(--fg); font:15px/1.45 var(--font); padding-bottom:env(safe-area-inset-bottom,0px); -webkit-tap-highlight-color:transparent}
@@ -65,6 +65,66 @@ mark{background:var(--hl); color:inherit; border-radius:3px}
 .install{display:flex; gap:10px; align-items:center; background:var(--accent-soft); border-radius:12px; padding:10px 12px; margin-bottom:10px; font-size:13.5px}
 .install button{margin-left:auto; border:0; background:var(--accent); color:var(--on-accent); font:inherit; font-weight:700; border-radius:9px; padding:8px 12px}
 .note{font-size:12.5px; color:var(--muted); margin:2px 2px 10px}
+[hidden]{display:none!important}
+/* главная: действия и прогресс тем */
+.actions{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px}
+.actions .main:first-child{grid-column:1/-1}
+.act{display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--fg); font:inherit; font-weight:700; text-decoration:none; cursor:pointer; text-align:center}
+.act b{font-family:var(--mono); color:var(--muted); font-weight:600}
+.act.main{background:var(--accent); color:var(--on-accent); border-color:var(--accent)}
+.act.sm{min-height:36px; padding:6px 12px; font-size:14px; flex:none}
+.prog{display:flex; height:5px; margin-top:6px; border-radius:3px; background:var(--line); overflow:hidden}
+.prog i{display:block; height:100%}
+.okp{background:var(--ok)} .badp{background:var(--bad)}
+.prog.big{height:6px; margin:0 0 10px}
+.tbar{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin-bottom:10px}
+.tbar .note{margin:0; flex:1 1 200px}
+.nums a.ok{border-color:var(--ok); color:var(--ok)}
+.nums a.bad{border-color:var(--bad); color:var(--bad); background:var(--bad-soft)}
+.pager{display:flex; justify-content:space-between; gap:8px; margin-top:14px}
+.pager a{flex:0 1 48%; padding:10px 12px; border-radius:10px; background:var(--card); border:1px solid var(--line); color:var(--accent); text-decoration:none; font-size:13.5px; font-weight:600}
+.pager a:last-child{text-align:right}
+.sec a{color:inherit; text-decoration:none}
+.center{text-align:center; margin-top:16px}
+.link{border:0; background:none; color:var(--accent); font:inherit; text-decoration:underline; cursor:pointer; padding:4px}
+/* карточка: избранное, отметки */
+.q{position:relative}
+.q > p{padding-right:30px}
+.star{position:absolute; top:4px; right:4px; width:36px; height:36px; border:0; background:none; color:var(--muted); font-size:20px; line-height:1; cursor:pointer; border-radius:8px}
+.star.on{color:#E0A400}
+.badge{display:inline-block; font-size:11.5px; font-weight:700; border-radius:6px; padding:0 6px; vertical-align:1px}
+.badge.ok{color:var(--ok); background:var(--ok-soft)}
+.badge.bad{color:var(--bad); background:var(--bad-soft)}
+.rate{display:flex; gap:8px}
+.rate button{flex:1; min-height:40px; border-radius:9px; border:1px solid var(--line); background:var(--card); font:inherit; font-weight:700; cursor:pointer}
+.rate .ok{color:var(--ok); border-color:var(--ok)}
+.rate .bad{color:var(--bad); border-color:var(--bad)}
+.mine{font-size:13.5px; color:var(--bad); background:var(--bad-soft); border-radius:8px; padding:6px 10px}
+/* тест */
+.setup h3{font-size:14px; margin:14px 2px 6px; color:var(--muted); font-weight:600}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px}
+.chip{border:1px solid var(--line); background:var(--card); color:var(--fg); font:inherit; font-size:13.5px; border-radius:999px; padding:7px 12px; cursor:pointer; text-align:left}
+.chip[aria-pressed="true"]{background:var(--accent); color:var(--on-accent); border-color:var(--accent)}
+.start,.next{display:block; width:100%; margin:16px 0 8px; min-height:48px; border:0; border-radius:12px; background:var(--accent); color:var(--on-accent); font:inherit; font-size:16px; font-weight:700; cursor:pointer}
+.start:disabled{opacity:.45; cursor:default}
+.next{margin-top:10px}
+.q.test{padding:14px}
+.q.test > p{padding-right:0; font-size:16px}
+.opts{display:grid; gap:8px}
+.opt{display:flex; gap:10px; align-items:flex-start; text-align:left; width:100%; min-height:46px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--fg); font:inherit; cursor:pointer}
+.opt span{font-family:var(--mono); color:var(--muted); font-weight:700}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok-soft); border-color:var(--ok); color:var(--ok); font-weight:700}
+.opt.wrong{background:var(--bad-soft); border-color:var(--bad); color:var(--bad)}
+.opt:disabled:not(.right):not(.wrong){opacity:.6}
+.verdict{font-weight:700; font-size:14px}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.tfoot{text-align:center; margin-top:6px}
+.score{display:grid; justify-items:center; gap:2px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 12px; margin-bottom:10px}
+.score b{font-size:34px; font-family:var(--mono)}
+.score.good b{color:var(--ok)} .score.low b{color:var(--bad)} .score.mid b{color:var(--accent)}
+.score span{color:var(--muted)}
+@media (hover:hover){.opt:not(:disabled):hover,.chip:hover,.act:hover{border-color:var(--accent)}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
 </head>
@@ -76,7 +136,7 @@ mark{background:var(--hl); color:inherit; border-radius:3px}
       <div class="ttl" id="ttl">Физика · ответы</div>
       <button class="tgl" id="train" type="button" aria-pressed="false">Тренировка</button>
     </div>
-    <div class="search">
+    <div class="search" id="srch">
       <input id="q" type="search" placeholder="Слова из вопроса или номер…" autocomplete="off" aria-label="Поиск">
       <button id="clr" type="button" aria-label="Очистить">✕</button>
     </div>
@@ -92,96 +152,340 @@ mark{background:var(--hl); color:inherit; border-radius:3px}
 const T = JSON.parse(document.getElementById('data').textContent);
 const P = JSON.parse(document.getElementById('pics').textContent);
 const $ = s => document.querySelector(s);
-const main = $('#main'), inp = $('#q'), cnt = $('#cnt'), ttl = $('#ttl'), back = $('#back'), trainBtn = $('#train'), topBtn = $('#top');
-let train = false, revealed = new Set();
-try { train = localStorage.getItem('fz-train') === '1'; } catch (e) {}
+const main = $('#main'), inp = $('#q'), cnt = $('#cnt'), ttl = $('#ttl'), back = $('#back'), trainBtn = $('#train'), topBtn = $('#top'), srch = $('#srch');
+
+// хранилище: всё только на этом устройстве
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const norm = s => String(s).toLowerCase().replace(/ё/g, 'е'); // длина строки сохраняется — важно для подсветки
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TOK = /[a-zа-я0-9]+/g;
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const plural = (n, a, b, c) => n + ' ' + (n % 10 === 1 && n % 100 !== 11 ? a : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? b : c);
+const nQ = n => plural(n, 'вопрос', 'вопроса', 'вопросов');
+const keepScroll = f => { const y = window.scrollY; f(); window.scrollTo(0, y); };
+
+// плоский список вопросов
+const ALL = [], BY = {};
+T.forEach(t => t.q.forEach((q, j) => {
+  const it = { t, i: j + 1, key: t.id + '-' + (j + 1), q, nt: norm(q.t + ' \n ' + q.a) };
+  it.toks = [...new Set(it.nt.match(TOK) || [])];
+  ALL.push(it); BY[it.key] = it;
+}));
+
+// прогресс: key -> {ok, bad, last}; last = 1 верно / 0 ошибка в последний раз
+let stat = LS.get('fz-stat', {}); if (!stat || typeof stat !== 'object' || Array.isArray(stat)) stat = {};
+const favRaw = LS.get('fz-fav', []), fav = new Set(Array.isArray(favRaw) ? favRaw.filter(k => BY[k]) : []);
+let train = LS.get('fz-train', 0) == 1;
+const revealed = new Set(), rated = new Set();
+function record(key, ok) { const s = stat[key] || { ok: 0, bad: 0 }; ok ? s.ok++ : s.bad++; s.last = ok ? 1 : 0; stat[key] = s; LS.set('fz-stat', stat); }
+const isErr = k => !!stat[k] && stat[k].last === 0;
+const seen = k => !!stat[k];
+function toggleFav(k) { fav.has(k) ? fav.delete(k) : fav.add(k); LS.set('fz-fav', [...fav]); }
 trainBtn.setAttribute('aria-pressed', train);
 
-const norm = s => s.toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ');
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function hl(text, words) {
-  if (!words.length) return esc(text);
+// поиск: сначала точный (подстрока), если пусто — нечёткий с учётом опечаток
+const qWords = raw => norm(raw).split(/[^a-zа-я0-9]+/).filter(Boolean);
+function lev(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let best = i;
+    for (let j = 1; j <= b.length; j++) { cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); if (cur[j] < best) best = cur[j]; }
+    if (best > max) return max + 1; prev = cur;
+  }
+  return prev[b.length];
+}
+function fuzzyTok(w, tok) { // слово запроса похоже на начало слова из текста (окончания не важны)
+  const tol = w.length >= 7 ? 2 : w.length >= 4 ? 1 : 0;
+  if (!tol || tok[0] !== w[0] || tok.length < w.length - tol) return false;
+  for (let L = w.length - tol; L <= w.length + tol; L++) {
+    if (lev(w, tok.slice(0, L), tol) <= tol) return true;
+    if (L >= tok.length) break;
+  }
+  return false;
+}
+const matches = (it, ws, fz) => ws.every(w => it.nt.includes(w) || (fz && w.length >= 4 && it.toks.some(tok => fuzzyTok(w, tok))));
+function find(items, ws) {
+  if (!ws.length) return { r: items, fz: false };
+  let r = items.filter(it => matches(it, ws, false));
+  if (r.length) return { r, fz: false };
+  r = items.filter(it => matches(it, ws, true));
+  return { r, fz: r.length > 0 };
+}
+function hl(text, ws, fz) {
+  if (!ws.length) return esc(text);
   const nt = norm(text), m = [];
-  words.forEach(w => { if (w.length < 2) return; let p = nt.indexOf(w); while (p !== -1) { m.push([p, p + w.length]); p = nt.indexOf(w, p + 1); } });
+  ws.forEach(w => { if (w.length < 2) return; let p = nt.indexOf(w); while (p !== -1) { m.push([p, p + w.length]); p = nt.indexOf(w, p + 1); } });
+  if (fz) { const re = new RegExp(TOK.source, 'g'); let mt; while ((mt = re.exec(nt))) if (ws.some(w => w.length >= 4 && fuzzyTok(w, mt[0]))) m.push([mt.index, mt.index + mt[0].length]); }
   if (!m.length) return esc(text);
-  m.sort((a, b) => a[0] - b[0]); let o = '', last = 0;
+  m.sort((a, b) => a[0] - b[0] || b[1] - a[1]); let o = '', last = 0;
   for (const [a, b] of m) { if (a < last) continue; o += esc(text.slice(last, a)) + '<mark>' + esc(text.slice(a, b)) + '</mark>'; last = b; }
   return o + esc(text.slice(last));
 }
-const route = () => { const h = location.hash.replace('#', ''); const m = /^t(\d)$/.exec(h); return m && T[m[1] - 1] ? +m[1] : 0; };
 
-function card(t, i, q, words) {
-  const key = t.id + '-' + i;
-  const pic = q.p && P[q.p] ? `<img src="${P[q.p]}" alt="Рисунок к вопросу ${i}">` : '';
-  const hide = train && !revealed.has(key);
-  const ans = hide
-    ? `<button class="ans hidden" type="button" data-k="${key}">Показать ответ</button>`
-    : `<div class="ans">${hl(q.a, words)}${q.n ? ` <small>(${esc(q.n)})</small>` : ''}</div>`;
+const route = () => {
+  const h = location.hash.replace('#', ''), m = /^t(\d)$/.exec(h);
+  if (m && T[m[1] - 1]) return { name: 'topic', tid: +m[1] };
+  if (h === 'fav' || h === 'err' || h === 'test') return { name: h };
+  return { name: 'home' };
+};
+
+// карточка вопроса (справочник)
+let cur = { ws: [], fz: false, opt: {} }; // параметры последнего рендера, чтобы перерисовывать одну карточку
+function card(it, ws = [], fz = false, opt = {}) {
+  const { q, key } = it;
+  const pic = q.p && P[q.p] ? `<img src="${P[q.p]}" alt="Рисунок к вопросу ${it.i}">` : '';
+  const hide = train && !opt.force && !revealed.has(key);
+  let ans;
+  if (hide) ans = `<button class="ans hidden" type="button" data-act="reveal" data-k="${key}">Показать ответ</button>`;
+  else {
+    ans = `<div class="ans">${hl(q.a, ws, fz)}${q.n ? ` <small>(${esc(q.n)})</small>` : ''}</div>`;
+    if (train && !opt.force && !rated.has(key)) ans += `<div class="rate"><button type="button" class="ok" data-act="rate" data-v="1" data-k="${key}">✓ Знал</button><button type="button" class="bad" data-act="rate" data-v="0" data-k="${key}">✗ Не знал</button></div>`;
+  }
   const others = !hide && q.x.length ? `<div class="others">Неверные: ${esc(q.x.join(' · '))}</div>` : '';
-  return `<article class="q" id="q${t.id}-${i}"><p><span class="qn">${i}</span>${hl(q.t, words)}</p>${pic}${ans}${others}</article>`;
+  const st = stat[key], badge = !st ? '' : st.last ? ' <span class="badge ok" title="В последний раз — верно">✓</span>' : ' <span class="badge bad">ошибка</span>';
+  const f = fav.has(key);
+  return `<article class="q" id="q${key}"><button class="star${f ? ' on' : ''}" type="button" data-act="fav" data-k="${key}" aria-pressed="${f}" aria-label="Избранное">${f ? '★' : '☆'}</button>` +
+    `<p><span class="qn">${opt.showT ? it.t.id + '.' : ''}${it.i}</span>${hl(q.t, ws, fz)}${badge}</p>${pic}${opt.extra || ''}${ans}${others}</article>`;
+}
+function refreshCard(k) { const el = document.getElementById('q' + k); if (el) el.outerHTML = card(BY[k], cur.ws, cur.fz, cur.opt); }
+function grouped(items, ws, fz) {
+  const n = {}; items.forEach(it => { n[it.t.id] = (n[it.t.id] || 0) + 1; });
+  let html = '', tid = 0;
+  items.forEach(it => { if (it.t.id !== tid) { tid = it.t.id; html += `<div class="sec"><a href="#t${tid}">${tid}. ${esc(it.t.title)}</a> — ${n[tid]}</div>`; } html += card(it, ws, fz); });
+  return `<div class="list">${html}</div>`;
+}
+const numCls = (it, vis) => [vis ? '' : 'dim', stat[it.key] ? (stat[it.key].last ? 'ok' : 'bad') : ''].join(' ').trim();
+const progBar = (ok, bad, total, cls = '') => `<span class="prog${cls ? ' ' + cls : ''}"><i class="okp" style="width:${ok / total * 100}%"></i><i class="badp" style="width:${bad / total * 100}%"></i></span>`;
+function topicStat(items) { let s = 0, e = 0; items.forEach(it => { if (seen(it.key)) { s++; if (isErr(it.key)) e++; } }); return { s, e }; }
+
+// экраны
+function render() {
+  const r = route(), raw = inp.value.trim();
+  cur = { ws: [], fz: false, opt: {} };
+  const inTest = r.name === 'test';
+  back.hidden = r.name === 'home';
+  topBtn.hidden = r.name === 'home' && !raw;
+  srch.hidden = inTest; trainBtn.hidden = inTest;
+  if (inTest) return renderTest();
+  if (r.name === 'topic') return renderTopic(r.tid, raw);
+  if (r.name === 'fav' || r.name === 'err') return renderList(r.name, raw);
+  return raw ? renderSearchAll(raw) : renderHome();
 }
 
-function render() {
-  const tid = route();
-  const raw = inp.value.trim(), words = norm(raw).split(' ').filter(Boolean), isNum = /^\d+$/.test(raw);
-  back.hidden = !tid; topBtn.hidden = !tid && !raw;
-  if (!tid) {
-    ttl.textContent = 'Физика · ответы';
-    inp.placeholder = 'Поиск по всем темам…';
-    if (!raw) {
-      cnt.textContent = '9 тем · 900 вопросов';
-      main.innerHTML = installBox() + '<div class="topics">' + T.map(t =>
-        `<a class="topic" href="#t${t.id}"><b>${t.id}</b><span>${esc(t.title)}<br><small>${t.q.length} вопросов</small></span>›</a>`).join('') + '</div>';
-      bindInstall(); return;
-    }
-    let total = 0, html = '';
-    T.forEach(t => {
-      const hits = [];
-      t.q.forEach((q, j) => { if (words.every(w => norm(q.t + ' ' + q.a).includes(w))) hits.push(card(t, j + 1, q, words)); });
-      if (hits.length) { total += hits.length; html += `<div class="sec">${t.id}. ${esc(t.title)} — ${hits.length}</div>` + hits.join(''); }
-    });
-    cnt.textContent = `Найдено во всех темах: ${total}`;
-    main.innerHTML = html ? `<div class="list">${html}</div>` : '<div class="empty">Ничего не нашлось. Попробуй часть слова.</div>';
+function renderHome() {
+  ttl.textContent = 'Физика · ответы';
+  inp.placeholder = 'Поиск по всем темам… или 3.15';
+  const all = topicStat(ALL), errN = ALL.filter(it => isErr(it.key)).length;
+  cnt.textContent = `${T.length} тем · ${nQ(ALL.length)}` + (all.s ? ` · пройдено ${all.s}` : '');
+  main.innerHTML = installBox() +
+    `<div class="actions"><a class="act main" href="#test">▶ Тест</a><a class="act" href="#err">✗ Ошибки <b>${errN}</b></a><a class="act" href="#fav">★ Избранное <b>${fav.size}</b></a></div>` +
+    '<div class="topics">' + T.map(t => {
+      const items = ALL.filter(it => it.t === t), s = topicStat(items);
+      const info = s.s ? ` · пройдено ${s.s}` + (s.e ? ` · ошибок ${s.e}` : '') : '';
+      return `<a class="topic" href="#t${t.id}"><b>${t.id}</b><span>${esc(t.title)}<br><small>${nQ(t.q.length)}${info}</small>${s.s ? progBar(s.s - s.e, s.e, items.length) : ''}</span>›</a>`;
+    }).join('') + '</div>' +
+    (all.s ? '<p class="note center">Прогресс хранится только на этом устройстве. <button class="link" type="button" data-act="reset">Сбросить прогресс</button></p>' : '');
+  bindInstall();
+}
+
+function renderSearchAll(raw) {
+  ttl.textContent = 'Физика · ответы';
+  const m = /^(\d)\s*[.,\-/ ]\s*(\d{1,3})$/.exec(raw); // «3.15» — тема 3, вопрос 15
+  if (m && T[m[1] - 1] && BY[m[1] + '-' + +m[2]]) {
+    cur.opt = { showT: true };
+    cnt.textContent = `Тема ${m[1]}, вопрос ${+m[2]}`;
+    main.innerHTML = `<div class="list"><div class="sec"><a href="#t${m[1]}">${m[1]}. ${esc(T[m[1] - 1].title)}</a></div>${card(BY[m[1] + '-' + +m[2]], [], false, cur.opt)}</div>`;
     return;
   }
-  const t = T[tid - 1];
-  ttl.textContent = `${t.id}. ${t.title}`;
-  inp.placeholder = 'Слова из вопроса или номер…';
-  const vis = new Set(), parts = [];
-  t.q.forEach((q, j) => {
-    const i = j + 1;
-    const ok = isNum ? String(i) === raw : words.every(w => norm(q.t + ' ' + q.a).includes(w));
-    if (!ok) return; vis.add(i); parts.push(card(t, i, q, isNum ? [] : words));
-  });
-  cnt.textContent = raw ? `Найдено: ${vis.size} из ${t.q.length}` : `${t.q.length} вопросов · нажми номер, чтобы перейти`;
-  main.innerHTML = '<p class="note">Варианты в тесте перемешаны — сверяй текст ответа, а не номер.</p>' +
-    `<nav class="nums" id="nums">${t.q.map((_, j) => `<a href="#" data-n="${j + 1}" class="${vis.has(j + 1) ? '' : 'dim'}">${j + 1}</a>`).join('')}</nav>` +
-    (parts.length ? `<section class="list">${parts.join('')}</section>` : '<div class="empty">Ничего не нашлось.</div>');
+  const ws = qWords(raw), { r, fz } = find(ALL, ws);
+  cur.ws = ws; cur.fz = fz;
+  cnt.textContent = fz ? `Точных совпадений нет — похожие: ${r.length}` : `Найдено во всех темах: ${r.length}`;
+  main.innerHTML = r.length ? grouped(r, ws, fz) : '<div class="empty">Ничего не нашлось. Попробуй часть слова.</div>';
 }
 
-function jump(tid, n) {
-  let el = document.getElementById(`q${tid}-${n}`);
-  if (!el) { inp.value = ''; render(); el = document.getElementById(`q${tid}-${n}`); }
+function renderTopic(tid, raw) {
+  const t = T[tid - 1], items = ALL.filter(it => it.t === t), isNum = /^\d+$/.test(raw);
+  ttl.textContent = `${t.id}. ${t.title}`;
+  inp.placeholder = 'Слова из вопроса или номер…';
+  let vis = items, fz = false, ws = [];
+  if (isNum) vis = items.filter(it => String(it.i) === raw);
+  else if (raw) { ws = qWords(raw); ({ r: vis, fz } = find(items, ws)); }
+  cur.ws = ws; cur.fz = fz;
+  const vs = new Set(vis), s = topicStat(items);
+  cnt.textContent = raw ? (fz ? `Точных совпадений нет — похожие: ${vis.length}` : `Найдено: ${vis.length} из ${items.length}`)
+    : `${nQ(items.length)} · пройдено ${s.s}` + (s.e ? ` · ошибок ${s.e}` : '');
+  main.innerHTML = `<div class="tbar"><button class="act sm main" type="button" data-act="testTopic" data-t="${tid}">▶ Тест по теме</button><span class="note">Варианты в тесте перемешаны — сверяй текст ответа, а не номер.</span></div>` +
+    `<nav class="nums" id="nums">${items.map(it => `<a href="#" data-n="${it.i}" class="${numCls(it, vs.has(it))}">${it.i}</a>`).join('')}</nav>` +
+    (vis.length ? `<section class="list">${vis.map(it => card(it, ws, fz)).join('')}</section>` : '<div class="empty">Ничего не нашлось.</div>') +
+    `<nav class="pager">${tid > 1 ? `<a href="#t${tid - 1}">← ${tid - 1}. ${esc(T[tid - 2].title)}</a>` : '<span></span>'}${tid < T.length ? `<a href="#t${tid + 1}">${tid + 1}. ${esc(T[tid].title)} →</a>` : ''}</nav>`;
+}
+
+function renderList(name, raw) {
+  const isF = name === 'fav', base = ALL.filter(it => isF ? fav.has(it.key) : isErr(it.key));
+  ttl.textContent = isF ? '★ Избранное' : '✗ Мои ошибки';
+  inp.placeholder = isF ? 'Поиск в избранном…' : 'Поиск в ошибках…';
+  if (!base.length) {
+    cnt.textContent = '';
+    main.innerHTML = `<div class="empty">${isF ? 'Пока пусто. Нажми ☆ у вопроса, чтобы добавить его сюда.' : 'Ошибок нет. Пройди тест или тренировку — вопросы, на которые ответишь неверно, появятся здесь.'}</div>`;
+    return;
+  }
+  const ws = qWords(raw), { r, fz } = find(base, ws);
+  cur.ws = ws; cur.fz = fz;
+  cnt.textContent = raw ? (fz ? `Точных совпадений нет — похожие: ${r.length}` : `Найдено: ${r.length} из ${base.length}`) : nQ(base.length);
+  main.innerHTML = `<div class="tbar"><button class="act sm main" type="button" data-act="testList" data-src="${name}">▶ Тест по ${isF ? 'избранному' : 'ошибкам'} · ${base.length}</button>` +
+    (isF ? '' : '<span class="note">Вопрос уходит отсюда, когда ответишь на него верно.</span>') + '</div>' +
+    (r.length ? grouped(r, ws, fz) : '<div class="empty">Ничего не нашлось.</div>');
+}
+
+// режим теста
+const CFG0 = { topic: 0, src: 'all', n: 20, mc: false };
+let cfg = Object.assign({}, CFG0, LS.get('fz-testcfg', {}));
+if (!(cfg.topic >= 0 && cfg.topic <= T.length)) cfg.topic = 0;
+if (!['all', 'new', 'err', 'fav'].includes(cfg.src)) cfg.src = 'all';
+if (![10, 20, 50, 0].includes(cfg.n)) cfg.n = 20;
+cfg.mc = cfg.mc === true;
+let test = null, pendingTest = null;
+const pool = c => ALL.filter(it => (!c.topic || it.t.id === c.topic) && (!c.mc || it.q.x.length) &&
+  (c.src === 'all' || (c.src === 'new' && !seen(it.key)) || (c.src === 'err' && isErr(it.key)) || (c.src === 'fav' && fav.has(it.key))));
+function startTest(items) { test = { items: items.map(it => ({ it, opts: it.q.x.length ? shuffle([it.q.a, ...it.q.x]) : null, shown: false })), i: 0, res: [], done: false }; }
+const testRunning = () => test && !test.done && test.i < test.items.length && test.res.some(Boolean);
+
+function renderTest() {
+  if (!test) return renderSetup();
+  if (test.done || test.i >= test.items.length) return renderResults();
+  const n = test.items.length, c = test.items[test.i], it = c.it, q = it.q, res = test.res[test.i];
+  const okN = test.res.filter(x => x && x.ok).length, badN = test.res.filter(x => x && !x.ok).length;
+  ttl.textContent = `Тест · ${test.i + 1} из ${n}`;
+  cnt.textContent = `Верно: ${okN} · Ошибок: ${badN}`;
+  const pic = q.p && P[q.p] ? `<img src="${P[q.p]}" alt="Рисунок к вопросу">` : '';
+  let body;
+  if (c.opts) {
+    body = '<div class="opts">' + c.opts.map((o, k) => {
+      const cls = !res ? '' : o === q.a ? ' right' : k === res.pick ? ' wrong' : '';
+      return `<button class="opt${cls}" type="button" data-act="pick" data-v="${k}"${res ? ' disabled' : ''}><span>${k + 1}</span>${esc(o)}</button>`;
+    }).join('') + '</div>';
+    if (res) body += res.ok ? '<div class="verdict ok">Верно!</div>' : '<div class="verdict bad">Неверно — правильный ответ отмечен зелёным.</div>';
+  } else if (!c.shown && !res) {
+    body = '<button class="ans hidden" type="button" data-act="show">Показать ответ</button><p class="note">Вариантов для этого вопроса нет — вспомни ответ, затем проверь себя.</p>';
+  } else {
+    body = `<div class="ans">${esc(q.a)}</div>` + (res ? `<div class="verdict ${res.ok ? 'ok' : 'bad'}">${res.ok ? 'Отмечено: знал' : 'Отмечено: не знал'}</div>`
+      : '<div class="rate"><button type="button" class="ok" data-act="self" data-v="1">✓ Знал</button><button type="button" class="bad" data-act="self" data-v="0">✗ Не знал</button></div>');
+  }
+  if (res && q.n) body += `<p class="note">${esc(q.n)}</p>`;
+  main.innerHTML = progBar(okN, badN, n, 'big') +
+    `<article class="q test"><p><span class="qn">${it.t.id}.${it.i}</span>${esc(q.t)}</p>${pic}${body}</article>` +
+    (res ? `<button class="next" type="button" data-act="next">${test.i + 1 < n ? 'Дальше →' : 'Результат'}</button>` : '') +
+    `<div class="tfoot"><button class="link" type="button" data-act="finish">Завершить тест</button></div>`;
+  const nx = $('.next'); if (nx) nx.focus({ preventScroll: true });
+}
+
+function renderSetup() {
+  ttl.textContent = 'Тест';
+  const avail = pool(cfg).length, take = cfg.n ? Math.min(cfg.n, avail) : avail;
+  cnt.textContent = `Подходит вопросов: ${avail}`;
+  const chip = (g, v, label) => `<button type="button" class="chip" data-act="cfg" data-g="${g}" data-v="${v}" aria-pressed="${cfg[g] === v}">${esc(label)}</button>`;
+  main.innerHTML = '<section class="setup">' +
+    `<h3>Тема</h3><div class="chips">${chip('topic', 0, 'Все темы')}${T.map(t => chip('topic', t.id, t.id + '. ' + t.title)).join('')}</div>` +
+    `<h3>Какие вопросы</h3><div class="chips">${chip('src', 'all', 'Все')}${chip('src', 'new', 'Ещё не решал')}${chip('src', 'err', 'Мои ошибки')}${chip('src', 'fav', 'Избранное')}</div>` +
+    `<div class="chips">${chip('mc', false, 'Любые')}${chip('mc', true, 'Только с вариантами ответа')}</div>` +
+    `<h3>Сколько</h3><div class="chips">${[10, 20, 50, 0].map(v => chip('n', v, v || 'Все')).join('')}</div>` +
+    `<button class="start" type="button" data-act="start"${take ? '' : ' disabled'}>${take ? `Начать · ${nQ(take)}` : 'Нет подходящих вопросов'}</button>` +
+    '<p class="note">Вопросы и варианты перемешиваются. Если вариантов в базе нет, проверяешь себя сам: «знал / не знал». Ответы попадают в прогресс и список ошибок. Клавиши 1–4 — выбор, Enter — дальше.</p></section>';
+}
+
+function renderResults() {
+  const done = test.res.map((r, k) => r && { r, c: test.items[k] }).filter(Boolean);
+  const ok = done.filter(d => d.r.ok).length, tot = done.length, pct = tot ? Math.round(ok / tot * 100) : 0;
+  const wrong = done.filter(d => !d.r.ok);
+  const word = pct >= 85 ? 'отлично' : pct >= 70 ? 'хорошо' : pct >= 50 ? 'неплохо, но есть что подтянуть' : 'стоит повторить';
+  ttl.textContent = 'Тест · результат';
+  cnt.textContent = tot < test.items.length ? `Отвечено ${tot} из ${test.items.length}` : `Вопросов: ${tot}`;
+  cur.opt = { force: true };
+  main.innerHTML = `<div class="score ${pct >= 70 ? 'good' : pct >= 50 ? 'mid' : 'low'}"><b>${ok} / ${tot}</b><span>${pct}% — ${word}</span></div>` +
+    '<div class="actions">' + (wrong.length ? `<button class="act main" type="button" data-act="retry">↻ Ошибки ещё раз · ${wrong.length}</button>` : '') +
+    '<button class="act" type="button" data-act="again">Новый тест</button><a class="act" href="#">К темам</a></div>' +
+    (wrong.length ? '<div class="sec">Разбор ошибок</div><div class="list">' + wrong.map(d => card(d.c.it, [], false,
+      { force: true, showT: true, extra: d.c.opts ? `<div class="mine">Твой ответ: ${esc(d.c.opts[d.r.pick])}</div>` : '' })).join('') + '</div>'
+      : '<div class="empty">Без единой ошибки!</div>');
+}
+
+// события
+function jump(n) {
+  let el = document.getElementById(`q${route().tid}-${n}`);
+  if (!el) { inp.value = ''; render(); el = document.getElementById(`q${route().tid}-${n}`); }
+  if (!el) return;
   const go = () => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - $('header').getBoundingClientRect().height - 8);
   go(); requestAnimationFrame(go);
   el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1200);
 }
+const go = h => { if (location.hash.replace('#', '') === h) { test = null; render(); } else location.hash = h; };
+function answer(ok, pick) { const c = test.items[test.i]; test.res[test.i] = { ok, pick }; record(c.it.key, ok); render(); }
+
 main.addEventListener('click', e => {
   const a = e.target.closest('.nums a');
-  if (a) { e.preventDefault(); jump(route(), a.dataset.n); return; }
-  const b = e.target.closest('.ans.hidden');
-  if (b) { revealed.add(b.dataset.k); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  if (a) { e.preventDefault(); jump(a.dataset.n); return; }
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const k = b.dataset.k, v = b.dataset.v;
+  switch (b.dataset.act) {
+    case 'reveal': revealed.add(k); refreshCard(k); break;
+    case 'rate': {
+      record(k, v === '1'); rated.add(k); refreshCard(k);
+      const n = document.querySelector(`.nums a[data-n="${BY[k].i}"]`); if (n) n.className = numCls(BY[k], !n.classList.contains('dim'));
+      break;
+    }
+    case 'fav': toggleFav(k); if (route().name === 'fav') keepScroll(render); else refreshCard(k); break;
+    case 'reset':
+      if (confirm('Сбросить весь прогресс и список ошибок? Избранное останется.')) { stat = {}; LS.set('fz-stat', stat); render(); }
+      break;
+    case 'testTopic': cfg.topic = +b.dataset.t; LS.set('fz-testcfg', cfg); go('test'); break;
+    case 'testList': pendingTest = shuffle(ALL.filter(it => b.dataset.src === 'fav' ? fav.has(it.key) : isErr(it.key))); go('test'); break;
+    case 'cfg': {
+      const g = b.dataset.g;
+      cfg[g] = g === 'src' ? v : g === 'mc' ? v === 'true' : +v;
+      LS.set('fz-testcfg', cfg); keepScroll(render); break;
+    }
+    case 'start': startTest(shuffle(pool(cfg)).slice(0, cfg.n || undefined)); render(); window.scrollTo(0, 0); break;
+    case 'pick': { const c = test.items[test.i]; answer(c.opts[+v] === c.it.q.a, +v); break; }
+    case 'show': test.items[test.i].shown = true; render(); break;
+    case 'self': answer(v === '1'); break;
+    case 'next': test.i++; render(); window.scrollTo(0, 0); break;
+    case 'finish':
+      if (!test.res.some(Boolean)) test = null; else test.done = true;
+      render(); window.scrollTo(0, 0); break;
+    case 'retry': startTest(shuffle(test.res.map((r, i) => r && !r.ok && test.items[i].it).filter(Boolean))); render(); window.scrollTo(0, 0); break;
+    case 'again': test = null; render(); window.scrollTo(0, 0); break;
+  }
 });
-back.addEventListener('click', () => { location.hash = ''; });
-window.addEventListener('hashchange', () => { inp.value = ''; revealed.clear(); render(); window.scrollTo(0, 0); });
+document.addEventListener('keydown', e => {
+  if (route().name !== 'test' || !test || test.done || e.ctrlKey || e.metaKey || e.altKey) return;
+  const tag = e.target.tagName, c = test.items[test.i];
+  if (!c || tag === 'INPUT') return;
+  if (c.opts && !test.res[test.i] && /^[1-9]$/.test(e.key) && +e.key <= c.opts.length) { e.preventDefault(); answer(c.opts[e.key - 1] === c.it.q.a, e.key - 1); }
+  else if (test.res[test.i] && e.key === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); test.i++; render(); window.scrollTo(0, 0); }
+});
+back.addEventListener('click', () => {
+  if (route().name === 'test' && testRunning() && !confirm('Прервать тест? Уже данные ответы сохранятся в прогрессе.')) return;
+  location.hash = '';
+});
+window.addEventListener('hashchange', () => {
+  inp.value = ''; revealed.clear(); rated.clear();
+  if (route().name === 'test') { test = null; if (pendingTest) startTest(pendingTest); }
+  pendingTest = null;
+  render(); window.scrollTo(0, 0);
+});
 let tm; inp.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(render, 140); });
 $('#clr').addEventListener('click', () => { inp.value = ''; render(); inp.focus(); });
-trainBtn.addEventListener('click', () => { train = !train; revealed.clear(); trainBtn.setAttribute('aria-pressed', train); try { localStorage.setItem('fz-train', train ? '1' : '0'); } catch (e) {} const y = window.scrollY; render(); window.scrollTo(0, y); });
+trainBtn.addEventListener('click', () => { train = !train; revealed.clear(); rated.clear(); trainBtn.setAttribute('aria-pressed', train); LS.set('fz-train', train ? 1 : 0); keepScroll(render); });
 topBtn.addEventListener('click', () => window.scrollTo(0, 0));
 
 // установка на главный экран
 let deferred = null;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; if (!route() && !inp.value) render(); });
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; if (route().name === 'home' && !inp.value) render(); });
 const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 function installBox() {
   if (standalone()) return '';
