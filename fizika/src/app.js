@@ -86,13 +86,21 @@ const route = () => {
   return { name: 'home' };
 };
 
-// пояснение к ответу; «⚠» — ключ спорный, выделяем красной ручкой
+// пояснение к ответу: подробное по шагам (объект) или короткое (строка, старые темы)
+const nl = t => esc(t).replace(/\n/g, '<br>');
+function whyBody(e) {
+  if (typeof e === 'string') {
+    return `<p class="why-text">${esc(e).replace('⚠', '<b class="flag">Ключ спорный.</b>')}</p>`;
+  }
+  return `<div class="why-step"><b>Что спрашивают</b><p>${nl(e.s)}</p></div>` +
+    `<div class="why-step"><b>Главная идея</b><p>${nl(e.i)}</p></div>` +
+    `<div class="why-step"><b>Решение</b><p>${nl(e.r)}</p></div>` +
+    (e.w ? `<div class="why-warn"><b>Внимание: ключ спорный</b><p>${nl(e.w)}</p></div>` : '');
+}
 function why(q, open) {
   if (!q.e) return '';
-  const doubt = q.e.includes('⚠');
-  const body = `<p class="why-text${doubt ? ' doubt' : ''}">${esc(q.e).replace('⚠', '<b class="flag">Ключ спорный.</b>')}</p>`;
-  return open ? `<div class="why open"><span class="why-h">Почему так</span>${body}</div>`
-    : `<details class="why"><summary>Почему так?</summary>${body}</details>`;
+  return open ? `<section class="why open"><h3 class="why-h">Пояснение</h3>${whyBody(q.e)}</section>`
+    : `<details class="why"><summary><span class="sh">Показать пояснение</span><span class="hd">Скрыть пояснение</span></summary>${whyBody(q.e)}</details>`;
 }
 
 // карточка вопроса (справочник)
@@ -140,6 +148,7 @@ function render() {
 }
 
 function renderHome() {
+  if (T.length === 1) return renderSingleHome();
   ttl.innerHTML = 'Физика';
   inp.placeholder = 'Поиск или номер, например 3.15';
   const all = topicStat(ALL), errN = ALL.filter(it => isErr(it.key)).length;
@@ -156,8 +165,23 @@ function renderHome() {
   bindInstall();
 }
 
+function renderSingleHome() {
+  const t = T[0], s = topicStat(ALL), errN = ALL.filter(it => isErr(it.key)).length;
+  ttl.innerHTML = `<span class="tglyph">${GLYPH[t.id] || ''}</span>${esc(t.title)}`;
+  inp.placeholder = 'Поиск по вопросам или номер';
+  cnt.textContent = s.s ? `Решено ${s.s} из ${ALL.length}, ошибок сейчас ${errN}` : `${nQ(ALL.length)} с ответами и подробными пояснениями`;
+  main.innerHTML = installBox() +
+    `<section class="hero"><a class="go" href="#test"><b>Пройти тест</b><span>4 варианта ответа, после каждого — подробное пояснение</span></a>` +
+    `<a class="go alt" href="#t${t.id}"><b>Учить вопросы</b><span>Все ${ALL.length} вопросов с ответами; пояснение — по кнопке под ответом</span></a>` +
+    (s.s ? ruler(s.s - s.e, s.e, ALL.length, 'big') : '') +
+    `<div class="pair"><a class="chipbtn${errN ? ' red' : ''}" href="#err">Мои ошибки <b>${errN}</b></a><a class="chipbtn" href="#fav">Избранное <b>${fav.size}</b></a></div></section>` +
+    '<h2 class="sec">Как заниматься</h2><ol class="howto"><li><b>Учить вопросы</b> — читаешь вопрос, ответ и пояснение. Включи «Тренировку» в шапке, чтобы ответы были скрыты.</li><li><b>Пройти тест</b> — выбираешь вариант и сразу видишь, почему верно именно так.</li><li><b>Мои ошибки</b> — сюда попадает всё, где ошибся. Повторяй, пока список не опустеет.</li></ol>' +
+    (s.s ? '<p class="note center">Прогресс хранится только на этом устройстве. <button class="link" type="button" data-act="reset">Сбросить прогресс</button></p>' : '');
+  bindInstall();
+}
+
 function renderSearchAll(raw) {
-  ttl.innerHTML = 'Физика';
+  ttl.innerHTML = T.length === 1 ? esc(T[0].title) : 'Физика';
   const m = /^(\d)\s*[.,\-/ ]\s*(\d{1,3})$/.exec(raw); // «3.15» — тема 3, вопрос 15
   if (m && T[m[1] - 1] && BY[m[1] + '-' + +m[2]]) {
     cur.opt = { showT: true };
@@ -185,7 +209,7 @@ function renderTopic(tid, raw) {
   main.innerHTML = `<div class="tbar"><button class="go sm" type="button" data-act="testTopic" data-t="${tid}"><b>Тест по теме</b></button><p class="note">В настоящем тесте варианты перемешаны: сверяй текст ответа, а не его номер.</p></div>` +
     `<nav class="nums" id="nums" aria-label="Номера вопросов">${items.map(it => `<a href="#" data-n="${it.i}" class="${numCls(it, vs.has(it))}">${it.i}</a>`).join('')}</nav>` +
     (vis.length ? `<section class="list">${vis.map(it => card(it, ws, fz)).join('')}</section>` : '<div class="empty">Ничего не нашлось.</div>') +
-    `<nav class="pager">${tid > 1 ? `<a href="#t${tid - 1}"><small>Назад</small>${tid - 1}. ${esc(T[tid - 2].title)}</a>` : '<span></span>'}${tid < T.length ? `<a href="#t${tid + 1}"><small>Дальше</small>${tid + 1}. ${esc(T[tid].title)}</a>` : ''}</nav>`;
+    (T.length > 1 ? `<nav class="pager">${tid > 1 ? `<a href="#t${tid - 1}"><small>Назад</small>${tid - 1}. ${esc(T[tid - 2].title)}</a>` : '<span></span>'}${tid < T.length ? `<a href="#t${tid + 1}"><small>Дальше</small>${tid + 1}. ${esc(T[tid].title)}</a>` : ''}</nav>` : '');
 }
 
 function renderList(name, raw) {
@@ -208,7 +232,7 @@ function renderList(name, raw) {
 // режим теста
 const CFG0 = { topic: 0, src: 'all', n: 20, mc: false };
 let cfg = Object.assign({}, CFG0, LS.get('fz-testcfg', {}));
-if (!(cfg.topic >= 0 && cfg.topic <= T.length)) cfg.topic = 0;
+if (!(cfg.topic === 0 || T.some(t => t.id === cfg.topic))) cfg.topic = 0;
 if (!['all', 'new', 'err', 'fav'].includes(cfg.src)) cfg.src = 'all';
 if (![10, 20, 50, 0].includes(cfg.n)) cfg.n = 20;
 cfg.mc = cfg.mc === true;
@@ -230,7 +254,7 @@ function renderTest() {
   if (c.opts) {
     body = '<div class="opts">' + c.opts.map((o, k) => {
       const cls = !res ? '' : o === q.a ? ' right' : k === res.pick ? ' wrong' : '';
-      return `<button class="opt${cls}" type="button" data-act="pick" data-v="${k}"${res ? ' disabled' : ''}><span class="ok-n">${k + 1}</span><span>${esc(o)}</span></button>`;
+      return `<button class="opt${cls}" type="button" data-act="pick" data-v="${k}"${res ? ' disabled' : ''}><span class="ok-n">${"АБВГДЕ"[k]}</span><span>${esc(o)}</span></button>`;
     }).join('') + '</div>';
     if (res) body += `<div class="verdict ${res.ok ? 'ok' : 'bad'}">${res.ok ? 'Верно' : 'Неверно. Правильный ответ отмечен зелёным.'}</div>`;
   } else if (!c.shown && !res) {
@@ -253,12 +277,12 @@ function renderSetup() {
   cnt.textContent = `Подходит вопросов: ${avail}`;
   const chip = (g, v, label) => `<button type="button" class="chip" data-act="cfg" data-g="${g}" data-v="${v}" aria-pressed="${cfg[g] === v}">${esc(label)}</button>`;
   main.innerHTML = '<section class="setup">' +
-    `<h2 class="sec">Тема</h2><div class="chips">${chip('topic', 0, 'Все темы')}${T.map(t => chip('topic', t.id, t.id + '. ' + t.title)).join('')}</div>` +
+    (T.length > 1 ? `<h2 class="sec">Тема</h2><div class="chips">${chip('topic', 0, 'Все темы')}${T.map(t => chip('topic', t.id, t.id + '. ' + t.title)).join('')}</div>` : '') +
     `<h2 class="sec">Какие вопросы</h2><div class="chips">${chip('src', 'all', 'Все')}${chip('src', 'new', 'Ещё не решал')}${chip('src', 'err', 'Мои ошибки')}${chip('src', 'fav', 'Избранное')}</div>` +
     `<div class="chips">${chip('mc', false, 'С вариантами и без')}${chip('mc', true, 'Только с вариантами')}</div>` +
     `<h2 class="sec">Сколько</h2><div class="chips">${[10, 20, 50, 0].map(v => chip('n', v, v || 'Все')).join('')}</div>` +
     `<button class="next" type="button" data-act="start"${take ? '' : ' disabled'}>${take ? `Начать: ${nQ(take)}` : 'Нет подходящих вопросов'}</button>` +
-    '<p class="note">Вопросы и варианты перемешиваются. После каждого ответа — короткое пояснение. Если вариантов в базе нет, проверяешь себя сам. На клавиатуре: 1–4 — выбрать, Enter — дальше.</p></section>';
+    '<p class="note">Вопросы и варианты перемешиваются. После каждого ответа — подробное пояснение. Если вариантов в базе нет, проверяешь себя сам. На клавиатуре: 1–4 (или А–Г) — выбрать, Enter — дальше.</p></section>';
 }
 
 function renderResults() {
@@ -331,7 +355,8 @@ document.addEventListener('keydown', e => {
   if (route().name !== 'test' || !test || test.done || e.ctrlKey || e.metaKey || e.altKey) return;
   const tag = e.target.tagName, c = test.items[test.i];
   if (!c || tag === 'INPUT') return;
-  if (c.opts && !test.res[test.i] && /^[1-9]$/.test(e.key) && +e.key <= c.opts.length) { e.preventDefault(); answer(c.opts[e.key - 1] === c.it.q.a, e.key - 1); }
+  const kk = /^[1-9]$/.test(e.key) ? +e.key - 1 : 'абвгде'.indexOf(e.key.toLowerCase());
+  if (c.opts && !test.res[test.i] && kk >= 0 && kk < c.opts.length) { e.preventDefault(); answer(c.opts[kk] === c.it.q.a, kk); }
   else if (test.res[test.i] && e.key === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); test.i++; render(); window.scrollTo(0, 0); }
 });
 back.addEventListener('click', () => {

@@ -142,19 +142,31 @@ main{padding-block:14px 96px}
 .mine{font-size:14px; color:var(--red); text-decoration:line-through; text-decoration-color:color-mix(in srgb,var(--red) 50%,transparent)}
 mark{background:var(--marker); color:inherit; border-radius:3px; padding:0 1px}
 .empty{color:var(--muted); text-align:center; padding:32px 12px}
-/* пояснение: поле тетради с синей линией */
-.why{border-left:3px solid var(--ink); padding:2px 0 2px 12px}
-.why summary{cursor:pointer; color:var(--ink); font-weight:600; font-size:14px; list-style:none; padding:4px 0}
+/* пояснение: поле тетради с синей линией, шаги решения */
+.why{border-left:3px solid var(--ink); padding:2px 0 2px 14px; display:grid; gap:10px}
+.why summary{cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:center; min-height:44px; border-radius:10px; background:var(--ink-soft); color:var(--ink); font-weight:700; margin-left:-14px}
+.why[open] summary{margin-bottom:10px}
 .why summary::-webkit-details-marker{display:none}
-.why summary::before{content:"+"; display:inline-block; width:1em; font-weight:700}
-.why[open] summary::before{content:"−"}
-.why-h{display:block; color:var(--ink); font-weight:700; font-size:14px}
-.why-text{margin:4px 0 2px; font-size:15px}
-.why-text.doubt{color:var(--text)}
+details.why{border-left:0; padding-left:0}
+details.why[open]{border-left:3px solid var(--ink); padding-left:14px}
+details.why[open] summary{margin-left:-14px}
+.why-h{margin:0; color:var(--ink); font-size:16px}
+.why summary .hd,.why[open] summary .sh{display:none}
+.why[open] summary .hd{display:inline}
+.why-step + .why-step,.why-step + .why-warn{margin-top:10px}
+.why-step b{display:block; color:var(--ink); font-size:14px}
+.why-step p,.why-warn p{margin:2px 0 0; font-size:15.5px; line-height:1.55}
+.why-warn{background:var(--red-soft); border-radius:10px; padding:10px 12px}
+.why-warn b{color:var(--red); font-size:14px}
+.why-text{margin:0; font-size:15px}
 .flag{color:var(--red)}
-.why:has(.doubt){border-left-color:var(--red)}
 .why.open{animation:why .28s ease-out}
 @keyframes why{from{opacity:0; transform:translateY(-4px)}to{opacity:1; transform:none}}
+.go.alt{background:var(--sheet); color:var(--text); border:1px solid var(--ink)}
+.go.alt b{color:var(--ink)}
+.go.alt span{opacity:1; color:var(--muted)}
+.howto{margin:0; padding-left:22px; display:grid; gap:8px; font-size:15px}
+.howto b{color:var(--ink)}
 
 /* тест */
 .chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px}
