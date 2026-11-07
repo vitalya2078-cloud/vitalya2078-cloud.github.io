@@ -378,20 +378,21 @@ function answer(ok, pick) {
   render();
 }
 
+let setupMore = false;
 function vSetup() {
   fixCfg();
   const avail = pool(cfg).length, take = cfg.n ? Math.min(cfg.n, avail) : avail;
-  const chip = (g, v, label) => `<button type="button" class="chip" data-act="cfg" data-g="${g}" data-v="${v}" aria-pressed="${cfg[g] === v}">${esc(label)}</button>`;
-  frame({ title: 'Тест', abar: `<button class="btn wide" type="button" data-act="start"${take ? '' : ' disabled'}>${take ? `Начать: ${nQ(take)}` : 'Нет подходящих вопросов'}</button>` });
+  const seg = (g, opts) => `<div class="seg">${opts.map(([v, l]) => `<button type="button" data-act="cfg" data-g="${g}" data-v="${v}" aria-pressed="${cfg[g] === v}">${esc(l)}</button>`).join('')}</div>`;
+  frame({ title: 'Свой тест', back: true, abar: `<button class="btn wide" type="button" data-act="start"${take ? '' : ' disabled'}>${take ? `Начать: ${nQ(take)}` : 'Нет подходящих вопросов'}</button>` });
   setMain(
-    `<section class="form"><h2>Тема</h2><div class="chips">${chip('topic', 0, 'Все темы')}${T.map(t => chip('topic', t.id, t.id + '. ' + t.title)).join('')}</div></section>` +
-    `<section class="form"><h2>Какие вопросы</h2><div class="chips">${chip('src', 'all', 'Все')}${chip('src', 'new', 'Ещё не решал')}${chip('src', 'err', 'Мои ошибки')}${chip('src', 'fav', 'Избранное')}</div>` +
-    `<div class="chips">${chip('mc', true, 'Только с вариантами')}${chip('mc', false, 'С вариантами и без')}</div><p class="note">Подходит вопросов: ${avail}</p></section>` +
-    `<section class="form"><h2>Сколько</h2><div class="chips">${chip('n', 30, '30, как на экзамене')}${chip('n', 10, '10, быстро')}${chip('n', 0, 'Все')}</div></section>` +
-    `<section class="form"><h2>Таймер на вопрос</h2><div class="chips">${chip('tOn', false, 'Без таймера')}${chip('tOn', true, 'С таймером')}</div>` +
-    (cfg.tOn ? `<label class="range"><span>Время на один вопрос: <b id="tsec">${cfg.tSec} с (${mmss(cfg.tSec)})</b></span><input id="tsl" type="range" min="100" max="180" step="10" value="${cfg.tSec}" aria-label="Секунд на вопрос"><span class="rl"><small>100 с</small><small>180 с</small></span></label><p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt(take)}</span></p>` : '') + '</section>' +
-    `<section class="form"><h2>Пояснения</h2><div class="chips">${chip('exam', false, 'Сразу после ответа')}${chip('exam', true, 'В конце, как на экзамене')}</div></section>` +
-    `<section class="form scale"><h2>Оценка</h2><p><b>60 баллов — «3»</b><b>75 баллов — «4»</b><b>90 баллов — «5»</b></p><p class="note">Баллы — доля верных ответов от 100. В тесте из 30 вопросов каждый стоит ≈ 3,3 балла: «3» — от 18 верных, «4» — от 23, «5» — от 27.</p></section>`);
+    `<section class="form"><h2>Тема</h2><select id="tsel" class="sel" aria-label="Тема"><option value="0"${cfg.topic ? '' : ' selected'}>Все темы</option>${T.map(t => `<option value="${t.id}"${cfg.topic === t.id ? ' selected' : ''}>${t.id}. ${esc(t.title)}</option>`).join('')}</select></section>` +
+    `<section class="form"><h2>Какие вопросы</h2>${seg('src', [['all', 'Все'], ['new', 'Новые'], ['err', 'Ошибки'], ['fav', 'Избранное']])}</section>` +
+    `<section class="form"><h2>Сколько</h2>${seg('n', [[10, '10'], [30, '30, как на экзамене'], [0, 'Все']])}<p class="note">Подходит вопросов: ${avail}. «3» — от 60 баллов, «4» — от 75, «5» — от 90.</p></section>` +
+    `<button class="more-b" type="button" data-act="setupMore" aria-expanded="${setupMore}">Дополнительно ${ico('chev', setupMore ? 'up' : 'down')}</button>` +
+    (setupMore ? `<section class="form"><h2>Варианты ответа</h2>${seg('mc', [[false, 'С вариантами и без'], [true, 'Только с вариантами']])}</section>` +
+      `<section class="form"><h2>Пояснения</h2>${seg('exam', [[false, 'Сразу после ответа'], [true, 'В конце']])}</section>` +
+      `<section class="form"><h2>Таймер на вопрос</h2>${seg('tOn', [[false, 'Без таймера'], [true, 'С таймером']])}` +
+      (cfg.tOn ? `<label class="range"><span>Время на вопрос: <b id="tsec">${cfg.tSec} с (${mmss(cfg.tSec)})</b></span><input id="tsl" type="range" min="100" max="180" step="10" value="${cfg.tSec}" aria-label="Секунд на вопрос"><span class="rl"><small>100 с</small><small>180 с</small></span></label><p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt(take)}</span></p>` : '') + '</section>' : ''));
 }
 const totTxt = n => `На ${nQ(n)} — не больше ${Math.ceil(n * cfg.tSec / 60)} мин.`;
 
@@ -407,7 +408,7 @@ function vResults() {
   const chk = checkBanner(pts);
   frame({ title: 'Результат', abar: (wrong.length ? `<button class="btn" type="button" data-act="retry">Повторить ошибки (${wrong.length})</button>` : '') + '<button class="btn line" type="button" data-act="again">Новый тест</button>' });
   cardCtx.opt = { force: true };
-  setMain(chk + `<div class="res-m">${mascot(resultMascot(mark), 'mascot big')}</div><section class="score"><span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ptsText(pts)} из 100</b><span>${word}: верно ${ok} из ${n}${tot < n ? ` (без ответа ${n - tot})` : ''}. ${hint}</span></div></section>` +
+  setMain(chk + `<section class="score sit">${mascot(resultMascot(mark), 'sitm')}<span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ptsText(pts)} из 100</b><span>${word}: верно ${ok} из ${n}${tot < n ? ` (без ответа ${n - tot})` : ''}. ${hint}</span></div></section>` +
     (wrong.length ? '<h2 class="sec">Разбор ошибок</h2><div class="list">' + wrong.map(d => card(d.c.it, [], false,
       { force: true, showT: true, extra: d.r.timeout ? '<p class="mine">Время вышло — ответа нет</p>' : d.c.opts ? `<p class="mine strike">Твой ответ: ${esc(d.c.opts[d.r.pick])}</p>` : '' })).join('') + '</div>'
       : '<div class="empty"><b>Ни одной ошибки.</b></div>'));
@@ -451,17 +452,15 @@ function restore(text) {
 
 /* ---------- Настройки и обновления ---------- */
 const theme = () => LS.get('fz-theme', 'system');
-function applyTheme() {
-  const t = theme(); if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = t;
-  const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+function applyTheme() { // одна, светлая тема оформления
+  document.documentElement.dataset.theme = 'light';
+  const dark = false;
   const meta = $('meta[name=theme-color]'); if (meta) meta.content = dark ? '#132B4C' : '#FFFFFF';
   if (BRIDGE && BRIDGE.setDark) try { BRIDGE.setDark(dark); } catch (e) {}
 }
 function vSettings() {
   frame({ title: 'Настройки', back: true });
-  const t = theme(), opt = (v, l) => `<button type="button" class="chip" data-act="theme" data-v="${v}" aria-pressed="${t === v}">${l}</button>`;
-  setMain(`<section class="panel"><h2>Оформление</h2><div class="chips">${opt('system', 'Как в системе')}${opt('light', 'Светлое')}${opt('dark', 'Тёмное')}</div></section>` +
-    `<section class="panel"><h2>Обновления</h2><p class="note">Приложение ${IN_APP ? `для Android ${esc(NATIVE ? NATIVE.name : '')}` : 'в браузере'}, сборка ${APP_BUILD}, вопросы — версия ${DATA_V}. ${IN_APP ? 'Новые вопросы и изменения интерфейса скачиваются сами, когда есть интернет.' : 'При запуске с интернетом всегда открывается свежая версия.'}</p>` +
+  setMain(    `<section class="panel"><h2>Обновления</h2><p class="note">Приложение ${IN_APP ? `для Android ${esc(NATIVE ? NATIVE.name : '')}` : 'в браузере'}, сборка ${APP_BUILD}, вопросы — версия ${DATA_V}. ${IN_APP ? 'Новые вопросы и изменения интерфейса скачиваются сами, когда есть интернет.' : 'При запуске с интернетом всегда открывается свежая версия.'}</p>` +
     `<div class="btnrow"><button class="btn line" type="button" data-act="checkUpd">Проверить обновления</button></div><p class="note" id="updMsg" role="status"></p></section>` +
     (IN_APP ? '' : `<section class="panel"><h2>Установить как приложение</h2><p class="note">${installHow()}</p></section>`) +
     `<section class="panel"><h2>Сброс</h2><p class="note">Удалить решённые вопросы, ошибки и историю тестов на этом устройстве. Избранное останется.</p><div class="btnrow"><button class="btn danger" type="button" data-act="reset">Сбросить прогресс</button></div></section>`);
@@ -566,6 +565,7 @@ function onClick(e) {
       if (g === 'tOn') cfg.tPick = true;
       saveCfg(); keep(render); break;
     }
+    case 'setupMore': setupMore = !setupMore; keep(render); break;
     case 'start': {
       fixCfg();
       const items = shuffle(pool(cfg)).slice(0, cfg.n || undefined);
@@ -611,6 +611,7 @@ function onInput(e) {
   if (e.target.id === 'tsl') { cfg.tSec = +e.target.value; saveCfg(); const l = $('#tsec'); if (l) l.textContent = `${cfg.tSec} с (${mmss(cfg.tSec)})`; const t = $('#ttot'); if (t) { const a = pool(cfg).length; t.textContent = totTxt(cfg.n ? Math.min(cfg.n, a) : a); } }
 }
 function onChange(e) {
+  if (e.target.id === 'tsel') { cfg.topic = +e.target.value; saveCfg(); keep(render); return; }
   if (e.target.id === 'bkFile' && e.target.files[0]) {
     const f = e.target.files[0]; if (f.size > 5e6) { $('#bkMsg').textContent = 'Файл слишком большой для резервной копии.'; return; }
     f.text().then(t => { const m = restore(t); if (m) $('#bkMsg').textContent = m; });

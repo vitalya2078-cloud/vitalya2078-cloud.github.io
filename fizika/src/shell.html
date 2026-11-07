@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="description" content="900 вопросов по физике с ответами, пояснениями и тестами. Работает без интернета.">
 <meta name="theme-color" content="#FFFFFF">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Физика">
@@ -23,8 +23,8 @@
 @font-face{font-family:"Golos UI"; font-weight:700; font-display:swap; src:url(data:font/woff2;base64,{{F700}}) format("woff2")}
 :root{
   --bg:#F1F5FD; --bar:#FFFFFF; --sheet:#FFFFFF; --text:#141A2E; --muted:#636C88; --line:#E2E7F2;
-  --ink:#3F5EF5; --on-ink:#FFFFFF; --ink-soft:#E9EEFF; --ok:#1E9A55; --ok-soft:#E2F5EA;
-  --red:#D93B40; --red-soft:#FDE8E8; --gold:#E09A00; --marker:#FFE45C; --hero1:#4C6FFF; --hero2:#7B61FF; --shadow:0 6px 20px rgba(20,26,46,.06);
+  --ink:#4A63E8; --on-ink:#FFFFFF; --ink-soft:#E9EEFF; --ok:#1E9A55; --ok-soft:#E2F5EA;
+  --red:#D93B40; --red-soft:#FDE8E8; --gold:#E09A00; --marker:#FFE45C; --hero1:#6A80F0; --hero2:#8C7BEE; --shadow:0 6px 20px rgba(20,26,46,.06);
   --ui:"Golos UI", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --math:"Cambria Math", Cambria, "STIX Two Math", "STIX Two Text", "Noto Serif", "Times New Roman", serif;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
@@ -304,7 +304,7 @@ textarea{width:100%; margin:4px 0 10px; padding:10px 12px; border:1px solid var(
 /* ---------- новый каркас «Яркая карта» ---------- */
 .ii{display:block; width:100%; height:100%; object-fit:cover; border-radius:28%}
 body[data-view="home"] #ttl,body[data-view="topics"] #ttl,body[data-view="practice"] #ttl,body[data-view="ref"] #ttl{font-size:25px; letter-spacing:-.02em}
-.avatar{width:42px; height:42px; display:block; border-radius:14px; overflow:hidden; margin-right:4px}
+.avatar{width:42px; height:42px; display:block; border-radius:50%; margin-right:4px; background:#E9EEFF center 35%/150% no-repeat; box-shadow:inset 0 0 0 2px #fff, 0 2px 8px rgba(20,26,46,.08)}
 .top{border-bottom-color:transparent}
 .card{background:var(--sheet); border-radius:20px; padding:14px 16px; margin-bottom:12px; box-shadow:var(--shadow)}
 .card.list{padding:4px 14px}
@@ -430,7 +430,17 @@ main.map{background:var(--mapt) top center/100% auto no-repeat local, var(--mapb
 .fcard small{color:var(--muted); font-size:12.5px}
 .fcard .formula{margin:6px 0 0}
 .empty p{margin:0}
-.res-m{margin:-4px 0 4px}
+.score.sit{position:relative; margin-top:46px}
+.sitm{position:absolute; right:6px; top:-48px; width:92px; height:92px; object-fit:contain; pointer-events:none}
+.score.sit > div{padding-right:56px}
+.num{flex:none; width:34px; height:34px; display:grid; place-items:center; border-radius:11px; background:color-mix(in srgb,var(--wc) 16%,#fff); color:color-mix(in srgb,var(--wc) 75%,#000); font-weight:700; font-size:15px}
+.sel{width:100%; font:inherit; font-size:16px; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:var(--sheet); color:var(--text)}
+.more-b{display:flex; align-items:center; gap:6px; border:0; background:none; color:var(--ink); font:600 15px var(--ui); padding:4px 2px 14px; cursor:pointer}
+.more-b .i{width:18px; height:18px}
+svg.i.down{transform:rotate(90deg)} svg.i.up{transform:rotate(-90deg)}
+.form .seg{margin-bottom:6px}
+.seg.steps{display:flex}
+.seg button.done{color:var(--ok)}
 #mini{flex:none; display:flex; align-items:center; gap:8px; margin:0 10px 8px; padding:8px 8px 8px 10px; background:#141A2E; color:#fff; border-radius:18px}
 #mini[hidden]{display:none!important}
 #mini .mi{flex:1; min-width:0; display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none}

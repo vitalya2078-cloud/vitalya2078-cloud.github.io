@@ -34,7 +34,7 @@ function daysToExam() {
 function examChip() {
   const n = daysToExam();
   const txt = n == null ? 'Укажи дату экзамена' : n > 0 ? `До экзамена: <b>${plural(n, 'день', 'дня', 'дней')}</b>` : n === 0 ? '<b>Экзамен сегодня!</b>' : 'Экзамен прошёл — укажи новую дату';
-  return `<button class="xchip" type="button" data-act="examDate">${img('i_calendar')}<span>${txt}</span></button>`;
+  return `<button class="xchip" type="button" data-act="examDate"><span>${txt}</span></button>`;
 }
 function openSheet(html) { const s = $('#sheet'); s.innerHTML = `<div class="sbox" role="dialog" aria-modal="true">${html}</div>`; s.hidden = false; }
 const closeSheet = () => { const s = $('#sheet'); if (s) { s.hidden = true; s.innerHTML = ''; } };
@@ -67,7 +67,7 @@ function nextLesson() {
 }
 const lessonMeta = n => [n.audio ? `слушать ${Math.max(1, Math.round(n.audio.dur / 60))} мин` : '', lectureGames(n).length ? plural(lectureGames(n).length, 'игра', 'игры', 'игр') : '', n.c && n.c.length ? plural(n.c.length, 'вопрос', 'вопроса', 'вопросов') : ''].filter(Boolean).join(' · ');
 const readCount = t => t.learn ? t.learn.notes.filter(n => readSet.has(t.id + '-' + n.id)).length : 0;
-const iconRow = (href, icon, title, sub, act) => `<${act ? `button type="button" data-act="${act}"` : `a href="${href}"`} class="lrow"><span class="ic">${img(icon)}</span><span class="lt"><b>${title}</b><small>${sub}</small></span>${ico('chev')}</${act ? 'button' : 'a'}>`;
+const iconRow = (href, icon, title, sub, act) => `<${act ? `button type="button" data-act="${act}"` : `a href="${href}"`} class="lrow"><span class="lt"><b>${title}</b><small>${sub}</small></span>${ico('chev')}</${act ? 'button' : 'a'}>`;
 
 /* ---------- Сегодня ---------- */
 function vHome() {
@@ -94,13 +94,13 @@ function vHome() {
   const rdText = rd.by === 'tests' ? `Средний балл за последние тесты — прогноз <b>«${rd.mark}»</b>.${nextT ? ` До «${nextT[1]}» — от ${nextT[0]} баллов.` : ' Так держать!'}` : 'Пройди мини-экзамен — появится прогноз оценки.';
   setMain(notice() + installRow() +
     `<div class="hello"><h1>${hi}<br>Сегодня — 15 минут физики</h1>${mascot('hello')}</div>` + examChip() + hero +
-    `<section class="card"><div class="card-h"><b class="row-i">${img('i_flame')}${st ? 'Серия: ' + plural(st, 'день', 'дня', 'дней') : 'Начни серию сегодня'}</b><small>цель — 7</small></div><div class="week">${wk.join('')}</div></section>` +
+    `<section class="card"><div class="card-h"><b>${st ? 'Серия: ' + plural(st, 'день', 'дня', 'дней') : 'Начни серию сегодня'}</b><small>цель — 7</small></div><div class="week">${wk.join('')}</div></section>` +
     `<section class="card rd">${ring(rd.pct)}<div><b>Готовность к экзамену</b><p>${rdText}</p></div></section>` +
     `<div class="card list">${iconRow('#err', 'i_cross', 'Повторить ошибки', errN ? plural(errN, 'вопрос ждёт', 'вопроса ждут', 'вопросов ждут') : 'ошибок нет')}` +
     iconRow('', 'i_stopwatch', 'Мини-экзамен', '10 вопросов с вариантами', 'mini') +
     iconRow('#due', 'i_refresh', 'Повторение', due ? `${nQ(due)} на сегодня` : 'на сегодня всё повторено', due ? 'testDue' : '') + '</div>');
 }
-const avatarBtn = () => `<a class="avatar" href="#me" aria-label="Профиль и настройки">${img('i_gear', 'ii')}</a>`;
+const avatarBtn = () => `<a class="avatar" href="#me" aria-label="Профиль и настройки" style="background-image:url(${U('m_hello')})"></a>`;
 
 /* ---------- Курс: миры ---------- */
 function topicProgress(t) {
@@ -155,13 +155,13 @@ function vHub(r) {
   h += node({ href: `#t${t.id}q`, side: L ? 'l' : 'c', img: U('i_book'), title: 'Все вопросы с ответами', sub: progressText(items) });
   h += node({ act: 'testTopic', t: t.id, side: 'c', img: t.id === 1 ? U('c9') : '', col: W_COL[t.id], glyph: cupSvg, title: 'Экзамен по теме', sub: 'тест с оценкой, как на экзамене' }).replace(/<span class="conn"><\/span>$/, '');
   h += '</div>';
-  if (cur) h += `<a class="cur" href="#n${t.id}-${cur.i + 1}"><span class="ic">${img('i_headphones')}</span><span class="lt"><b>Текущий урок</b><small>${cur.i + 1}. ${esc(cur.n.title)}</small></span><span class="btn sm">Открыть</span></a>`;
+  if (cur) h += `<a class="cur" href="#n${t.id}-${cur.i + 1}"><span class="lt"><b>Текущий урок</b><small>${cur.i + 1}. ${esc(cur.n.title)}</small></span><span class="btn sm">Открыть</span></a>`;
   setMain(h);
 }
 const cupSvg = '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 4h14v7a7 7 0 0 1-14 0z" fill="#fff"/><path d="M8 7H4a4 4 0 0 0 4 6M22 7h4a4 4 0 0 1-4 6M15 18v5M10 26h10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>';
 
 /* ---------- Лекция: Слушать · Читать · Играть · Проверка ---------- */
-const STEPS = [['listen', 'Слушать', 'i_headphones'], ['read', 'Читать', 'i_book'], ['play', 'Играть', 'i_puzzle'], ['check', 'Проверка', 'i_check']];
+const STEPS = [['read', 'Читать'], ['listen', 'Слушать'], ['play', 'Играть'], ['check', 'Проверка']];
 const noteStep = {}; // текущий шаг по каждой лекции (до перезапуска)
 function vNote(r) {
   const t = T.find(x => x.id === r.tid), L = t.learn, n = L && L.notes[r.idx - 1];
@@ -174,7 +174,7 @@ function vNote(r) {
   frame({ title: `<span class="tq">${esc(n.title)}</span><small>${esc(SHORT[t.id])} · лекция ${r.idx} из ${total}</small>`, back: true,
     abar: nextS ? `<button class="btn wide" type="button" data-act="noteStep" data-v="${nextS[0]}">Дальше: ${nextS[1]}</button>`
       : r.idx < total ? `<a class="btn wide" href="#n${t.id}-${r.idx + 1}">Следующая лекция</a>` : `<a class="btn wide" href="#t${t.id}">К карте темы</a>` });
-  const tabs = `<div class="steps">${steps.map((s, i) => `<button type="button" class="step${i === si ? ' on' : i < si ? ' done' : ''}" data-act="noteStep" data-v="${s[0]}">${img(s[2])}<span>${s[1]}</span></button>`).join('')}</div>`;
+  const tabs = `<div class="seg steps">${steps.map((s, i) => `<button type="button" aria-pressed="${i === si}" class="${i < si ? 'done' : ''}" data-act="noteStep" data-v="${s[0]}">${s[1]}</button>`).join('')}</div>`;
   let body = '';
   if (st === 'listen') body = player(t, n, r.idx);
   else if (st === 'read') body = `<article class="conspect"><p class="lead">${esc(n.lead)}</p>${noteBody(n)}</article>` +
@@ -212,10 +212,10 @@ function gamesBlock(t, n, idx) {
   const ic = { sim: 'i_target', pair: 'i_chain', tf: 'i_truefalse' };
   return `<div class="games">` + gs.map(x => {
     const best = games[gameKey(t, n, x.g)];
-    return `<a class="game-card" href="#g${t.id}-${idx}-${x.g}">${img(ic[x.g] || 'i_gamepad', 'gi')}<b>${x.title}</b><small>${x.lead}</small>${best ? stars(best.stars) : '<span class="new">Не пройдена</span>'}</a>`;
+    return `<a class="game-card" href="#g${t.id}-${idx}-${x.g}">${img(ic[x.g] || 'i_gamepad', 'ii gi')}<b>${x.title}</b><small>${x.lead}</small>${best ? stars(best.stars) : '<span class="new">Не пройдена</span>'}</a>`;
   }).join('') + '</div>';
 }
-const stars = n => `<span class="stars" aria-label="${n} из 3">${[1, 2, 3].map(i => img('i_star', 'st' + (i <= n ? ' on' : ''))).join('')}</span>`;
+const stars = n => `<span class="stars" aria-label="${n} из 3">${[1, 2, 3].map(i => img('i_star', 'ii st' + (i <= n ? ' on' : ''))).join('')}</span>`;
 
 /* ---------- мини-плеер: озвучка играет, пока ходишь по приложению ---------- */
 function miniUpd() {
@@ -242,7 +242,7 @@ function vPractice() {
   const df = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' });
   const last = hist.slice(-3).reverse();
   setMain(`<div class="tiles">` +
-    `<button class="tile big" type="button" data-act="exam">${img(U('c9') ? 'c9' : 'i_target', 'tb')}<b>Экзамен · 30 вопросов</b><small>как на настоящем: «3» от 60, «4» от 75, «5» от 90 баллов</small></button>` +
+    `<button class="tile big" type="button" data-act="exam">${img(U('c9') ? 'c9' : 'i_target', 'ii tb')}<b>Экзамен · 30 вопросов</b><small>как на настоящем: «3» от 60, «4» от 75, «5» от 90 баллов</small></button>` +
     `<button class="tile" type="button" data-act="quick">${img('i_lightning')}<b>Быстрый тест</b><small>10 вопросов с пояснениями</small></button>` +
     `<a class="tile" href="#err">${img('i_cross')}<b>Мои ошибки</b><small>${errN ? nQ(errN) : 'ошибок нет'}</small></a>` +
     `<a class="tile" href="#due">${img('i_refresh')}<b>Повторение</b><small>${due ? nQ(due) + ' на сегодня' : 'на сегодня всё'}</small></a>` +
@@ -289,10 +289,10 @@ function vRef() {
   if (refSeg === 'f') body = formulaList(ws);
   else if (refSeg === 'n') {
     const L = []; T.forEach(t => (t.learn ? t.learn.notes : []).forEach((n, i) => { if (!ws.length || ws.every(w => norm(n.title + ' ' + n.lead).includes(w))) L.push({ t, n, i }); }));
-    body = L.length ? `<div class="card list">${L.map(x => `<a class="lrow" href="#n${x.t.id}-${x.i + 1}"><span class="ic"><span class="cv" style="background-image:url(${coverOf(x.t, x.i + 1)})"></span></span><span class="lt"><b>${esc(x.n.title)}</b><small>${esc(SHORT[x.t.id])} · ${esc(x.n.lead)}</small></span>${ico('chev')}</a>`).join('')}</div>`
+    body = L.length ? `<div class="card list">${L.map(x => `<a class="lrow" href="#n${x.t.id}-${x.i + 1}"><span class="lt"><b>${esc(x.n.title)}</b><small>${esc(SHORT[x.t.id])} · ${esc(x.n.lead)}</small></span>${ico('chev')}</a>`).join('')}</div>`
       : `<div class="empty">${mascot('think', 'mascot big')}<p>Ничего не нашлось.</p></div>`;
   } else if (!raw) {
-    body = `<div class="card list">${T.map(t => `<a class="lrow" href="#t${t.id}q"><span class="ic"><span class="cv" style="background-image:url(${U('t' + t.id)})"></span></span><span class="lt"><b>${t.id}. ${esc(t.title)}</b><small>${progressText(topicItems(t.id))}</small></span>${ico('chev')}</a>`).join('')}</div>`;
+    body = `<div class="card list">${T.map(t => `<a class="lrow" href="#t${t.id}q"><span class="num" style="--wc:${W_COL[t.id]}">${t.id}</span><span class="lt"><b>${esc(t.title)}</b><small>${progressText(topicItems(t.id))}</small></span>${ico('chev')}</a>`).join('')}</div>`;
   } else {
     const m = /^(\d)\s*[.,\-/ ]\s*(\d{1,3})$/.exec(raw);
     if (m && BY[m[1] + '-' + +m[2]]) { cardCtx.opt = { showT: true }; body = `<div class="list">${card(BY[m[1] + '-' + +m[2]], [], false, cardCtx.opt)}</div>`; }
