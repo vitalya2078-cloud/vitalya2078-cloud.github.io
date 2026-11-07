@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+"""Публикация сайта на зеркало GitVerse Pages (https://fizika.gitverse.site/).
+Копирует в клон репозитория gitverse.ru/fizika/fizika только файлы сайта — без исходников
+(GitVerse Pages запрещает .py, .zip, .exe), добавляет .nojekyll, коммитит и отправляет.
+Запуск: python3 fizika/src/publish.py путь/к/клону-gitverse"""
+import os, shutil, subprocess, sys
+SITE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+DST = os.path.abspath(sys.argv[1])
+FILES = ['index.html', 'app.html', 'content.json', 'version.json', 'sw.js', 'manifest.webmanifest',
+         'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png', 'fizika.apk']
+DIRS = ['pics', 'audio']
+# убрать старые файлы сайта (кроме .git), затем скопировать свежие
+for n in os.listdir(DST):
+    if n == '.git': continue
+    p = os.path.join(DST, n); shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
+for f in FILES:
+    if os.path.exists(os.path.join(SITE, f)): shutil.copy2(os.path.join(SITE, f), DST)
+for d in DIRS:
+    shutil.copytree(os.path.join(SITE, d), os.path.join(DST, d))
+open(os.path.join(DST, '.nojekyll'), 'w').close()
+open(os.path.join(DST, 'README.md'), 'w', encoding='utf-8').write(
+    '# Физика: ответы и тесты\n\nЗеркало сайта https://fizika.gitverse.site/ (доступно из России без VPN).\n'
+    'Исходники: https://github.com/vitalya2078-cloud/vitalya2078-cloud.github.io (папка fizika).\n')
+bad = [os.path.join(r, f) for r, _, fs in os.walk(DST) if '.git' not in r for f in fs if f.endswith(('.py', '.zip', '.exe'))]
+assert not bad, bad
+run = lambda *a: subprocess.run(a, cwd=DST, check=True)
+run('git', 'add', '-A')
+if subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=DST).returncode:
+    v = open(os.path.join(SITE, 'version.json'), encoding='utf-8').read()
+    run('git', '-c', 'user.name=fizika', '-c', 'user.email=fizika@users.noreply.gitverse.ru', 'commit', '-q', '-m', 'Публикация сайта: ' + v[:80])
+    for i in range(4):
+        if subprocess.run(['git', 'push', '-q', 'origin', 'HEAD'], cwd=DST, env={**os.environ, 'GIT_TERMINAL_PROMPT': '0'}).returncode == 0:
+            print('опубликовано на GitVerse'); break
+        import time; time.sleep(2 ** (i + 1))
+    else: sys.exit('не удалось отправить на GitVerse')
+else:
+    print('изменений нет')

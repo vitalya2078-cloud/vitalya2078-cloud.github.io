@@ -96,9 +96,8 @@ function player(t, n) {
 async function audioUrl(file) {
   const cached = await idb.get('aud:' + file);
   if (cached) return URL.createObjectURL(cached);
-  const r = await fetch((IN_APP ? REMOTE : '') + 'audio/' + encodeURIComponent(file));
-  if (!r.ok) throw new Error(r.status);
-  const blob = await r.blob(); idb.set('aud:' + file, blob).catch(() => {});
+  const blob = IN_APP ? await fetchMirror('audio/' + encodeURIComponent(file), {}, r => r.blob())
+    : await fetch('audio/' + encodeURIComponent(file)).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); }); idb.set('aud:' + file, blob).catch(() => {});
   return URL.createObjectURL(blob);
 }
 function stopAudio() { if (AUD.el) AUD.el.pause(); }

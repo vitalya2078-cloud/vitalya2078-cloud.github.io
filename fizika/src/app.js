@@ -2,7 +2,28 @@
 /* Физика — офлайн-приложение с вопросами, тестами и прогрессом.
    Одна кодовая база для сайта (PWA: iPhone, Windows) и Android-приложения (WebView). */
 const APP_BUILD = __BUILD__;
-const REMOTE = 'https://vitalya2078-cloud.github.io/fizika/';
+// Откуда приложение берёт обновления. Первым — GitVerse (открывается в России без VPN), запасной — GitHub.
+const MIRRORS = ['https://fizika.gitverse.site/', 'https://vitalya2078-cloud.github.io/fizika/'];
+let REMOTE = (() => { try { const m = JSON.parse(localStorage.getItem('fz-mirror')); return MIRRORS.includes(m) ? m : MIRRORS[0]; } catch (e) { return MIRRORS[0]; } })();
+// Запрос к первому зеркалу, которое вернуло настоящий файл. Возвращает результат read(response).
+// Важно: GitVerse на отсутствующий файл отвечает кодом 200 и HTML-страницей «не найдено» —
+// поэтому для не-HTML файлов HTML-ответ считаем промахом, а read() дополнительно проверяет содержимое.
+async function fetchMirror(path, opt, read) {
+  const order = [REMOTE, ...MIRRORS.filter(m => m !== REMOTE)], wantHtml = /\.html(\?|$)/.test(path);
+  let last;
+  for (const base of order) {
+    try {
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
+      const r = await fetch(base + path, { ...(opt || {}), signal: ctl.signal }); clearTimeout(tm);
+      if (!r.ok) throw new Error(r.status);
+      if (!wantHtml && (r.headers.get('content-type') || '').includes('text/html')) throw new Error('не тот файл');
+      const out = read ? await read(r) : r;
+      if (base !== REMOTE) { REMOTE = base; LS.set('fz-mirror', base); }
+      return out;
+    } catch (e) { last = e; }
+  }
+  throw last || new Error('нет связи');
+}
 const UA = navigator.userAgent;
 const IN_APP = /FizikaApp/.test(UA);
 const NATIVE = (() => { const m = /FizikaApp\/([\d.]+)(?: \((\d+)\))?/.exec(UA); return m ? { name: m[1], code: +(m[2] || 0) } : null; })();
@@ -511,10 +532,10 @@ async function checkUpdates(manual) {
   const say = t => { const el = $('#updMsg'); if (el) el.textContent = t; };
   if (manual) say('Проверяю…');
   try {
-    const v = await fetch(REMOTE + 'version.json?t=' + Date.now(), { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+    const v = await fetchMirror('version.json?t=' + Date.now(), { cache: 'no-store' }, r => r.json());
     let news = [];
     if (Number.isInteger(v.data) && v.data > DATA_V) {
-      const c = await fetch(REMOTE + 'content.json?v=' + v.data, { cache: 'no-store' }).then(r => r.json());
+      const c = await fetchMirror('content.json?v=' + v.data, { cache: 'no-store' }, async r => { const j = await r.json(); if (!validContent(j)) throw new Error('битые данные'); return j; });
       if (validContent(c) && c.v === v.data) {
         await fetchPics(c);
         await idb.set('content', c);
@@ -522,7 +543,7 @@ async function checkUpdates(manual) {
       }
     }
     if (Number.isInteger(v.build) && v.build > APP_BUILD && String(v.build) !== localStorage.getItem('fz-app-bad') && LS.get('fz-app-build', 0) < v.build) {
-      const h = await fetch(REMOTE + 'app.html?v=' + v.build, { cache: 'no-store' }).then(r => r.text());
+      const h = await fetchMirror('app.html?v=' + v.build, { cache: 'no-store' }, async r => { const t = await r.text(); if (!t.includes('const APP_BUILD = ' + v.build + ';')) throw new Error('не та версия'); return t; });
       if (h.includes('const APP_BUILD = ' + v.build + ';')) {
         localStorage.setItem('fz-app-html', h); LS.set('fz-app-build', v.build);
         news.push('скачана новая версия интерфейса');
@@ -554,7 +575,7 @@ async function fetchPics(c) {
   const need = new Set(); c.topics.forEach(t => t.q.forEach(q => { if (q.p && !BUNDLED_PICS.has(q.p)) need.add(q.p); }));
   for (const p of need) {
     let blob = await idb.get('pic:' + p);
-    if (!blob) { const r = await fetch(REMOTE + 'pics/' + encodeURIComponent(p)); if (!r.ok) continue; blob = await r.blob(); await idb.set('pic:' + p, blob); }
+    if (!blob) { try { blob = await fetchMirror('pics/' + encodeURIComponent(p), {}, r => r.blob()); } catch (e) { continue; } await idb.set('pic:' + p, blob); }
     otaPics[p] = URL.createObjectURL(blob);
   }
 }
