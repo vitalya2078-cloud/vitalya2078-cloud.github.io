@@ -172,15 +172,19 @@ function refreshCard(k) { const el = document.getElementById('q' + k); if (el) e
 function grouped(items, ws, fz) {
   const n = {}; items.forEach(it => { n[it.t.id] = (n[it.t.id] || 0) + 1; });
   let html = '', tid = 0;
-  items.forEach(it => { if (it.t.id !== tid) { tid = it.t.id; html += `<h2 class="sec"><a href="#t${tid}">${tid}. ${esc(it.t.title)}</a><span>${n[tid]}</span></h2>`; } html += card(it, ws, fz); });
+  items.forEach(it => { if (it.t.id !== tid) { tid = it.t.id; html += `<h2 class="sec"><a href="#t${tid}q">${tid}. ${esc(it.t.title)}</a><span>${n[tid]}</span></h2>`; } html += card(it, ws, fz); });
   return `<div class="list">${html}</div>`;
 }
 
 /* ---------- маршруты ---------- */
 // '' главная · topics · t3 · test · me · err · fav · due · hist · settings · backup · search
 function route() {
-  const h = location.hash.replace(/^#\/?/, ''), m = /^t(\d+)$/.exec(h);
-  if (m && T.some(t => t.id === +m[1])) return { name: 'topic', tid: +m[1], tab: 'topics', parent: 'topics' };
+  const h = location.hash.replace(/^#\/?/, ''), has = id => T.some(t => t.id === id);
+  let m = /^t(\d+)$/.exec(h);
+  if (m && has(+m[1])) return { name: 'hub', tid: +m[1], tab: 'topics', parent: 'topics' };
+  if ((m = /^t(\d+)q$/.exec(h)) && has(+m[1])) return { name: 'topic', tid: +m[1], tab: 'topics', parent: 't' + m[1] };
+  if ((m = /^n(\d+)-(\d+)$/.exec(h)) && has(+m[1])) return { name: 'note', tid: +m[1], idx: +m[2], tab: 'topics', parent: 't' + m[1] };
+  if ((m = /^g(\d+)-(throw|pair|tf)$/.exec(h)) && has(+m[1])) return { name: 'game', tid: +m[1], game: m[2], tab: 'topics', parent: 't' + m[1] };
   const map = { topics: ['topics'], test: ['test'], me: ['me'], err: ['me', 'me'], fav: ['me', 'me'], due: ['me', 'me'], hist: ['me', 'me'], settings: ['me', 'me'], backup: ['me', 'me'], search: ['home', ''] };
   if (map[h]) return { name: h, tab: map[h][0], parent: map[h][1] };
   return { name: 'home', tab: 'home' };
@@ -207,7 +211,8 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.setAttribute('aria-current', a.dataset.tab === r.tab ? 'page' : 'false'));
   cardCtx = { ws: [], fz: false, opt: {} };
-  ({ home: vHome, topics: vTopics, topic: vTopic, test: vTest, me: vMe, err: vList, fav: vList, due: vList, hist: vHist, settings: vSettings, backup: vBackup, search: vSearch })[r.name](r);
+  stopGame();
+  ({ home: vHome, topics: vTopics, hub: vHub, note: vNote, game: vGame, topic: vTopic, test: vTest, me: vMe, err: vList, fav: vList, due: vList, hist: vHist, settings: vSettings, backup: vBackup, search: vSearch })[r.name](r);
 }
 function setMain(html) {
   ui.main.innerHTML = html;
@@ -234,8 +239,8 @@ const progressText = items => { const s = tstat(items); return s.s ? `Решен
 function vTopics() {
   frame({ title: 'Темы', acts: actBtn('openSearch', 'search', 'Поиск') });
   setMain('<div class="group">' + T.map(t => {
-    const items = topicItems(t.id), s = tstat(items), detailed = t.q.some(q => q.e && typeof q.e === 'object');
-    return `<a class="trow" href="#t${t.id}"><span class="glyph">${GLYPH[t.id] || ''}</span><span class="tb"><b>${t.id}. ${esc(t.title)}</b><small>${progressText(items)}${detailed ? '' : '. Пояснения краткие'}</small>${ruler(s.s - s.e, s.e, items.length)}</span>${ico('chev')}</a>`;
+    const items = topicItems(t.id), s = tstat(items), lp = learnProgress(t);
+    return `<a class="trow" href="#t${t.id}"><span class="glyph">${GLYPH[t.id] || ''}</span><span class="tb"><b>${t.id}. ${esc(t.title)}</b><small>${lp ? lp + '. ' : ''}${progressText(items)}</small>${ruler(s.s - s.e, s.e, items.length)}</span>${ico('chev')}</a>`;
   }).join('') + '</div>');
 }
 
@@ -316,7 +321,7 @@ const pool = c => ALL.filter(it => (!c.topic || it.t.id === c.topic) && (!c.mc |
   (c.src === 'all' || (c.src === 'new' && !seen(it.key)) || (c.src === 'err' && isErr(it.key)) || (c.src === 'fav' && fav.has(it.key))));
 let test = null;
 function startTest(items, o) {
-  test = {
+  test = { kind: o.kind || '', tid: o.tid || 0, note: o.note || '',
     items: items.map(it => ({ it, opts: it.q.x.length ? shuffle([it.q.a, ...it.q.x]) : null, shown: false })),
     i: 0, res: [], done: false, saved: false, exam: !!o.exam, timer: o.timer || 0, label: o.label || 'Тест', topic: o.topic || 0
   };
@@ -410,9 +415,10 @@ function vResults() {
   const need = nextT ? Math.ceil(nextT[0] * n / 100 - 1e-9) - ok : 0;
   const hint = nextT ? `До «${nextT[1]}» не хватило ${plural(need, 'верного ответа', 'верных ответов', 'верных ответов')}.` : 'Максимальная оценка.';
   if (!test.saved && tot) { hist.push({ d: Date.now(), label: test.label, n, ok, pts: Math.round(pts * 10) / 10, mark, exam: test.exam }); hist = hist.slice(-100); LS.set('fz-hist', hist); test.saved = true; }
+  const chk = checkBanner(pts);
   frame({ title: 'Результат', abar: (wrong.length ? `<button class="btn" type="button" data-act="retry">Повторить ошибки (${wrong.length})</button>` : '') + '<button class="btn line" type="button" data-act="again">Новый тест</button>' });
   cardCtx.opt = { force: true };
-  setMain(`<section class="score"><span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ptsText(pts)} из 100</b><span>${word}: верно ${ok} из ${n}${tot < n ? ` (без ответа ${n - tot})` : ''}. ${hint}</span></div></section>` +
+  setMain(chk + `<section class="score"><span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ptsText(pts)} из 100</b><span>${word}: верно ${ok} из ${n}${tot < n ? ` (без ответа ${n - tot})` : ''}. ${hint}</span></div></section>` +
     (wrong.length ? '<h2 class="sec">Разбор ошибок</h2><div class="list">' + wrong.map(d => card(d.c.it, [], false,
       { force: true, showT: true, extra: d.r.timeout ? '<p class="mine">Время вышло — ответа нет</p>' : d.c.opts ? `<p class="mine strike">Твой ответ: ${esc(d.c.opts[d.r.pick])}</p>` : '' })).join('') + '</div>'
       : '<div class="empty">Ни одной ошибки.</div>'));

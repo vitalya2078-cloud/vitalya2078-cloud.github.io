@@ -53,6 +53,7 @@ svg.i{width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8;
 #ttl{flex:1; min-width:0; margin:0 10px; font-size:19px; font-weight:700; letter-spacing:-.01em; line-height:1.2; display:flex; flex-direction:column; white-space:nowrap}
 #ttl, #ttl small, #ttl .tq{overflow:hidden; text-overflow:ellipsis}
 #ttl small{font-size:13px; font-weight:400; color:var(--muted)}
+.tglyph{font:italic 600 .95em var(--math); color:var(--ink); margin-right:8px}
 body[data-view="home"] #ttl{font-size:25px; letter-spacing:-.02em}
 #back{margin-left:-2px}
 .acts{display:flex; align-items:center; gap:2px}
@@ -221,6 +222,55 @@ section.why.open{animation:enter .25s ease-out}
 .score b{display:block; font-size:22px}
 .score div span{color:var(--muted)}
 
+/* обучение */
+.path{list-style:none; margin:0 0 6px; padding:0; display:grid; gap:0; background:var(--sheet); border:1px solid var(--line); border-radius:14px; overflow:hidden}
+.path li{display:flex; gap:12px; align-items:center; padding:10px 14px}
+.path li + li{border-top:1px solid var(--line)}
+.path li span:last-child{display:grid}
+.path small{color:var(--muted); font-size:13px}
+.sn,.nn{flex:none; width:30px; height:30px; display:grid; place-items:center; border-radius:50%; border:1.5px solid var(--ink); color:var(--ink); font-weight:700; font-size:14px}
+.path li.done .sn,.nn.done{background:var(--ok); border-color:var(--ok); color:var(--sheet)}
+.note-row > span.nn{flex:0 0 30px}
+.note-row > span:nth-child(2){flex:1; display:grid}
+.note-row small{font-size:13px; line-height:1.35; margin-top:2px}
+.games{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-bottom:6px}
+.game-card{display:grid; gap:4px; align-content:start; min-height:130px; padding:14px; border-radius:16px; background:var(--sheet); border:1px solid var(--line); color:var(--text); text-decoration:none}
+.game-card b{font-size:16px; color:var(--ink)}
+.game-card small{color:var(--muted); font-size:13px; line-height:1.35}
+.game-card .new{font-size:12.5px; color:var(--muted); margin-top:auto}
+.stars{display:inline-flex; gap:2px; margin-top:auto; font-size:18px; color:var(--line); font-style:normal}
+.stars i{font-style:normal} .stars i.on{color:var(--gold)}
+.big-stars .stars{font-size:40px}
+.check p{margin:0 0 10px}
+.okc{color:var(--ok)} .badc{color:var(--red)}
+.hint.pass{background:var(--ok-soft)} .hint.fail{background:var(--red-soft)}
+.conspect{background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:16px; font-size:16px; line-height:1.6}
+.conspect p{margin:0 0 12px}
+.conspect .lead{font-size:17px; color:var(--ink); font-weight:600}
+.conspect h3{font-size:17px; margin:18px 0 8px}
+.conspect .def b{color:var(--ink)}
+.formula{display:grid; gap:4px; margin:4px 0 14px; padding:12px 14px; border-radius:12px; background:var(--ink-soft); font:italic 500 17px/1.45 var(--math); color:var(--text); overflow-x:auto}
+.formula span{white-space:pre-wrap}
+.formula.small{font-size:16px; margin-top:10px}
+.trap{border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 12px 12px 0; padding:10px 14px; margin:6px 0 4px}
+.trap b{color:var(--red); font-size:14px}
+.trap p{margin:4px 0 0}
+.gtop{margin:0 0 10px}
+.pairs{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.pairs > div{display:grid; gap:8px; align-content:start}
+.pc{min-height:56px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:var(--sheet); font-size:14.5px; cursor:pointer; text-align:center; line-height:1.3}
+.pc.r.math{font-family:var(--math); font-style:italic; font-size:16px}
+.pc.sel{border-color:var(--ink); background:var(--ink-soft); color:var(--ink); font-weight:600}
+.pc.done{background:var(--ok-soft); border-color:var(--ok); color:var(--ok); opacity:.7; cursor:default}
+.pc.shake{animation:shake .35s; border-color:var(--red); color:var(--red)}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.tf-card .qt{font-size:18px}
+.tf-why{margin:0}
+.abar .tf-yes{background:var(--ok); border-color:var(--ok); color:var(--sheet)}
+.abar .tf-no{background:var(--red); border-color:var(--red); color:var(--sheet)}
+.throw-cv{display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:12px; touch-action:manipulation}
+.tmsg{min-height:2.6em}
+.game-end{margin-top:6px}
 /* прогресс */
 .chart{width:100%; height:auto; display:block}
 .chart .gl{stroke:var(--line); stroke-dasharray:3 3}

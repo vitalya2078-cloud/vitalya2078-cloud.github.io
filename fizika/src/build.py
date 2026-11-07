@@ -12,6 +12,12 @@ meta = json.loads(rd('meta.json'))
 
 # вопросы и рисунки
 topics = json.loads(rd('data.json'))
+# обучение: конспект, пары, утверждения для игр — src/learn/<номер темы>.json
+for t in topics:
+    f = os.path.join(D, 'learn', '%d.json' % t['id'])
+    if os.path.exists(f):
+        L = json.load(open(f, encoding='utf-8')); L.setdefault('games', ['throw', 'pair', 'tf'] if t['id'] == 1 else ['pair', 'tf'])
+        t['learn'] = L
 pics = json.loads(rd('pics.json'))
 used = sorted({q['p'] for t in topics for q in t['q'] if q.get('p')})
 os.makedirs(os.path.join(OUT, 'pics'), exist_ok=True)
@@ -27,7 +33,7 @@ open(os.path.join(OUT, 'content.json'), 'w', encoding='utf-8').write(json.dumps(
 # интерфейс
 html = rd('shell.html')
 for w in ('400', '600', '700'): html = html.replace('{{F%s}}' % w, base64.b64encode(rd('g%s.woff2' % w, True)).decode())
-js = rd('app.js')
+js = rd('app.js') + '\n' + rd('learn.js')
 probe = html.replace('{{JS}}', js)
 if h8(probe) != meta['app_hash']: meta['build'] += 1; meta['app_hash'] = h8(probe)
 app = probe.replace('const APP_BUILD = __BUILD__;', 'const APP_BUILD = %d;' % meta['build'])
