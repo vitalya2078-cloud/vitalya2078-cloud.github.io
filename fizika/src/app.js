@@ -137,17 +137,17 @@ function hl(text, ws, fz) {
 }
 
 /* ---------- карточка вопроса ---------- */
-function whyBody(e) {
+function whyBody(e, own) {
   if (typeof e === 'string') {
-    return `<p class="why-text">${esc(e).replace('⚠', '<b class="flag">Ключ спорный.</b>')}</p><p class="why-more">Краткое пояснение. Подробное, по шагам, появится в одном из обновлений.</p>`;
+    return `<p class="why-text">${esc(e).replace('⚠', '<b class="flag">Ключ спорный.</b>')}</p>` + (own ? '' : '<p class="why-more">Краткое пояснение. Подробное, по шагам, появится в одном из обновлений.</p>');
   }
   return `<div class="why-step"><b>Что спрашивают</b><p>${nl(e.s)}</p></div><div class="why-step"><b>Главная идея</b><p>${nl(e.i)}</p></div>` +
     `<div class="why-step"><b>Решение</b><p>${nl(e.r)}</p></div>` + (e.w ? `<div class="why-warn"><b>Внимание: ключ спорный</b><p>${nl(e.w)}</p></div>` : '');
 }
 function why(q, open) {
   if (!q.e) return '';
-  return open ? `<section class="why open"><h3 class="why-h">Пояснение</h3>${whyBody(q.e)}</section>`
-    : `<details class="why"><summary><span class="sh">Показать пояснение</span><span class="hd">Скрыть пояснение</span></summary>${whyBody(q.e)}</details>`;
+  return open ? `<section class="why open"><h3 class="why-h">Пояснение</h3>${whyBody(q.e, q.own)}</section>`
+    : `<details class="why"><summary><span class="sh">Показать пояснение</span><span class="hd">Скрыть пояснение</span></summary>${whyBody(q.e, q.own)}</details>`;
 }
 const revealed = new Set(), rated = new Set();
 let cardCtx = { ws: [], fz: false, opt: {} };
@@ -164,8 +164,8 @@ function card(it, ws = [], fz = false, opt = {}) {
   const others = !hide && q.x.length ? `<p class="others">Неверные варианты: ${esc(q.x.join('; '))}</p>` : '';
   const st = stat[key], badge = !st ? '' : st.last ? ' <span class="badge ok">верно</span>' : ' <span class="badge bad">ошибка</span>';
   const f = fav.has(key);
-  return `<article class="q" id="q${key}"><div class="qh"><p class="qt"><span class="qn">${opt.showT ? it.t.id + '.' : ''}${it.i}</span>${hl(q.t, ws, fz)}${badge}</p>` +
-    `<button class="star${f ? ' on' : ''}" type="button" data-act="fav" data-k="${key}" aria-pressed="${f}" aria-label="${f ? 'Убрать из избранного' : 'В избранное'}">${ico('star')}</button></div>` +
+  return `<article class="q" id="q${key}"><div class="qh"><p class="qt"><span class="qn">${it.own ? 'Проверка' : (opt.showT ? it.t.id + '.' : '') + it.i}</span>${hl(q.t, ws, fz)}${badge}</p>` +
+    (it.own ? '' : `<button class="star${f ? ' on' : ''}" type="button" data-act="fav" data-k="${key}" aria-pressed="${f}" aria-label="${f ? 'Убрать из избранного' : 'В избранное'}">${ico('star')}</button>`) + '</div>' +
     `${pic}${opt.extra || ''}${ans}${others}${hide ? '' : why(q, opt.force)}</article>`;
 }
 function refreshCard(k) { const el = document.getElementById('q' + k); if (el) el.outerHTML = card(BY[k], cardCtx.ws, cardCtx.fz, cardCtx.opt); }
@@ -379,7 +379,7 @@ function vTest() {
       : '<div class="rate"><button type="button" class="ok" data-act="self" data-v="1">Знал</button><button type="button" class="bad" data-act="self" data-v="0">Не знал</button></div>');
   }
   if (res) body += (q.n ? `<p class="note">${esc(q.n)}</p>` : '') + why(q, true);
-  setMain(`<article class="q test"><p class="qt"><span class="qn">${it.t.id}.${it.i}</span>${esc(q.t)}</p>${pic}${body}</article>`);
+  setMain(`<article class="q test"><p class="qt"><span class="qn">${it.own ? esc(it.lbl) : it.t.id + '.' + it.i}</span>${esc(q.t)}</p>${pic}${body}</article>`);
   const nx = $('[data-act=next]'); if (nx) nx.focus({ preventScroll: true });
   if (test.timer && !res) { if (!c.deadline) c.deadline = Date.now() + test.timer * 1000; startTick(c); }
 }

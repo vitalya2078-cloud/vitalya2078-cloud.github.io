@@ -35,7 +35,7 @@ function vHub(r) {
       const best = games[t.id + '-' + g];
       return `<a class="game-card g-${g}" href="#g${t.id}-${g}"><b>${GAMES[g].title}</b><small>${GAMES[g].lead}</small>${best ? stars(best.stars) : '<span class="new">Не пройдена</span>'}</a>`;
     }).join('') + '</div>';
-    html += `<h2 class="sec">Самопроверка</h2><section class="panel check"><p>10 вопросов из всех подтем, сразу с пояснениями. Наберёшь ${PASS}% — тема отмечается пройденной.</p>` +
+    html += `<h2 class="sec">Самопроверка</h2><section class="panel check"><p>10 вопросов по всему конспекту темы, сразу с пояснениями. Наберёшь ${PASS}% — тема отмечается пройденной.</p>` +
       `${c != null ? `<p class="${c >= PASS ? 'okc' : 'badc'}"><b>Лучший результат: ${Math.round(c)}%</b>${c >= PASS ? ' — тема пройдена' : ' — пока ниже порога'}</p>` : ''}<button class="btn wide" type="button" data-act="selfCheck" data-t="${t.id}">Пройти самопроверку</button></section>`;
   } else {
     html += '<div class="hint"><p><b>Конспект и мини-игры для этой темы готовятся.</b> Пока можно учить вопросы с пояснениями и проходить тесты. Новые материалы придут обновлением.</p></div>';
@@ -61,21 +61,23 @@ function vNote(r) {
       case 'h': return `<h3>${esc(b[1])}</h3>`;
       case 'def': return `<p class="def"><b>${esc(b[1])}</b> — ${nl(b[2])}</p>`;
       case 'f': return `<div class="formula">${b[1].split('\n').map(l => `<span>${esc(l)}</span>`).join('')}</div>`;
-      case 'trap': return `<div class="trap"><b>Ловушка в тесте</b><p>${nl(b[1])}</p></div>`;
+      case 'trap': return `<div class="trap"><b>Частая ошибка</b><p>${nl(b[1])}</p></div>`;
+      case 'ex': return `<div class="example"><b>${esc(b[1])}</b><p>${nl(b[2])}</p></div>`;
       default: return '';
     }
   }).join('');
-  const qs = n.q.map(i => BY[t.id + '-' + i]).filter(Boolean);
   setMain(`<article class="conspect"><p class="lead">${esc(n.lead)}</p>${body}</article>` +
-    `<h2 class="sec">Вопросы по подтеме<span>${qs.length}</span></h2><div class="list">${qs.map(it => card(it)).join('')}</div>`);
+    `<section class="panel check next-step"><p><b>Проверь себя по подтеме</b> — ${plural(n.c.length, 'вопрос', 'вопроса', 'вопросов')} по этому конспекту, сразу с пояснениями.</p></section>`);
 }
 
 /* ---------- Самопроверка ---------- */
+// вопросы самопроверки — свои, по материалу конспекта (не из базы теста)
+const ownItem = (t, n, k) => { const c = n.c[k]; return { t, i: k + 1, lbl: n.title, own: true, key: `c${t.id}-${n.id}-${k}`, q: { t: c[0], a: c[1], x: c[2], e: c[3], p: '', n: '', own: true } }; };
 function pickCheck(t, noteIdx) {
-  const L = t.learn, mc = i => { const it = BY[t.id + '-' + i]; return it && it.q.x.length ? it : null; };
-  if (noteIdx) return shuffle(L.notes[noteIdx - 1].q.map(mc).filter(Boolean)).slice(0, 5);
-  const pools = L.notes.map(n => shuffle(n.q.map(mc).filter(Boolean))), out = [];
-  for (let k = 0; out.length < 10 && k < 20; k++) pools.forEach(pq => { if (out.length < 10 && pq[k]) out.push(pq[k]); });
+  const L = t.learn;
+  if (noteIdx) { const n = L.notes[noteIdx - 1]; return shuffle(n.c.map((_, k) => ownItem(t, n, k))); }
+  const pools = shuffle(L.notes).map(n => shuffle(n.c.map((_, k) => ownItem(t, n, k)))), out = [];
+  for (let k = 0; out.length < 10 && k < 5; k++) pools.forEach(pq => { if (out.length < 10 && pq[k]) out.push(pq[k]); });
   return shuffle(out);
 }
 function checkBanner(pts) {

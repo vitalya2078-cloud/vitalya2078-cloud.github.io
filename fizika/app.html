@@ -252,6 +252,11 @@ section.why.open{animation:enter .25s ease-out}
 .formula{display:grid; gap:4px; margin:4px 0 14px; padding:12px 14px; border-radius:12px; background:var(--ink-soft); font:italic 500 17px/1.45 var(--math); color:var(--text); overflow-x:auto}
 .formula span{white-space:pre-wrap}
 .formula.small{font-size:16px; margin-top:10px}
+.example{border-left:3px solid var(--ok); background:var(--ok-soft); border-radius:0 12px 12px 0; padding:10px 14px; margin:6px 0 14px}
+.example b{color:var(--ok); font-size:14px}
+.example p{margin:4px 0 0}
+.next-step{margin-top:14px}
+.next-step p{margin:0}
 .trap{border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 12px 12px 0; padding:10px 14px; margin:6px 0 4px}
 .trap b{color:var(--red); font-size:14px}
 .trap p{margin:4px 0 0}
@@ -311,7 +316,7 @@ textarea{width:100%; margin:4px 0 10px; padding:10px 12px; border:1px solid var(
 'use strict';
 /* Физика — офлайн-приложение с вопросами, тестами и прогрессом.
    Одна кодовая база для сайта (PWA: iPhone, Windows) и Android-приложения (WebView). */
-const APP_BUILD = 29;
+const APP_BUILD = 31;
 const REMOTE = 'https://vitalya2078-cloud.github.io/fizika/';
 const UA = navigator.userAgent;
 const IN_APP = /FizikaApp/.test(UA);
@@ -447,17 +452,17 @@ function hl(text, ws, fz) {
 }
 
 /* ---------- карточка вопроса ---------- */
-function whyBody(e) {
+function whyBody(e, own) {
   if (typeof e === 'string') {
-    return `<p class="why-text">${esc(e).replace('⚠', '<b class="flag">Ключ спорный.</b>')}</p><p class="why-more">Краткое пояснение. Подробное, по шагам, появится в одном из обновлений.</p>`;
+    return `<p class="why-text">${esc(e).replace('⚠', '<b class="flag">Ключ спорный.</b>')}</p>` + (own ? '' : '<p class="why-more">Краткое пояснение. Подробное, по шагам, появится в одном из обновлений.</p>');
   }
   return `<div class="why-step"><b>Что спрашивают</b><p>${nl(e.s)}</p></div><div class="why-step"><b>Главная идея</b><p>${nl(e.i)}</p></div>` +
     `<div class="why-step"><b>Решение</b><p>${nl(e.r)}</p></div>` + (e.w ? `<div class="why-warn"><b>Внимание: ключ спорный</b><p>${nl(e.w)}</p></div>` : '');
 }
 function why(q, open) {
   if (!q.e) return '';
-  return open ? `<section class="why open"><h3 class="why-h">Пояснение</h3>${whyBody(q.e)}</section>`
-    : `<details class="why"><summary><span class="sh">Показать пояснение</span><span class="hd">Скрыть пояснение</span></summary>${whyBody(q.e)}</details>`;
+  return open ? `<section class="why open"><h3 class="why-h">Пояснение</h3>${whyBody(q.e, q.own)}</section>`
+    : `<details class="why"><summary><span class="sh">Показать пояснение</span><span class="hd">Скрыть пояснение</span></summary>${whyBody(q.e, q.own)}</details>`;
 }
 const revealed = new Set(), rated = new Set();
 let cardCtx = { ws: [], fz: false, opt: {} };
@@ -474,8 +479,8 @@ function card(it, ws = [], fz = false, opt = {}) {
   const others = !hide && q.x.length ? `<p class="others">Неверные варианты: ${esc(q.x.join('; '))}</p>` : '';
   const st = stat[key], badge = !st ? '' : st.last ? ' <span class="badge ok">верно</span>' : ' <span class="badge bad">ошибка</span>';
   const f = fav.has(key);
-  return `<article class="q" id="q${key}"><div class="qh"><p class="qt"><span class="qn">${opt.showT ? it.t.id + '.' : ''}${it.i}</span>${hl(q.t, ws, fz)}${badge}</p>` +
-    `<button class="star${f ? ' on' : ''}" type="button" data-act="fav" data-k="${key}" aria-pressed="${f}" aria-label="${f ? 'Убрать из избранного' : 'В избранное'}">${ico('star')}</button></div>` +
+  return `<article class="q" id="q${key}"><div class="qh"><p class="qt"><span class="qn">${it.own ? 'Проверка' : (opt.showT ? it.t.id + '.' : '') + it.i}</span>${hl(q.t, ws, fz)}${badge}</p>` +
+    (it.own ? '' : `<button class="star${f ? ' on' : ''}" type="button" data-act="fav" data-k="${key}" aria-pressed="${f}" aria-label="${f ? 'Убрать из избранного' : 'В избранное'}">${ico('star')}</button>`) + '</div>' +
     `${pic}${opt.extra || ''}${ans}${others}${hide ? '' : why(q, opt.force)}</article>`;
 }
 function refreshCard(k) { const el = document.getElementById('q' + k); if (el) el.outerHTML = card(BY[k], cardCtx.ws, cardCtx.fz, cardCtx.opt); }
@@ -689,7 +694,7 @@ function vTest() {
       : '<div class="rate"><button type="button" class="ok" data-act="self" data-v="1">Знал</button><button type="button" class="bad" data-act="self" data-v="0">Не знал</button></div>');
   }
   if (res) body += (q.n ? `<p class="note">${esc(q.n)}</p>` : '') + why(q, true);
-  setMain(`<article class="q test"><p class="qt"><span class="qn">${it.t.id}.${it.i}</span>${esc(q.t)}</p>${pic}${body}</article>`);
+  setMain(`<article class="q test"><p class="qt"><span class="qn">${it.own ? esc(it.lbl) : it.t.id + '.' + it.i}</span>${esc(q.t)}</p>${pic}${body}</article>`);
   const nx = $('[data-act=next]'); if (nx) nx.focus({ preventScroll: true });
   if (test.timer && !res) { if (!c.deadline) c.deadline = Date.now() + test.timer * 1000; startTick(c); }
 }
@@ -1028,7 +1033,7 @@ function vHub(r) {
       const best = games[t.id + '-' + g];
       return `<a class="game-card g-${g}" href="#g${t.id}-${g}"><b>${GAMES[g].title}</b><small>${GAMES[g].lead}</small>${best ? stars(best.stars) : '<span class="new">Не пройдена</span>'}</a>`;
     }).join('') + '</div>';
-    html += `<h2 class="sec">Самопроверка</h2><section class="panel check"><p>10 вопросов из всех подтем, сразу с пояснениями. Наберёшь ${PASS}% — тема отмечается пройденной.</p>` +
+    html += `<h2 class="sec">Самопроверка</h2><section class="panel check"><p>10 вопросов по всему конспекту темы, сразу с пояснениями. Наберёшь ${PASS}% — тема отмечается пройденной.</p>` +
       `${c != null ? `<p class="${c >= PASS ? 'okc' : 'badc'}"><b>Лучший результат: ${Math.round(c)}%</b>${c >= PASS ? ' — тема пройдена' : ' — пока ниже порога'}</p>` : ''}<button class="btn wide" type="button" data-act="selfCheck" data-t="${t.id}">Пройти самопроверку</button></section>`;
   } else {
     html += '<div class="hint"><p><b>Конспект и мини-игры для этой темы готовятся.</b> Пока можно учить вопросы с пояснениями и проходить тесты. Новые материалы придут обновлением.</p></div>';
@@ -1054,21 +1059,23 @@ function vNote(r) {
       case 'h': return `<h3>${esc(b[1])}</h3>`;
       case 'def': return `<p class="def"><b>${esc(b[1])}</b> — ${nl(b[2])}</p>`;
       case 'f': return `<div class="formula">${b[1].split('\n').map(l => `<span>${esc(l)}</span>`).join('')}</div>`;
-      case 'trap': return `<div class="trap"><b>Ловушка в тесте</b><p>${nl(b[1])}</p></div>`;
+      case 'trap': return `<div class="trap"><b>Частая ошибка</b><p>${nl(b[1])}</p></div>`;
+      case 'ex': return `<div class="example"><b>${esc(b[1])}</b><p>${nl(b[2])}</p></div>`;
       default: return '';
     }
   }).join('');
-  const qs = n.q.map(i => BY[t.id + '-' + i]).filter(Boolean);
   setMain(`<article class="conspect"><p class="lead">${esc(n.lead)}</p>${body}</article>` +
-    `<h2 class="sec">Вопросы по подтеме<span>${qs.length}</span></h2><div class="list">${qs.map(it => card(it)).join('')}</div>`);
+    `<section class="panel check next-step"><p><b>Проверь себя по подтеме</b> — ${plural(n.c.length, 'вопрос', 'вопроса', 'вопросов')} по этому конспекту, сразу с пояснениями.</p></section>`);
 }
 
 /* ---------- Самопроверка ---------- */
+// вопросы самопроверки — свои, по материалу конспекта (не из базы теста)
+const ownItem = (t, n, k) => { const c = n.c[k]; return { t, i: k + 1, lbl: n.title, own: true, key: `c${t.id}-${n.id}-${k}`, q: { t: c[0], a: c[1], x: c[2], e: c[3], p: '', n: '', own: true } }; };
 function pickCheck(t, noteIdx) {
-  const L = t.learn, mc = i => { const it = BY[t.id + '-' + i]; return it && it.q.x.length ? it : null; };
-  if (noteIdx) return shuffle(L.notes[noteIdx - 1].q.map(mc).filter(Boolean)).slice(0, 5);
-  const pools = L.notes.map(n => shuffle(n.q.map(mc).filter(Boolean))), out = [];
-  for (let k = 0; out.length < 10 && k < 20; k++) pools.forEach(pq => { if (out.length < 10 && pq[k]) out.push(pq[k]); });
+  const L = t.learn;
+  if (noteIdx) { const n = L.notes[noteIdx - 1]; return shuffle(n.c.map((_, k) => ownItem(t, n, k))); }
+  const pools = shuffle(L.notes).map(n => shuffle(n.c.map((_, k) => ownItem(t, n, k)))), out = [];
+  for (let k = 0; out.length < 10 && k < 5; k++) pools.forEach(pq => { if (out.length < 10 && pq[k]) out.push(pq[k]); });
   return shuffle(out);
 }
 function checkBanner(pts) {
