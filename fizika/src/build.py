@@ -50,7 +50,7 @@ open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(rd('boot.html
 g = open(os.path.join(OUT, '..', 'fizika-android', 'app', 'build.gradle'), encoding='utf-8').read()
 apk = {'code': int(re.search(r'versionCode (\d+)', g).group(1)), 'name': re.search(r"versionName '([^']+)'", g).group(1),
        'url': 'https://vitalya2078-cloud.github.io/fizika/fizika.apk'}
-json.dump({'build': meta['build'], 'data': meta['data'], 'apk': apk}, open(os.path.join(OUT, 'version.json'), 'w'))
+json.dump({'build': meta['build'], 'data': meta['data'], 'apk': apk, 'notes': meta.get('notes', '')}, open(os.path.join(OUT, 'version.json'), 'w'), ensure_ascii=False)
 
 # офлайн-кэш для сайта
 files = ['./', 'index.html', 'app.html', 'content.json', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'] + ['pics/' + p for p in used]

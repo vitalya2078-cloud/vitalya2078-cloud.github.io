@@ -17,7 +17,7 @@
 /* Загрузчик. Показывает интерфейс app.html. В Android-приложении, если с сайта уже скачана
    более новая версия интерфейса, берёт её; если она не запустилась — возвращается к встроенной. */
 (function () {
-  var BUILD = 35, html = null, b = 0;
+  var BUILD = 36, html = null, b = 0;
   try {
     if (/FizikaApp/.test(navigator.userAgent)) {
       b = +(localStorage.getItem('fz-app-build') || 0);

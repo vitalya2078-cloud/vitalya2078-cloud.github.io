@@ -326,7 +326,7 @@ textarea{width:100%; margin:4px 0 10px; padding:10px 12px; border:1px solid var(
 'use strict';
 /* Физика — офлайн-приложение с вопросами, тестами и прогрессом.
    Одна кодовая база для сайта (PWA: iPhone, Windows) и Android-приложения (WebView). */
-const APP_BUILD = 35;
+const APP_BUILD = 36;
 const REMOTE = 'https://vitalya2078-cloud.github.io/fizika/';
 const UA = navigator.userAgent;
 const IN_APP = /FizikaApp/.test(UA);
@@ -853,16 +853,27 @@ async function checkUpdates(manual) {
         news.push('скачана новая версия интерфейса');
       }
     }
+    LS.set('fz-upd-at', Date.now());
+    const whatsNew = v.notes ? ` Что нового: ${esc(v.notes)}` : '';
     if (v.apk && NATIVE && v.apk.code > NATIVE.code) {
       setNotice({ kind: 'upd', html: `<b>Вышло приложение ${esc(v.apk.name)}.</b> Установи его поверх текущего — прогресс сохранится.`, act: 'getApk', btn: 'Скачать' });
       LS.set('fz-apk-url', v.apk.url);
     } else if (news.length) {
-      const needRestart = news.some(x => x.includes('интерфейса'));
-      setNotice({ kind: 'upd', html: `<b>Обновление:</b> ${news.join(', ')}.`, act: needRestart ? 'restart' : '', btn: 'Перезапустить' });
+      setNotice({ kind: 'upd', html: `<b>Приложение обновлено.</b>${whatsNew || ' ' + news.join(', ') + '.'}` });
     }
     if (manual) say(news.length ? 'Готово: ' + news.join(', ') + '.' : 'У тебя последняя версия.');
-    if (news.length && !testRunning()) render();
+    if (news.some(x => x.includes('интерфейса'))) { pendingReload = true; applyUpdate(manual); }
+    else if (news.length && !testRunning()) render();
   } catch (e) { if (manual) say('Не удалось проверить: нет связи с сайтом. Попробуй позже.'); }
+}
+// новая версия интерфейса включается перезапуском — только когда человек ничем не занят
+let pendingReload = false;
+const busyNow = () => testRunning() || (typeof G !== 'undefined' && G && ['throw', 'sim'].includes(G.kind) && route().name === 'game') || (typeof AUD !== 'undefined' && AUD.el && !AUD.el.paused);
+function applyUpdate(force) {
+  if (!pendingReload || (!force && busyNow())) return;
+  pendingReload = false;
+  ui.main.innerHTML = '<div class="empty"><b>Обновляю приложение…</b></div>';
+  setTimeout(() => location.reload(), 500);
 }
 async function fetchPics(c) {
   const need = new Set(); c.topics.forEach(t => t.q.forEach(q => { if (q.p && !BUNDLED_PICS.has(q.p)) need.add(q.p); }));
@@ -1002,7 +1013,12 @@ async function boot() {
   onHash.prev = location.hash;
   try { localStorage.setItem('fz-app-ok', String(APP_BUILD)); } catch (e) {}
   if ('serviceWorker' in navigator && !IN_APP && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
-  if (IN_APP) { checkUpdates(false); window.addEventListener('online', () => checkUpdates(false)); }
+  if (IN_APP) {
+    checkUpdates(false); window.addEventListener('online', () => checkUpdates(false));
+    // Android не перезапускает свёрнутое приложение — проверяем обновления при возвращении в него
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') return; if (pendingReload) applyUpdate(false); else if (Date.now() - LS.get('fz-upd-at', 0) > 15 * 60e3) checkUpdates(false); });
+    window.addEventListener('hashchange', () => applyUpdate(false));
+  }
 }
 const onHash = { prev: '' };
 boot(); // скрипт стоит в конце страницы — разметка уже готова
