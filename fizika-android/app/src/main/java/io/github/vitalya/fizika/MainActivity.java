@@ -186,7 +186,7 @@ public class MainActivity extends Activity {
     private void styleBars(boolean dark) {
         int bar = dark ? 0xFF132B4C : 0xFFFFFFFF;
         root.setBackgroundColor(bar);
-        web.setBackgroundColor(dark ? 0xFF10233F : 0xFFF7F8F5);
+        web.setBackgroundColor(dark ? 0xFF10233F : 0xFFF1F5FD);
         getWindow().setStatusBarColor(bar);
         getWindow().setNavigationBarColor(bar);
         if (Build.VERSION.SDK_INT >= 30) {
