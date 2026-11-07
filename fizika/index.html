@@ -193,6 +193,11 @@ details.why[open] summary{margin-left:-14px}
 .score{display:flex; align-items:center; gap:18px; background:var(--sheet); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:10px}
 .grade{flex:none; width:84px; height:84px; display:grid; place-items:center; border:3px solid var(--red); border-radius:50% 46% 52% 48%; color:var(--red); font:italic 700 52px/1 var(--math); transform:rotate(-8deg)}
 .score b{display:block; font-size:24px}
+.scale{display:flex; flex-wrap:wrap; gap:4px 16px; background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-top:14px; font-size:14px}
+.scale b,.scale small{flex-basis:100%}
+.scale span{white-space:nowrap; font-weight:600}
+.chipbtn.wide{grid-column:1/-1}
+.scale small{color:var(--muted); font-size:13px}
 .score div span{color:var(--muted)}
 @media (hover:hover){.opt:not(:disabled):hover,.chip:hover,.chipbtn:hover,.tile:hover,.pager a:hover{border-color:var(--ink)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; scroll-behavior:auto!important}}
@@ -392,7 +397,7 @@ function renderSingleHome() {
   inp.placeholder = 'Поиск по вопросам или номер';
   cnt.textContent = s.s ? `Решено ${s.s} из ${ALL.length}, ошибок сейчас ${errN}` : `${nQ(ALL.length)} с ответами и подробными пояснениями`;
   main.innerHTML = installBox() +
-    `<section class="hero"><a class="go" href="#test"><b>Пройти тест</b><span>4 варианта ответа, после каждого — подробное пояснение</span></a>` +
+    `<section class="hero"><a class="go" href="#test"><b>Пройти тест</b><span>30 вопросов, баллы и оценка как на экзамене, подробные пояснения</span></a>` +
     `<a class="go alt" href="#t${t.id}"><b>Учить вопросы</b><span>Все ${ALL.length} вопросов с ответами; пояснение — по кнопке под ответом</span></a>` +
     (s.s ? ruler(s.s - s.e, s.e, ALL.length, 'big') : '') +
     `<div class="pair"><a class="chipbtn${errN ? ' red' : ''}" href="#err">Мои ошибки <b>${errN}</b></a><a class="chipbtn" href="#fav">Избранное <b>${fav.size}</b></a></div></section>` +
@@ -451,16 +456,23 @@ function renderList(name, raw) {
 }
 
 // режим теста
-const CFG0 = { topic: 0, src: 'all', n: 20, mc: false };
+const CFG0 = { topic: 0, src: 'all', n: 30, mc: false, exam: false };
 let cfg = Object.assign({}, CFG0, LS.get('fz-testcfg', {}));
 if (!(cfg.topic === 0 || T.some(t => t.id === cfg.topic))) cfg.topic = 0;
 if (!['all', 'new', 'err', 'fav'].includes(cfg.src)) cfg.src = 'all';
-if (![10, 20, 50, 0].includes(cfg.n)) cfg.n = 20;
+if (![30, 10, 0].includes(cfg.n)) cfg.n = 30;
+cfg.exam = cfg.exam === true;
 cfg.mc = cfg.mc === true;
 let test = null, pendingTest = null;
 const pool = c => ALL.filter(it => (!c.topic || it.t.id === c.topic) && (!c.mc || it.q.x.length) &&
   (c.src === 'all' || (c.src === 'new' && !seen(it.key)) || (c.src === 'err' && isErr(it.key)) || (c.src === 'fav' && fav.has(it.key))));
-function startTest(items) { test = { items: items.map(it => ({ it, opts: it.q.x.length ? shuffle([it.q.a, ...it.q.x]) : null, shown: false })), i: 0, res: [], done: false }; }
+// Оценка как на экзамене: баллы = доля верных от 100; 60 — «3», 75 — «4», 90 — «5»
+const SCALE = [[90, 5], [75, 4], [60, 3]];
+const points = (ok, n) => n ? ok * 100 / n : 0;
+const gradeOf = p => (SCALE.find(([min]) => p >= min - 1e-9) || [0, 2])[1];
+const ptsText = p => { const r = Math.round(p * 10) / 10; return Number.isInteger(r) ? plural(r, 'балл', 'балла', 'баллов') : fmtPts(r) + ' балла'; };
+const fmtPts = p => (Math.round(p * 10) / 10).toString().replace('.', ',');
+function startTest(items) { test = { exam: cfg.exam,  items: items.map(it => ({ it, opts: it.q.x.length ? shuffle([it.q.a, ...it.q.x]) : null, shown: false })), i: 0, res: [], done: false }; }
 const testRunning = () => test && !test.done && test.i < test.items.length && test.res.some(Boolean);
 
 function renderTest() {
@@ -469,10 +481,12 @@ function renderTest() {
   const n = test.items.length, c = test.items[test.i], it = c.it, q = it.q, res = test.res[test.i];
   const okN = test.res.filter(x => x && x.ok).length, badN = test.res.filter(x => x && !x.ok).length;
   ttl.innerHTML = `Тест <span class="pos">${test.i + 1} из ${n}</span>`;
-  cnt.textContent = `Верно ${okN}, ошибок ${badN}`;
+  cnt.textContent = test.exam ? `Отвечено ${okN + badN} из ${n}. Результат — в конце` : `Верно ${okN}, ошибок ${badN}. Баллы: ${fmtPts(points(okN, n))} из 100`;
   const pic = q.p && P[q.p] ? `<img src="${P[q.p]}" alt="Рисунок к вопросу">` : '';
   let body;
-  if (c.opts) {
+  if (c.opts && test.exam) {
+    body = '<div class="opts">' + c.opts.map((o, k) => `<button class="opt" type="button" data-act="pick" data-v="${k}"><span class="ok-n">${"АБВГДЕ"[k]}</span><span>${esc(o)}</span></button>`).join('') + '</div>';
+  } else if (c.opts) {
     body = '<div class="opts">' + c.opts.map((o, k) => {
       const cls = !res ? '' : o === q.a ? ' right' : k === res.pick ? ' wrong' : '';
       return `<button class="opt${cls}" type="button" data-act="pick" data-v="${k}"${res ? ' disabled' : ''}><span class="ok-n">${"АБВГДЕ"[k]}</span><span>${esc(o)}</span></button>`;
@@ -485,7 +499,7 @@ function renderTest() {
       : '<div class="rate"><button type="button" class="ok" data-act="self" data-v="1">Знал</button><button type="button" class="bad" data-act="self" data-v="0">Не знал</button></div>');
   }
   if (res) body += (q.n ? `<p class="note">${esc(q.n)}</p>` : '') + why(q, true);
-  main.innerHTML = ruler(okN, badN, n, 'big') +
+  main.innerHTML = (test.exam ? ruler(okN + badN, 0, n, 'big') : ruler(okN, badN, n, 'big')) +
     `<article class="q test"><p class="qt"><span class="qn">${it.t.id}.${it.i}</span>${esc(q.t)}</p>${pic}${body}</article>` +
     (res ? `<button class="next" type="button" data-act="next">${test.i + 1 < n ? 'Следующий вопрос' : 'Показать результат'}</button>` : '') +
     `<div class="tfoot"><button class="link" type="button" data-act="finish">Завершить тест</button></div>`;
@@ -501,23 +515,28 @@ function renderSetup() {
     (T.length > 1 ? `<h2 class="sec">Тема</h2><div class="chips">${chip('topic', 0, 'Все темы')}${T.map(t => chip('topic', t.id, t.id + '. ' + t.title)).join('')}</div>` : '') +
     `<h2 class="sec">Какие вопросы</h2><div class="chips">${chip('src', 'all', 'Все')}${chip('src', 'new', 'Ещё не решал')}${chip('src', 'err', 'Мои ошибки')}${chip('src', 'fav', 'Избранное')}</div>` +
     `<div class="chips">${chip('mc', false, 'С вариантами и без')}${chip('mc', true, 'Только с вариантами')}</div>` +
-    `<h2 class="sec">Сколько</h2><div class="chips">${[10, 20, 50, 0].map(v => chip('n', v, v || 'Все')).join('')}</div>` +
+    `<h2 class="sec">Сколько вопросов</h2><div class="chips">${chip('n', 30, '30, как на экзамене')}${chip('n', 10, '10, быстро')}${chip('n', 0, 'Все')}</div>` +
+    `<h2 class="sec">Пояснения</h2><div class="chips">${chip('exam', false, 'Сразу после ответа')}${chip('exam', true, 'В конце, как на экзамене')}</div>` +
+    '<div class="scale"><b>Оценка</b><span>60 баллов — «3»</span><span>75 баллов — «4»</span><span>90 баллов — «5»</span><small>Баллы — доля верных ответов от 100. В тесте из 30 вопросов каждый стоит ≈ 3,3 балла: «3» — от 18 верных, «4» — от 23, «5» — от 27.</small></div>' +
     `<button class="next" type="button" data-act="start"${take ? '' : ' disabled'}>${take ? `Начать: ${nQ(take)}` : 'Нет подходящих вопросов'}</button>` +
-    '<p class="note">Вопросы и варианты перемешиваются. После каждого ответа — подробное пояснение. Если вариантов в базе нет, проверяешь себя сам. На клавиатуре: 1–4 (или А–Г) — выбрать, Enter — дальше.</p></section>';
+    `<p class="note">Вопросы и варианты перемешиваются. ${cfg.exam ? 'Правильность и пояснения покажу только в конце, в разборе ошибок — как на экзамене.' : 'После каждого ответа сразу видно, верно ли, и подробное пояснение.'} Если вариантов в базе нет, проверяешь себя сам. На клавиатуре: 1–4 (или А–Г) — выбрать, Enter — дальше.</p></section>`;
 }
 
 function renderResults() {
   const done = test.res.map((r, k) => r && { r, c: test.items[k] }).filter(Boolean);
-  const ok = done.filter(d => d.r.ok).length, tot = done.length, pct = tot ? Math.round(ok / tot * 100) : 0;
+  const n = test.items.length, ok = done.filter(d => d.r.ok).length, tot = done.length;
   const wrong = done.filter(d => !d.r.ok);
-  const mark = pct >= 85 ? 5 : pct >= 70 ? 4 : pct >= 50 ? 3 : 2;
-  const word = { 5: 'Отлично', 4: 'Хорошо', 3: 'Удовлетворительно', 2: 'Нужно повторить' }[mark];
+  const pts = points(ok, n), mark = gradeOf(pts); // неотвеченные считаются неверными, как на экзамене
+  const word = { 5: 'Отлично', 4: 'Хорошо', 3: 'Удовлетворительно', 2: 'Неудовлетворительно' }[mark];
+  const nextT = SCALE.slice().reverse().find(([min]) => min > pts + 1e-9);
+  const need = nextT ? Math.ceil(nextT[0] * n / 100 - 1e-9) - ok : 0;
+  const hint = nextT ? `До «${nextT[1]}» не хватило ${plural(need, 'верного ответа', 'верных ответов', 'верных ответов')}.` : 'Максимальная оценка.';
   ttl.innerHTML = 'Результат';
   cnt.textContent = tot < test.items.length ? `Отвечено ${tot} из ${test.items.length}` : nQ(tot);
   cur.opt = { force: true };
-  main.innerHTML = `<section class="score m${mark}"><span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ok} из ${tot}</b><span>${word}, ${pct}% верных ответов</span></div></section>` +
-    '<div class="pair">' + (wrong.length ? `<button class="chipbtn red" type="button" data-act="retry">Ошибки ещё раз <b>${wrong.length}</b></button>` : '') +
-    '<button class="chipbtn" type="button" data-act="again">Новый тест</button><a class="chipbtn" href="#">К темам</a></div>' +
+  main.innerHTML = `<section class="score m${mark}"><span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ptsText(pts)} из 100</b><span>${word}: верно ${ok} из ${n}${tot < n ? ` (без ответа ${n - tot})` : ''}. ${hint}</span></div></section>` +
+    '<div class="pair">' + (wrong.length ? `<button class="chipbtn red wide" type="button" data-act="retry">Повторить ошибки этого теста <b>${wrong.length}</b></button>` : '') +
+    `<button class="chipbtn" type="button" data-act="again">Новый тест</button><a class="chipbtn" href="#">${T.length > 1 ? 'К темам' : 'На главную'}</a></div>` +
     (wrong.length ? '<h2 class="sec">Разбор ошибок</h2><div class="list">' + wrong.map(d => card(d.c.it, [], false,
       { force: true, showT: true, extra: d.c.opts ? `<div class="mine">Твой ответ: ${esc(d.c.opts[d.r.pick])}</div>` : '' })).join('') + '</div>'
       : '<div class="empty">Ни одной ошибки.</div>');
@@ -533,7 +552,11 @@ function jump(n) {
   el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1200);
 }
 const go = h => { if (location.hash.replace('#', '') === h) { test = null; if (pendingTest) startTest(pendingTest); pendingTest = null; render(); window.scrollTo(0, 0); } else location.hash = h; };
-function answer(ok, pick) { const c = test.items[test.i]; test.res[test.i] = { ok, pick }; record(c.it.key, ok); render(); }
+function answer(ok, pick) {
+  const c = test.items[test.i]; test.res[test.i] = { ok, pick }; record(c.it.key, ok);
+  if (test.exam && c.opts) { test.i++; render(); window.scrollTo(0, 0); return; } // как на экзамене: сразу следующий вопрос
+  render();
+}
 
 main.addEventListener('click', e => {
   const a = e.target.closest('.nums a');
@@ -557,7 +580,7 @@ main.addEventListener('click', e => {
     case 'testList': pendingTest = shuffle(ALL.filter(it => b.dataset.src === 'fav' ? fav.has(it.key) : isErr(it.key))); go('test'); break;
     case 'cfg': {
       const g = b.dataset.g;
-      cfg[g] = g === 'src' ? v : g === 'mc' ? v === 'true' : +v;
+      cfg[g] = g === 'src' ? v : (g === 'mc' || g === 'exam') ? v === 'true' : +v;
       LS.set('fz-testcfg', cfg); keepScroll(render); break;
     }
     case 'start': startTest(shuffle(pool(cfg)).slice(0, cfg.n || undefined)); render(); window.scrollTo(0, 0); break;

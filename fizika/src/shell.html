@@ -193,6 +193,11 @@ details.why[open] summary{margin-left:-14px}
 .score{display:flex; align-items:center; gap:18px; background:var(--sheet); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:10px}
 .grade{flex:none; width:84px; height:84px; display:grid; place-items:center; border:3px solid var(--red); border-radius:50% 46% 52% 48%; color:var(--red); font:italic 700 52px/1 var(--math); transform:rotate(-8deg)}
 .score b{display:block; font-size:24px}
+.scale{display:flex; flex-wrap:wrap; gap:4px 16px; background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-top:14px; font-size:14px}
+.scale b,.scale small{flex-basis:100%}
+.scale span{white-space:nowrap; font-weight:600}
+.chipbtn.wide{grid-column:1/-1}
+.scale small{color:var(--muted); font-size:13px}
 .score div span{color:var(--muted)}
 @media (hover:hover){.opt:not(:disabled):hover,.chip:hover,.chipbtn:hover,.tile:hover,.pager a:hover{border-color:var(--ink)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; scroll-behavior:auto!important}}
