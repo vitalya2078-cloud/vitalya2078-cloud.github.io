@@ -187,6 +187,15 @@ details.why[open] summary{margin-left:-14px}
 .opt.wrong .ok-n{border-color:var(--red); color:var(--red)}
 .opt:disabled:not(.right):not(.wrong){opacity:.55}
 .verdict{font-weight:700}
+/* таймер: полоска убывает, последние 20 секунд — красная */
+.timer{--p:100%; position:sticky; top:calc(var(--hh,118px)); z-index:3; display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 10px; padding:8px 14px; border-radius:12px; background:linear-gradient(90deg,var(--ink-soft) var(--p),var(--sheet) var(--p)); border:1px solid var(--line); font-size:14px; color:var(--muted)}
+.timer b{font-size:20px; color:var(--ink); font-variant-numeric:tabular-nums}
+.timer.warn{background:linear-gradient(90deg,var(--red-soft) var(--p),var(--sheet) var(--p)); border-color:var(--red)}
+.timer.warn b{color:var(--red)}
+.mine.timeout{text-decoration:none}
+.range{display:grid; gap:6px; background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:6px 0 4px; font-size:14.5px}
+.range input{width:100%; accent-color:var(--ink); height:28px}
+.rl{display:flex; justify-content:space-between; color:var(--muted)}
 .verdict.ok{color:var(--ok)} .verdict.bad{color:var(--red)}
 .tfoot{text-align:center}
 /* итог — оценка красной ручкой, как в тетради */

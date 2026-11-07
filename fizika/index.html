@@ -187,6 +187,15 @@ details.why[open] summary{margin-left:-14px}
 .opt.wrong .ok-n{border-color:var(--red); color:var(--red)}
 .opt:disabled:not(.right):not(.wrong){opacity:.55}
 .verdict{font-weight:700}
+/* таймер: полоска убывает, последние 20 секунд — красная */
+.timer{--p:100%; position:sticky; top:calc(var(--hh,118px)); z-index:3; display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 10px; padding:8px 14px; border-radius:12px; background:linear-gradient(90deg,var(--ink-soft) var(--p),var(--sheet) var(--p)); border:1px solid var(--line); font-size:14px; color:var(--muted)}
+.timer b{font-size:20px; color:var(--ink); font-variant-numeric:tabular-nums}
+.timer.warn{background:linear-gradient(90deg,var(--red-soft) var(--p),var(--sheet) var(--p)); border-color:var(--red)}
+.timer.warn b{color:var(--red)}
+.mine.timeout{text-decoration:none}
+.range{display:grid; gap:6px; background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:6px 0 4px; font-size:14.5px}
+.range input{width:100%; accent-color:var(--ink); height:28px}
+.rl{display:flex; justify-content:space-between; color:var(--muted)}
 .verdict.ok{color:var(--ok)} .verdict.bad{color:var(--red)}
 .tfoot{text-align:center}
 /* итог — оценка красной ручкой, как в тетради */
@@ -360,6 +369,7 @@ function topicStat(items) { let s = 0, e = 0; items.forEach(it => { if (seen(it.
 
 // экраны
 function render() {
+  stopTimer();
   const r = route(), raw = inp.value.trim();
   cur = { ws: [], fz: false, opt: {} };
   const inTest = r.name === 'test';
@@ -462,6 +472,31 @@ if (!(cfg.topic === 0 || T.some(t => t.id === cfg.topic))) cfg.topic = 0;
 if (!['all', 'new', 'err', 'fav'].includes(cfg.src)) cfg.src = 'all';
 if (![30, 10, 0].includes(cfg.n)) cfg.n = 30;
 cfg.exam = cfg.exam === true;
+// таймер на вопрос: включён/выключен и длительность 100–180 с (шаг 10)
+cfg.tOn = cfg.tOn !== false;
+cfg.tSec = Math.min(180, Math.max(100, Math.round((+cfg.tSec || 120) / 10) * 10));
+const totTxt = () => { const n = cfg.n || pool(cfg).length; return `На ${nQ(n)} — не больше ${Math.ceil(n * cfg.tSec / 60)} мин.`; };
+const mmss = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+let tick = null;
+const stopTimer = () => { if (tick) { clearInterval(tick); tick = null; } };
+function timeout() { // время вышло — вопрос засчитывается как неверный
+  stopTimer();
+  const c = test.items[test.i];
+  test.res[test.i] = { ok: false, pick: -1, timeout: true }; record(c.it.key, false);
+  if (navigator.vibrate) try { navigator.vibrate(200); } catch (e) {}
+  if (test.exam) test.i++;
+  render(); window.scrollTo(0, 0);
+}
+function startTick(c) {
+  const el = $('#tmr-v'), box = $('#tmr');
+  const upd = () => {
+    const left = Math.max(0, Math.ceil((c.deadline - Date.now()) / 1000));
+    if (el) el.textContent = mmss(left);
+    if (box) { box.classList.toggle('warn', left <= 20); box.style.setProperty('--p', (left / test.timer * 100).toFixed(1) + '%'); }
+    if (left <= 0) timeout();
+  };
+  upd(); tick = setInterval(upd, 250);
+}
 cfg.mc = cfg.mc === true;
 let test = null, pendingTest = null;
 const pool = c => ALL.filter(it => (!c.topic || it.t.id === c.topic) && (!c.mc || it.q.x.length) &&
@@ -472,7 +507,7 @@ const points = (ok, n) => n ? ok * 100 / n : 0;
 const gradeOf = p => (SCALE.find(([min]) => p >= min - 1e-9) || [0, 2])[1];
 const ptsText = p => { const r = Math.round(p * 10) / 10; return Number.isInteger(r) ? plural(r, 'балл', 'балла', 'баллов') : fmtPts(r) + ' балла'; };
 const fmtPts = p => (Math.round(p * 10) / 10).toString().replace('.', ',');
-function startTest(items) { test = { exam: cfg.exam,  items: items.map(it => ({ it, opts: it.q.x.length ? shuffle([it.q.a, ...it.q.x]) : null, shown: false })), i: 0, res: [], done: false }; }
+function startTest(items) { test = { exam: cfg.exam, timer: cfg.tOn ? cfg.tSec : 0,  items: items.map(it => ({ it, opts: it.q.x.length ? shuffle([it.q.a, ...it.q.x]) : null, shown: false })), i: 0, res: [], done: false }; }
 const testRunning = () => test && !test.done && test.i < test.items.length && test.res.some(Boolean);
 
 function renderTest() {
@@ -491,19 +526,22 @@ function renderTest() {
       const cls = !res ? '' : o === q.a ? ' right' : k === res.pick ? ' wrong' : '';
       return `<button class="opt${cls}" type="button" data-act="pick" data-v="${k}"${res ? ' disabled' : ''}><span class="ok-n">${"АБВГДЕ"[k]}</span><span>${esc(o)}</span></button>`;
     }).join('') + '</div>';
-    if (res) body += `<div class="verdict ${res.ok ? 'ok' : 'bad'}">${res.ok ? 'Верно' : 'Неверно. Правильный ответ отмечен зелёным.'}</div>`;
-  } else if (!c.shown && !res) {
+    if (res) body += `<div class="verdict ${res.ok ? 'ok' : 'bad'}">${res.ok ? 'Верно' : res.timeout ? 'Время вышло — засчитано как неверный ответ. Правильный отмечен зелёным.' : 'Неверно. Правильный ответ отмечен зелёным.'}</div>`;
+  } else if (!c.shown && !res && !c.opts) {
     body = '<button class="ans hidden" type="button" data-act="show">Показать ответ</button><p class="note">Для этого вопроса в базе нет вариантов. Вспомни ответ, потом проверь себя.</p>';
   } else {
-    body = `<div class="ans">${esc(q.a)}</div>` + (res ? `<div class="verdict ${res.ok ? 'ok' : 'bad'}">${res.ok ? 'Отмечено: знал' : 'Отмечено: не знал'}</div>`
+    body = `<div class="ans">${esc(q.a)}</div>` + (res ? `<div class="verdict ${res.ok ? 'ok' : 'bad'}">${res.ok ? 'Отмечено: знал' : res.timeout ? 'Время вышло — засчитано как неверный ответ' : 'Отмечено: не знал'}</div>`
       : '<div class="rate"><button type="button" class="ok" data-act="self" data-v="1">Знал</button><button type="button" class="bad" data-act="self" data-v="0">Не знал</button></div>');
   }
   if (res) body += (q.n ? `<p class="note">${esc(q.n)}</p>` : '') + why(q, true);
   main.innerHTML = (test.exam ? ruler(okN + badN, 0, n, 'big') : ruler(okN, badN, n, 'big')) +
+    (test.timer && !res ? `<div class="timer" id="tmr" role="timer" aria-label="Осталось времени"><span>Осталось на вопрос</span><b id="tmr-v">${mmss(test.timer)}</b></div>` : '') +
     `<article class="q test"><p class="qt"><span class="qn">${it.t.id}.${it.i}</span>${esc(q.t)}</p>${pic}${body}</article>` +
     (res ? `<button class="next" type="button" data-act="next">${test.i + 1 < n ? 'Следующий вопрос' : 'Показать результат'}</button>` : '') +
     `<div class="tfoot"><button class="link" type="button" data-act="finish">Завершить тест</button></div>`;
   const nx = $('.next'); if (nx) nx.focus({ preventScroll: true });
+  document.documentElement.style.setProperty('--hh', $('header').offsetHeight + 'px');
+  if (test.timer && !res) { if (!c.deadline) c.deadline = Date.now() + test.timer * 1000; startTick(c); }
 }
 
 function renderSetup() {
@@ -516,6 +554,8 @@ function renderSetup() {
     `<h2 class="sec">Какие вопросы</h2><div class="chips">${chip('src', 'all', 'Все')}${chip('src', 'new', 'Ещё не решал')}${chip('src', 'err', 'Мои ошибки')}${chip('src', 'fav', 'Избранное')}</div>` +
     `<div class="chips">${chip('mc', false, 'С вариантами и без')}${chip('mc', true, 'Только с вариантами')}</div>` +
     `<h2 class="sec">Сколько вопросов</h2><div class="chips">${chip('n', 30, '30, как на экзамене')}${chip('n', 10, '10, быстро')}${chip('n', 0, 'Все')}</div>` +
+    `<h2 class="sec">Таймер на вопрос</h2><div class="chips">${chip('tOn', true, 'С таймером')}${chip('tOn', false, 'Без таймера')}</div>` +
+    (cfg.tOn ? `<label class="range"><span>Время на один вопрос: <b id="tsec">${cfg.tSec} с (${mmss(cfg.tSec)})</b></span><input id="tsl" type="range" min="100" max="180" step="10" value="${cfg.tSec}" aria-label="Секунд на вопрос"><span class="rl"><small>100 с</small><small>180 с</small></span></label><p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt()}</span></p>` : '') +
     `<h2 class="sec">Пояснения</h2><div class="chips">${chip('exam', false, 'Сразу после ответа')}${chip('exam', true, 'В конце, как на экзамене')}</div>` +
     '<div class="scale"><b>Оценка</b><span>60 баллов — «3»</span><span>75 баллов — «4»</span><span>90 баллов — «5»</span><small>Баллы — доля верных ответов от 100. В тесте из 30 вопросов каждый стоит ≈ 3,3 балла: «3» — от 18 верных, «4» — от 23, «5» — от 27.</small></div>' +
     `<button class="next" type="button" data-act="start"${take ? '' : ' disabled'}>${take ? `Начать: ${nQ(take)}` : 'Нет подходящих вопросов'}</button>` +
@@ -538,7 +578,7 @@ function renderResults() {
     '<div class="pair">' + (wrong.length ? `<button class="chipbtn red wide" type="button" data-act="retry">Повторить ошибки этого теста <b>${wrong.length}</b></button>` : '') +
     `<button class="chipbtn" type="button" data-act="again">Новый тест</button><a class="chipbtn" href="#">${T.length > 1 ? 'К темам' : 'На главную'}</a></div>` +
     (wrong.length ? '<h2 class="sec">Разбор ошибок</h2><div class="list">' + wrong.map(d => card(d.c.it, [], false,
-      { force: true, showT: true, extra: d.c.opts ? `<div class="mine">Твой ответ: ${esc(d.c.opts[d.r.pick])}</div>` : '' })).join('') + '</div>'
+      { force: true, showT: true, extra: d.r.timeout ? '<div class="mine timeout">Время вышло — ответа нет</div>' : d.c.opts ? `<div class="mine">Твой ответ: ${esc(d.c.opts[d.r.pick])}</div>` : '' })).join('') + '</div>'
       : '<div class="empty">Ни одной ошибки.</div>');
 }
 
@@ -558,6 +598,12 @@ function answer(ok, pick) {
   render();
 }
 
+main.addEventListener('input', e => {
+  if (e.target.id !== 'tsl') return;
+  cfg.tSec = +e.target.value; LS.set('fz-testcfg', cfg);
+  const l = $('#tsec'); if (l) l.textContent = `${cfg.tSec} с (${mmss(cfg.tSec)})`;
+  const tt = $('#ttot'); if (tt) tt.textContent = totTxt();
+});
 main.addEventListener('click', e => {
   const a = e.target.closest('.nums a');
   if (a) { e.preventDefault(); jump(a.dataset.n); return; }
@@ -580,7 +626,7 @@ main.addEventListener('click', e => {
     case 'testList': pendingTest = shuffle(ALL.filter(it => b.dataset.src === 'fav' ? fav.has(it.key) : isErr(it.key))); go('test'); break;
     case 'cfg': {
       const g = b.dataset.g;
-      cfg[g] = g === 'src' ? v : (g === 'mc' || g === 'exam') ? v === 'true' : +v;
+      cfg[g] = g === 'src' ? v : (g === 'mc' || g === 'exam' || g === 'tOn') ? v === 'true' : +v;
       LS.set('fz-testcfg', cfg); keepScroll(render); break;
     }
     case 'start': startTest(shuffle(pool(cfg)).slice(0, cfg.n || undefined)); render(); window.scrollTo(0, 0); break;
