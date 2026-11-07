@@ -5,62 +5,11 @@ let checks = LS.get('fz-check', {}); if (!checks || typeof checks !== 'object') 
 let games = LS.get('fz-games', {}); if (!games || typeof games !== 'object') games = {};
 // все игры темы — это игры её лекций
 const topicGames = t => (t.learn ? t.learn.notes : []).flatMap(n => lectureGames(n).map(x => gameKey(t, n, x.g)));
-const stars = n => '<span class="stars" aria-label="' + n + ' из 3">' + [1, 2, 3].map(i => `<i class="${i <= n ? 'on' : ''}">★</i>`).join('') + '</span>';
 function learnProgress(t) {
   if (!t.learn) return '';
   const notes = t.learn.notes || [], r = notes.filter(n => readSet.has(t.id + '-' + n.id)).length;
   const gs = topicGames(t), g = gs.filter(k => games[k]).length, c = checks[t.id];
   return `Конспект ${r}/${notes.length}, игры ${g}/${gs.length}` + (c != null ? `, самопроверка ${Math.round(c)}%` : '');
-}
-
-function vHub(r) {
-  const t = T.find(x => x.id === r.tid), items = topicItems(t.id), s = tstat(items);
-  LS.set('fz-last', t.id);
-  frame({ title: `<span><span class="tglyph">${GLYPH[t.id] || ''}</span>${esc(t.title)}</span>`, back: true });
-  const L = t.learn;
-  let html = '';
-  if (L) {
-    const notes = L.notes || [], read = notes.filter(n => readSet.has(t.id + '-' + n.id)).length, gs = topicGames(t), c = checks[t.id];
-    const step = (n, done, title, sub) => `<li class="${done ? 'done' : ''}"><span class="sn">${done ? '✓' : n}</span><span><b>${title}</b><small>${sub}</small></span></li>`;
-    html += `<ol class="path">${step(1, read === notes.length, 'Конспект', `прочитано ${read} из ${notes.length}`)}${step(2, gs.length && gs.every(k => games[k]), 'Мини-игры', `пройдено ${gs.filter(k => games[k]).length} из ${gs.length} — по 3 в каждой лекции`)}${step(3, c >= PASS, 'Самопроверка', c != null ? `лучший результат ${Math.round(c)}%` : `10 вопросов, порог ${PASS}%`)}${step(4, false, 'Тест и экзамен', progressText(items))}</ol>`;
-    html += '<h2 class="sec">Лекции</h2><div class="group">' + notes.map((n, i) => {
-      const done = readSet.has(t.id + '-' + n.id), nc = checks[t.id + '-' + n.id], lg = lectureGames(n), gd = lg.filter(x => games[gameKey(t, n, x.g)]).length;
-      const meta = [n.audio ? `озвучка ${Math.round(n.audio.dur / 60)} мин` : '', lg.length ? `игры ${gd}/${lg.length}` : '', nc != null ? `проверка ${Math.round(nc)}%` : ''].filter(Boolean).join(', ');
-      return `<a class="row note-row" href="#n${t.id}-${i + 1}"><span class="nn ${done ? 'done' : ''}">${done ? '✓' : i + 1}</span><span><b>${esc(n.title)}</b><small>${esc(n.lead)}</small>${meta ? `<small class="meta">${meta}</small>` : ''}</span>${ico('chev')}</a>`;
-    }).join('') + '</div>';
-    html += `<h2 class="sec">Самопроверка</h2><section class="panel check"><p>10 вопросов по всему конспекту темы, сразу с пояснениями. Наберёшь ${PASS}% — тема отмечается пройденной.</p>` +
-      `${c != null ? `<p class="${c >= PASS ? 'okc' : 'badc'}"><b>Лучший результат: ${Math.round(c)}%</b>${c >= PASS ? ' — тема пройдена' : ' — пока ниже порога'}</p>` : ''}<button class="btn wide" type="button" data-act="selfCheck" data-t="${t.id}">Пройти самопроверку</button></section>`;
-  } else {
-    html += '<div class="hint"><p><b>Конспект и мини-игры для этой темы готовятся.</b> Пока можно учить вопросы с пояснениями и проходить тесты. Новые материалы придут обновлением.</p></div>';
-  }
-  html += `<h2 class="sec">Вопросы и тесты</h2><div class="group"><a class="row" href="#t${t.id}q"><span><b>Все вопросы с ответами</b><small>${progressText(items)}</small></span>${ico('chev')}</a>` +
-    `<button class="row" type="button" data-act="testTopic" data-t="${t.id}"><span><b>Тест по теме</b><small>Баллы и оценка, как на экзамене</small></span>${ico('chev')}</button></div>`;
-  setMain(html);
-}
-
-/* ---------- Конспект ---------- */
-function vNote(r) {
-  const t = T.find(x => x.id === r.tid), L = t.learn, n = L && L.notes[r.idx - 1];
-  if (!n) { location.hash = 't' + r.tid; return; }
-  readSet.add(t.id + '-' + n.id); LS.set('fz-read', [...readSet]);
-  const total = L.notes.length, prev = r.idx > 1 ? `#n${t.id}-${r.idx - 1}` : '', next = r.idx < total ? `#n${t.id}-${r.idx + 1}` : '';
-  frame({
-    title: `<span class="tq">${esc(n.title)}</span><small>Лекция ${r.idx} из ${total}</small>`, back: true,
-    abar: (prev ? `<a class="btn line" href="${prev}">Назад</a>` : '') + `<button class="btn" type="button" data-act="noteCheck" data-t="${t.id}" data-n="${r.idx}">Проверь себя</button>` + (next ? `<a class="btn line" href="${next}">Дальше</a>` : `<a class="btn line" href="#t${t.id}">К теме</a>`)
-  });
-  const body = n.blocks.map(b => {
-    switch (b[0]) {
-      case 'p': return `<p>${nl(b[1])}</p>`;
-      case 'h': return `<h3>${esc(b[1])}</h3>`;
-      case 'def': return `<p class="def"><b>${esc(b[1])}</b> — ${nl(b[2])}</p>`;
-      case 'f': return `<div class="formula">${b[1].split('\n').map(l => `<span>${esc(l)}</span>`).join('')}</div>`;
-      case 'trap': return `<div class="trap"><b>Частая ошибка</b><p>${nl(b[1])}</p></div>`;
-      case 'ex': return `<div class="example"><b>${esc(b[1])}</b><p>${nl(b[2])}</p></div>`;
-      default: return '';
-    }
-  }).join('');
-  setMain(player(t, n) + `<article class="conspect"><p class="lead">${esc(n.lead)}</p>${body}</article>` + gamesBlock(t, n, r.idx) +
-    `<section class="panel check next-step"><p><b>Проверь себя по лекции</b> — ${plural(n.c.length, 'вопрос', 'вопроса', 'вопросов')} по этому конспекту, сразу с пояснениями.</p></section>`);
 }
 
 /* ---------- Самопроверка ---------- */
@@ -85,14 +34,7 @@ function checkBanner(pts) {
 
 /* ---------- Озвучка лекций ---------- */
 // Файл скачивается один раз (с сайта) и хранится в IndexedDB — потом работает без интернета
-const AUD = { el: null, file: '', url: '' };
-function player(t, n) {
-  if (!n.audio) return '';
-  const pos = LS.get('fz-apos', {})[n.audio.file] || 0;
-  return `<section class="player" data-file="${n.audio.file}" data-dur="${n.audio.dur}"><button class="pp" type="button" data-act="audPlay" aria-label="Слушать лекцию"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path class="pi" d="M8 5l11 7-11 7z"/></svg></button>` +
-    `<div class="pmid"><b>Слушать лекцию</b><input id="aseek" type="range" min="0" max="${n.audio.dur}" step="1" value="${pos}" aria-label="Перемотка"><small id="atime">${mmss(Math.round(pos))} / ${mmss(Math.round(n.audio.dur))}</small></div>` +
-    `<button class="rate-btn" type="button" data-act="audRate" aria-label="Скорость">${f1(LS.get('fz-arate', 1), 2)}×</button></section>`;
-}
+const AUD = { el: null, file: '', url: '', title: '', href: '', cover: '' };
 async function audioUrl(file) {
   const cached = await idb.get('aud:' + file);
   if (cached) return URL.createObjectURL(cached);
@@ -105,15 +47,17 @@ function audIcon(playing) { const p = document.querySelector('.player .pi'); if 
 function savePos() { if (!AUD.file || !AUD.el) return; const p = LS.get('fz-apos', {}); p[AUD.file] = AUD.el.ended ? 0 : AUD.el.currentTime; LS.set('fz-apos', p); }
 async function audPlay() {
   const box = $('.player'); if (!box) return; const file = box.dataset.file;
+  AUD.title = box.dataset.title || ''; AUD.href = box.dataset.href || ''; { const [a, b] = (box.dataset.cover || '').split('-').map(Number), t = T.find(x => x.id === a); AUD.cover = t ? coverOf(t, b) : ''; }
   if (!AUD.el) {
     AUD.el = new Audio(); AUD.el.preload = 'auto';
     AUD.el.addEventListener('timeupdate', () => {
+      miniTick();
       const s = $('#aseek'), tm = $('#atime'), pl = $('.player');
       if (s && pl && pl.dataset.file === AUD.file) { s.value = AUD.el.currentTime; tm.textContent = `${mmss(Math.round(AUD.el.currentTime))} / ${mmss(Math.round(+pl.dataset.dur))}`; }
     });
-    AUD.el.addEventListener('pause', () => { audIcon(false); savePos(); });
-    AUD.el.addEventListener('play', () => audIcon(true));
-    AUD.el.addEventListener('ended', () => { audIcon(false); savePos(); });
+    AUD.el.addEventListener('pause', () => { audIcon(false); savePos(); miniUpd(); });
+    AUD.el.addEventListener('play', () => { audIcon(true); miniUpd(); markDay(); });
+    AUD.el.addEventListener('ended', () => { audIcon(false); savePos(); miniUpd(); });
   }
   if (AUD.file === file && !AUD.el.paused) { AUD.el.pause(); return; }
   if (AUD.file !== file) {
@@ -151,19 +95,12 @@ function lectureGames(n) {
   return out;
 }
 const gameKey = (t, n, g) => `${t.id}-${n.id}-${g}`;
-function gamesBlock(t, n, idx) {
-  const gs = lectureGames(n); if (!gs.length) return '';
-  return `<h2 class="sec">Мини-игры по лекции</h2><div class="games">` + gs.map(x => {
-    const best = games[gameKey(t, n, x.g)];
-    return `<a class="game-card g-${x.g}" href="#g${t.id}-${idx}-${x.g}"><b>${x.title}</b><small>${x.lead}</small>${best ? stars(best.stars) : '<span class="new">Не пройдена</span>'}</a>`;
-  }).join('') + '</div>';
-}
-
 let G = null; // состояние текущей игры
 function stopGame() { if (G && G.raf) cancelAnimationFrame(G.raf); if (G && G.tick) clearInterval(G.tick); if (G) { G.raf = 0; G.tick = 0; } }
 function saveGame(key, score, starsN) {
   const b = games[key];
   if (!b || starsN > b.stars || (starsN === b.stars && score > b.score)) { games[key] = { stars: starsN, score, d: Date.now() }; LS.set('fz-games', games); }
+  markDay();
 }
 function vGame(r) {
   const t = T.find(x => x.id === r.tid), n = t.learn && t.learn.notes[r.idx - 1];

@@ -113,7 +113,7 @@ function record(key, ok) {
     s.ok++;
     if (s.bad) { s.box = (s.box || 0) + 1; s.due = s.box > REPEAT.length ? 0 : Date.now() + REPEAT[s.box - 1] * DAY; }
   } else { s.bad++; s.box = 0; s.due = Date.now() + DAY; }
-  s.last = ok ? 1 : 0; stat[key] = s; LS.set('fz-stat', stat);
+  s.last = ok ? 1 : 0; stat[key] = s; LS.set('fz-stat', stat); markDay();
 }
 const isErr = k => !!stat[k] && stat[k].last === 0;
 const seen = k => !!stat[k];
@@ -201,16 +201,18 @@ function grouped(items, ws, fz) {
 }
 
 /* ---------- маршруты ---------- */
-// '' главная · topics · t3 · test · me · err · fav · due · hist · settings · backup · search
+// Вкладки: '' Сегодня · topics Курс · practice Практика · ref Справочник. Профиль (me) — по кнопке в шапке.
+// Курс: t3 карта темы · t3q вопросы темы · n1-2 лекция · g1-2-sim игра. Практика: test · err · due · games · formulas · hist.
 function route() {
   const h = location.hash.replace(/^#\/?/, ''), has = id => T.some(t => t.id === id);
   let m = /^t(\d+)$/.exec(h);
-  if (m && has(+m[1])) return { name: 'hub', tid: +m[1], tab: 'topics', parent: 'topics' };
-  if ((m = /^t(\d+)q$/.exec(h)) && has(+m[1])) return { name: 'topic', tid: +m[1], tab: 'topics', parent: 't' + m[1] };
-  if ((m = /^n(\d+)-(\d+)$/.exec(h)) && has(+m[1])) return { name: 'note', tid: +m[1], idx: +m[2], tab: 'topics', parent: 't' + m[1] };
-  if ((m = /^g(\d+)-(\d+)-(sim|pair|tf)$/.exec(h)) && has(+m[1])) return { name: 'game', tid: +m[1], idx: +m[2], game: m[3], tab: 'topics', parent: 'n' + m[1] + '-' + m[2] };
-  const map = { topics: ['topics'], test: ['test'], me: ['me'], err: ['me', 'me'], fav: ['me', 'me'], due: ['me', 'me'], hist: ['me', 'me'], settings: ['me', 'me'], backup: ['me', 'me'], search: ['home', ''] };
-  if (map[h]) return { name: h, tab: map[h][0], parent: map[h][1] };
+  if (m && has(+m[1])) return { name: 'hub', tid: +m[1], tab: 'course', parent: 'topics' };
+  if ((m = /^t(\d+)q$/.exec(h)) && has(+m[1])) return { name: 'topic', tid: +m[1], tab: 'course', parent: 't' + m[1] };
+  if ((m = /^n(\d+)-(\d+)$/.exec(h)) && has(+m[1])) return { name: 'note', tid: +m[1], idx: +m[2], tab: 'course', parent: 't' + m[1] };
+  if ((m = /^g(\d+)-(\d+)-(sim|pair|tf)$/.exec(h)) && has(+m[1])) return { name: 'game', tid: +m[1], idx: +m[2], game: m[3], tab: 'course', parent: 'n' + m[1] + '-' + m[2] };
+  const map = { topics: ['course'], practice: ['practice'], test: ['practice', 'practice'], err: ['practice', 'practice'], due: ['practice', 'practice'], games: ['practice', 'practice'], formulas: ['practice', 'practice'], hist: ['practice', 'practice'],
+    ref: ['ref'], search: ['ref'], me: ['', ''], fav: ['', 'me'], settings: ['', 'me'], backup: ['', 'me'] };
+  if (map[h]) return { name: h === 'search' ? 'ref' : h, tab: map[h][0], parent: map[h][1] };
   return { name: 'home', tab: 'home' };
 }
 const go = h => { if (location.hash.replace(/^#/, '') === h) render(); else location.hash = h; };
@@ -232,42 +234,21 @@ let searchOpen = false, searchText = '';
 function render() {
   stopTimer();
   const r = route();
-  if (r.name !== 'note') stopAudio(); // озвучка звучит, пока открыта её лекция
   document.body.dataset.view = r.name;
+  ui.main.classList.remove('map'); // фон карты темы — только на карте
   ui.tabs.querySelectorAll('a').forEach(a => a.setAttribute('aria-current', a.dataset.tab === r.tab ? 'page' : 'false'));
   cardCtx = { ws: [], fz: false, opt: {} };
   stopGame();
-  ({ home: vHome, topics: vTopics, hub: vHub, note: vNote, game: vGame, topic: vTopic, test: vTest, me: vMe, err: vList, fav: vList, due: vList, hist: vHist, settings: vSettings, backup: vBackup, search: vSearch })[r.name](r);
+  ({ home: vHome, topics: vTopics, hub: vHub, note: vNote, game: vGame, topic: vTopic, test: vTest, me: vMe, err: vList, fav: vList, due: vList, hist: vHist, settings: vSettings, backup: vBackup,
+    practice: vPractice, ref: vRef, games: vGames, formulas: vFormulas })[r.name](r);
+  miniUpd();
 }
 function setMain(html) {
   ui.main.innerHTML = html;
   ui.main.classList.remove('enter'); void ui.main.offsetWidth; ui.main.classList.add('enter');
 }
 
-/* ---------- Главная ---------- */
-function vHome() {
-  frame({ title: 'Физика', acts: actBtn('openSearch', 'search', 'Поиск') });
-  const s = tstat(ALL), errN = ALL.filter(it => isErr(it.key)).length, due = ALL.filter(it => isDue(it.key)).length;
-  const last = LS.get('fz-last', 0), lt = T.find(t => t.id === last);
-  const recent = hist.slice(-5), avg = recent.length ? recent.reduce((a, h) => a + h.pts, 0) / recent.length : null;
-  setMain(notice() + installRow() +
-    `<section class="exam"><h2>Экзамен</h2><p>30 вопросов по всем темам с вариантами ответа. 60 баллов — «3», 75 — «4», 90 — «5».</p>` +
-    `<div class="exam-b"><button class="btn light" type="button" data-act="exam">Начать экзамен</button><a class="btn line" href="#test">Свой тест</a></div></section>` +
-    (due ? `<button class="tile-row warn" type="button" data-act="testDue"><span><b>На повторение сегодня: ${nQ(due)}</b><small>Ошибки возвращаются через 1, 3, 7 и 14 дней, пока не закрепятся</small></span>${ico('chev')}</button>` : '') +
-    (lt ? `<a class="tile-row" href="#t${lt.id}"><span><b>Продолжить: ${lt.id}. ${esc(lt.title)}</b><small>${progressText(topicItems(lt.id))}</small></span>${ico('chev')}</a>` : '') +
-    `<section class="stats"><div><b>${s.s}</b><span>решено из ${ALL.length}</span></div><div><b class="${errN ? 'red' : ''}">${errN}</b><span>ошибок сейчас</span></div><div><b>${avg == null ? '—' : fmtPts(avg)}</b><span>средний балл за 5 тестов</span></div></section>` +
-    `<div class="group"><a class="row" href="#topics"><span>Все темы</span><small>${T.length}</small>${ico('chev')}</a><a class="row" href="#err"><span>Мои ошибки</span><small>${errN}</small>${ico('chev')}</a><a class="row" href="#fav"><span>Избранное</span><small>${fav.size}</small>${ico('chev')}</a></div>`);
-}
 const progressText = items => { const s = tstat(items); return s.s ? `Решено ${s.s} из ${items.length}` + (s.e ? `, ошибок ${s.e}` : '') : `${nQ(items.length)}, пока не начато`; };
-
-/* ---------- Темы ---------- */
-function vTopics() {
-  frame({ title: 'Темы', acts: actBtn('openSearch', 'search', 'Поиск') });
-  setMain('<div class="group">' + T.map(t => {
-    const items = topicItems(t.id), s = tstat(items), lp = learnProgress(t);
-    return `<a class="trow" href="#t${t.id}"><span class="glyph">${GLYPH[t.id] || ''}</span><span class="tb"><b>${t.id}. ${esc(t.title)}</b><small>${lp ? lp + '. ' : ''}${progressText(items)}</small>${ruler(s.s - s.e, s.e, items.length)}</span>${ico('chev')}</a>`;
-  }).join('') + '</div>');
-}
 
 /* ---------- Тема ---------- */
 let showNums = false;
@@ -293,30 +274,13 @@ function vTopic(r) {
 const numCls = (it, vis) => [vis ? '' : 'dim', stat[it.key] ? (stat[it.key].last ? 'ok' : 'bad') : ''].join(' ').trim();
 const searchField = ph => `<div class="search"><input id="q" type="search" value="${esc(searchText)}" placeholder="${ph}" autocomplete="off" enterkeyhint="search" aria-label="Поиск"><button class="ib" type="button" data-act="clearSearch" aria-label="Очистить">${ico('close')}</button></div>`;
 
-/* ---------- Поиск по всему ---------- */
-function vSearch() {
-  frame({ title: 'Поиск', back: true, sub: searchField('Слова из вопроса или номер, например 3.15') });
-  const raw = searchText.trim();
-  if (!raw) { setMain('<div class="empty">Введи слова из вопроса или ответа. Опечатки не страшны. Номер вида «3.15» откроет вопрос 15 из темы 3.</div>'); return; }
-  const m = /^(\d)\s*[.,\-/ ]\s*(\d{1,3})$/.exec(raw);
-  if (m && BY[m[1] + '-' + +m[2]]) {
-    cardCtx.opt = { showT: true };
-    setMain(`<div class="topbar-info"><p>Тема ${m[1]}, вопрос ${+m[2]}</p></div><div class="list">${card(BY[m[1] + '-' + +m[2]], [], false, cardCtx.opt)}</div>`); return;
-  }
-  const ws = qWords(raw), { r, fz } = find(ALL, ws);
-  cardCtx.ws = ws; cardCtx.fz = fz;
-  const shown = r.slice(0, 150);
-  setMain(`<div class="topbar-info"><p>${fz ? `Точных совпадений нет, похожих: ${r.length}` : `Найдено: ${r.length}`}${r.length > shown.length ? `. Показаны первые ${shown.length} — уточни запрос` : ''}</p></div>` +
-    (r.length ? grouped(shown, ws, fz) : '<div class="empty">Ничего не нашлось. Попробуй часть слова.</div>'));
-}
-
 /* ---------- Списки: ошибки, избранное, повторение ---------- */
 function vList(r) {
   const kind = r.name, base = ALL.filter(it => kind === 'fav' ? fav.has(it.key) : kind === 'err' ? isErr(it.key) : isDue(it.key));
   const title = { err: 'Мои ошибки', fav: 'Избранное', due: 'На повторение' }[kind];
   frame({ title, back: true });
   if (!base.length) {
-    setMain(`<div class="empty">${{ fav: 'Здесь пока пусто. Нажми звёздочку у вопроса, чтобы сохранить его сюда.', err: 'Ошибок нет. Вопросы, на которые ответишь неверно, появятся здесь.', due: 'На сегодня повторять нечего. Ошибки возвращаются через 1, 3, 7 и 14 дней.' }[kind]}</div>`);
+    setMain(`<div class="empty">${mascot({ fav: 'think', err: 'joy', due: 'sleep' }[kind], 'mascot big')}<p>${{ fav: 'Здесь пока пусто. Нажми звёздочку у вопроса, чтобы сохранить его сюда.', err: '<b>Ошибок нет!</b><br>Вопросы, на которые ответишь неверно, появятся здесь.', due: '<b>На сегодня всё повторено.</b><br>Ошибки возвращаются через 1, 3, 7 и 14 дней.' }[kind]}</p></div>`);
     return;
   }
   const note = { err: 'Вопрос уходит из списка, когда ответишь на него верно.', fav: '', due: 'Ответишь верно — вопрос вернётся позже. Ошибёшься — завтра.' }[kind];
@@ -443,23 +407,13 @@ function vResults() {
   const chk = checkBanner(pts);
   frame({ title: 'Результат', abar: (wrong.length ? `<button class="btn" type="button" data-act="retry">Повторить ошибки (${wrong.length})</button>` : '') + '<button class="btn line" type="button" data-act="again">Новый тест</button>' });
   cardCtx.opt = { force: true };
-  setMain(chk + `<section class="score"><span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ptsText(pts)} из 100</b><span>${word}: верно ${ok} из ${n}${tot < n ? ` (без ответа ${n - tot})` : ''}. ${hint}</span></div></section>` +
+  setMain(chk + `<div class="res-m">${mascot(resultMascot(mark), 'mascot big')}</div><section class="score"><span class="grade" aria-label="Оценка ${mark}">${mark}</span><div><b>${ptsText(pts)} из 100</b><span>${word}: верно ${ok} из ${n}${tot < n ? ` (без ответа ${n - tot})` : ''}. ${hint}</span></div></section>` +
     (wrong.length ? '<h2 class="sec">Разбор ошибок</h2><div class="list">' + wrong.map(d => card(d.c.it, [], false,
       { force: true, showT: true, extra: d.r.timeout ? '<p class="mine">Время вышло — ответа нет</p>' : d.c.opts ? `<p class="mine strike">Твой ответ: ${esc(d.c.opts[d.r.pick])}</p>` : '' })).join('') + '</div>'
-      : '<div class="empty">Ни одной ошибки.</div>'));
+      : '<div class="empty"><b>Ни одной ошибки.</b></div>'));
 }
 
 /* ---------- Прогресс ---------- */
-function vMe() {
-  frame({ title: 'Прогресс' });
-  const s = tstat(ALL), errN = ALL.filter(it => isErr(it.key)).length, due = ALL.filter(it => isDue(it.key)).length, lrn = ALL.filter(it => learned(it.key)).length;
-  const last = hist.slice(-12);
-  setMain(`<section class="stats"><div><b>${s.s}</b><span>решено из ${ALL.length}</span></div><div><b>${hist.length}</b><span>${plural(hist.length, 'тест', 'теста', 'тестов').replace(/^\d+ /, '')} пройдено</span></div><div><b>${lrn}</b><span>ошибок закреплено</span></div></section>` +
-    `<section class="panel"><h2>Баллы за последние тесты</h2>${chart(last)}</section>` +
-    `<section class="panel"><h2>По темам</h2>${T.map(t => { const it = topicItems(t.id), x = tstat(it); return `<a class="tline" href="#t${t.id}"><span>${t.id}. ${esc(t.title)}</span><small>${x.s}/${it.length}${x.e ? `, ошибок ${x.e}` : ''}</small>${ruler(x.s - x.e, x.e, it.length)}</a>`; }).join('')}</section>` +
-    `<div class="group"><a class="row" href="#due"><span>На повторение сегодня</span><small>${due}</small>${ico('chev')}</a><a class="row" href="#err"><span>Мои ошибки</span><small>${errN}</small>${ico('chev')}</a><a class="row" href="#fav"><span>Избранное</span><small>${fav.size}</small>${ico('chev')}</a><a class="row" href="#hist"><span>История тестов</span><small>${hist.length}</small>${ico('chev')}</a></div>` +
-    `<div class="group"><a class="row" href="#backup"><span>Резервная копия прогресса</span>${ico('chev')}</a><a class="row" href="#settings"><span>Настройки и обновления</span>${ico('chev')}</a></div>`);
-}
 function chart(items) {
   if (!items.length) return '<p class="note">Пройди тест — здесь появится график баллов.</p>';
   const W = 320, H = 140, pad = 22, bw = (W - pad) / 12;
@@ -500,7 +454,7 @@ const theme = () => LS.get('fz-theme', 'system');
 function applyTheme() {
   const t = theme(); if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = t;
   const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-  const meta = $('meta[name=theme-color]'); if (meta) meta.content = dark ? '#10233F' : '#F7F8F5';
+  const meta = $('meta[name=theme-color]'); if (meta) meta.content = dark ? '#132B4C' : '#FFFFFF';
   if (BRIDGE && BRIDGE.setDark) try { BRIDGE.setDark(dark); } catch (e) {}
 }
 function vSettings() {
@@ -591,7 +545,7 @@ function onClick(e) {
   if (!b || b.disabled) return;
   const k = b.dataset.k, v = b.dataset.v;
   switch (b.dataset.act) {
-    case 'openSearch': searchText = ''; searchOpen = true; go('search'); focusSearch(); break;
+    case 'openSearch': searchText = ''; searchOpen = true; go('ref'); focusSearch(); break;
     case 'toggleSearch': searchOpen = !searchOpen; searchText = ''; render(); if (searchOpen) focusSearch(); break;
     case 'clearSearch': searchText = ''; render(); focusSearch(); break;
     case 'train': train = !train; revealed.clear(); rated.clear(); LS.set('fz-train', train ? 1 : 0); keep(render); break;
@@ -681,7 +635,7 @@ function onKey(e) {
 
 /* ---------- запуск ---------- */
 async function boot() {
-  Object.assign(ui, { app: $('#app'), ttl: $('#ttl'), back: $('#back'), acts: $('#acts'), sub: $('#sub'), main: $('#main'), abar: $('#abar'), tabs: $('#tabs') });
+  Object.assign(ui, { app: $('#app'), ttl: $('#ttl'), back: $('#back'), acts: $('#acts'), sub: $('#sub'), main: $('#main'), abar: $('#abar'), tabs: $('#tabs'), mini: $('#mini') });
   applyTheme(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
   let c;
   try { c = await fetch('content.json', { cache: 'no-cache' }).then(r => r.json()); } catch (e) { c = null; }
@@ -696,13 +650,13 @@ async function boot() {
   document.addEventListener('input', onInput);
   document.addEventListener('change', onChange);
   document.addEventListener('keydown', onKey);
-  ui.back.addEventListener('click', () => { const r = route(); if (r.name === 'search' && history.length > 1) history.back(); else location.hash = r.parent || ''; });
+  ui.back.addEventListener('click', () => { const r = route(); location.hash = r.parent || ''; });
   window.addEventListener('hashchange', () => {
     const prev = onHash.prev; scrollMem[prev] = ui.main.scrollTop;
     const r = route();
     if (r.name !== 'test' && test && (test.done || test.i >= test.items.length)) test = null; // результат уже в истории
-    if (r.name !== 'topic' && r.name !== 'search') { searchOpen = false; searchText = ''; }
-    if (r.name === 'search') searchOpen = true;
+    if (r.name !== 'topic' && r.name !== 'ref') { searchOpen = false; searchText = ''; }
+    if (r.name === 'ref') searchOpen = true;
     revealed.clear(); rated.clear(); showNums = false;
     render();
     ui.main.scrollTop = scrollMem[location.hash] && r.name !== 'test' ? scrollMem[location.hash] : 0;
