@@ -14,7 +14,6 @@ import {
   faGraduationCap,
   faHouse,
   faMoon,
-  faPlay,
   faRotate,
   faSliders,
   faSun,
@@ -67,7 +66,7 @@ const trackOptions: Array<{ id: EducationTrack; title: string; description: stri
   { id: 'university', title: 'Университет', description: 'Высшая школа и инженерные направления' },
 ];
 
-const defaultSelection: EducationSelection = { tracks: ['school_base'], grade: '7' };
+const defaultSelection: EducationSelection = { tracks: [], grade: '7' };
 
 function readTheme(): ThemeMode {
   const saved = localStorage.getItem('physics-theme');
@@ -139,6 +138,8 @@ function App() {
         });
       } catch {
         if (active) setLocalStatus('Не удалось открыть локальное хранилище');
+      } finally {
+        if (active) setIsProfileLoading(false);
       }
     }
 
@@ -168,11 +169,7 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isProfileLoading) return;
-    const timer = window.setTimeout(() => setIsProfileLoading(false), 0);
-    return () => window.clearTimeout(timer);
-  }, [isProfileLoading]);
+
 
   const selectedTrackLabels = useMemo(
     () => trackOptions.filter((option) => selection.tracks.includes(option.id)).map((option) => option.title),
@@ -184,12 +181,12 @@ function App() {
     const nextProfile: LocalProfile = {
       id: profile?.id ?? createLocalId(),
       nickname: (nicknameDraft.trim() || 'Исследователь').slice(0, 32),
-      birthYear: birthYearDraft ? Number(birthYearDraft) : undefined,
+      birthYear: birthYearDraft && Number(birthYearDraft) >= 1900 && Number(birthYearDraft) <= new Date().getFullYear() ? Number(birthYearDraft) : undefined,
       createdAt: profile?.createdAt ?? now,
       updatedAt: now,
     };
     await saveLocalProfile(nextProfile);
-    const nextSelection = skipOnboarding && !selection.tracks.length ? defaultSelection : selection;
+    const nextSelection = selection;
     await saveLocalSetting('education-selection', nextSelection);
     setProfile(nextProfile);
     setSelection(nextSelection);
@@ -499,11 +496,11 @@ function ProfilePage({ nickname, birthYear, selection, theme, onNicknameChange, 
   onToggleTrack: (value: EducationTrack) => void;
   onGradeChange: (value: string) => void;
   onThemeChange: (value: ThemeMode) => void;
-  onSave: () => void;
+  onSave: () => Promise<void>;
 }) {
   const [saved, setSaved] = useState(false);
   async function handleSave() {
-    onSave();
+    await onSave();
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2200);
   }
