@@ -114,6 +114,20 @@ describe('local record persistence', () => {
     expect(progressOperations.every((operation) => operation.entityId === 'lesson-2')).toBe(true);
   });
 
+  it('keeps derived section and topic progress local-only', async () => {
+    await saveLocalProgress({
+      id: 'topic-progress',
+      entityType: 'topic',
+      entityId: 'topic-1',
+      status: 'in_progress',
+      completionPercent: 25,
+      updatedAt: '2026-11-08T10:00:00.000Z',
+    });
+
+    expect(await localDb.progress.get('topic-progress')).toBeDefined();
+    expect(await localDb.syncQueue.count()).toBe(0);
+  });
+
   it('queues favorite insert, update and delete in order', async () => {
     const favorite = {
       id: 'favorite-1',
