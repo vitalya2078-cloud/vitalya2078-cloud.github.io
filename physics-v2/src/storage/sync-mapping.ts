@@ -34,6 +34,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isUuid(value: unknown): value is string {
+  return typeof value === 'string'
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+function hasValidOperationId(operation: SyncOperation): boolean {
+  return isUuid(operation.id) && Number.isFinite(Date.parse(operation.createdAt));
+}
+
 function isLocalAttempt(value: unknown): value is LocalAttempt {
   return isRecord(value)
     && typeof value.id === 'string'
@@ -68,6 +77,28 @@ function mapAttempt(operation: SyncOperation): SyncMappingResult {
   }
 
   const attempt = operation.payload;
+  if (
+    !hasValidOperationId(operation)
+    || operation.operation !== 'insert'
+    || !isUuid(attempt.id)
+    || operation.entityId !== attempt.id
+    || (attempt.testId !== undefined && !isUuid(attempt.testId))
+  ) {
+    return {
+      status: 'invalid',
+      reason: 'Attempts must be inserted once with stable UUID identifiers.',
+    };
+  }
+
+  if (
+    (attempt.scorePercent !== undefined
+      && (attempt.scorePercent < 0 || attempt.scorePercent > 100))
+    || (attempt.grade !== undefined
+      && (!Number.isInteger(attempt.grade) || attempt.grade < 2 || attempt.grade > 5))
+  ) {
+    return { status: 'invalid', reason: 'Attempt score or grade is outside the supported range.' };
+  }
+
   const mode = attempt.mode === 'diagnostic' ? 'custom' : attempt.mode;
   if (!['training', 'final', 'exam', 'custom', 'review'].includes(mode)) {
     return { status: 'invalid', reason: 'Attempt mode is not supported by the cloud schema.' };
@@ -112,6 +143,18 @@ function mapProgress(operation: SyncOperation): SyncMappingResult {
   }
 
   const progress = operation.payload;
+  if (
+    !hasValidOperationId(operation)
+    || operation.operation === 'delete'
+    || !isUuid(progress.entityId)
+    || operation.entityId !== progress.entityId
+  ) {
+    return {
+      status: 'invalid',
+      reason: 'Lesson progress requires a stable UUID and insert/update operation.',
+    };
+  }
+
   if (progress.entityType !== 'lesson') {
     return {
       status: 'local_only',
@@ -122,6 +165,18 @@ function mapProgress(operation: SyncOperation): SyncMappingResult {
   const status = progress.status === 'mastered' ? 'completed' : progress.status;
   if (!['not_started', 'in_progress', 'completed'].includes(status)) {
     return { status: 'invalid', reason: 'Progress status is not supported by the cloud schema.' };
+  }
+
+  if (
+    progress.completionPercent < 0
+    || progress.completionPercent > 100
+    || (progress.bestScore !== undefined
+      && (progress.bestScore < 0 || progress.bestScore > 100))
+    || (progress.bestGrade !== undefined
+      && (!Number.isInteger(progress.bestGrade) || progress.bestGrade < 2 || progress.bestGrade > 5))
+    || (progress.status === 'mastered' && (progress.bestGrade ?? 0) < 3)
+  ) {
+    return { status: 'invalid', reason: 'Progress or mastery values are outside the supported range.' };
   }
 
   const lessonProgress: Record<string, unknown> = {
@@ -175,9 +230,12 @@ function mapFavorite(operation: SyncOperation): SyncMappingResult {
   const targetType = operation.payload.targetType;
   const targetId = operation.payload.targetId;
   if (
-    typeof targetType !== 'string'
+    !hasValidOperationId(operation)
+    || operation.operation === 'update'
+    || typeof targetType !== 'string'
     || !favoriteTargetTypes.has(targetType)
-    || typeof targetId !== 'string'
+    || !isUuid(targetId)
+    || operation.entityId !== targetId
   ) {
     return { status: 'invalid', reason: 'Favorite target is not supported by the cloud schema.' };
   }
@@ -207,6 +265,20 @@ function mapMistake(operation: SyncOperation): SyncMappingResult {
   }
 
   const mistake = operation.payload;
+  if (
+    !hasValidOperationId(operation)
+    || operation.operation === 'delete'
+    || !isUuid(mistake.questionId)
+    || operation.entityId !== mistake.questionId
+    || !Number.isInteger(mistake.errorCount)
+    || mistake.errorCount < 1
+  ) {
+    return {
+      status: 'invalid',
+      reason: 'Mistakes require a canonical question UUID and an insert/update operation.',
+    };
+  }
+
   return {
     status: 'mapped',
     command: {
