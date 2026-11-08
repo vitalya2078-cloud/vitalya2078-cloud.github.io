@@ -46,3 +46,20 @@ https://edsoo.ru/category/mmposob/fiz/
 This annual letter is a supplementary methodological source. It does not replace the federal working program PDFs registered above. Before publishing any academic-year curriculum release, review the current letter and the current Federal Educational Programs register. Record any resulting curriculum changes as a new version rather than silently changing the 2025 source snapshot.
 
 The 2025 PDF files were checked against the EDSOO working-program index. The 10–11 basic and advanced documents explicitly allocate learning content by grade (10 and 11) and distinguish required content, outcomes, thematic planning, and recommended experiments. The 7–9 basic program likewise allocates content by grade (7, 8, 9). These divisions are preserved as separate PHYSICS grade nodes.
+
+
+## Registered curriculum outline
+
+The 2025 source headings have been imported as draft metadata into the private `physics` schema:
+
+- OOO basic: grades 7–9, one source section per grade and 14 topic headings.
+- OOO advanced: grades 7–9, one source section per grade and 13 topic headings.
+- SOO basic: grades 10–11, one source section per grade and 10 topic headings.
+- SOO advanced: grades 10–11, one source section per grade and 11 topic headings.
+
+The outline seeds are reproducible and idempotent:
+
+- `supabase/seed/school-curriculum-outline-ooo.sql`
+- `supabase/seed/school-curriculum-outline-soo.sql`
+
+All 10 sections and 48 topic headings remain `draft`. No curriculum program or lesson has been published to the public API. This is deliberate: each outline must still be checked against the complete thematic planning, expected outcomes, and recommended laboratory work before lesson authoring and publication.
