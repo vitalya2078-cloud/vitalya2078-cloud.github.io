@@ -68,9 +68,7 @@ export async function saveFinalAssessment(
 
       const previousMastery = previousProgress
         ? {
-            bestScore: previousProgress.bestGrade === undefined
-              ? 0
-              : previousProgress.bestGrade,
+            bestScore: previousProgress.bestScore ?? ({ 2: 0, 3: 60, 4: 75, 5: 90 } as const)[(previousProgress.bestGrade ?? 2) as 2 | 3 | 4 | 5],
             bestGrade: (previousProgress.bestGrade ?? 2) as 2 | 3 | 4 | 5,
             isMastered: previousProgress.status === 'mastered',
             masteredAt: previousProgress.status === 'mastered'
@@ -97,6 +95,7 @@ export async function saveFinalAssessment(
           previousProgress?.completionPercent ?? 0,
           attempt.scorePercent,
         ),
+        bestScore: mastery.bestScore,
         bestGrade: mastery.bestGrade,
         latestGrade: result.grade,
         updatedAt: now,
