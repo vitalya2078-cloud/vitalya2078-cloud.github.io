@@ -101,7 +101,7 @@ The following grades have been transcribed into draft thematic units and verifie
 | OOO basic | 9 | 13 | 102 | 0 | 9 |
 | OOO advanced | 9 | 17 | 136 | 0 | 17 |
 | SOO basic | 10 | 10 | 68 | 2 | 0 |
-| SOO advanced | 10 | 12 | 170 | 10 | 0 |
+| SOO advanced | 10 | 13 | 170 | 10 | 0 |
 | SOO basic | 11 | 11 | 68 | 3 | 4 |
 | SOO advanced | 11 | 14 | 170 | 10 | 15 |
 
@@ -132,7 +132,7 @@ The grade-9 nuclear/ionizing-radiation curriculum metadata is deliberately limit
 
 ## Full school-track thematic outline — grades 7–11
 
-The thematic plan import now covers all ten combinations of school grade and official track (OOO basic/advanced, SOO basic/advanced). Across these combinations, 125 thematic-unit rows represent 1,054 annual teaching hours. Each grade's total reconciles with the relevant 2025 federal working program, including reserve time and review/practicum modules where specified.
+The thematic plan import now covers all ten combinations of school grade and official track (OOO basic/advanced, SOO basic/advanced). Across these combinations, 126 thematic-unit rows represent 1,054 annual teaching hours. Each grade's total reconciles with the relevant 2025 federal working program, including reserve time and review/practicum modules where specified.
 
 The five grade seed files were replayed after import. The unique grade/source-row key kept the row counts stable, every unit remained `draft`, and all topic units are linked to a parent topic. A dedicated draft topic for grade-11 advanced special relativity was added because that distinct curriculum block was not represented in the initial outline.
 
@@ -144,3 +144,6 @@ The annual totals verified in Supabase are:
 - SOO advanced: grades 10 and 11 — 170 and 170 hours
 
 All rows carry the 2025 source URL and printed page range. Content summaries and practical-work descriptions are PHYSICS-authored paraphrases, not copied textbook lessons. Practical metadata for nuclear topics is restricted to conceptual treatment and analysis of supplied educational material; no handling procedures for radioactive sources are specified.
+
+
+A source-row audit of the grade-10 advanced electrodynamics section corrected the initial coarse split: the federal plan has separate rows for electric field (24 h), constant current (24 h), and currents in different media (6 h). The seed now preserves all three rows and their original order; the grade total remains 170 hours.
