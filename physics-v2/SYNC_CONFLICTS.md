@@ -128,3 +128,8 @@ These translations must be implemented and tested in the sync adapter before any
 A transport-free mapping layer now exists at `src/storage/sync-mapping.ts` with domain tests in `src/storage/sync-mapping.test.ts`. It translates local attempt/progress/favorite/mistake records into cloud-domain payloads, including the enum and field mappings above. It carries the original queue UUID as `operationId` and the original `createdAt` as `clientCreatedAt`, so retries retain the same idempotency key and client timestamp.
 
 The mapper deliberately returns `local_only` for profiles and progress records that cannot yet be represented safely in the cloud schema. Only lesson progress is currently enqueued; section/topic progress remains locally derived, and block progress remains local until each block record carries its parent lesson ID. The mapper does not perform HTTP requests, create devices, or enable authentication.
+
+
+## Attempt timestamps in progress sync
+
+The local progress record now keeps `lastAttemptAt` independently from `updatedAt`. A learner may open a lesson or update reading progress after the last assessment; those actions must not rewrite the timestamp of the most recent graded attempt. Final assessment persistence records the attempt completion timestamp, local merges retain the newest actual attempt timestamp, and the cloud mapper only sends `last_attempt_at` when that dedicated field exists.
