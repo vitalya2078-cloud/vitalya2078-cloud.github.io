@@ -36,6 +36,9 @@ jobs:
       - name: Type-check and build
         run: npm run build
 
+      - name: Run domain tests
+        run: npm run test
+
       - name: Smoke test PHYSICS public API
         env:
           API_URL: https://vqiljksvsdjmwbbngimg.supabase.co/functions/v1/physics-api
