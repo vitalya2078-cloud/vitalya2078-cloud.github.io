@@ -25,6 +25,7 @@ class LocalActivityRepository(
                     .put("birthYear", profile.birthYear)
                     .put("educationTracks", profile.educationTracks)
                     .put("gradeLevel", profile.gradeLevel)
+                    .put("educationTrackLevels", profile.educationTrackLevels)
                     .put("updatedAt", profile.updatedAt),
             )
         }
