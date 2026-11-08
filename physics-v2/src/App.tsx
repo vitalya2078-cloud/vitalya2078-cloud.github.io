@@ -514,7 +514,7 @@ function ProgressMetric({ title, value, icon }: { title: string; value: number; 
   return <div className="metric-card"><span className="metric-icon"><FontAwesomeIcon icon={icon} /></span><strong>{value}</strong><span>{title}</span></div>;
 }
 
-function ProfilePage({ nickname, birthYear, selection, theme, onNicknameChange, onBirthYearChange, onToggleTrack, onGradeChange, onThemeChange, onSave }: {
+function ProfilePage({ nickname, birthYear, selection, theme, onNicknameChange, onBirthYearChange, onToggleTrack, onGradeChange, onThemeChange, saveMessage, onSave }: {
   nickname: string;
   birthYear: string;
   selection: EducationSelection;
