@@ -68,6 +68,7 @@ describe('local-to-cloud sync mapping', () => {
         payload: {
           lesson_progress: { lesson_id: 'lesson-uuid', status: 'completed', completion_percent: 100 },
           lesson_mastery: { lesson_id: 'lesson-uuid', is_mastered: true, best_score: 92, best_grade: 5 },
+          lesson_mastery: { lesson_id: 'lesson-uuid', is_mastered: true, best_score: 92, best_grade: 5 },
         },
       },
     });
