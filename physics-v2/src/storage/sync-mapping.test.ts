@@ -68,10 +68,12 @@ describe('local-to-cloud sync mapping', () => {
         payload: {
           lesson_progress: { lesson_id: 'lesson-uuid', status: 'completed', completion_percent: 100 },
           lesson_mastery: { lesson_id: 'lesson-uuid', is_mastered: true, best_score: 92, best_grade: 5 },
-          lesson_mastery: { lesson_id: 'lesson-uuid', is_mastered: true, best_score: 92, best_grade: 5 },
         },
       },
     });
+    if (result.status === 'mapped') {
+      expect(result.command.payload.lesson_mastery).not.toHaveProperty('mastered_at');
+    }
   });
 
   it('does not map derived section/topic or orphan block progress to cloud rows', () => {
