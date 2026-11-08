@@ -56,7 +56,7 @@ Native test modes:
 - Completed attempts are append-only and stored in Room.
 - Results and progress are written locally before any future cloud sync.
 
-Questions with illustrations load them from the project's trusted mirrors on demand and cache them on the device. An illustration not yet cached requires internet on its first view; the text bank itself is bundled offline.
+Questions with illustrations load them from the project's trusted mirrors on demand and cache them in the app's persistent private storage. An illustration not yet downloaded requires internet on its first view; the text bank itself is bundled offline.
 
 ## Supabase backend
 
@@ -87,11 +87,11 @@ It does not expose user profiles, progress, attempts, favorites, mistakes, goals
 
 Working:
 - Native six-section navigation and adaptive launcher icon.
-- First-run profile setup with multiple education-track selection and class/course.
+- First-run profile setup with multiple education tracks and a separate class/course selection for each track.
 - Room database with versioned migrations.
-- Local-first profile, progress, attempts, mistakes, and durable sync-operation queue.
+- Local-first profile, progress, append-only attempts, mistakes with a repeat-and-correct flow, and a durable sync-operation queue.
 - Offline bundled official question bank (900 questions).
-- Training and final assessment flows, grading, explanation display, and mistake capture.
+- Training and final assessment flows, approved grading, explanation display, atomic attempt/progress persistence, and mistake review with correction tracking.
 - Learning catalog fetch from the read-only Supabase API with Room offline cache.
 - Interactive free-fall laboratory model.
 - Local progress dashboard.
