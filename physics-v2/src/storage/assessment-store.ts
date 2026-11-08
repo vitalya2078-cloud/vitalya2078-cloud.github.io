@@ -152,7 +152,7 @@ export async function saveFinalAssessment(
         {
           id: createLocalId(),
           entityType: 'progress',
-          entityId: progress.id,
+          entityId: progress.entityId,
           operation: previousProgress ? 'update' : 'insert',
           payload: progress,
           createdAt: now,
