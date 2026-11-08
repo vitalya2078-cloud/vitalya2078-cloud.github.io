@@ -58,6 +58,9 @@ import ru.physics.app.data.CatalogSummary
 import ru.physics.app.data.PhysicsDatabase
 import ru.physics.app.data.PhysicsDao
 import ru.physics.app.data.ProfileEntity
+import ru.physics.app.data.OfficialQuestionBankRepository
+import ru.physics.app.ui.QuestionIllustrationRepository
+import ru.physics.app.ui.TestingScreen
 import ru.physics.app.domain.calculateFreeFall
 import java.util.Locale
 
@@ -66,6 +69,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val database = PhysicsDatabase.getInstance(applicationContext)
         val localRepository = LocalActivityRepository(database)
+        val questionBankRepository = OfficialQuestionBankRepository(applicationContext)
+        val illustrationRepository = QuestionIllustrationRepository(applicationContext)
 
         setContent {
             val profile by database.physicsDao()
@@ -95,6 +100,9 @@ class MainActivity : ComponentActivity() {
                         NativeHome(
                             profile = profile!!,
                             dao = database.physicsDao(),
+                            activityRepository = localRepository,
+                            questionBankRepository = questionBankRepository,
+                            illustrationRepository = illustrationRepository,
                         )
                     }
                 }
@@ -113,7 +121,13 @@ private enum class AppSection(val label: String) {
 }
 
 @Composable
-private fun NativeHome(profile: ProfileEntity, dao: PhysicsDao) {
+private fun NativeHome(
+    profile: ProfileEntity,
+    dao: PhysicsDao,
+    activityRepository: LocalActivityRepository,
+    questionBankRepository: OfficialQuestionBankRepository,
+    illustrationRepository: QuestionIllustrationRepository,
+) {
     var selectedSection by rememberSaveable { mutableStateOf(AppSection.HOME) }
     val progressCount by dao.observeProgressCount().collectAsStateWithLifecycle(initialValue = 0)
     val attemptCount by dao.observeAttemptCount().collectAsStateWithLifecycle(initialValue = 0)
@@ -152,7 +166,7 @@ private fun NativeHome(profile: ProfileEntity, dao: PhysicsDao) {
             when (selectedSection) {
                 AppSection.HOME -> HomeScreen(profile.nickname, onOpen = { selectedSection = it })
                 AppSection.LEARNING -> LearningScreen(dao)
-                AppSection.TESTING -> TestingScreen()
+                AppSection.TESTING -> TestingScreen(questionBankRepository, activityRepository, illustrationRepository)
                 AppSection.LAB -> LaboratoryScreen()
                 AppSection.PROGRESS -> ProgressScreen(progressCount, attemptCount, mistakeCount, pendingSyncCount)
                 AppSection.PROFILE -> ProfileScreen(profile)
@@ -270,13 +284,6 @@ private fun LearningScreen(dao: PhysicsDao) {
         "Офлайн-режим",
         "Загруженный каталог сохраняется в локальной базе Room. Следующий запуск сможет показать его без подключения к интернету.",
     )
-}
-
-@Composable
-private fun TestingScreen() {
-    ScreenTitle("Тестирование", "Здесь будут тренировочные задания, контрольные тесты и экзаменационные режимы.")
-    InfoCard("Официальный банк", "В базе сохранены 900 утверждённых вопросов. Подключение безопасной выдачи вопросов и сохранения попыток ещё выполняется.")
-    InfoCard("Режимы", "Тренировка — без оценки и ограничений. Итоговый тест — с оценкой и сохранением каждой попытки. Ошибки можно будет повторять отдельно.")
 }
 
 @Composable
