@@ -1,68 +1,63 @@
 # PHYSICS platform architecture
 
-Status: architecture decision for the first application release. No native wrapper has been added yet.
+Status: native Android architecture decision — supersedes the earlier Capacitor proposal.
 
 ## Product targets
-
-| Target | Delivery | Shared application code |
+| Target | Delivery | Implementation |
 |---|---|---|
-| Android | Installable APK | React + TypeScript web app inside Capacitor |
-| iPhone/iPad | Installable PWA from Safari | Same web app |
-| Desktop browser | Website/PWA | Same web app |
-| Windows desktop | Later Tauri package | Same web app |
+| Android | Native APK | Kotlin + Jetpack Compose + Room |
+| iPhone/iPad | Installable PWA | React + TypeScript + IndexedDB |
+| Desktop browser | Website/PWA | React + TypeScript + IndexedDB |
+| Windows desktop | Later desktop package | Separate packaging decision after web stabilizes |
 
-The first release does not require a separate native iOS application.
+Android is a first-class native client. It is not a WebView, Capacitor shell, Trusted Web Activity, or website packaged as an APK.
 
-## Decision: one web application, one local data model
+## Native Android stack
+- Kotlin for all Android application and domain code.
+- Jetpack Compose + Material 3 for native UI.
+- Room over SQLite for durable offline storage.
+- Kotlin coroutines and Flow for asynchronous work and reactive local state.
+- WorkManager for deferrable synchronization when the secure sync API is ready.
+- Android Keystore-backed storage for future refresh/session secrets; never store credentials in ordinary Room tables.
+- Gradle release pipeline in GitHub Actions. Signing keys stay in GitHub Actions secrets and are never committed.
 
-The application remains a Vite + React + TypeScript project. The web/PWA build is the canonical application. Android receives a thin Capacitor shell around that same build.
+The Android client owns its native presentation, lifecycle, navigation, persistence, and platform integrations. It does not load the React app.
 
-Dexie/IndexedDB remains the first-release local database on:
-- Android Capacitor WebView
-- iOS installed PWA
-- desktop browsers
-- future Tauri WebView on Windows
+## iOS and desktop web
+The existing React + TypeScript + Vite client remains the iOS PWA and desktop-browser implementation. Its IndexedDB schema is web-specific. Android has its own Room schema and repository layer.
 
-This avoids maintaining two independent persistence implementations while the product's data model is still evolving. Dexie schema versions remain responsible for local migrations. A native SQLite adapter is deferred until a measured requirement cannot be met reliably by IndexedDB; it must not be introduced merely for architectural symmetry.
+The clients share curriculum identifiers and content contracts, question/assessment rules and grading specification, public API contracts, account identity and server-side sync contract, and backup format semantics/conflict-resolution rules.
 
-## Why Capacitor for Android
+They do not share UI code or assume the same local database engine.
 
-- Reuses the web application and its tested offline data layer.
-- Produces a signed Android package through GitHub Actions without requiring the user to install Android Studio or run build tools locally.
-- Leaves a controlled path to native Android capabilities through plugins when a concrete feature needs them.
-- Keeps the iOS product as a PWA, as requested.
+## Local-first contract
+1. Every user action is persisted locally before any network operation.
+2. The application remains usable offline for downloaded content, local practice, saved progress, favorites, mistakes, and settings.
+3. Network sync is optional and never a prerequisite for a local save.
+4. The local queue is durable and idempotent. Retries must not duplicate attempts.
+5. Mastery is monotonic; attempts remain append-only; latest and best results are separate.
+6. Backups can be exported/imported without clearing the current local database.
+7. Storage availability, last sync, and pending changes must be visible to the user.
 
-The Capacitor project should contain only native-shell configuration and platform integrations. Business rules, curriculum, assessment logic, and local repositories stay in `src/`.
+Android uses Room/SQLite. iOS PWA and browser use IndexedDB. Each platform has its own storage adapter and migration tests.
 
-## Offline and storage guarantees
+## Backend and security
+Supabase is the shared backend. The currently deployed public Edge Function exposes only read-only published curriculum/lesson data.
 
-- Write user actions to IndexedDB before attempting network synchronization.
-- Request persistent browser storage where supported; treat denial as a normal condition, not a fatal error.
-- Show storage health and pending-sync state.
-- Never make a successful cloud request the prerequisite for a local save.
-- Keep export/import backup available on every platform.
-- On iOS PWA, do not rely on background execution for sync. Synchronize on app open, foreground/resume, and explicit user action.
-- Android native lifecycle events may trigger the same sync scheduler, but they do not change the data contract.
+Before account sync is enabled: implement and test authentication and session lifecycle; derive user identity from the validated JWT, never a client-supplied user ID; validate device ownership; enforce per-user access controls; add idempotent writes for attempts and progress; protect favorite deletion against stale offline resurrection; run Supabase Security Advisor and integration tests.
 
-## Packaging pipeline
+No service-role key, database password, or signing secret may be shipped in either client.
 
-1. CI builds and tests the canonical web/PWA bundle.
-2. Android packaging copies that exact bundle into the Capacitor shell and runs the Gradle release build in GitHub Actions.
-3. CI uploads the APK as a versioned artifact; signing material stays in GitHub Actions secrets and is never committed.
-4. iOS users install the PWA from the hosted HTTPS site. No Apple signing or App Store pipeline is needed for the first release.
-5. Windows packaging is a later Tauri target using the same web bundle and data contract.
+## Delivery pipeline
+- Web: CI builds and tests the React PWA.
+- Android: CI builds a native APK from physics-v2/android using Gradle; APK is uploaded as a workflow artifact.
+- Android release signing is injected from GitHub Actions secrets. Debug-signed CI builds are for installation/testing only.
+- iOS: install the hosted PWA from Safari. A native iOS app is not part of the initial scope.
+- Windows: later decision, after Android and PWA are stable.
 
-## Security boundaries
-
-- No Supabase service-role key or database password may appear in the client bundle.
-- Authentication tokens, if persisted, must use platform-appropriate secure storage when available; they are not ordinary profile fields.
-- User sync derives the account from the authenticated session on the server.
-- Device identifiers are identifiers, not authentication credentials.
-- The local application remains usable without an account; account sync is an optional online capability.
-
-## Deferred decisions
-
-- Native SQLite migration: only after performance/storage testing demonstrates a real need.
-- Windows Tauri packaging: after the Android APK and PWA flows are stable.
-- Push notifications/background sync: only after user consent and platform capability checks.
-- Native iOS application: not planned for the initial release.
+## Deliberately deferred
+- Cross-platform shared UI.
+- Native iOS application.
+- Windows EXE packaging.
+- Background sync until secure sync endpoints and user consent are ready.
+- Native Android authentication until the account/session security design is complete.
