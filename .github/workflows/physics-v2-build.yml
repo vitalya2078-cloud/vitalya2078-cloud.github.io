@@ -42,6 +42,9 @@ jobs:
       - name: Run domain tests
         run: npm run test
 
+      - name: Smoke test offline PWA build
+        run: npm run smoke:pwa
+
       - name: Smoke test PHYSICS public API
         env:
           API_URL: https://vqiljksvsdjmwbbngimg.supabase.co/functions/v1/physics-api
