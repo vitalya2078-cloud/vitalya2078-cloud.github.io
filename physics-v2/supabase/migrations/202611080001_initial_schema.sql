@@ -22,7 +22,7 @@ create table if not exists public.profiles (
   id uuid primary key default gen_random_uuid(),
   auth_user_id uuid unique references auth.users(id) on delete set null,
   nickname text not null check (char_length(nickname) between 2 and 32),
-  birth_year smallint check (birth_year between 1900 and extract(year from now())::int),
+  birth_year smallint check (birth_year between 1900 and 2100),
   avatar_key text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -277,6 +277,7 @@ create table if not exists public.test_attempts (
 create table if not exists public.test_answers (
   id uuid primary key default gen_random_uuid(),
   attempt_id uuid not null references public.test_attempts(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
   question_id uuid not null references public.questions(id),
   selected_option_ids uuid[] not null default '{}',
   answer_payload jsonb not null default '{}'::jsonb,
@@ -323,7 +324,8 @@ create table if not exists public.user_errors (
   last_seen_at timestamptz not null default now(),
   error_count integer not null default 1,
   corrected_at timestamptz,
-  last_attempt_id uuid references public.test_attempts(id)
+  last_attempt_id uuid references public.test_attempts(id),
+  unique (user_id, question_id)
 );
 
 create table if not exists public.user_favorites (
@@ -450,7 +452,7 @@ begin
     if old.is_immutable then
       raise exception 'Immutable question bank cannot be modified or deleted';
     end if;
-    return coalesce(new, old);
+    if tg_op = 'DELETE' then return old; else return new; end if;
   elsif tg_table_name = 'questions' then
     target_bank_id := old.bank_id;
   else
@@ -467,9 +469,9 @@ begin
     raise exception 'Questions in an immutable bank cannot be modified or deleted';
   end if;
 
-  return coalesce(new, old);
+  if tg_op = 'DELETE' then return old; else return new; end if;
 end;
-$$;
+$;
 
 create trigger protect_immutable_question_banks
 before update or delete on public.question_banks
