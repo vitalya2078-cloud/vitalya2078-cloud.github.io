@@ -175,16 +175,7 @@ async function queueOperation(
 }
 
 export async function saveLocalProfile(profile: LocalProfile): Promise<void> {
-  await localDb.transaction('rw', localDb.profiles, localDb.syncQueue, async () => {
-    const exists = await localDb.profiles.get(profile.id);
-    await localDb.profiles.put(profile);
-    await queueOperation(
-      'profile',
-      profile.id,
-      exists ? 'update' : 'insert',
-      profile,
-    );
-  });
+  await localDb.profiles.put(profile);
 }
 
 export async function saveLocalProgress(progress: LocalProgress): Promise<void> {
