@@ -41,6 +41,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -334,11 +335,13 @@ private fun ProgressScreen(
 ) {
     var questionsById by remember { mutableStateOf<Map<String, OfficialQuestion>>(emptyMap()) }
     var bankError by remember { mutableStateOf<String?>(null) }
+    var bankLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(questionBankRepository) {
         runCatching { questionBankRepository.load() }
             .onSuccess { questionsById = it.questions.associateBy(OfficialQuestion::id) }
             .onFailure { bankError = it.message ?: "Не удалось открыть банк вопросов." }
+        bankLoading = false
     }
 
     ScreenTitle("Мой прогресс", "Статистика, история ошибок и результаты хранятся на устройстве.")
@@ -356,18 +359,22 @@ private fun ProgressScreen(
     Text("Работа над ошибками", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     if (openMistakes.isEmpty()) {
         InfoCard("Ошибок нет", "Новые ошибки из тестов появятся здесь. После правильного повторения вопрос будет отмечен как исправленный.")
+    } else if (bankLoading) {
+        InfoCard("Загружаем вопросы", "Подготавливаем список для повторения.")
     } else if (bankError != null) {
         InfoCard("Банк вопросов недоступен", bankError.orEmpty())
     } else {
         openMistakes.forEach { mistake ->
-            val question = questionsById[mistake.questionId]
-            if (question == null) {
-                InfoCard(
-                    "Вопрос ${mistake.questionId.take(8)}",
-                    "Накоплено ошибок: ${mistake.errorCount}. Не удалось сопоставить запись с локальным банком вопросов.",
-                )
-            } else {
-                MistakeReviewCard(mistake, question, activityRepository)
+            key(mistake.questionId) {
+                val question = questionsById[mistake.questionId]
+                if (question == null) {
+                    InfoCard(
+                        "Вопрос ${mistake.questionId.take(8)}",
+                        "Накоплено ошибок: ${mistake.errorCount}. Не удалось сопоставить запись с локальным банком вопросов.",
+                    )
+                } else {
+                    MistakeReviewCard(mistake, question, activityRepository)
+                }
             }
         }
     }
@@ -456,8 +463,14 @@ private fun MistakeReviewCard(
                     },
                 ) { Text("Попробовать ещё раз") }
             }
-            if (question.explanation.isNotBlank() && (revealed || answered)) {
-                InfoCard("Пояснение", question.explanation)
+            if (revealed || answered) {
+                if (question.explanationPrompt != null) {
+                    InfoCard("Что спрашивают", question.explanationPrompt.orEmpty())
+                    InfoCard("Главная идея", question.explanationIdea.orEmpty())
+                    InfoCard("Решение", question.explanationSolution.orEmpty())
+                } else if (question.explanation.isNotBlank()) {
+                    InfoCard("Пояснение", question.explanation)
+                }
             }
         }
     }
