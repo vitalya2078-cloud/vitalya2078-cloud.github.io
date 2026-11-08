@@ -215,7 +215,7 @@ export async function saveLocalProgress(progress: LocalProgress): Promise<void> 
     await localDb.progress.put(normalized);
     await queueOperation(
       'progress',
-      normalized.id,
+      normalized.entityId,
       existing ? 'update' : 'insert',
       normalized,
     );
@@ -235,7 +235,7 @@ export async function saveLocalFavorite(favorite: LocalFavorite): Promise<void> 
     await localDb.favorites.put(favorite);
     await queueOperation(
       'favorite',
-      favorite.id,
+      favorite.targetId,
       exists ? 'update' : 'insert',
       favorite,
     );
@@ -248,7 +248,11 @@ export async function removeLocalFavorite(favoriteId: string): Promise<void> {
     if (!exists) return;
 
     await localDb.favorites.delete(favoriteId);
-    await queueOperation('favorite', favoriteId, 'delete', null);
+    await queueOperation('favorite', exists.targetId, 'delete', {
+      targetType: exists.targetType,
+      targetId: exists.targetId,
+      favoriteId: exists.id,
+    });
   });
 }
 
