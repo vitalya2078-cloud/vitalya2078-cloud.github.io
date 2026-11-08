@@ -69,3 +69,16 @@ data class CatalogCacheEntity(
     val payload: String,
     val cachedAt: Long,
 )
+
+@Entity(tableName = "sync_operations")
+data class SyncOperationEntity(
+    @PrimaryKey val id: String,
+    val entityType: String,
+    val entityId: String,
+    val operation: String,
+    val payloadJson: String,
+    val createdAt: Long,
+    val status: String,
+    val attemptCount: Int,
+    val lastError: String?,
+)
