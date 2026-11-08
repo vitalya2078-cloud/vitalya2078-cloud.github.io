@@ -10,7 +10,7 @@ https://vqiljksvsdjmwbbngimg.supabase.co/functions/v1/physics-api
 
 - GET /health — service and database connectivity.
 - GET /v1/catalog — active programs and published curriculum hierarchy.
-- GET /v1/lessons/{uuid} — a published lesson and its ordered content blocks.
+- GET /v1/lessons/{uuid} — the current immutable published lesson version, learning outcomes, prerequisites, reviewed source references, and ordered content blocks.
 
 ## Security boundary
 
@@ -42,3 +42,10 @@ The function source lives in supabase/functions/physics-api/.
 Keep verify_jwt = false only while the function remains strictly read-only and
 serves public curriculum content. Any route that accesses user-specific data must
 use verified user authentication and user-scoped authorization.
+
+
+## Lesson version visibility
+
+The lesson route joins `lessons.content_version` to the matching `lesson_versions` row and returns only when that version is published. Blocks and source references are filtered to the same version. Historical versions, draft blocks, review records, internal rights notes, and unpublished sources are not returned by the public API.
+
+Publishing is guarded in the database: a version needs learning outcomes, at least one source with a reviewed rights status, all three approvals (physics, pedagogy, rights), and at least two content blocks. Published versions are immutable; edits require a new draft version.
