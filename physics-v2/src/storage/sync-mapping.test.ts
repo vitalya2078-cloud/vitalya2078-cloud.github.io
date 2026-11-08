@@ -57,6 +57,7 @@ describe('local-to-cloud sync mapping', () => {
       bestScore: 92,
       bestGrade: 5,
       latestGrade: 5,
+      lastAttemptAt: '2026-11-08T10:05:00.000Z',
       updatedAt: '2026-11-08T10:10:00.000Z',
     }));
 
@@ -67,7 +68,13 @@ describe('local-to-cloud sync mapping', () => {
         entityId: 'lesson-uuid',
         payload: {
           lesson_progress: { lesson_id: 'lesson-uuid', status: 'completed', completion_percent: 100 },
-          lesson_mastery: { lesson_id: 'lesson-uuid', is_mastered: true, best_score: 92, best_grade: 5 },
+          lesson_mastery: {
+            lesson_id: 'lesson-uuid',
+            is_mastered: true,
+            best_score: 92,
+            best_grade: 5,
+            last_attempt_at: '2026-11-08T10:05:00.000Z',
+          },
         },
       },
     });
