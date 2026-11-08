@@ -14,7 +14,7 @@ describe('local record persistence', () => {
     await localDb.open();
   });
 
-  it('queues insert for new records and update for existing records', async () => {
+  it('stores the local profile without enqueueing an unsupported cloud write', async () => {
     const profile = {
       id: 'profile-1',
       nickname: 'Learner',
@@ -23,21 +23,9 @@ describe('local record persistence', () => {
     };
 
     await saveLocalProfile(profile);
-    await saveLocalProfile({
-      ...profile,
-      nickname: 'Learner 2',
-      updatedAt: '2026-11-08T11:00:00.000Z',
-    });
 
-    const operations = await localDb.syncQueue
-      .where('entityType')
-      .equals('profile')
-      .sortBy('createdAt');
-
-    expect(operations.map((operation) => operation.operation).sort()).toEqual([
-      'insert',
-      'update',
-    ]);
+    expect(await localDb.profiles.get('profile-1')).toEqual(profile);
+    expect(await localDb.syncQueue.count()).toBe(0);
   });
 
   it('does not let mastered progress regress', async () => {
