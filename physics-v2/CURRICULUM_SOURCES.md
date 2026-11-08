@@ -98,6 +98,8 @@ The following grades have been transcribed into draft thematic units and verifie
 | OOO advanced | 7 | 17 | 102 | 0 | 6 |
 | OOO basic | 8 | 7 | 68 | 3 | 0 |
 | OOO advanced | 8 | 7 | 102 | 0 | 5 |
+| OOO basic | 9 | 13 | 102 | 0 | 9 |
+| OOO advanced | 9 | 17 | 136 | 0 | 17 |
 
 The hours include reserve/review entries so that the unit totals reconcile exactly with the federal annual total. These are not lesson durations or a learner-facing timetable.
 
@@ -105,6 +107,7 @@ Idempotent seed files:
 
 - `supabase/seed/curriculum-grade-7-thematic-units.sql`
 - `supabase/seed/curriculum-grade-8-thematic-units.sql`
+- `supabase/seed/curriculum-grade-9-thematic-units.sql`
 
 Schema migrations:
 
@@ -114,3 +117,8 @@ Schema migrations:
 Both seed files were replayed/verified without creating duplicates. All imported unit rows remain `draft`. The database security advisor reports no findings after the schema change.
 
 **Source alignment note:** the grade-8 basic-level outline originally contained an extra `Световые явления` topic. The 2025 basic OOO document's grade-8 content and thematic plan cover thermal and electrical/magnetic phenomena; optics is allocated to grade 9. The erroneous grade-8 duplicate is therefore archived, not deleted, and the grade-9 source-aligned topic remains in place.
+
+
+Grade 9 is now also represented in detail. The base-level 102 hours reconcile as 40 hours of mechanics, 15 of oscillations/waves, 6 of electromagnetic fields/waves, 15 of optics, 17 of quantum/nuclear topics, and 9 hours of review. The advanced-level 136 hours reconcile as 63 mechanics, 18 oscillations/waves, 6 electromagnetic fields/waves, 16 optics, 16 quantum/nuclear topics, and 17 review hours. The grade-9 seed was replayed and verified idempotently; all 30 rows remain `draft` and are linked to their grade and parent topic.
+
+The grade-9 nuclear/ionizing-radiation curriculum metadata is deliberately limited to conceptual scope and analysis of supplied educational data. It does not define student procedures involving radioactive materials or sources.
