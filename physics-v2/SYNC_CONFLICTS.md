@@ -89,3 +89,23 @@ Backup restoration applies the following merge rules before writing records:
 - The merged sync queue is retained so pending operations remain available for a future authenticated sync phase.
 
 These rules are local backup-restore behavior only. They do not replace server-side idempotency, ownership checks, or versioned tombstones required before network sync is enabled.
+
+## Canonical entity identifiers in the local queue
+
+The local IndexedDB primary key is not always the cloud entity key. Sync adapters must route by the stable domain target:
+
+- Progress operations use `LocalProgress.entityId` (for example, the lesson UUID), not the locally generated `LocalProgress.id`.
+- Favorite operations use the target UUID and include `targetType` in the payload. Deletions retain the target type and target ID in their tombstone payload.
+- Attempt operations use the immutable client attempt UUID.
+- Mistake operations use the official question UUID.
+- Profile IDs are local profile-record identifiers only; the server derives the owning account from the verified JWT and must not treat a client profile ID as an authorization claim.
+
+Cloud mapping confirmed against the current private schema:
+
+- `lesson_progress` is unique by `(user_id, lesson_id)` and stores per-block progress in `block_progress` JSONB.
+- `lesson_mastery` is separately unique by `(user_id, lesson_id)`.
+- Section/topic progress is derived from descendant lesson progress; it does not need an independently synchronized cloud row.
+- Per-block state must merge by stable lesson-block UUID inside `block_progress`; a stale device must never replace the entire JSON object.
+- The current favorites table is unique by `(user_id, target_type, target_id)` but has no deletion tombstone, so network delivery remains disabled until that server-side mechanism is added.
+
+Local queue operations now carry canonical target IDs for progress and favorites. Tests assert those identifiers. This does not enable network sync; the authenticated adapter and server-side ownership/validation remain unimplemented.
