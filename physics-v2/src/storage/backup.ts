@@ -156,9 +156,9 @@ function progressKey(record: LocalProgress): string {
 }
 
 function mergeProgressRecords(existing: LocalProgress[], incoming: LocalProgress[]): LocalProgress[] {
-  const records = new Map(existing.map((record) => [progressKey(record), record]));
+  const records = new Map<string, LocalProgress>();
 
-  for (const record of incoming) {
+  for (const record of [...existing, ...incoming]) {
     const key = progressKey(record);
     const current = records.get(key);
     if (!current) {
