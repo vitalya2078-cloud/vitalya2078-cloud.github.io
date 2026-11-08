@@ -7,6 +7,8 @@ import type {
 } from './db';
 
 export interface CloudSyncCommand {
+  operationId: string;
+  clientCreatedAt: string;
   entityType: 'test_attempt' | 'lesson_progress' | 'favorite' | 'mistake';
   entityId: string;
   operationType: SyncOperation['operation'];
@@ -103,6 +105,8 @@ function mapAttempt(operation: SyncOperation): SyncMappingResult {
   return {
     status: 'mapped',
     command: {
+      operationId: operation.id,
+      clientCreatedAt: operation.createdAt,
       entityType: 'test_attempt',
       entityId: attempt.id,
       operationType: operation.operation,
@@ -163,6 +167,8 @@ function mapProgress(operation: SyncOperation): SyncMappingResult {
   return {
     status: 'mapped',
     command: {
+      operationId: operation.id,
+      clientCreatedAt: operation.createdAt,
       entityType: 'lesson_progress',
       entityId: progress.entityId,
       operationType: operation.operation,
@@ -189,6 +195,8 @@ function mapFavorite(operation: SyncOperation): SyncMappingResult {
   return {
     status: 'mapped',
     command: {
+      operationId: operation.id,
+      clientCreatedAt: operation.createdAt,
       entityType: 'favorite',
       entityId: targetId,
       operationType: operation.operation,
@@ -212,6 +220,8 @@ function mapMistake(operation: SyncOperation): SyncMappingResult {
   return {
     status: 'mapped',
     command: {
+      operationId: operation.id,
+      clientCreatedAt: operation.createdAt,
       entityType: 'mistake',
       entityId: mistake.questionId,
       operationType: operation.operation,
