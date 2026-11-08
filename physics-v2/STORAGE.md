@@ -48,3 +48,12 @@ Current Room tables:
 - `sync_operations`: durable pending/synced/failed operation queue.
 
 Room migrations are explicit and versioned. The queue currently records operations but does not transmit personal data; delivery remains disabled until the authentication and server-side authorization contract is ready. The public curriculum catalog is read-only and can be cached locally.
+
+
+Native Android profile records keep a separate class/course value for every selected education track (for example, school basic, school advanced, college, technical college, and university). This avoids collapsing simultaneous study programs into one shared grade field.
+
+Native assessment completion is written as one Room transaction: the immutable attempt, the merged progress record, and their durable sync queue entries either commit together or roll back together. Wrong answers are captured locally as they occur so an interrupted test does not discard already identified learning gaps. A successful review sets the mistake's correction timestamp; a later wrong answer reopens it and increments its count.
+
+Downloaded question illustrations are stored in the app's private persistent files directory rather than the evictable cache directory. The 900-question text bank is bundled with the APK and remains available offline from first launch.
+
+Native Android backup import/export is not implemented yet. The Room database is local to the device; do not imply that the sync queue is currently transmitted to Supabase.
