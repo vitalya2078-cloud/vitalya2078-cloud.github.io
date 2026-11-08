@@ -65,6 +65,7 @@ describe('local backup', () => {
       bestScore: 40,
       bestGrade: 2,
       latestGrade: 2,
+      lastAttemptAt: '2026-11-08T09:55:00.000Z',
       updatedAt: '2026-11-08T10:00:00.000Z',
     });
 
@@ -79,6 +80,7 @@ describe('local backup', () => {
       bestScore: 95,
       bestGrade: 5,
       latestGrade: 5,
+      lastAttemptAt: '2026-11-09T09:55:00.000Z',
       updatedAt: '2026-11-09T10:00:00.000Z',
     });
 
@@ -93,6 +95,7 @@ describe('local backup', () => {
       completionPercent: 100,
       bestScore: 95,
       bestGrade: 5,
+      lastAttemptAt: '2026-11-09T09:55:00.000Z',
     });
     expect(await localDb.progress.count()).toBe(1);
   });
