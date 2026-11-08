@@ -190,15 +190,27 @@ export async function saveLocalProfile(profile: LocalProfile): Promise<void> {
 export async function saveLocalProgress(progress: LocalProgress): Promise<void> {
   await localDb.transaction('rw', localDb.progress, localDb.syncQueue, async () => {
     const existing = await localDb.progress.get(progress.id);
-    const normalized: LocalProgress = existing?.status === 'mastered'
-      ? {
-          ...progress,
-          status: 'mastered',
-          completionPercent: 100,
-          bestScore: Math.max(existing.bestScore ?? 0, progress.bestScore ?? 0),
-          bestGrade: Math.max(existing.bestGrade ?? 2, progress.bestGrade ?? 2),
-        }
-      : progress;
+    const statusRank = {
+      not_started: 0,
+      in_progress: 1,
+      mastered: 2,
+    } as const;
+    const status = existing && statusRank[existing.status] > statusRank[progress.status]
+      ? existing.status
+      : progress.status;
+    const bestScore = Math.max(existing?.bestScore ?? 0, progress.bestScore ?? 0);
+    const bestGrade = Math.max(existing?.bestGrade ?? 0, progress.bestGrade ?? 0);
+
+    const normalized: LocalProgress = {
+      ...progress,
+      status,
+      completionPercent: status === 'mastered'
+        ? 100
+        : Math.max(existing?.completionPercent ?? 0, progress.completionPercent),
+      bestScore: bestScore > 0 ? bestScore : undefined,
+      bestGrade: bestGrade > 0 ? bestGrade : undefined,
+      latestGrade: progress.latestGrade ?? existing?.latestGrade,
+    };
 
     await localDb.progress.put(normalized);
     await queueOperation(
