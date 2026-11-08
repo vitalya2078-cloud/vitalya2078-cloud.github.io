@@ -31,3 +31,20 @@ IndexedDB is device-local and may be cleared by browser settings or storage pres
 The queue API in `src/storage/sync-queue.ts` provides deterministic pending-operation reads, success marking, retryable/permanent failure recording, explicit retry of failed operations, queue statistics, and cleanup of old successful operations.
 
 No queue function sends data over the network. Network delivery is intentionally absent until authentication, device ownership, authorization policies, and idempotent server writes are implemented and tested. A transient failure remains pending; a permanent rejection is marked failed and requires explicit retry.
+
+
+## Native Android storage
+
+The native Android client uses Room/SQLite in `physics-v2/android`; it does not use the browser's IndexedDB database or WebView storage.
+
+Current Room tables:
+- `local_profile`: nickname, selected education tracks, class/course.
+- `lesson_progress`: local learning state and result fields.
+- `test_attempts`: append-only attempt records.
+- `favorites`: saved content references.
+- `mistakes`: incorrect-answer review state.
+- `app_settings`: local preferences.
+- `catalog_cache`: last successfully downloaded published catalog.
+- `sync_operations`: durable pending/synced/failed operation queue.
+
+Room migrations are explicit and versioned. The queue currently records operations but does not transmit personal data; delivery remains disabled until the authentication and server-side authorization contract is ready. The public curriculum catalog is read-only and can be cached locally.
