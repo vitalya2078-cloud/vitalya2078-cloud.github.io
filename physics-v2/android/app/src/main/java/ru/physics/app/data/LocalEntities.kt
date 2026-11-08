@@ -1,5 +1,6 @@
 package ru.physics.app.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -8,7 +9,7 @@ data class ProfileEntity(
     @PrimaryKey val id: Int = 1,
     val nickname: String,
     val birthYear: Int?,
-    val educationTracks: String,
+    @ColumnInfo(defaultValue = "''") val educationTracks: String,
     val gradeLevel: String?,
     val updatedAt: Long,
 )
