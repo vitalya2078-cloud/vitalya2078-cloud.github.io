@@ -151,21 +151,27 @@ function mergeByKey<T>(
   return [...records.values()];
 }
 
+function progressKey(record: LocalProgress): string {
+  return `${record.entityType}:${record.entityId}`;
+}
+
 function mergeProgressRecords(existing: LocalProgress[], incoming: LocalProgress[]): LocalProgress[] {
-  const records = new Map(existing.map((record) => [record.id, record]));
+  const records = new Map(existing.map((record) => [progressKey(record), record]));
 
   for (const record of incoming) {
-    const current = records.get(record.id);
+    const key = progressKey(record);
+    const current = records.get(key);
     if (!current) {
-      records.set(record.id, record);
+      records.set(key, record);
       continue;
     }
 
     const latest = recordTimestamp(record) > recordTimestamp(current) ? record : current;
     const mastered = current.status === 'mastered' || record.status === 'mastered';
 
-    records.set(record.id, {
+    records.set(key, {
       ...latest,
+      id: current.id,
       status: mastered ? 'mastered' : latest.status,
       completionPercent: mastered
         ? 100
@@ -174,6 +180,33 @@ function mergeProgressRecords(existing: LocalProgress[], incoming: LocalProgress
       bestGrade: Math.max(current.bestGrade ?? 0, record.bestGrade ?? 0) || undefined,
       latestGrade: latest.latestGrade ?? current.latestGrade ?? record.latestGrade,
       updatedAt: latest.updatedAt,
+    });
+  }
+
+  return [...records.values()];
+}
+
+function favoriteKey(favorite: LocalFavorite): string {
+  return `${favorite.targetType}:${favorite.targetId}`;
+}
+
+function mergeFavoriteRecords(existing: LocalFavorite[], incoming: LocalFavorite[]): LocalFavorite[] {
+  const records = new Map(existing.map((favorite) => [favoriteKey(favorite), favorite]));
+
+  for (const favorite of incoming) {
+    const key = favoriteKey(favorite);
+    const current = records.get(key);
+    if (!current) {
+      records.set(key, favorite);
+      continue;
+    }
+
+    const earliestCreatedAt = Date.parse(current.createdAt) <= Date.parse(favorite.createdAt)
+      ? current.createdAt
+      : favorite.createdAt;
+    records.set(key, {
+      ...current,
+      createdAt: earliestCreatedAt,
     });
   }
 
@@ -214,16 +247,21 @@ function applyFavoriteTombstones(
   const latestByFavorite = new Map<string, SyncOperation>();
 
   for (const operation of operations) {
-    if (operation.entityType !== 'favorite') continue;
+    if (operation.entityType !== 'favorite' || !isRecord(operation.payload)) continue;
 
-    const current = latestByFavorite.get(operation.entityId);
+    const targetType = operation.payload.targetType;
+    const targetId = operation.payload.targetId;
+    if (typeof targetType !== 'string' || typeof targetId !== 'string') continue;
+
+    const key = `${targetType}:${targetId}`;
+    const current = latestByFavorite.get(key);
     if (!current || Date.parse(operation.createdAt) >= Date.parse(current.createdAt)) {
-      latestByFavorite.set(operation.entityId, operation);
+      latestByFavorite.set(key, operation);
     }
   }
 
   return favorites.filter((favorite) => {
-    const latest = latestByFavorite.get(favorite.id);
+    const latest = latestByFavorite.get(favoriteKey(favorite));
     return latest?.operation !== 'delete';
   });
 }
@@ -323,9 +361,11 @@ export async function restoreLocalBackup(file: File): Promise<{
 
       await Promise.all([
         localDb.profiles.bulkPut(mergeByKey(currentProfiles, profiles, 'id', true)),
-        localDb.progress.bulkPut(mergeProgressRecords(currentProgress, progress)),
+        localDb.progress.clear().then(() => localDb.progress.bulkPut(
+          mergeProgressRecords(currentProgress, progress),
+        )),
         localDb.attempts.bulkPut(mergedAttempts),
-        localDb.favorites.bulkPut(mergedFavorites),
+        localDb.favorites.clear().then(() => localDb.favorites.bulkPut(mergedFavorites)),
         localDb.errors.bulkPut(mergeErrorRecords(currentErrors, errors)),
         localDb.syncQueue.bulkPut(mergedQueue),
         localDb.catalogCache.bulkPut(mergeByKey(currentCatalog, catalogCache, 'id', true)),
