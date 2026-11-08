@@ -324,7 +324,7 @@ begin
   where id = old.lesson_id;
 
   if tg_op = 'DELETE' then
-    if old.status = 'published'
+    if old.published_at is not null
        or exists (
          select 1 from physics.lessons
          where id = old.lesson_id and content_version = old.version
@@ -340,7 +340,7 @@ begin
     raise exception 'Version title, summary, and duration are managed by the lesson version pointer';
   end if;
 
-  if old.status = 'published' then
+  if old.published_at is not null then
     if new.status not in ('published','archived')
        or new.learning_outcomes is distinct from old.learning_outcomes
        or new.prerequisites is distinct from old.prerequisites
@@ -377,12 +377,12 @@ begin
       select 1 from physics.lesson_versions
       where lesson_id = old.lesson_id
         and version = old.content_version
-        and status = 'published'
+        and published_at is not null
     ) or exists (
       select 1 from physics.lesson_versions
       where lesson_id = new.lesson_id
         and version = new.content_version
-        and status = 'published'
+        and published_at is not null
     ) then
       raise exception 'Published lesson content is immutable; create a new content version';
     end if;
@@ -405,7 +405,7 @@ begin
     select 1 from physics.lesson_versions
     where lesson_id = new.lesson_id
       and version = new.content_version
-      and status = 'published'
+      and published_at is not null
   ) then
     raise exception 'Published lesson content is immutable; create a new content version';
   end if;
@@ -436,7 +436,7 @@ as $func$
 begin
   if exists (
     select 1 from physics.lesson_versions
-    where lesson_id = old.id and status = 'published'
+    where lesson_id = old.id and published_at is not null
   ) then
     raise exception 'Lessons with published versions must be archived, not deleted';
   end if;
