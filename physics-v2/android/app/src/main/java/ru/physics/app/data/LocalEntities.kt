@@ -25,6 +25,7 @@ data class LessonProgressEntity(
     val status: String,
     val completionPercent: Int,
     val bestScore: Int?,
+    val bestGrade: Int?,
     val latestGrade: Int?,
     val updatedAt: Long,
 )
