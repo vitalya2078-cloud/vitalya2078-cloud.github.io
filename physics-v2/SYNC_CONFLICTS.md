@@ -122,3 +122,9 @@ The current schema's allowed values were inspected directly before designing the
 - Local mistake `errorCount` is not a cloud replacement value. Each accepted idempotent miss operation increments cloud `miss_count` atomically.
 
 These translations must be implemented and tested in the sync adapter before any delivery is enabled. Current DB check constraints and unique keys are the source of truth; do not send local enum values directly without translation.
+
+## Pure mapping layer
+
+A transport-free mapping layer now exists at `src/storage/sync-mapping.ts` with domain tests in `src/storage/sync-mapping.test.ts`. It translates local attempt/progress/favorite/mistake records into cloud-domain payloads, including the enum and field mappings above. It carries the original queue UUID as `operationId` and the original `createdAt` as `clientCreatedAt`, so retries retain the same idempotency key and client timestamp.
+
+The mapper deliberately returns `local_only` for profiles and progress records that cannot yet be represented safely in the cloud schema. Only lesson progress is currently enqueued; section/topic progress remains locally derived, and block progress remains local until each block record carries its parent lesson ID. The mapper does not perform HTTP requests, create devices, or enable authentication.
