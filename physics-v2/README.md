@@ -1,130 +1,120 @@
 # PHYSICS — next-generation physics learning platform
 
-This directory contains the new cross-platform PHYSICS application foundation.
-The existing fizika/ and fizika-android/ projects are preserved.
+This directory contains the new PHYSICS product foundation. The legacy `fizika/` and `fizika-android/` projects are preserved and are not used as the PHYSICS v2 Android client.
 
 ## Product targets
 
-- Android: installable APK.
-- iPhone/iPad: installable Progressive Web App (PWA), added from Safari to the Home Screen.
-- Windows: future standalone EXE.
-- Desktop browsers: responsive web application.
+- Android: fully native installable APK.
+- iPhone/iPad: installable PWA, added to the Home Screen from Safari.
+- Desktop: responsive browser application.
+- Windows: future standalone package.
 
-## Architecture
+## Platform architecture
 
-- Local-first operation: core learning, tests, progress and preferences are designed to work offline.
-- IndexedDB is the browser/PWA storage layer; native shells will use SQLite through a storage adapter.
-- Supabase/PostgreSQL is the cloud database and synchronization target when connectivity is available.
-- Offline changes will be queued locally and synchronized when connectivity returns.
-- Assessment attempts are append-only; progress and favorites use explicit merge rules.
-- The approved legacy bank of 900 questions is preserved as an immutable source dataset.
-- The curriculum is separate from the legacy question bank and is versioned independently.
-- Authentication is intentionally deferred. User-specific API routes and sync writes remain disabled until Auth and ownership-based RLS policies are implemented.
+### Android
 
-## Supabase project
+The Android client is a native project in `android/`:
+
+- Kotlin + Jetpack Compose + Material 3.
+- Room/SQLite for local data.
+- Kotlin coroutines and Flow for asynchronous work and reactive state.
+- WorkManager is reserved for future authenticated background synchronization.
+- No WebView, Capacitor, TWA, or embedded web app.
+- Debug APKs are built and tested in GitHub Actions. Release signing will be configured separately; signing keys never belong in the repository.
+
+### iOS and desktop web
+
+The React + TypeScript + Vite client is used for iOS PWA and desktop browsers. It has its own IndexedDB/Dexie local storage.
+
+The clients share curriculum identifiers, official question-bank source data, grading rules, API contracts, and cloud sync semantics. They do not share UI code or assume a common local database.
+
+## Local-first contract
+
+- Local writes happen before any network operation.
+- Downloaded curriculum, question bank, progress, attempts, favorites, mistakes, and settings remain available offline.
+- Android uses Room/SQLite; PWA uses IndexedDB.
+- Attempts are append-only. Best and latest results are separate.
+- Mastery is monotonic and cannot regress.
+- Pending sync operations are durable and idempotent. They are stored locally but are not transmitted until authentication and owner-scoped server authorization are implemented.
+- The app must expose pending-sync and storage state and support backup/restore before production release.
+
+## Official immutable question bank
+
+The institution-approved 900-question bank is preserved as an immutable snapshot.
+
+- Source table: `physics.official_questions`.
+- Source file: `fizika/src/data.json`.
+- Nine original topics, exactly 100 questions each.
+- Question text, correct answer, distractors, illustration references, and original explanation payload are copied without rewriting.
+- The native Android APK bundles `android/app/src/main/assets/official-question-bank.json` for offline access.
+- CI validates all 900 records, unique IDs, topic counts, question numbering, and consistency between the copied fields and the original payload.
+
+Native test modes:
+- Training: all 900 questions, no grade or penalties, explanation after each answer. Questions without distractors use self-assessment after revealing the answer.
+- Final assessment: multiple-choice questions, score converted to the approved grade scale.
+- Wrong answers are stored in the local mistake list.
+- Completed attempts are append-only and stored in Room.
+- Results and progress are written locally before any future cloud sync.
+
+Questions with illustrations load them from the project's trusted mirrors on demand and cache them on the device. An illustration not yet cached requires internet on its first view; the text bank itself is bundled offline.
+
+## Supabase backend
 
 Project: PHYSICS  
-Project ref: vqiljksvsdjmwbbngimg  
-Region: eu-west-2
+Project ref: `vqiljksvsdjmwbbngimg`  
+Region: `eu-west-2`  
+Database schema: `physics` (private, not exposed to browser Data API).
 
-Database schema: physics (private, not exposed to browser Data API).
+Active migrations:
 
-Active database migrations:
+- `supabase/migrations/20261108104124_physics_foundation_v1.sql`
+- `supabase/migrations/20261108104138_physics_security_indexes_v1.sql`
+- `supabase/migrations/20261108104251_official_question_bank_provenance.sql`
 
-- supabase/migrations/20261108104124_physics_foundation_v1.sql
-- supabase/migrations/20261108104138_physics_security_indexes_v1.sql
-- supabase/migrations/20261108104251_official_question_bank_provenance.sql
+The deployed `physics-api` Edge Function is read-only and exposes only published curriculum and lesson data:
 
-Official question bank seed:
+- `GET /health`
+- `GET /v1/catalog`
+- `GET /v1/lessons/{uuid}`
 
-- supabase/seed/official-900.sql
-- Source file: fizika/src/data.json
-- Expected and imported count: 900 questions in 9 original topics.
+Base URL: `https://vqiljksvsdjmwbbngimg.supabase.co/functions/v1/physics-api`
 
-## Public read-only API
+It does not expose user profiles, progress, attempts, favorites, mistakes, goals, or synchronization records. Auth and write routes remain disabled until the security model is implemented and tested.
 
-The deployed Supabase Edge Function is physics-api.
+## Current implementation
 
-Base URL:
-https://vqiljksvsdjmwbbngimg.supabase.co/functions/v1/physics-api
+### Native Android
 
-Routes:
+Working:
+- Native six-section navigation and adaptive launcher icon.
+- First-run profile setup with multiple education-track selection and class/course.
+- Room database with versioned migrations.
+- Local-first profile, progress, attempts, mistakes, and durable sync-operation queue.
+- Offline bundled official question bank (900 questions).
+- Training and final assessment flows, grading, explanation display, and mistake capture.
+- Learning catalog fetch from the read-only Supabase API with Room offline cache.
+- Interactive free-fall laboratory model.
+- Local progress dashboard.
+- Light/dark colors follow the Android system setting.
 
-- GET /health
-- GET /v1/catalog
-- GET /v1/lessons/{uuid}
+Not yet enabled:
+- Full lesson reader and lesson authoring/review UI.
+- Authentication and secure cloud sync delivery.
+- Native backup import/export UI.
+- Teacher dashboard.
+- Production release signing.
+- Windows package.
 
-The public API returns only active programs and published curriculum content. It does not expose user profiles, progress, attempts, favorites, mistakes, goals, or synchronization records. It implements GET and OPTIONS only.
+### iOS PWA and desktop web
 
-API details: supabase/API.md  
-Function source: supabase/functions/physics-api/
+The responsive React app, IndexedDB storage, offline shell, catalog cache, profile, progress, and free-fall laboratory are implemented. The web Testing screen is still being brought into parity with the native question engine.
 
-## Security rules
+## Build and validation
 
-- Never commit database passwords, service-role keys, secret keys, or Supabase access tokens.
-- Never place a service-role/secret key in browser code.
-- Keep the physics schema private.
-- Keep deny-all policies until a real authorization model is implemented.
-- Add user-specific endpoints only after Auth and owner-scoped RLS policies are tested.
+GitHub Actions workflow: `.github/workflows/physics-v2-build.yml`
 
+Jobs:
+- Web: production dependency audit, TypeScript build, domain tests, PWA smoke test, and public API smoke test.
+- Android: native APK compilation, Kotlin unit tests, and debug APK artifact upload.
 
-## Local-first storage slice
-
-The browser/PWA storage layer is implemented with Dexie over IndexedDB.
-
-- Existing profile, progress, attempt, favorite, error and sync-queue stores are preserved.
-- Database schema v2 adds published catalog and lesson caches, local settings and sync metadata.
-- Catalog and lesson requests use network-first behavior with an IndexedDB fallback.
-- The service worker caches the application shell and same-origin build assets for offline reopening.
-- Local attempts are append-only; a local write and its pending sync operation are committed in one IndexedDB transaction.
-- Sync queue entries are not uploaded yet. Authentication and owner-scoped cloud writes remain disabled until the separate security stage.
-
-
-## First application slice
-
-The first interactive application shell is now implemented in `src/App.tsx`:
-
-- Responsive six-screen navigation: Home, Learning, Testing, Laboratory, Progress, Profile.
-- First-run onboarding with nickname and multiple education-track selection.
-- Local profile and education settings persisted in IndexedDB.
-- System/light/dark theme selection.
-- Network-aware status and offline-first catalog loading.
-- Published catalog navigation with expandable program/version/level/section/topic hierarchy.
-- Free-fall laboratory model with adjustable height and a tested physics calculation.
-- Progress dashboard backed by local IndexedDB counts.
-
-The 900-question official bank is not yet served to the client. The Testing screen deliberately does not fabricate sample questions: training and assessment launch will be enabled after a dedicated, authenticated/authorized question-delivery and attempt-storage flow is implemented. The curriculum catalog may remain empty while content is under review; draft content is not exposed.
-
-### Current implementation boundary
-
-Working now: application shell, local onboarding/profile, theme settings, offline catalog cache, free-fall model, local progress summary.
-
-Not yet enabled: real question delivery, answer submission, lesson authoring/review UI, account authentication, cross-device sync, teacher dashboard, native Android package, Windows executable.
-
-### Build and validation
-
-Run locally in a Node.js environment:
-
-- `npm install`
-- `npm run build`
-- `npm run test`
-- `npm run smoke:pwa`
-
-GitHub Actions runs the same checks on `physics-hybrid-redesign`.
-
-
-## Native Android application
-
-Android is developed as a separate native client in `android/`:
-
-- Kotlin + Jetpack Compose + Material 3; no WebView, Capacitor, or embedded website.
-- Room/SQLite for local profile, progress, attempts, favorites, mistakes, and settings.
-- Local-first behavior: first launch and the current native screens do not require an account or internet connection.
-- Native Android build and unit tests run in the `android-native` GitHub Actions job.
-- The CI debug APK is uploaded as `physics-android-debug-apk` for installation/testing. It is not a production-signed release.
-
-The React + TypeScript application remains the iOS PWA and desktop web client. The clients share API/data contracts and backend rules, not UI code or a single local database.
-
-Current native Android screens: first-run nickname setup, home, learning placeholder, testing status, interactive free-fall lab, local progress summary, and profile overview.
-
-Not yet connected in the native client: published curriculum download/cache, the official 900-question delivery and assessment engine, secure account sign-in, cloud sync, backup import/export, and release signing. These are explicit next implementation tasks; the native shell must not be mistaken for a completed learning product.
+The Android debug APK is for testing and is not production-signed. Install/update compatibility for production requires a separately protected release signing key.
