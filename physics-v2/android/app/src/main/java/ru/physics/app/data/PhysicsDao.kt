@@ -29,6 +29,9 @@ interface PhysicsDao {
     @Query("SELECT COUNT(*) FROM mistakes WHERE correctedAt IS NULL")
     fun observeOpenMistakeCount(): Flow<Int>
 
+    @Query("SELECT * FROM mistakes WHERE correctedAt IS NULL ORDER BY lastSeenAt DESC")
+    fun observeOpenMistakes(): Flow<List<MistakeEntity>>
+
     @Query("SELECT COUNT(*) FROM sync_operations WHERE status = 'pending'")
     fun observePendingSyncCount(): Flow<Int>
 
