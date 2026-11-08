@@ -213,12 +213,15 @@ export async function saveLocalProgress(progress: LocalProgress): Promise<void> 
     };
 
     await localDb.progress.put(normalized);
-    await queueOperation(
-      'progress',
-      normalized.entityId,
-      existing ? 'update' : 'insert',
-      normalized,
-    );
+
+    if (normalized.entityType === 'lesson') {
+      await queueOperation(
+        'progress',
+        normalized.entityId,
+        existing ? 'update' : 'insert',
+        normalized,
+      );
+    }
   });
 }
 
