@@ -83,6 +83,7 @@ function App() {
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [nicknameDraft, setNicknameDraft] = useState('Исследователь');
   const [birthYearDraft, setBirthYearDraft] = useState('');
+  const [profileSaveMessage, setProfileSaveMessage] = useState('');
   const [catalog, setCatalog] = useState<CatalogProgram[]>([]);
   const [catalogState, setCatalogState] = useState<'loading' | 'ready' | 'offline' | 'empty' | 'error'>('loading');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -186,22 +187,38 @@ function App() {
     [selection.tracks],
   );
 
-  async function saveProfile() {
-    const now = new Date().toISOString();
-    const nextProfile: LocalProfile = {
-      id: profile?.id ?? createLocalId(),
-      nickname: (nicknameDraft.trim() || 'Исследователь').slice(0, 32),
-      birthYear: birthYearDraft && Number(birthYearDraft) >= 1900 && Number(birthYearDraft) <= new Date().getFullYear() ? Number(birthYearDraft) : undefined,
-      createdAt: profile?.createdAt ?? now,
-      updatedAt: now,
-    };
-    await saveLocalProfile(nextProfile);
-    const nextSelection = selection;
-    await saveLocalSetting('education-selection', nextSelection);
-    setProfile(nextProfile);
-    setSelection(nextSelection);
-    setIsOnboarding(false);
-    setActiveSection('home');
+  async function saveProfile(): Promise<boolean> {
+    const birthYear = birthYearDraft ? Number(birthYearDraft) : undefined;
+    if (birthYear !== undefined && (
+      !Number.isInteger(birthYear)
+      || birthYear < 1900
+      || birthYear > new Date().getFullYear()
+    )) {
+      setProfileSaveMessage('Проверь год рождения: укажи четырёхзначный год.');
+      return false;
+    }
+
+    try {
+      const now = new Date().toISOString();
+      const nextProfile: LocalProfile = {
+        id: profile?.id ?? createLocalId(),
+        nickname: (nicknameDraft.trim() || 'Исследователь').slice(0, 32),
+        birthYear,
+        createdAt: profile?.createdAt ?? now,
+        updatedAt: now,
+      };
+      await saveLocalProfile(nextProfile);
+      await saveLocalSetting('education-selection', selection);
+      setProfile(nextProfile);
+      setSelection(selection);
+      setProfileSaveMessage('');
+      setIsOnboarding(false);
+      setActiveSection('home');
+      return true;
+    } catch {
+      setProfileSaveMessage('Не удалось сохранить данные на устройстве. Проверь доступ к локальному хранилищу.');
+      return false;
+    }
   }
 
   function toggleTrack(track: EducationTrack) {
@@ -300,7 +317,8 @@ function App() {
             onToggleTrack={toggleTrack}
             onGradeChange={(grade) => setSelection((current) => ({ ...current, grade }))}
             onThemeChange={setTheme}
-            onSave={() => saveProfile()}
+            saveMessage={profileSaveMessage}
+            onSave={saveProfile}
           />
         )}
       </main>
@@ -339,6 +357,7 @@ function App() {
                 {['7', '8', '9', '10', '11'].map((grade) => <option value={grade} key={grade}>{grade} класс</option>)}
               </select>
             )}
+            {profileSaveMessage && <p className="form-error" role="alert">{profileSaveMessage}</p>}
             <div className="onboarding-actions">
               <button className="text-button" onClick={() => saveProfile()}>Пропустить настройку</button>
               <button className="primary-button" onClick={() => saveProfile()}>Начать работу <FontAwesomeIcon icon={faChevronRight} /></button>
@@ -505,11 +524,13 @@ function ProfilePage({ nickname, birthYear, selection, theme, onNicknameChange, 
   onToggleTrack: (value: EducationTrack) => void;
   onGradeChange: (value: string) => void;
   onThemeChange: (value: ThemeMode) => void;
-  onSave: () => Promise<void>;
+  saveMessage: string;
+  onSave: () => Promise<boolean>;
 }) {
   const [saved, setSaved] = useState(false);
   async function handleSave() {
-    await onSave();
+    const success = await onSave();
+    if (!success) return;
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2200);
   }
@@ -524,6 +545,7 @@ function ProfilePage({ nickname, birthYear, selection, theme, onNicknameChange, 
           <div className="field-label">Образовательные направления</div>
           <div className="track-options profile-track-options">{trackOptions.map((option) => <button type="button" key={option.id} className={`track-option ${selection.tracks.includes(option.id) ? 'selected' : ''}`} onClick={() => onToggleTrack(option.id)}><span className="track-check"><FontAwesomeIcon icon={faCheck} /></span><span><strong>{option.title}</strong><small>{option.description}</small></span></button>)}</div>
           {selection.tracks.some((track) => track.startsWith('school_')) && <><label className="field-label" htmlFor="profile-grade">Текущий класс</label><select id="profile-grade" className="text-input" value={selection.grade} onChange={(event) => onGradeChange(event.target.value)}>{['7','8','9','10','11'].map((grade) => <option key={grade} value={grade}>{grade} класс</option>)}</select></>}
+          {saveMessage && <p className="form-error" role="alert">{saveMessage}</p>}
           <button className="primary-button save-profile-button" onClick={handleSave}>{saved ? 'Сохранено' : 'Сохранить изменения'} <FontAwesomeIcon icon={saved ? faCheck : faChevronRight} /></button>
         </section>
         <section className="panel profile-panel">
