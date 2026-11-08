@@ -176,7 +176,7 @@ function App() {
     [selection.tracks],
   );
 
-  async function saveProfile(skipOnboarding = false) {
+  async function saveProfile() {
     const now = new Date().toISOString();
     const nextProfile: LocalProfile = {
       id: profile?.id ?? createLocalId(),
@@ -330,7 +330,7 @@ function App() {
               </select>
             )}
             <div className="onboarding-actions">
-              <button className="text-button" onClick={() => saveProfile(true)}>Пропустить настройку</button>
+              <button className="text-button" onClick={() => saveProfile()}>Пропустить настройку</button>
               <button className="primary-button" onClick={() => saveProfile()}>Начать работу <FontAwesomeIcon icon={faChevronRight} /></button>
             </div>
             <p className="privacy-note">Профиль сохраняется на этом устройстве. Аккаунт можно будет подключить позже.</p>
