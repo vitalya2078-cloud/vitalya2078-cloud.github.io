@@ -14,6 +14,7 @@ export interface LocalProgress {
   entityId: string;
   status: 'not_started' | 'in_progress' | 'mastered';
   completionPercent: number;
+  bestScore?: number;
   bestGrade?: number;
   latestGrade?: number;
   updatedAt: string;
@@ -112,6 +113,19 @@ class PhysicsDatabase extends Dexie {
     });
 
     this.version(2).stores({
+      profiles: 'id, nickname, updatedAt',
+      progress: 'id, entityType, entityId, status, updatedAt, [entityType+entityId]',
+      attempts: 'id, testId, mode, status, startedAt, completedAt',
+      favorites: 'id, targetType, targetId, createdAt, [targetType+targetId]',
+      errors: 'id, questionId, lastSeenAt',
+      syncQueue: 'id, entityType, entityId, status, createdAt',
+      catalogCache: 'id, cachedAt',
+      lessonCache: 'id, cachedAt',
+      settings: 'key, updatedAt',
+      syncMetadata: 'key, updatedAt',
+    });
+
+    this.version(3).stores({
       profiles: 'id, nickname, updatedAt',
       progress: 'id, entityType, entityId, status, updatedAt, [entityType+entityId]',
       attempts: 'id, testId, mode, status, startedAt, completedAt',
