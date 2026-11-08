@@ -35,7 +35,7 @@ function App() {
     if (saved === 'light' || saved === 'dark') return saved;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
-  const [nickname, setNickname] = useState('Исследователь');
+  const nickname = 'Исследователь';
   const [localStatus, setLocalStatus] = useState('Локальное хранилище готово');
 
   useEffect(() => {
