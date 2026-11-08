@@ -239,8 +239,7 @@ private fun HomeScreen(nickname: String, onOpen: (AppSection) -> Unit) {
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
                     Text("ОТКРЫВАЙ ЗАКОНЫ МИРА", style = MaterialTheme.typography.labelSmall, color = Color(0xFF83D8F3), letterSpacing = 1.7.sp, fontWeight = FontWeight.Bold)
-                    Text("Физика начинается
-с любопытства.", style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
+                    Text("Физика начинается\\nс любопытства.", style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
                     Text("Теория, задачи и эксперименты — в одном учебном пространстве.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFFD1E1F1))
                     Button(onClick = { onOpen(AppSection.LEARNING) }) {
                         Text("Продолжить обучение")
