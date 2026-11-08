@@ -354,35 +354,48 @@ create or replace function physics.guard_published_lesson_content()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
-declare
-  target_lesson_id uuid;
-  target_version integer;
+as $
 begin
+  if tg_op = 'UPDATE' then
+    if exists (
+      select 1 from physics.lesson_versions
+      where lesson_id = old.lesson_id
+        and version = old.content_version
+        and status = 'published'
+    ) or exists (
+      select 1 from physics.lesson_versions
+      where lesson_id = new.lesson_id
+        and version = new.content_version
+        and status = 'published'
+    ) then
+      raise exception 'Published lesson content is immutable; create a new content version';
+    end if;
+    return new;
+  end if;
+
   if tg_op = 'DELETE' then
-    target_lesson_id := old.lesson_id;
-    target_version := old.content_version;
-  else
-    target_lesson_id := new.lesson_id;
-    target_version := new.content_version;
+    if exists (
+      select 1 from physics.lesson_versions
+      where lesson_id = old.lesson_id
+        and version = old.content_version
+        and status = 'published'
+    ) then
+      raise exception 'Published lesson content is immutable; create a new content version';
+    end if;
+    return old;
   end if;
 
   if exists (
-    select 1
-    from physics.lesson_versions
-    where lesson_id = target_lesson_id
-      and version = target_version
+    select 1 from physics.lesson_versions
+    where lesson_id = new.lesson_id
+      and version = new.content_version
       and status = 'published'
   ) then
     raise exception 'Published lesson content is immutable; create a new content version';
   end if;
-
-  if tg_op = 'DELETE' then
-    return old;
-  end if;
   return new;
 end;
-$$;
+$;
 
 drop trigger if exists lesson_blocks_guard_published on physics.lesson_blocks;
 create trigger lesson_blocks_guard_published
