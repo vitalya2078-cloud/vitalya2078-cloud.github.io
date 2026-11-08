@@ -17,6 +17,7 @@ export interface LocalProgress {
   bestScore?: number;
   bestGrade?: number;
   latestGrade?: number;
+  lastAttemptAt?: string;
   updatedAt: string;
 }
 
@@ -205,6 +206,7 @@ export async function saveLocalProgress(progress: LocalProgress): Promise<void> 
       bestScore: bestScore > 0 ? bestScore : undefined,
       bestGrade: bestGrade > 0 ? bestGrade : undefined,
       latestGrade: progress.latestGrade ?? existing?.latestGrade,
+      lastAttemptAt: progress.lastAttemptAt ?? existing?.lastAttemptAt,
     };
 
     await localDb.progress.put(normalized);
