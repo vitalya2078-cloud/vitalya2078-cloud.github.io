@@ -75,6 +75,40 @@ describe('local record persistence', () => {
     expect(progress?.latestGrade).toBe(2);
   });
 
+  it('does not lower best score or completion on a later weaker progress update', async () => {
+    await saveLocalProgress({
+      id: 'progress-2',
+      entityType: 'lesson',
+      entityId: 'lesson-2',
+      status: 'in_progress',
+      completionPercent: 78,
+      bestScore: 88,
+      bestGrade: 4,
+      latestGrade: 4,
+      updatedAt: '2026-11-08T10:00:00.000Z',
+    });
+
+    await saveLocalProgress({
+      id: 'progress-2',
+      entityType: 'lesson',
+      entityId: 'lesson-2',
+      status: 'not_started',
+      completionPercent: 20,
+      bestScore: 20,
+      bestGrade: 2,
+      latestGrade: 2,
+      updatedAt: '2026-11-09T10:00:00.000Z',
+    });
+
+    expect(await localDb.progress.get('progress-2')).toMatchObject({
+      status: 'in_progress',
+      completionPercent: 78,
+      bestScore: 88,
+      bestGrade: 4,
+      latestGrade: 2,
+    });
+  });
+
   it('queues favorite insert, update and delete in order', async () => {
     const favorite = {
       id: 'favorite-1',
