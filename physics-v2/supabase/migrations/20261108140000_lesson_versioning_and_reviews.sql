@@ -33,15 +33,31 @@ alter table physics.lesson_blocks
 alter table physics.lesson_blocks
   drop constraint if exists lesson_blocks_lesson_id_sort_order_key;
 
-alter table physics.lesson_blocks
-  add constraint lesson_blocks_lesson_version_sort_order_key
-  unique (lesson_id, content_version, sort_order);
+do $
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'lesson_blocks_lesson_version_sort_order_key'
+      and conrelid = 'physics.lesson_blocks'::regclass
+  ) then
+    alter table physics.lesson_blocks
+      add constraint lesson_blocks_lesson_version_sort_order_key
+      unique (lesson_id, content_version, sort_order);
+  end if;
 
-alter table physics.lesson_blocks
-  add constraint lesson_blocks_lesson_version_fkey
-  foreign key (lesson_id, content_version)
-  references physics.lesson_versions(lesson_id, version)
-  on delete cascade;
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'lesson_blocks_lesson_version_fkey'
+      and conrelid = 'physics.lesson_blocks'::regclass
+  ) then
+    alter table physics.lesson_blocks
+      add constraint lesson_blocks_lesson_version_fkey
+      foreign key (lesson_id, content_version)
+      references physics.lesson_versions(lesson_id, version)
+      on delete cascade;
+  end if;
+end;
+$;
 
 create table if not exists physics.lesson_sources (
   id uuid primary key default gen_random_uuid(),
