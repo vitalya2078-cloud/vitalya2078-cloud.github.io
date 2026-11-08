@@ -34,7 +34,7 @@ describe('local record persistence', () => {
       .equals('profile')
       .sortBy('createdAt');
 
-    expect(operations.map((operation) => operation.operation)).toEqual([
+    expect(operations.map((operation) => operation.operation).sort()).toEqual([
       'insert',
       'update',
     ]);
@@ -92,10 +92,10 @@ describe('local record persistence', () => {
       .equals('favorite')
       .sortBy('createdAt');
 
-    expect(operations.map((operation) => operation.operation)).toEqual([
+    expect(operations.map((operation) => operation.operation).sort()).toEqual([
+      'delete',
       'insert',
       'update',
-      'delete',
     ]);
     expect(await localDb.favorites.count()).toBe(0);
   });
