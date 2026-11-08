@@ -36,6 +36,9 @@ jobs:
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
 
+      - name: Validate immutable official question bank
+        run: node scripts/validate-official-bank.mjs
+
       - name: Type-check and build
         run: npm run build
 
