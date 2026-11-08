@@ -392,7 +392,7 @@ function vSetup() {
     (setupMore ? `<section class="form"><h2>Варианты ответа</h2>${seg('mc', [[false, 'С вариантами и без'], [true, 'Только с вариантами']])}</section>` +
       `<section class="form"><h2>Пояснения</h2>${seg('exam', [[false, 'Сразу после ответа'], [true, 'В конце']])}</section>` +
       `<section class="form"><h2>Таймер на вопрос</h2>${seg('tOn', [[false, 'Без таймера'], [true, 'С таймером']])}` +
-      (cfg.tOn ? `<label class="range"><span>Время на вопрос: <b id="tsec">${cfg.tSec} с (${mmss(cfg.tSec)})</b></span><input id="tsl" type="range" min="100" max="180" step="10" value="${cfg.tSec}" aria-label="Секунд на вопрос"><span class="rl"><small>100 с</small><small>180 с</small></span></label><p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt(take)}</span></p>` : '') + '</section>' : ''));
+      (cfg.tOn ? `<h2 class="sub2">Секунд на вопрос</h2>${seg('tSec', [100, 120, 140, 160, 180].map(s => [s, String(s)]))}<p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt(take)}</span></p>` : '') + '</section>' : ''));
 }
 const totTxt = n => `На ${nQ(n)} — не больше ${Math.ceil(n * cfg.tSec / 60)} мин.`;
 

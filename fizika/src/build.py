@@ -38,7 +38,7 @@ open(os.path.join(OUT, 'content.json'), 'w', encoding='utf-8').write(json.dumps(
 # интерфейс
 html = rd('shell.html')
 for w in ('400', '600', '700'): html = html.replace('{{F%s}}' % w, base64.b64encode(rd('g%s.woff2' % w, True)).decode())
-js = rd('app.js') + '\n' + rd('learn.js') + '\n' + rd('ui.js')
+js = rd('app.js') + '\n' + rd('learn.js') + '\n' + rd('lucide.js') + '\n' + rd('ui.js')
 # картинки интерфейса (src/ui/*.webp) — вшиваются в сборку, чтобы работать без интернета и приходить обновлением
 UI = {f[:-5]: 'data:image/webp;base64,' + base64.b64encode(rd(os.path.join('ui', f), True)).decode() for f in sorted(os.listdir(os.path.join(D, 'ui'))) if f.endswith('.webp')}
 js = js.replace('{{UI}}', json.dumps(UI, separators=(',', ':')))

@@ -439,8 +439,28 @@ main.map{background:var(--mapt) top center/100% auto no-repeat local, var(--mapb
 .more-b .i{width:18px; height:18px}
 svg.i.down{transform:rotate(90deg)} svg.i.up{transform:rotate(-90deg)}
 .form .seg{margin-bottom:6px}
+.sub2{font-size:14px; color:var(--muted); font-weight:600; margin:12px 0 6px}
 .seg.steps{display:flex}
 .seg button.done{color:var(--ok)}
+.li{flex:none; width:38px; height:38px; display:grid; place-items:center; border-radius:12px; background:color-mix(in srgb,var(--lc) 13%,#fff); color:var(--lc)}
+.li svg{width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.xchip .li{width:28px; height:28px; border-radius:50%} .xchip .li svg{width:16px; height:16px}
+.row-i .li{width:30px; height:30px; border-radius:10px} .row-i .li svg{width:18px; height:18px}
+.seg.steps button{display:flex; align-items:center; justify-content:center; gap:5px; padding:9px 4px}
+.si{width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+@media (max-width:380px){.seg.steps .si{display:none}}
+.stp{background:var(--sheet); border-radius:18px; padding:12px 14px; margin-top:10px; box-shadow:var(--shadow)}
+.stp-h{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px}
+.stp-h span{color:var(--muted); font-size:14px}
+.stp-h b{font-size:20px; font-variant-numeric:tabular-nums}
+.stp-b{display:grid; grid-template-columns:1fr 1.3fr 1.3fr 1fr; gap:8px}
+.stp-b button{min-height:52px; border:0; border-radius:14px; background:var(--ink-soft); color:var(--ink); font:700 16px var(--ui); cursor:pointer; touch-action:manipulation; -webkit-user-select:none; user-select:none}
+.stp-b button.m{background:var(--ink); color:#fff; font-size:24px}
+.stp-b button:active{transform:scale(.96)}
+.seekbar{position:relative; width:100%; height:28px; margin-top:12px; cursor:pointer; touch-action:none}
+.seekbar::before{content:""; position:absolute; left:0; right:0; top:11px; height:6px; border-radius:6px; background:var(--line)}
+.seekbar i{position:absolute; left:0; top:11px; height:6px; border-radius:6px; background:#FC6C41}
+.seekbar b{position:absolute; top:4px; width:20px; height:20px; margin-left:-10px; border-radius:50%; background:#fff; box-shadow:0 1px 6px rgba(0,0,0,.25)}
 #mini{flex:none; display:flex; align-items:center; gap:8px; margin:0 10px 8px; padding:8px 8px 8px 10px; background:#141A2E; color:#fff; border-radius:18px}
 #mini[hidden]{display:none!important}
 #mini .mi{flex:1; min-width:0; display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none}

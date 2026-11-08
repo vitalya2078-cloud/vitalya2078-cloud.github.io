@@ -52,8 +52,8 @@ async function audPlay() {
     AUD.el = new Audio(); AUD.el.preload = 'auto';
     AUD.el.addEventListener('timeupdate', () => {
       miniTick();
-      const s = $('#aseek'), tm = $('#atime'), pl = $('.player');
-      if (s && pl && pl.dataset.file === AUD.file) { s.value = AUD.el.currentTime; tm.textContent = `${mmss(Math.round(AUD.el.currentTime))} / ${mmss(Math.round(+pl.dataset.dur))}`; }
+      const pl = $('.player');
+      if (pl && pl.dataset.file === AUD.file) seekShow(AUD.el.currentTime, +pl.dataset.dur);
     });
     AUD.el.addEventListener('pause', () => { audIcon(false); savePos(); miniUpd(); });
     AUD.el.addEventListener('play', () => { audIcon(true); miniUpd(); markDay(); });
@@ -80,9 +80,53 @@ document.addEventListener('click', e => {
     LS.set('fz-arate', nx); b.textContent = f1(nx, 2) + '×'; if (AUD.el) AUD.el.playbackRate = nx;
   }
 });
-document.addEventListener('input', e => {
-  if (e.target.id === 'aseek' && AUD.el && $('.player') && AUD.file === $('.player').dataset.file) AUD.el.currentTime = +e.target.value;
+function seekShow(cur, dur) {
+  const f = dur ? Math.max(0, Math.min(1, cur / dur)) : 0, bar = $('.seekbar'), tm = $('#atime');
+  if (bar) { bar.querySelector('i').style.width = f * 100 + '%'; bar.querySelector('b').style.left = f * 100 + '%'; }
+  if (tm) tm.textContent = `${mmss(Math.round(cur))} / ${mmss(Math.round(dur))}`;
+}
+function seekTo(e) {
+  const bar = $('.seekbar'), pl = $('.player'); if (!bar || !pl) return;
+  const r = bar.getBoundingClientRect(), dur = +pl.dataset.dur, t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * dur;
+  if (AUD.el && AUD.file === pl.dataset.file) AUD.el.currentTime = t;
+  else { const p = LS.get('fz-apos', {}); p[pl.dataset.file] = t; LS.set('fz-apos', p); }
+  seekShow(t, dur);
+}
+let seeking = false;
+document.addEventListener('pointerdown', e => { if (e.target.closest('.seekbar')) { seeking = true; seekTo(e); } });
+document.addEventListener('pointermove', e => { if (seeking) seekTo(e); });
+document.addEventListener('pointerup', () => { seeking = false; });
+document.addEventListener('pointercancel', () => { seeking = false; });
+
+/* ---------- кнопки «− / +» вместо ползунков: нажатие — шаг, удержание — быстро ---------- */
+function stepper(key, label, val, small, big) {
+  const f = d => (d > 0 ? '+' : '−') + String(Math.abs(d)).replace('.', ',');
+  return `<div class="stp"><div class="stp-h"><span>${label}</span><b id="sv_${key}">${val}</b></div><div class="stp-b">` +
+    `<button type="button" data-step="${key}" data-d="${-big}">${f(-big)}</button><button type="button" class="m" data-step="${key}" data-d="${-small}" aria-label="Меньше на ${f(small).slice(1)}">−</button>` +
+    `<button type="button" class="m" data-step="${key}" data-d="${small}" aria-label="Больше на ${f(small).slice(1)}">+</button><button type="button" data-step="${key}" data-d="${big}">${f(big)}</button></div></div>`;
+}
+const snap = (v, step, min, max) => { const d = (String(step).split('.')[1] || '').length; return +Math.max(min, Math.min(max, Math.round(v / step) * step)).toFixed(d); };
+function applyStep(key, d) {
+  if (!G) return;
+  if (G.kind === 'throw' && !G.flying) {
+    if (key === 'ang') { G.ang = snap(G.ang + d, 1, 10, 80); $('#sv_ang').textContent = G.ang + '°'; }
+    if (key === 'v') { G.v = snap(G.v + d, 0.5, 5, 22); $('#sv_v').textContent = f1(G.v) + ' м/с'; }
+    G.path = []; paintThrow();
+  } else if (G.kind === 'sim' && !G.busy && key === 'p') {
+    const p = G.sim.param; G.v = snap(G.v + d, p.step, p.min, p.max);
+    $('#sv_p').textContent = p.fmt(G.v); G.res = null; $('#tmsg').textContent = G.sim.hint; G.sim.draw(CV(), G, G.v, 0, null);
+  }
+}
+let stepRep = null;
+const stepStop = () => { if (stepRep) { clearTimeout(stepRep); clearInterval(stepRep); stepRep = null; } };
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('[data-step]'); if (!b) return;
+  e.preventDefault(); stepStop();
+  const go = () => applyStep(b.dataset.step, +b.dataset.d); go(); buzz(5);
+  stepRep = setTimeout(() => { stepRep = setInterval(go, 70); }, 380);
 });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.addEventListener(t, stepStop));
+document.addEventListener('keydown', e => { const b = e.target.closest && e.target.closest('[data-step]'); if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); applyStep(b.dataset.step, +b.dataset.d); } });
 /* ---------- Мини-игры: у каждой лекции свои ---------- */
 // Игры лекции: симуляция по её теме + «Найди пару» + «Верю — не верю» на её материале
 const f1 = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toString().replace('.', ',');
@@ -186,8 +230,7 @@ function drawThrow() {
   ui.main.innerHTML = `<p class="note gtop">Цель ${G.round} из ${G.rounds}. Бросков: ${G.shots}. Мишень на расстоянии <b>${f1(G.target)} м</b>.</p>` +
     `<canvas id="cv" class="throw-cv" width="720" height="360" aria-label="Поле броска"></canvas>` +
     `<p class="note tmsg" id="tmsg">${G.last || 'Подбери угол и скорость. Дальность L = v²·sin 2α / g, при 45° она максимальна.'}</p>` +
-    `<label class="range"><span>Угол: <b id="vang">${G.ang}°</b></span><input id="sang" type="range" min="10" max="80" step="1" value="${G.ang}"></label>` +
-    `<label class="range"><span>Скорость: <b id="vv">${f1(G.v)} м/с</b></span><input id="sv" type="range" min="5" max="22" step="0.5" value="${G.v}"></label>`;
+    stepper('ang', 'Угол броска', G.ang + '°', 1, 5) + stepper('v', 'Скорость', f1(G.v) + ' м/с', 0.5, 2);
   paintThrow();
 }
 const calcL = () => G.v * G.v * Math.sin(2 * G.ang * Math.PI / 180) / 9.8;
@@ -248,7 +291,7 @@ function drawSim() {
   ui.main.innerHTML = `<p class="note gtop">Задание ${G.round} из ${sim.rounds}. Попыток: ${G.tries}.</p><p class="task"><b>${G.task}</b></p>` +
     `<canvas id="cv" class="throw-cv" width="720" height="360" aria-label="${esc(sim.title)}"></canvas>` +
     `<p class="note tmsg" id="tmsg">${G.res ? G.res.msg : sim.hint}</p>` +
-    `<label class="range"><span>${p.label}: <b id="pval">${p.fmt(G.v)}</b></span><input id="psl" type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${G.v}"></label>`;
+    stepper('p', p.label, p.fmt(G.v), p.step, p.big || +(p.step * 5).toFixed(4));
   sim.draw(CV(), G, G.v, G.res ? 1 : 0, G.res);
 }
 function simGo() {
@@ -427,9 +470,9 @@ const SIMS = {
   clock: {
     title: 'Близнецы', lead: 'Подбери скорость корабля, чтобы космонавт постарел ровно на нужное число лет.', rounds: 4, anim: 1600, go: 'Полетели',
     hint: 'На Земле проходит 10 лет, а на корабле τ = t·√(1 − v²/c²) — меньше.',
-    param: { min: 0.1, max: 0.99, step: 0.01, init: 0.5, label: 'Скорость корабля', fmt: v => f1(v, 2) + ' c' },
+    param: { min: 0.1, max: 0.99, step: 0.01, big: 0.05, init: 0.5, label: 'Скорость корабля', fmt: v => f1(v, 2) + ' c' },
     newRound(G) { G.goal = pick([9, 8, 7, 6, 5, 4, 3, 2]); G.task = `Пока на Земле проходит 10 лет, космонавт должен постареть на ${G.goal} ${G.goal < 5 ? 'года' : 'лет'}.`; G.v = 0.5; },
-    check(G, b) { const tau = 10 * Math.sqrt(1 - b * b), ok = Math.abs(tau - G.goal) <= 0.15; return { ok, tau, msg: `τ = 10·√(1 − ${f1(b, 2)}²) = ${f1(tau, 2)} года${ok ? '' : `. Нужно ${G.goal} — ${tau > G.goal ? 'быстрее' : 'медленнее'}.`}` }; },
+    check(G, b) { const tau = 10 * Math.sqrt(1 - b * b), ok = Math.abs(tau - G.goal) <= 0.3; return { ok, tau, msg: `τ = 10·√(1 − ${f1(b, 2)}²) = ${f1(tau, 2)} года${ok ? '' : `. Нужно ${G.goal} — ${tau > G.goal ? 'быстрее' : 'медленнее'}.`}` }; },
     draw(k, G, b, ph, res) {
       if (!k) return; const { c, W, H, col } = k; bgGrid(k);
       const BX = 250; const bar = (y, years, color, name) => { c.fillStyle = col('line'); c.fillRect(BX, y, W - BX - 30, 34); c.fillStyle = color; c.fillRect(BX, y, (W - BX - 30) * years / 10 * Math.min(1, ph || 0), 34); label(c, name, 20, y + 24, col('text'), 16); label(c, `${f1(years * Math.min(1, ph || 0), 1)} лет`, W - 52, y + 24, col('text'), 15, 'right'); };
@@ -458,14 +501,4 @@ document.addEventListener('click', e => {
     case 'gameAgain': render(); break;
   }
 });
-document.addEventListener('input', e => {
-  if (!G) return;
-  if (G.kind === 'throw') {
-    if (e.target.id === 'sang') { G.ang = +e.target.value; $('#vang').textContent = G.ang + '°'; }
-    else if (e.target.id === 'sv') { G.v = +e.target.value; $('#vv').textContent = f1(G.v) + ' м/с'; }
-    else return;
-    if (!G.flying) { G.path = []; paintThrow(); }
-  } else if (G.kind === 'sim' && e.target.id === 'psl' && !G.busy) {
-    G.v = +e.target.value; $('#pval').textContent = G.sim.param.fmt(G.v); G.res = null; $('#tmsg').textContent = G.sim.hint; G.sim.draw(CV(), G, G.v, 0, null);
-  }
-});
+

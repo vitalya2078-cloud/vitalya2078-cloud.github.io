@@ -439,8 +439,28 @@ main.map{background:var(--mapt) top center/100% auto no-repeat local, var(--mapb
 .more-b .i{width:18px; height:18px}
 svg.i.down{transform:rotate(90deg)} svg.i.up{transform:rotate(-90deg)}
 .form .seg{margin-bottom:6px}
+.sub2{font-size:14px; color:var(--muted); font-weight:600; margin:12px 0 6px}
 .seg.steps{display:flex}
 .seg button.done{color:var(--ok)}
+.li{flex:none; width:38px; height:38px; display:grid; place-items:center; border-radius:12px; background:color-mix(in srgb,var(--lc) 13%,#fff); color:var(--lc)}
+.li svg{width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.xchip .li{width:28px; height:28px; border-radius:50%} .xchip .li svg{width:16px; height:16px}
+.row-i .li{width:30px; height:30px; border-radius:10px} .row-i .li svg{width:18px; height:18px}
+.seg.steps button{display:flex; align-items:center; justify-content:center; gap:5px; padding:9px 4px}
+.si{width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+@media (max-width:380px){.seg.steps .si{display:none}}
+.stp{background:var(--sheet); border-radius:18px; padding:12px 14px; margin-top:10px; box-shadow:var(--shadow)}
+.stp-h{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px}
+.stp-h span{color:var(--muted); font-size:14px}
+.stp-h b{font-size:20px; font-variant-numeric:tabular-nums}
+.stp-b{display:grid; grid-template-columns:1fr 1.3fr 1.3fr 1fr; gap:8px}
+.stp-b button{min-height:52px; border:0; border-radius:14px; background:var(--ink-soft); color:var(--ink); font:700 16px var(--ui); cursor:pointer; touch-action:manipulation; -webkit-user-select:none; user-select:none}
+.stp-b button.m{background:var(--ink); color:#fff; font-size:24px}
+.stp-b button:active{transform:scale(.96)}
+.seekbar{position:relative; width:100%; height:28px; margin-top:12px; cursor:pointer; touch-action:none}
+.seekbar::before{content:""; position:absolute; left:0; right:0; top:11px; height:6px; border-radius:6px; background:var(--line)}
+.seekbar i{position:absolute; left:0; top:11px; height:6px; border-radius:6px; background:#FC6C41}
+.seekbar b{position:absolute; top:4px; width:20px; height:20px; margin-left:-10px; border-radius:50%; background:#fff; box-shadow:0 1px 6px rgba(0,0,0,.25)}
 #mini{flex:none; display:flex; align-items:center; gap:8px; margin:0 10px 8px; padding:8px 8px 8px 10px; background:#141A2E; color:#fff; border-radius:18px}
 #mini[hidden]{display:none!important}
 #mini .mi{flex:1; min-width:0; display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none}
@@ -486,7 +506,7 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none; displa
 'use strict';
 /* Физика — офлайн-приложение с вопросами, тестами и прогрессом.
    Одна кодовая база для сайта (PWA: iPhone, Windows) и Android-приложения (WebView). */
-const APP_BUILD = 46;
+const APP_BUILD = 47;
 // Откуда приложение берёт обновления. Первым — GitVerse (открывается в России без VPN), запасной — GitHub.
 const MIRRORS = ['https://fizika.gitverse.site/', 'https://vitalya2078-cloud.github.io/fizika/'];
 let REMOTE = (() => { try { const m = JSON.parse(localStorage.getItem('fz-mirror')); return MIRRORS.includes(m) ? m : MIRRORS[0]; } catch (e) { return MIRRORS[0]; } })();
@@ -877,7 +897,7 @@ function vSetup() {
     (setupMore ? `<section class="form"><h2>Варианты ответа</h2>${seg('mc', [[false, 'С вариантами и без'], [true, 'Только с вариантами']])}</section>` +
       `<section class="form"><h2>Пояснения</h2>${seg('exam', [[false, 'Сразу после ответа'], [true, 'В конце']])}</section>` +
       `<section class="form"><h2>Таймер на вопрос</h2>${seg('tOn', [[false, 'Без таймера'], [true, 'С таймером']])}` +
-      (cfg.tOn ? `<label class="range"><span>Время на вопрос: <b id="tsec">${cfg.tSec} с (${mmss(cfg.tSec)})</b></span><input id="tsl" type="range" min="100" max="180" step="10" value="${cfg.tSec}" aria-label="Секунд на вопрос"><span class="rl"><small>100 с</small><small>180 с</small></span></label><p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt(take)}</span></p>` : '') + '</section>' : ''));
+      (cfg.tOn ? `<h2 class="sub2">Секунд на вопрос</h2>${seg('tSec', [100, 120, 140, 160, 180].map(s => [s, String(s)]))}<p class="note">Не успел — вопрос засчитывается как неверный. <span id="ttot">${totTxt(take)}</span></p>` : '') + '</section>' : ''));
 }
 const totTxt = n => `На ${nQ(n)} — не больше ${Math.ceil(n * cfg.tSec / 60)} мин.`;
 
@@ -1216,8 +1236,8 @@ async function audPlay() {
     AUD.el = new Audio(); AUD.el.preload = 'auto';
     AUD.el.addEventListener('timeupdate', () => {
       miniTick();
-      const s = $('#aseek'), tm = $('#atime'), pl = $('.player');
-      if (s && pl && pl.dataset.file === AUD.file) { s.value = AUD.el.currentTime; tm.textContent = `${mmss(Math.round(AUD.el.currentTime))} / ${mmss(Math.round(+pl.dataset.dur))}`; }
+      const pl = $('.player');
+      if (pl && pl.dataset.file === AUD.file) seekShow(AUD.el.currentTime, +pl.dataset.dur);
     });
     AUD.el.addEventListener('pause', () => { audIcon(false); savePos(); miniUpd(); });
     AUD.el.addEventListener('play', () => { audIcon(true); miniUpd(); markDay(); });
@@ -1244,9 +1264,53 @@ document.addEventListener('click', e => {
     LS.set('fz-arate', nx); b.textContent = f1(nx, 2) + '×'; if (AUD.el) AUD.el.playbackRate = nx;
   }
 });
-document.addEventListener('input', e => {
-  if (e.target.id === 'aseek' && AUD.el && $('.player') && AUD.file === $('.player').dataset.file) AUD.el.currentTime = +e.target.value;
+function seekShow(cur, dur) {
+  const f = dur ? Math.max(0, Math.min(1, cur / dur)) : 0, bar = $('.seekbar'), tm = $('#atime');
+  if (bar) { bar.querySelector('i').style.width = f * 100 + '%'; bar.querySelector('b').style.left = f * 100 + '%'; }
+  if (tm) tm.textContent = `${mmss(Math.round(cur))} / ${mmss(Math.round(dur))}`;
+}
+function seekTo(e) {
+  const bar = $('.seekbar'), pl = $('.player'); if (!bar || !pl) return;
+  const r = bar.getBoundingClientRect(), dur = +pl.dataset.dur, t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * dur;
+  if (AUD.el && AUD.file === pl.dataset.file) AUD.el.currentTime = t;
+  else { const p = LS.get('fz-apos', {}); p[pl.dataset.file] = t; LS.set('fz-apos', p); }
+  seekShow(t, dur);
+}
+let seeking = false;
+document.addEventListener('pointerdown', e => { if (e.target.closest('.seekbar')) { seeking = true; seekTo(e); } });
+document.addEventListener('pointermove', e => { if (seeking) seekTo(e); });
+document.addEventListener('pointerup', () => { seeking = false; });
+document.addEventListener('pointercancel', () => { seeking = false; });
+
+/* ---------- кнопки «− / +» вместо ползунков: нажатие — шаг, удержание — быстро ---------- */
+function stepper(key, label, val, small, big) {
+  const f = d => (d > 0 ? '+' : '−') + String(Math.abs(d)).replace('.', ',');
+  return `<div class="stp"><div class="stp-h"><span>${label}</span><b id="sv_${key}">${val}</b></div><div class="stp-b">` +
+    `<button type="button" data-step="${key}" data-d="${-big}">${f(-big)}</button><button type="button" class="m" data-step="${key}" data-d="${-small}" aria-label="Меньше на ${f(small).slice(1)}">−</button>` +
+    `<button type="button" class="m" data-step="${key}" data-d="${small}" aria-label="Больше на ${f(small).slice(1)}">+</button><button type="button" data-step="${key}" data-d="${big}">${f(big)}</button></div></div>`;
+}
+const snap = (v, step, min, max) => { const d = (String(step).split('.')[1] || '').length; return +Math.max(min, Math.min(max, Math.round(v / step) * step)).toFixed(d); };
+function applyStep(key, d) {
+  if (!G) return;
+  if (G.kind === 'throw' && !G.flying) {
+    if (key === 'ang') { G.ang = snap(G.ang + d, 1, 10, 80); $('#sv_ang').textContent = G.ang + '°'; }
+    if (key === 'v') { G.v = snap(G.v + d, 0.5, 5, 22); $('#sv_v').textContent = f1(G.v) + ' м/с'; }
+    G.path = []; paintThrow();
+  } else if (G.kind === 'sim' && !G.busy && key === 'p') {
+    const p = G.sim.param; G.v = snap(G.v + d, p.step, p.min, p.max);
+    $('#sv_p').textContent = p.fmt(G.v); G.res = null; $('#tmsg').textContent = G.sim.hint; G.sim.draw(CV(), G, G.v, 0, null);
+  }
+}
+let stepRep = null;
+const stepStop = () => { if (stepRep) { clearTimeout(stepRep); clearInterval(stepRep); stepRep = null; } };
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('[data-step]'); if (!b) return;
+  e.preventDefault(); stepStop();
+  const go = () => applyStep(b.dataset.step, +b.dataset.d); go(); buzz(5);
+  stepRep = setTimeout(() => { stepRep = setInterval(go, 70); }, 380);
 });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.addEventListener(t, stepStop));
+document.addEventListener('keydown', e => { const b = e.target.closest && e.target.closest('[data-step]'); if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); applyStep(b.dataset.step, +b.dataset.d); } });
 /* ---------- Мини-игры: у каждой лекции свои ---------- */
 // Игры лекции: симуляция по её теме + «Найди пару» + «Верю — не верю» на её материале
 const f1 = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toString().replace('.', ',');
@@ -1350,8 +1414,7 @@ function drawThrow() {
   ui.main.innerHTML = `<p class="note gtop">Цель ${G.round} из ${G.rounds}. Бросков: ${G.shots}. Мишень на расстоянии <b>${f1(G.target)} м</b>.</p>` +
     `<canvas id="cv" class="throw-cv" width="720" height="360" aria-label="Поле броска"></canvas>` +
     `<p class="note tmsg" id="tmsg">${G.last || 'Подбери угол и скорость. Дальность L = v²·sin 2α / g, при 45° она максимальна.'}</p>` +
-    `<label class="range"><span>Угол: <b id="vang">${G.ang}°</b></span><input id="sang" type="range" min="10" max="80" step="1" value="${G.ang}"></label>` +
-    `<label class="range"><span>Скорость: <b id="vv">${f1(G.v)} м/с</b></span><input id="sv" type="range" min="5" max="22" step="0.5" value="${G.v}"></label>`;
+    stepper('ang', 'Угол броска', G.ang + '°', 1, 5) + stepper('v', 'Скорость', f1(G.v) + ' м/с', 0.5, 2);
   paintThrow();
 }
 const calcL = () => G.v * G.v * Math.sin(2 * G.ang * Math.PI / 180) / 9.8;
@@ -1412,7 +1475,7 @@ function drawSim() {
   ui.main.innerHTML = `<p class="note gtop">Задание ${G.round} из ${sim.rounds}. Попыток: ${G.tries}.</p><p class="task"><b>${G.task}</b></p>` +
     `<canvas id="cv" class="throw-cv" width="720" height="360" aria-label="${esc(sim.title)}"></canvas>` +
     `<p class="note tmsg" id="tmsg">${G.res ? G.res.msg : sim.hint}</p>` +
-    `<label class="range"><span>${p.label}: <b id="pval">${p.fmt(G.v)}</b></span><input id="psl" type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${G.v}"></label>`;
+    stepper('p', p.label, p.fmt(G.v), p.step, p.big || +(p.step * 5).toFixed(4));
   sim.draw(CV(), G, G.v, G.res ? 1 : 0, G.res);
 }
 function simGo() {
@@ -1591,9 +1654,9 @@ const SIMS = {
   clock: {
     title: 'Близнецы', lead: 'Подбери скорость корабля, чтобы космонавт постарел ровно на нужное число лет.', rounds: 4, anim: 1600, go: 'Полетели',
     hint: 'На Земле проходит 10 лет, а на корабле τ = t·√(1 − v²/c²) — меньше.',
-    param: { min: 0.1, max: 0.99, step: 0.01, init: 0.5, label: 'Скорость корабля', fmt: v => f1(v, 2) + ' c' },
+    param: { min: 0.1, max: 0.99, step: 0.01, big: 0.05, init: 0.5, label: 'Скорость корабля', fmt: v => f1(v, 2) + ' c' },
     newRound(G) { G.goal = pick([9, 8, 7, 6, 5, 4, 3, 2]); G.task = `Пока на Земле проходит 10 лет, космонавт должен постареть на ${G.goal} ${G.goal < 5 ? 'года' : 'лет'}.`; G.v = 0.5; },
-    check(G, b) { const tau = 10 * Math.sqrt(1 - b * b), ok = Math.abs(tau - G.goal) <= 0.15; return { ok, tau, msg: `τ = 10·√(1 − ${f1(b, 2)}²) = ${f1(tau, 2)} года${ok ? '' : `. Нужно ${G.goal} — ${tau > G.goal ? 'быстрее' : 'медленнее'}.`}` }; },
+    check(G, b) { const tau = 10 * Math.sqrt(1 - b * b), ok = Math.abs(tau - G.goal) <= 0.3; return { ok, tau, msg: `τ = 10·√(1 − ${f1(b, 2)}²) = ${f1(tau, 2)} года${ok ? '' : `. Нужно ${G.goal} — ${tau > G.goal ? 'быстрее' : 'медленнее'}.`}` }; },
     draw(k, G, b, ph, res) {
       if (!k) return; const { c, W, H, col } = k; bgGrid(k);
       const BX = 250; const bar = (y, years, color, name) => { c.fillStyle = col('line'); c.fillRect(BX, y, W - BX - 30, 34); c.fillStyle = color; c.fillRect(BX, y, (W - BX - 30) * years / 10 * Math.min(1, ph || 0), 34); label(c, name, 20, y + 24, col('text'), 16); label(c, `${f1(years * Math.min(1, ph || 0), 1)} лет`, W - 52, y + 24, col('text'), 15, 'right'); };
@@ -1622,17 +1685,11 @@ document.addEventListener('click', e => {
     case 'gameAgain': render(); break;
   }
 });
-document.addEventListener('input', e => {
-  if (!G) return;
-  if (G.kind === 'throw') {
-    if (e.target.id === 'sang') { G.ang = +e.target.value; $('#vang').textContent = G.ang + '°'; }
-    else if (e.target.id === 'sv') { G.v = +e.target.value; $('#vv').textContent = f1(G.v) + ' м/с'; }
-    else return;
-    if (!G.flying) { G.path = []; paintThrow(); }
-  } else if (G.kind === 'sim' && e.target.id === 'psl' && !G.busy) {
-    G.v = +e.target.value; $('#pval').textContent = G.sim.param.fmt(G.v); G.res = null; $('#tmsg').textContent = G.sim.hint; G.sim.draw(CV(), G, G.v, 0, null);
-  }
-});
+
+
+/* Иконки Lucide (lucide.dev), лицензия ISC — линейные значки для списков и кнопок */
+const LUC = {"calendar": "<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\" />", "circle-x": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m15 9-6 6\" /> <path d=\"m9 9 6 6\" />", "timer": "<line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "repeat": "<path d=\"m17 2 4 4-4 4\" /> <path d=\"M3 11v-1a4 4 0 0 1 4-4h14\" /> <path d=\"m7 22-4-4 4-4\" /> <path d=\"M21 13v1a4 4 0 0 1-4 4H3\" />", "book-open": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "headphones": "<path d=\"M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3\" />", "gamepad-2": "<line x1=\"6\" x2=\"10\" y1=\"11\" y2=\"11\" /> <line x1=\"8\" x2=\"8\" y1=\"9\" y2=\"13\" /> <line x1=\"15\" x2=\"15.01\" y1=\"12\" y2=\"12\" /> <line x1=\"18\" x2=\"18.01\" y1=\"10\" y2=\"10\" /> <path d=\"M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z\" />", "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\" />", "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" /> <path d=\"M12 7v5l4 2\" />", "settings": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "archive": "<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\" /> <path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\" /> <path d=\"M10 12h4\" />", "file-text": "<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /> <path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /> <path d=\"M10 9H8\" /> <path d=\"M16 13H8\" /> <path d=\"M16 17H8\" />"};
+const li = (n, col = 'var(--ink)') => `<span class="li" style="--lc:${col}"><svg viewBox="0 0 24 24" aria-hidden="true">${LUC[n] || ''}</svg></span>`;
 
 /* ---------- Новый каркас: Сегодня · Курс · Практика · Справочник ---------- */
 // Картинки интерфейса (миры, фоны карт, обложки, маскот, иконки) вшиты в сборку — работают без интернета
@@ -1670,7 +1727,7 @@ function daysToExam() {
 function examChip() {
   const n = daysToExam();
   const txt = n == null ? 'Укажи дату экзамена' : n > 0 ? `До экзамена: <b>${plural(n, 'день', 'дня', 'дней')}</b>` : n === 0 ? '<b>Экзамен сегодня!</b>' : 'Экзамен прошёл — укажи новую дату';
-  return `<button class="xchip" type="button" data-act="examDate"><span>${txt}</span></button>`;
+  return `<button class="xchip" type="button" data-act="examDate">${li('calendar', '#4A63E8')}<span>${txt}</span></button>`;
 }
 function openSheet(html) { const s = $('#sheet'); s.innerHTML = `<div class="sbox" role="dialog" aria-modal="true">${html}</div>`; s.hidden = false; }
 const closeSheet = () => { const s = $('#sheet'); if (s) { s.hidden = true; s.innerHTML = ''; } };
@@ -1703,7 +1760,8 @@ function nextLesson() {
 }
 const lessonMeta = n => [n.audio ? `слушать ${Math.max(1, Math.round(n.audio.dur / 60))} мин` : '', lectureGames(n).length ? plural(lectureGames(n).length, 'игра', 'игры', 'игр') : '', n.c && n.c.length ? plural(n.c.length, 'вопрос', 'вопроса', 'вопросов') : ''].filter(Boolean).join(' · ');
 const readCount = t => t.learn ? t.learn.notes.filter(n => readSet.has(t.id + '-' + n.id)).length : 0;
-const iconRow = (href, icon, title, sub, act) => `<${act ? `button type="button" data-act="${act}"` : `a href="${href}"`} class="lrow"><span class="lt"><b>${title}</b><small>${sub}</small></span>${ico('chev')}</${act ? 'button' : 'a'}>`;
+const LI_MAP = { i_cross: ['circle-x', '#E5484D'], i_stopwatch: ['timer', '#7B6AF9'], i_refresh: ['repeat', '#E09A00'], i_calendar: ['calendar', '#4A63E8'], i_star: ['star', '#E09A00'], i_history: ['history', '#4A63E8'], i_gear: ['settings', '#11A899'], i_archive: ['archive', '#7B6AF9'] };
+const iconRow = (href, icon, title, sub, act) => `<${act ? `button type="button" data-act="${act}"` : `a href="${href}"`} class="lrow">${LI_MAP[icon] ? li(...LI_MAP[icon]) : ''}<span class="lt"><b>${title}</b><small>${sub}</small></span>${ico('chev')}</${act ? 'button' : 'a'}>`;
 
 /* ---------- Сегодня ---------- */
 function vHome() {
@@ -1730,7 +1788,7 @@ function vHome() {
   const rdText = rd.by === 'tests' ? `Средний балл за последние тесты — прогноз <b>«${rd.mark}»</b>.${nextT ? ` До «${nextT[1]}» — от ${nextT[0]} баллов.` : ' Так держать!'}` : 'Пройди мини-экзамен — появится прогноз оценки.';
   setMain(notice() + installRow() +
     `<div class="hello"><h1>${hi}<br>Сегодня — 15 минут физики</h1>${mascot('hello')}</div>` + examChip() + hero +
-    `<section class="card"><div class="card-h"><b>${st ? 'Серия: ' + plural(st, 'день', 'дня', 'дней') : 'Начни серию сегодня'}</b><small>цель — 7</small></div><div class="week">${wk.join('')}</div></section>` +
+    `<section class="card"><div class="card-h"><b class="row-i">${li('flame', '#F2711C')}${st ? 'Серия: ' + plural(st, 'день', 'дня', 'дней') : 'Начни серию сегодня'}</b><small>цель — 7</small></div><div class="week">${wk.join('')}</div></section>` +
     `<section class="card rd">${ring(rd.pct)}<div><b>Готовность к экзамену</b><p>${rdText}</p></div></section>` +
     `<div class="card list">${iconRow('#err', 'i_cross', 'Повторить ошибки', errN ? plural(errN, 'вопрос ждёт', 'вопроса ждут', 'вопросов ждут') : 'ошибок нет')}` +
     iconRow('', 'i_stopwatch', 'Мини-экзамен', '10 вопросов с вариантами', 'mini') +
@@ -1791,13 +1849,13 @@ function vHub(r) {
   h += node({ href: `#t${t.id}q`, side: L ? 'l' : 'c', img: U('i_book'), title: 'Все вопросы с ответами', sub: progressText(items) });
   h += node({ act: 'testTopic', t: t.id, side: 'c', img: t.id === 1 ? U('c9') : '', col: W_COL[t.id], glyph: cupSvg, title: 'Экзамен по теме', sub: 'тест с оценкой, как на экзамене' }).replace(/<span class="conn"><\/span>$/, '');
   h += '</div>';
-  if (cur) h += `<a class="cur" href="#n${t.id}-${cur.i + 1}"><span class="lt"><b>Текущий урок</b><small>${cur.i + 1}. ${esc(cur.n.title)}</small></span><span class="btn sm">Открыть</span></a>`;
+  if (cur) h += `<a class="cur" href="#n${t.id}-${cur.i + 1}">${li('book-open', W_COL[t.id])}<span class="lt"><b>Текущий урок</b><small>${cur.i + 1}. ${esc(cur.n.title)}</small></span><span class="btn sm">Открыть</span></a>`;
   setMain(h);
 }
 const cupSvg = '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 4h14v7a7 7 0 0 1-14 0z" fill="#fff"/><path d="M8 7H4a4 4 0 0 0 4 6M22 7h4a4 4 0 0 1-4 6M15 18v5M10 26h10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>';
 
 /* ---------- Лекция: Слушать · Читать · Играть · Проверка ---------- */
-const STEPS = [['read', 'Читать'], ['listen', 'Слушать'], ['play', 'Играть'], ['check', 'Проверка']];
+const STEPS = [['read', 'Читать', 'book-open'], ['listen', 'Слушать', 'headphones'], ['play', 'Играть', 'gamepad-2'], ['check', 'Проверка', 'circle-check']];
 const noteStep = {}; // текущий шаг по каждой лекции (до перезапуска)
 function vNote(r) {
   const t = T.find(x => x.id === r.tid), L = t.learn, n = L && L.notes[r.idx - 1];
@@ -1810,7 +1868,7 @@ function vNote(r) {
   frame({ title: `<span class="tq">${esc(n.title)}</span><small>${esc(SHORT[t.id])} · лекция ${r.idx} из ${total}</small>`, back: true,
     abar: nextS ? `<button class="btn wide" type="button" data-act="noteStep" data-v="${nextS[0]}">Дальше: ${nextS[1]}</button>`
       : r.idx < total ? `<a class="btn wide" href="#n${t.id}-${r.idx + 1}">Следующая лекция</a>` : `<a class="btn wide" href="#t${t.id}">К карте темы</a>` });
-  const tabs = `<div class="seg steps">${steps.map((s, i) => `<button type="button" aria-pressed="${i === si}" class="${i < si ? 'done' : ''}" data-act="noteStep" data-v="${s[0]}">${s[1]}</button>`).join('')}</div>`;
+  const tabs = `<div class="seg steps">${steps.map((s, i) => `<button type="button" aria-pressed="${i === si}" class="${i < si ? 'done' : ''}" data-act="noteStep" data-v="${s[0]}"><svg class="si" viewBox="0 0 24 24" aria-hidden="true">${LUC[s[2]]}</svg>${s[1]}</button>`).join('')}</div>`;
   let body = '';
   if (st === 'listen') body = player(t, n, r.idx);
   else if (st === 'read') body = `<article class="conspect"><p class="lead">${esc(n.lead)}</p>${noteBody(n)}</article>` +
@@ -1840,7 +1898,7 @@ function player(t, n, idx) {
   const pos = LS.get('fz-apos', {})[n.audio.file] || 0, rate = LS.get('fz-arate', 1);
   return `<section class="player big" data-file="${n.audio.file}" data-dur="${n.audio.dur}" data-title="${esc(n.title)}" data-href="#n${t.id}-${idx}" data-cover="${t.id}-${idx}">` +
     `<span class="cover" style="background-image:url(${coverOf(t, idx)})"></span><b class="pt">${esc(n.title)}</b><small class="ps">${esc(SHORT[t.id])} · лекция ${idx}</small>` +
-    `<input id="aseek" type="range" min="0" max="${n.audio.dur}" step="1" value="${pos}" aria-label="Перемотка"><small id="atime">${mmss(Math.round(pos))} / ${mmss(Math.round(n.audio.dur))}</small>` +
+    `<div class="seekbar" role="slider" aria-label="Перемотка: нажми в нужное место" aria-valuemin="0" aria-valuemax="${Math.round(n.audio.dur)}" aria-valuenow="${Math.round(pos)}"><i style="width:${pos / n.audio.dur * 100}%"></i><b style="left:${pos / n.audio.dur * 100}%"></b></div><small id="atime">${mmss(Math.round(pos))} / ${mmss(Math.round(n.audio.dur))}</small>` +
     `<div class="ctrls"><button class="sm" type="button" data-act="audBack" aria-label="Назад на 15 секунд">−15</button><button class="pp" type="button" data-act="audPlay" aria-label="Слушать лекцию"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path class="pi" d="${AUD.el && AUD.file === n.audio.file && !AUD.el.paused ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M8 5l11 7-11 7z'}"/></svg></button><button class="rate-btn" type="button" data-act="audRate" aria-label="Скорость">${f1(rate, 2)}×</button></div></section>`;
 }
 function gamesBlock(t, n, idx) {
@@ -1925,7 +1983,7 @@ function vRef() {
   if (refSeg === 'f') body = formulaList(ws);
   else if (refSeg === 'n') {
     const L = []; T.forEach(t => (t.learn ? t.learn.notes : []).forEach((n, i) => { if (!ws.length || ws.every(w => norm(n.title + ' ' + n.lead).includes(w))) L.push({ t, n, i }); }));
-    body = L.length ? `<div class="card list">${L.map(x => `<a class="lrow" href="#n${x.t.id}-${x.i + 1}"><span class="lt"><b>${esc(x.n.title)}</b><small>${esc(SHORT[x.t.id])} · ${esc(x.n.lead)}</small></span>${ico('chev')}</a>`).join('')}</div>`
+    body = L.length ? `<div class="card list">${L.map(x => `<a class="lrow" href="#n${x.t.id}-${x.i + 1}">${li('file-text', W_COL[x.t.id])}<span class="lt"><b>${esc(x.n.title)}</b><small>${esc(SHORT[x.t.id])} · ${esc(x.n.lead)}</small></span>${ico('chev')}</a>`).join('')}</div>`
       : `<div class="empty">${mascot('think', 'mascot big')}<p>Ничего не нашлось.</p></div>`;
   } else if (!raw) {
     body = `<div class="card list">${T.map(t => `<a class="lrow" href="#t${t.id}q"><span class="num" style="--wc:${W_COL[t.id]}">${t.id}</span><span class="lt"><b>${esc(t.title)}</b><small>${progressText(topicItems(t.id))}</small></span>${ico('chev')}</a>`).join('')}</div>`;
@@ -1951,7 +2009,7 @@ function vMe() {
     `<section class="panel"><h2>Баллы за последние тесты</h2>${chart(hist.slice(-12))}</section>` +
     `<div class="card list">${iconRow('', 'i_calendar', 'Дата экзамена', edTxt, 'examDate')}${iconRow('#due', 'i_refresh', 'На повторение сегодня', nQ(due))}${iconRow('#err', 'i_cross', 'Мои ошибки', nQ(errN))}${iconRow('#fav', 'i_star', 'Избранное', nQ(fav.size))}${iconRow('#hist', 'i_history', 'История тестов', plural(hist.length, 'тест', 'теста', 'тестов'))}</div>` +
     `<section class="panel"><h2>По темам</h2>${T.map(t => { const it = topicItems(t.id), x = tstat(it); return `<a class="tline" href="#t${t.id}"><span>${t.id}. ${esc(t.title)}</span><small>${x.s}/${it.length}${x.e ? `, ошибок ${x.e}` : ''}</small>${ruler(x.s - x.e, x.e, it.length)}</a>`; }).join('')}</section>` +
-    `<div class="card list">${iconRow('#backup', 'i_history', 'Резервная копия прогресса', 'сохранить или восстановить')}${iconRow('#settings', 'i_gear', 'Настройки и обновления', 'тема оформления, версия')}</div>`);
+    `<div class="card list">${iconRow('#backup', 'i_archive', 'Резервная копия прогресса', 'сохранить или восстановить')}${iconRow('#settings', 'i_gear', 'Настройки и обновления', 'тема оформления, версия')}</div>`);
 }
 
 /* ---------- маскот в результатах и пустых списках ---------- */

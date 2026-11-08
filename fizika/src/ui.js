@@ -34,7 +34,7 @@ function daysToExam() {
 function examChip() {
   const n = daysToExam();
   const txt = n == null ? 'Укажи дату экзамена' : n > 0 ? `До экзамена: <b>${plural(n, 'день', 'дня', 'дней')}</b>` : n === 0 ? '<b>Экзамен сегодня!</b>' : 'Экзамен прошёл — укажи новую дату';
-  return `<button class="xchip" type="button" data-act="examDate"><span>${txt}</span></button>`;
+  return `<button class="xchip" type="button" data-act="examDate">${li('calendar', '#4A63E8')}<span>${txt}</span></button>`;
 }
 function openSheet(html) { const s = $('#sheet'); s.innerHTML = `<div class="sbox" role="dialog" aria-modal="true">${html}</div>`; s.hidden = false; }
 const closeSheet = () => { const s = $('#sheet'); if (s) { s.hidden = true; s.innerHTML = ''; } };
@@ -67,7 +67,8 @@ function nextLesson() {
 }
 const lessonMeta = n => [n.audio ? `слушать ${Math.max(1, Math.round(n.audio.dur / 60))} мин` : '', lectureGames(n).length ? plural(lectureGames(n).length, 'игра', 'игры', 'игр') : '', n.c && n.c.length ? plural(n.c.length, 'вопрос', 'вопроса', 'вопросов') : ''].filter(Boolean).join(' · ');
 const readCount = t => t.learn ? t.learn.notes.filter(n => readSet.has(t.id + '-' + n.id)).length : 0;
-const iconRow = (href, icon, title, sub, act) => `<${act ? `button type="button" data-act="${act}"` : `a href="${href}"`} class="lrow"><span class="lt"><b>${title}</b><small>${sub}</small></span>${ico('chev')}</${act ? 'button' : 'a'}>`;
+const LI_MAP = { i_cross: ['circle-x', '#E5484D'], i_stopwatch: ['timer', '#7B6AF9'], i_refresh: ['repeat', '#E09A00'], i_calendar: ['calendar', '#4A63E8'], i_star: ['star', '#E09A00'], i_history: ['history', '#4A63E8'], i_gear: ['settings', '#11A899'], i_archive: ['archive', '#7B6AF9'] };
+const iconRow = (href, icon, title, sub, act) => `<${act ? `button type="button" data-act="${act}"` : `a href="${href}"`} class="lrow">${LI_MAP[icon] ? li(...LI_MAP[icon]) : ''}<span class="lt"><b>${title}</b><small>${sub}</small></span>${ico('chev')}</${act ? 'button' : 'a'}>`;
 
 /* ---------- Сегодня ---------- */
 function vHome() {
@@ -94,7 +95,7 @@ function vHome() {
   const rdText = rd.by === 'tests' ? `Средний балл за последние тесты — прогноз <b>«${rd.mark}»</b>.${nextT ? ` До «${nextT[1]}» — от ${nextT[0]} баллов.` : ' Так держать!'}` : 'Пройди мини-экзамен — появится прогноз оценки.';
   setMain(notice() + installRow() +
     `<div class="hello"><h1>${hi}<br>Сегодня — 15 минут физики</h1>${mascot('hello')}</div>` + examChip() + hero +
-    `<section class="card"><div class="card-h"><b>${st ? 'Серия: ' + plural(st, 'день', 'дня', 'дней') : 'Начни серию сегодня'}</b><small>цель — 7</small></div><div class="week">${wk.join('')}</div></section>` +
+    `<section class="card"><div class="card-h"><b class="row-i">${li('flame', '#F2711C')}${st ? 'Серия: ' + plural(st, 'день', 'дня', 'дней') : 'Начни серию сегодня'}</b><small>цель — 7</small></div><div class="week">${wk.join('')}</div></section>` +
     `<section class="card rd">${ring(rd.pct)}<div><b>Готовность к экзамену</b><p>${rdText}</p></div></section>` +
     `<div class="card list">${iconRow('#err', 'i_cross', 'Повторить ошибки', errN ? plural(errN, 'вопрос ждёт', 'вопроса ждут', 'вопросов ждут') : 'ошибок нет')}` +
     iconRow('', 'i_stopwatch', 'Мини-экзамен', '10 вопросов с вариантами', 'mini') +
@@ -155,13 +156,13 @@ function vHub(r) {
   h += node({ href: `#t${t.id}q`, side: L ? 'l' : 'c', img: U('i_book'), title: 'Все вопросы с ответами', sub: progressText(items) });
   h += node({ act: 'testTopic', t: t.id, side: 'c', img: t.id === 1 ? U('c9') : '', col: W_COL[t.id], glyph: cupSvg, title: 'Экзамен по теме', sub: 'тест с оценкой, как на экзамене' }).replace(/<span class="conn"><\/span>$/, '');
   h += '</div>';
-  if (cur) h += `<a class="cur" href="#n${t.id}-${cur.i + 1}"><span class="lt"><b>Текущий урок</b><small>${cur.i + 1}. ${esc(cur.n.title)}</small></span><span class="btn sm">Открыть</span></a>`;
+  if (cur) h += `<a class="cur" href="#n${t.id}-${cur.i + 1}">${li('book-open', W_COL[t.id])}<span class="lt"><b>Текущий урок</b><small>${cur.i + 1}. ${esc(cur.n.title)}</small></span><span class="btn sm">Открыть</span></a>`;
   setMain(h);
 }
 const cupSvg = '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 4h14v7a7 7 0 0 1-14 0z" fill="#fff"/><path d="M8 7H4a4 4 0 0 0 4 6M22 7h4a4 4 0 0 1-4 6M15 18v5M10 26h10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>';
 
 /* ---------- Лекция: Слушать · Читать · Играть · Проверка ---------- */
-const STEPS = [['read', 'Читать'], ['listen', 'Слушать'], ['play', 'Играть'], ['check', 'Проверка']];
+const STEPS = [['read', 'Читать', 'book-open'], ['listen', 'Слушать', 'headphones'], ['play', 'Играть', 'gamepad-2'], ['check', 'Проверка', 'circle-check']];
 const noteStep = {}; // текущий шаг по каждой лекции (до перезапуска)
 function vNote(r) {
   const t = T.find(x => x.id === r.tid), L = t.learn, n = L && L.notes[r.idx - 1];
@@ -174,7 +175,7 @@ function vNote(r) {
   frame({ title: `<span class="tq">${esc(n.title)}</span><small>${esc(SHORT[t.id])} · лекция ${r.idx} из ${total}</small>`, back: true,
     abar: nextS ? `<button class="btn wide" type="button" data-act="noteStep" data-v="${nextS[0]}">Дальше: ${nextS[1]}</button>`
       : r.idx < total ? `<a class="btn wide" href="#n${t.id}-${r.idx + 1}">Следующая лекция</a>` : `<a class="btn wide" href="#t${t.id}">К карте темы</a>` });
-  const tabs = `<div class="seg steps">${steps.map((s, i) => `<button type="button" aria-pressed="${i === si}" class="${i < si ? 'done' : ''}" data-act="noteStep" data-v="${s[0]}">${s[1]}</button>`).join('')}</div>`;
+  const tabs = `<div class="seg steps">${steps.map((s, i) => `<button type="button" aria-pressed="${i === si}" class="${i < si ? 'done' : ''}" data-act="noteStep" data-v="${s[0]}"><svg class="si" viewBox="0 0 24 24" aria-hidden="true">${LUC[s[2]]}</svg>${s[1]}</button>`).join('')}</div>`;
   let body = '';
   if (st === 'listen') body = player(t, n, r.idx);
   else if (st === 'read') body = `<article class="conspect"><p class="lead">${esc(n.lead)}</p>${noteBody(n)}</article>` +
@@ -204,7 +205,7 @@ function player(t, n, idx) {
   const pos = LS.get('fz-apos', {})[n.audio.file] || 0, rate = LS.get('fz-arate', 1);
   return `<section class="player big" data-file="${n.audio.file}" data-dur="${n.audio.dur}" data-title="${esc(n.title)}" data-href="#n${t.id}-${idx}" data-cover="${t.id}-${idx}">` +
     `<span class="cover" style="background-image:url(${coverOf(t, idx)})"></span><b class="pt">${esc(n.title)}</b><small class="ps">${esc(SHORT[t.id])} · лекция ${idx}</small>` +
-    `<input id="aseek" type="range" min="0" max="${n.audio.dur}" step="1" value="${pos}" aria-label="Перемотка"><small id="atime">${mmss(Math.round(pos))} / ${mmss(Math.round(n.audio.dur))}</small>` +
+    `<div class="seekbar" role="slider" aria-label="Перемотка: нажми в нужное место" aria-valuemin="0" aria-valuemax="${Math.round(n.audio.dur)}" aria-valuenow="${Math.round(pos)}"><i style="width:${pos / n.audio.dur * 100}%"></i><b style="left:${pos / n.audio.dur * 100}%"></b></div><small id="atime">${mmss(Math.round(pos))} / ${mmss(Math.round(n.audio.dur))}</small>` +
     `<div class="ctrls"><button class="sm" type="button" data-act="audBack" aria-label="Назад на 15 секунд">−15</button><button class="pp" type="button" data-act="audPlay" aria-label="Слушать лекцию"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path class="pi" d="${AUD.el && AUD.file === n.audio.file && !AUD.el.paused ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M8 5l11 7-11 7z'}"/></svg></button><button class="rate-btn" type="button" data-act="audRate" aria-label="Скорость">${f1(rate, 2)}×</button></div></section>`;
 }
 function gamesBlock(t, n, idx) {
@@ -289,7 +290,7 @@ function vRef() {
   if (refSeg === 'f') body = formulaList(ws);
   else if (refSeg === 'n') {
     const L = []; T.forEach(t => (t.learn ? t.learn.notes : []).forEach((n, i) => { if (!ws.length || ws.every(w => norm(n.title + ' ' + n.lead).includes(w))) L.push({ t, n, i }); }));
-    body = L.length ? `<div class="card list">${L.map(x => `<a class="lrow" href="#n${x.t.id}-${x.i + 1}"><span class="lt"><b>${esc(x.n.title)}</b><small>${esc(SHORT[x.t.id])} · ${esc(x.n.lead)}</small></span>${ico('chev')}</a>`).join('')}</div>`
+    body = L.length ? `<div class="card list">${L.map(x => `<a class="lrow" href="#n${x.t.id}-${x.i + 1}">${li('file-text', W_COL[x.t.id])}<span class="lt"><b>${esc(x.n.title)}</b><small>${esc(SHORT[x.t.id])} · ${esc(x.n.lead)}</small></span>${ico('chev')}</a>`).join('')}</div>`
       : `<div class="empty">${mascot('think', 'mascot big')}<p>Ничего не нашлось.</p></div>`;
   } else if (!raw) {
     body = `<div class="card list">${T.map(t => `<a class="lrow" href="#t${t.id}q"><span class="num" style="--wc:${W_COL[t.id]}">${t.id}</span><span class="lt"><b>${esc(t.title)}</b><small>${progressText(topicItems(t.id))}</small></span>${ico('chev')}</a>`).join('')}</div>`;
@@ -315,7 +316,7 @@ function vMe() {
     `<section class="panel"><h2>Баллы за последние тесты</h2>${chart(hist.slice(-12))}</section>` +
     `<div class="card list">${iconRow('', 'i_calendar', 'Дата экзамена', edTxt, 'examDate')}${iconRow('#due', 'i_refresh', 'На повторение сегодня', nQ(due))}${iconRow('#err', 'i_cross', 'Мои ошибки', nQ(errN))}${iconRow('#fav', 'i_star', 'Избранное', nQ(fav.size))}${iconRow('#hist', 'i_history', 'История тестов', plural(hist.length, 'тест', 'теста', 'тестов'))}</div>` +
     `<section class="panel"><h2>По темам</h2>${T.map(t => { const it = topicItems(t.id), x = tstat(it); return `<a class="tline" href="#t${t.id}"><span>${t.id}. ${esc(t.title)}</span><small>${x.s}/${it.length}${x.e ? `, ошибок ${x.e}` : ''}</small>${ruler(x.s - x.e, x.e, it.length)}</a>`; }).join('')}</section>` +
-    `<div class="card list">${iconRow('#backup', 'i_history', 'Резервная копия прогресса', 'сохранить или восстановить')}${iconRow('#settings', 'i_gear', 'Настройки и обновления', 'тема оформления, версия')}</div>`);
+    `<div class="card list">${iconRow('#backup', 'i_archive', 'Резервная копия прогресса', 'сохранить или восстановить')}${iconRow('#settings', 'i_gear', 'Настройки и обновления', 'тема оформления, версия')}</div>`);
 }
 
 /* ---------- маскот в результатах и пустых списках ---------- */
