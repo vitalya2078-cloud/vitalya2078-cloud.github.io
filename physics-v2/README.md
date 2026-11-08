@@ -66,3 +66,15 @@ Function source: supabase/functions/physics-api/
 - Keep the physics schema private.
 - Keep deny-all policies until a real authorization model is implemented.
 - Add user-specific endpoints only after Auth and owner-scoped RLS policies are tested.
+
+
+## Local-first storage slice
+
+The browser/PWA storage layer is implemented with Dexie over IndexedDB.
+
+- Existing profile, progress, attempt, favorite, error and sync-queue stores are preserved.
+- Database schema v2 adds published catalog and lesson caches, local settings and sync metadata.
+- Catalog and lesson requests use network-first behavior with an IndexedDB fallback.
+- The service worker caches the application shell and same-origin build assets for offline reopening.
+- Local attempts are append-only; a local write and its pending sync operation are committed in one IndexedDB transaction.
+- Sync queue entries are not uploaded yet. Authentication and owner-scoped cloud writes remain disabled until the separate security stage.
