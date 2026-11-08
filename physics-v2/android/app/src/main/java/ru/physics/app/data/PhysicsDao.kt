@@ -39,5 +39,11 @@ interface PhysicsDao {
     fun observeFavorites(): Flow<List<FavoriteEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveCatalogCache(cache: CatalogCacheEntity)
+
+    @Query("SELECT * FROM catalog_cache WHERE id = 1 LIMIT 1")
+    suspend fun getCatalogCache(): CatalogCacheEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveMistake(mistake: MistakeEntity)
 }
