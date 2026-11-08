@@ -31,6 +31,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -60,6 +61,8 @@ import ru.physics.app.data.CatalogSummary
 import ru.physics.app.data.PhysicsDatabase
 import ru.physics.app.data.PhysicsDao
 import ru.physics.app.data.ProfileEntity
+import ru.physics.app.data.MistakeEntity
+import ru.physics.app.data.OfficialQuestion
 import ru.physics.app.data.OfficialQuestionBankRepository
 import ru.physics.app.ui.QuestionIllustrationRepository
 import ru.physics.app.ui.TestingScreen
@@ -135,6 +138,7 @@ private fun NativeHome(
     val progressCount by dao.observeProgressCount().collectAsStateWithLifecycle(initialValue = 0)
     val attemptCount by dao.observeAttemptCount().collectAsStateWithLifecycle(initialValue = 0)
     val mistakeCount by dao.observeOpenMistakeCount().collectAsStateWithLifecycle(initialValue = 0)
+    val openMistakes by dao.observeOpenMistakes().collectAsStateWithLifecycle(initialValue = emptyList())
     val pendingSyncCount by dao.observePendingSyncCount().collectAsStateWithLifecycle(initialValue = 0)
 
     androidx.compose.material3.Scaffold(
@@ -171,7 +175,15 @@ private fun NativeHome(
                 AppSection.LEARNING -> LearningScreen(dao)
                 AppSection.TESTING -> TestingScreen(questionBankRepository, activityRepository, illustrationRepository)
                 AppSection.LAB -> LaboratoryScreen()
-                AppSection.PROGRESS -> ProgressScreen(progressCount, attemptCount, mistakeCount, pendingSyncCount)
+                AppSection.PROGRESS -> ProgressScreen(
+                    progressCount,
+                    attemptCount,
+                    mistakeCount,
+                    pendingSyncCount,
+                    openMistakes,
+                    questionBankRepository,
+                    activityRepository,
+                )
                 AppSection.PROFILE -> ProfileScreen(profile)
             }
         }
@@ -311,15 +323,139 @@ private fun LaboratoryScreen() {
 }
 
 @Composable
-private fun ProgressScreen(progressCount: Int, attemptCount: Int, mistakeCount: Int, pendingSyncCount: Int) {
-    ScreenTitle("Мой прогресс", "Статистика хранится на устройстве и не пропадёт при отсутствии интернета.")
+private fun ProgressScreen(
+    progressCount: Int,
+    attemptCount: Int,
+    mistakeCount: Int,
+    pendingSyncCount: Int,
+    openMistakes: List<MistakeEntity>,
+    questionBankRepository: OfficialQuestionBankRepository,
+    activityRepository: LocalActivityRepository,
+) {
+    var questionsById by remember { mutableStateOf<Map<String, OfficialQuestion>>(emptyMap()) }
+    var bankError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(questionBankRepository) {
+        runCatching { questionBankRepository.load() }
+            .onSuccess { questionsById = it.questions.associateBy(OfficialQuestion::id) }
+            .onFailure { bankError = it.message ?: "Не удалось открыть банк вопросов." }
+    }
+
+    ScreenTitle("Мой прогресс", "Статистика, история ошибок и результаты хранятся на устройстве.")
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         MetricCard("Темы", progressCount.toString(), Modifier.weight(1f))
         MetricCard("Попытки", attemptCount.toString(), Modifier.weight(1f))
     }
     MetricCard("Неразобранные ошибки", mistakeCount.toString(), Modifier.fillMaxWidth())
     MetricCard("Ожидают синхронизации", pendingSyncCount.toString(), Modifier.fillMaxWidth())
-    InfoCard("Синхронизация", "Локальное хранилище работает независимо от сети. Облачная синхронизация включится после внедрения авторизации и проверки прав доступа.")
+    InfoCard(
+        "Синхронизация",
+        "Локальное хранилище работает независимо от сети. Облачная синхронизация включится после внедрения авторизации и проверки прав доступа.",
+    )
+
+    Text("Работа над ошибками", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    if (openMistakes.isEmpty()) {
+        InfoCard("Ошибок нет", "Новые ошибки из тестов появятся здесь. После правильного повторения вопрос будет отмечен как исправленный.")
+    } else if (bankError != null) {
+        InfoCard("Банк вопросов недоступен", bankError.orEmpty())
+    } else {
+        openMistakes.forEach { mistake ->
+            val question = questionsById[mistake.questionId]
+            if (question == null) {
+                InfoCard(
+                    "Вопрос ${mistake.questionId.take(8)}",
+                    "Накоплено ошибок: ${mistake.errorCount}. Не удалось сопоставить запись с локальным банком вопросов.",
+                )
+            } else {
+                MistakeReviewCard(mistake, question, activityRepository)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MistakeReviewCard(
+    mistake: MistakeEntity,
+    question: OfficialQuestion,
+    repository: LocalActivityRepository,
+) {
+    val scope = rememberCoroutineScope()
+    val options = remember(question.id) {
+        if (question.wrongOptions.isEmpty()) emptyList()
+        else (listOf(question.correctAnswer) + question.wrongOptions).shuffled()
+    }
+    var revealed by rememberSaveable(question.id) { mutableStateOf(false) }
+    var answered by rememberSaveable(question.id) { mutableStateOf(false) }
+    var feedback by rememberSaveable(question.id) { mutableStateOf<String?>(null) }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                "${question.topicTitle} · ошибок: ${mistake.errorCount}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(question.text, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+
+            if (options.isNotEmpty()) {
+                options.forEach { option ->
+                    OutlinedButton(
+                        enabled = !answered,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            answered = true
+                            if (option == question.correctAnswer) {
+                                feedback = "Верно. Вопрос отмечен как исправленный."
+                                scope.launch { repository.markMistakeCorrected(question.id) }
+                            } else {
+                                feedback = "Пока неверно. Попробуй ещё раз — вопрос останется в списке."
+                                scope.launch { repository.recordMistake(question.id) }
+                            }
+                        },
+                    ) {
+                        Text(option)
+                    }
+                }
+            } else {
+                if (revealed) {
+                    InfoCard("Правильный ответ", question.correctAnswer)
+                    OutlinedButton(
+                        enabled = !answered,
+                        onClick = {
+                            answered = true
+                            feedback = "Отмечено как повторённое."
+                            scope.launch { repository.markMistakeCorrected(question.id) }
+                        },
+                    ) { Text("Я вспомнил ответ") }
+                    OutlinedButton(
+                        enabled = !answered,
+                        onClick = {
+                            answered = true
+                            feedback = "Оставили для следующего повторения."
+                        },
+                    ) { Text("Нужно повторить позже") }
+                } else {
+                    Button(onClick = { revealed = true }) { Text("Показать ответ") }
+                }
+            }
+
+            feedback?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            if (answered && options.isNotEmpty() && feedback?.startsWith("Пока") == true) {
+                OutlinedButton(
+                    onClick = {
+                        answered = false
+                        feedback = null
+                    },
+                ) { Text("Попробовать ещё раз") }
+            }
+            if (question.explanation.isNotBlank() && (revealed || answered)) {
+                InfoCard("Пояснение", question.explanation)
+            }
+        }
+    }
 }
 
 @Composable
