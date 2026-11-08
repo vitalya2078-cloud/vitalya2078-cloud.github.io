@@ -77,6 +77,8 @@ private data class TestSession(
     val finished: Boolean = false,
     val scorePercent: Int? = null,
     val grade: Int? = null,
+    val attemptId: String = UUID.randomUUID().toString(),
+    val saveError: String? = null,
 )
 
 @Composable
@@ -366,6 +368,10 @@ fun TestingScreen(
         }
     }
 
+    currentSession.saveError?.let {
+        InfoCard("Не удалось сохранить результат", it)
+    }
+
     if (answer != null) {
         Button(
             enabled = !currentSession.saving,
@@ -395,42 +401,48 @@ fun TestingScreen(
                             }
                         }
 
-                        session = latest.copy(saving = true)
-                        activityRepository.saveAttempt(
-                            TestAttemptEntity(
-                                id = UUID.randomUUID().toString(),
-                                testId = latest.topicCode ?: "official-900",
-                                mode = latest.mode.databaseValue,
-                                scorePercent = score,
-                                grade = grade,
-                                startedAt = latest.startedAt,
-                                completedAt = completedAt,
-                                answersJson = answerPayload.toString(),
-                            ),
-                        )
-
-                        if (grade != null) {
-                            val progressId = latest.topicCode ?: "official-900"
-                            activityRepository.saveProgress(
-                                LessonProgressEntity(
-                                    contentType = if (latest.topicCode == null) "legacy_bank_set" else "legacy_topic",
-                                    contentId = progressId,
-                                    status = if (grade >= 3) "mastered" else "in_progress",
-                                    completionPercent = score,
-                                    bestScore = score,
-                                    bestGrade = grade,
-                                    latestGrade = grade,
-                                    updatedAt = completedAt,
-                                ),
+                        val progressId = latest.topicCode ?: "official-900"
+                        val progress = if (grade != null) {
+                            LessonProgressEntity(
+                                contentType = if (latest.topicCode == null) "legacy_bank_set" else "legacy_topic",
+                                contentId = progressId,
+                                status = if (grade >= 3) "mastered" else "in_progress",
+                                completionPercent = score,
+                                bestScore = score,
+                                bestGrade = grade,
+                                latestGrade = grade,
+                                updatedAt = completedAt,
                             )
+                        } else {
+                            null
                         }
 
-                        session = latest.copy(
-                            saving = false,
-                            finished = true,
+                        val attempt = TestAttemptEntity(
+                            id = latest.attemptId,
+                            testId = latest.topicCode ?: "official-900",
+                            mode = latest.mode.databaseValue,
                             scorePercent = score,
                             grade = grade,
+                            startedAt = latest.startedAt,
+                            completedAt = completedAt,
+                            answersJson = answerPayload.toString(),
                         )
+
+                        session = latest.copy(saving = true, saveError = null)
+                        try {
+                            activityRepository.saveAssessmentResult(attempt, progress)
+                            session = latest.copy(
+                                saving = false,
+                                finished = true,
+                                scorePercent = score,
+                                grade = grade,
+                            )
+                        } catch (error: Exception) {
+                            session = latest.copy(
+                                saving = false,
+                                saveError = error.message ?: "Не удалось сохранить результат. Попробуй ещё раз.",
+                            )
+                        }
                     }
                 }
             },
