@@ -146,6 +146,26 @@ class LocalActivityRepository(
         }
     }
 
+    suspend fun markMistakeCorrected(questionId: String) {
+        database.withTransaction {
+            val existing = dao.getMistake(questionId) ?: return@withTransaction
+            val correctedAt = System.currentTimeMillis()
+            dao.markMistakeCorrected(questionId, correctedAt)
+
+            enqueue(
+                entityType = "mistake",
+                entityId = questionId,
+                operation = "update",
+                payload = JSONObject()
+                    .put("questionId", questionId)
+                    .put("errorCount", existing.errorCount)
+                    .put("firstSeenAt", existing.firstSeenAt)
+                    .put("lastSeenAt", existing.lastSeenAt)
+                    .put("correctedAt", correctedAt),
+            )
+        }
+    }
+
     private suspend fun enqueue(
         entityType: String,
         entityId: String,
