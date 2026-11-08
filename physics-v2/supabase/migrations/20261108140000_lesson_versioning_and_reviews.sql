@@ -30,6 +30,13 @@ alter table physics.lesson_blocks
   add column if not exists content_version integer not null default 1
   check (content_version > 0);
 
+-- Existing blocks predate versioning and belong to each lesson's current version.
+update physics.lesson_blocks b
+set content_version = l.content_version
+from physics.lessons l
+where b.lesson_id = l.id
+  and b.content_version <> l.content_version;
+
 alter table physics.lesson_blocks
   drop constraint if exists lesson_blocks_lesson_id_sort_order_key;
 
