@@ -19,3 +19,12 @@ create table if not exists physics.education_level_plans (
 
 alter table physics.education_level_plans enable row level security;
 revoke all on physics.education_level_plans from public, anon, authenticated;
+
+-- Explicit deny-all policy documents the intended private/draft access model.
+drop policy if exists education_level_plans_deny_all on physics.education_level_plans;
+create policy education_level_plans_deny_all
+on physics.education_level_plans
+for all
+to anon, authenticated
+using (false)
+with check (false);
