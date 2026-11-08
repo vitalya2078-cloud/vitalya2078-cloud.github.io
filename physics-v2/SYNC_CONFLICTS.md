@@ -109,3 +109,16 @@ Cloud mapping confirmed against the current private schema:
 - The current favorites table is unique by `(user_id, target_type, target_id)` but has no deletion tombstone, so network delivery remains disabled until that server-side mechanism is added.
 
 Local queue operations now carry canonical target IDs for progress and favorites. Tests assert those identifiers. This does not enable network sync; the authenticated adapter and server-side ownership/validation remain unimplemented.
+
+## Local-to-cloud field mapping
+
+The current schema's allowed values were inspected directly before designing the sync adapter:
+
+- Local attempt status `completed` maps to cloud `test_attempts.status = submitted`; `in_progress` and `abandoned` keep their names.
+- Local attempt mode `diagnostic` maps to cloud `custom`. The other currently shared modes (`training`, `final`, `exam`) retain their names. Attempt answers and the derived grade belong in the cloud `metadata` JSONB because the table has no standalone answers column.
+- Local progress status `mastered` maps to cloud `lesson_progress.status = completed` plus the corresponding `lesson_mastery.is_mastered = true`. The local label must not be sent verbatim because the cloud check constraint accepts only `not_started`, `in_progress`, and `completed`.
+- A lesson's best score/grade belongs in `lesson_mastery`; lesson reading/completion and the stable per-block state belong in `lesson_progress`.
+- Local sync status `synced` maps to the server's durable `applied` result. `failed` is a client retry state, not a server status; server outcomes are `pending`, `applied`, `conflict`, or `rejected`.
+- Local mistake `errorCount` is not a cloud replacement value. Each accepted idempotent miss operation increments cloud `miss_count` atomically.
+
+These translations must be implemented and tested in the sync adapter before any delivery is enabled. Current DB check constraints and unique keys are the source of truth; do not send local enum values directly without translation.
