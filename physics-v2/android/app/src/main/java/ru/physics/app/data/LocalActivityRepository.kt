@@ -11,6 +11,25 @@ class LocalActivityRepository(
 ) {
     private val dao = database.physicsDao()
 
+    suspend fun saveProfile(profile: ProfileEntity) {
+        database.withTransaction {
+            val existing = dao.getProfile()
+            dao.saveProfile(profile)
+            enqueue(
+                entityType = "profile",
+                entityId = profile.id.toString(),
+                operation = if (existing == null) "insert" else "update",
+                payload = JSONObject()
+                    .put("id", profile.id)
+                    .put("nickname", profile.nickname)
+                    .put("birthYear", profile.birthYear)
+                    .put("educationTracks", profile.educationTracks)
+                    .put("gradeLevel", profile.gradeLevel)
+                    .put("updatedAt", profile.updatedAt),
+            )
+        }
+    }
+
     suspend fun saveAttempt(attempt: TestAttemptEntity) {
         database.withTransaction {
             dao.appendAttempt(attempt)
