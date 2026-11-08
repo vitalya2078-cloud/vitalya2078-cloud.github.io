@@ -81,3 +81,35 @@ jobs:
           path: physics-v2/dist/
           if-no-files-found: error
           retention-days: 14
+
+
+  android-native:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+
+      - name: Compile native Android APK
+        run: gradle -p physics-v2/android assembleDebug
+
+      - name: Run native Android unit tests
+        run: gradle -p physics-v2/android testDebugUnitTest
+
+      - name: Upload native Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: physics-android-debug-apk
+          path: physics-v2/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
