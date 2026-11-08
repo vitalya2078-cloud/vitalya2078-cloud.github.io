@@ -1,0 +1,14 @@
+{
+  "id": "/physics-v2/",
+  "name": "PHYSICS — платформа изучения физики",
+  "short_name": "PHYSICS",
+  "description": "Универсальная платформа изучения физики с автономным режимом.",
+  "lang": "ru",
+  "start_url": "/physics-v2/",
+  "scope": "/physics-v2/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101827",
+  "theme_color": "#101827",
+  "categories": ["education"]
+}
