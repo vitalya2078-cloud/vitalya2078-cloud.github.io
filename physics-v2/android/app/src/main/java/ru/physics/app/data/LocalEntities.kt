@@ -3,6 +3,7 @@ package ru.physics.app.data
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Index
 
 @Entity(tableName = "local_profile")
 data class ProfileEntity(
@@ -70,7 +71,7 @@ data class CatalogCacheEntity(
     val cachedAt: Long,
 )
 
-@Entity(tableName = "sync_operations")
+@Entity(tableName = "sync_operations", indices = [Index(value = ["status", "createdAt"])])
 data class SyncOperationEntity(
     @PrimaryKey val id: String,
     val entityType: String,
