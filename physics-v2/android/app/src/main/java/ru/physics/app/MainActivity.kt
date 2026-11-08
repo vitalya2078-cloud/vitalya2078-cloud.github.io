@@ -47,6 +47,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -448,6 +449,26 @@ private fun MetricCard(label: String, value: String, modifier: Modifier = Modifi
 
 @Composable
 private fun PhysicsTheme(content: @Composable () -> Unit) {
-    val colors = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
+    val colors = if (isSystemInDarkTheme()) {
+        darkColorScheme(
+            primary = Color(0xFF8CB7FF),
+            onPrimary = Color(0xFF10233E),
+            secondary = Color(0xFFB5A4FF),
+            tertiary = Color(0xFF65C7BE),
+            background = Color(0xFF0E1726),
+            surface = Color(0xFF172337),
+            surfaceVariant = Color(0xFF1D2B40),
+        )
+    } else {
+        lightColorScheme(
+            primary = Color(0xFF3978E8),
+            onPrimary = Color.White,
+            secondary = Color(0xFF735FE5),
+            tertiary = Color(0xFF259A9A),
+            background = Color(0xFFF3F6FB),
+            surface = Color.White,
+            surfaceVariant = Color(0xFFEAF0F8),
+        )
+    }
     MaterialTheme(colorScheme = colors, content = content)
 }
