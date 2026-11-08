@@ -443,10 +443,15 @@ private fun MistakeReviewCard(
             }
 
             feedback?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            if (answered && options.isNotEmpty() && feedback?.startsWith("Пока") == true) {
+            if (
+                answered &&
+                ((options.isNotEmpty() && feedback?.startsWith("Пока") == true) ||
+                    (options.isEmpty() && feedback?.startsWith("Оставили") == true))
+            ) {
                 OutlinedButton(
                     onClick = {
                         answered = false
+                        revealed = false
                         feedback = null
                     },
                 ) { Text("Попробовать ещё раз") }
