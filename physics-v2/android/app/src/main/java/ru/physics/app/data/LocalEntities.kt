@@ -12,6 +12,7 @@ data class ProfileEntity(
     val birthYear: Int?,
     @ColumnInfo(defaultValue = "''") val educationTracks: String,
     val gradeLevel: String?,
+    @ColumnInfo(defaultValue = "'{}'") val educationTrackLevels: String,
     val updatedAt: Long,
 )
 
