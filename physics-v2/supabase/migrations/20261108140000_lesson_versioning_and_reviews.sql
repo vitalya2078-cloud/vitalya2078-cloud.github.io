@@ -354,7 +354,7 @@ create or replace function physics.guard_published_lesson_content()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $$
 begin
   if tg_op = 'UPDATE' then
     if exists (
@@ -395,7 +395,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists lesson_blocks_guard_published on physics.lesson_blocks;
 create trigger lesson_blocks_guard_published
