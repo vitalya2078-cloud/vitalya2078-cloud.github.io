@@ -94,8 +94,7 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      name: physics-preview
     steps:
       - name: Checkout existing public site from main
         uses: actions/checkout@v4
