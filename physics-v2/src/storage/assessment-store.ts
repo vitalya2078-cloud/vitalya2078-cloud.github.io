@@ -100,6 +100,7 @@ export async function saveFinalAssessment(
         bestScore: mastery.bestScore,
         bestGrade: mastery.bestGrade,
         latestGrade: result.grade,
+        lastAttemptAt: now,
         updatedAt: now,
       };
 
