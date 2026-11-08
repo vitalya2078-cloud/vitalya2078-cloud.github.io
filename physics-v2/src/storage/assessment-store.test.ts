@@ -48,6 +48,7 @@ describe('saveFinalAssessment', () => {
     expect(saved.progress.status).toBe('mastered');
     expect(saved.progress.bestGrade).toBe(4);
     expect(saved.progress.bestScore).toBe(82);
+    expect(saved.progress.lastAttemptAt).toBe('2026-11-08T10:10:00.000Z');
     expect(saved.updatedErrors).toBe(2);
     expect((await localDb.errors.get('q-1'))?.errorCount).toBe(1);
     expect(await localDb.syncQueue.count()).toBe(4);
