@@ -78,3 +78,36 @@ The browser/PWA storage layer is implemented with Dexie over IndexedDB.
 - The service worker caches the application shell and same-origin build assets for offline reopening.
 - Local attempts are append-only; a local write and its pending sync operation are committed in one IndexedDB transaction.
 - Sync queue entries are not uploaded yet. Authentication and owner-scoped cloud writes remain disabled until the separate security stage.
+
+
+## First application slice
+
+The first interactive application shell is now implemented in `src/App.tsx`:
+
+- Responsive six-screen navigation: Home, Learning, Testing, Laboratory, Progress, Profile.
+- First-run onboarding with nickname and multiple education-track selection.
+- Local profile and education settings persisted in IndexedDB.
+- System/light/dark theme selection.
+- Network-aware status and offline-first catalog loading.
+- Published catalog navigation with expandable program/version/level/section/topic hierarchy.
+- Free-fall laboratory model with adjustable height and a tested physics calculation.
+- Progress dashboard backed by local IndexedDB counts.
+
+The 900-question official bank is not yet served to the client. The Testing screen deliberately does not fabricate sample questions: training and assessment launch will be enabled after a dedicated, authenticated/authorized question-delivery and attempt-storage flow is implemented. The curriculum catalog may remain empty while content is under review; draft content is not exposed.
+
+### Current implementation boundary
+
+Working now: application shell, local onboarding/profile, theme settings, offline catalog cache, free-fall model, local progress summary.
+
+Not yet enabled: real question delivery, answer submission, lesson authoring/review UI, account authentication, cross-device sync, teacher dashboard, native Android package, Windows executable.
+
+### Build and validation
+
+Run locally in a Node.js environment:
+
+- `npm install`
+- `npm run build`
+- `npm run test`
+- `npm run smoke:pwa`
+
+GitHub Actions runs the same checks on `physics-hybrid-redesign`.
