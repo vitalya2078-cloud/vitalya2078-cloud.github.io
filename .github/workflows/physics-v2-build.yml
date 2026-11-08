@@ -94,7 +94,7 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: physics-preview
+      name: github-pages
     steps:
       - name: Checkout existing public site from main
         uses: actions/checkout@v4
