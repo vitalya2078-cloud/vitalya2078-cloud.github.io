@@ -51,6 +51,59 @@ class LocalActivityRepository(
         }
     }
 
+    suspend fun saveAssessmentResult(
+        attempt: TestAttemptEntity,
+        progress: LessonProgressEntity?,
+    ) {
+        database.withTransaction {
+            dao.appendAttempt(attempt)
+            enqueue(
+                entityType = "attempt",
+                entityId = attempt.id,
+                operation = "insert",
+                payload = JSONObject()
+                    .put("id", attempt.id)
+                    .put("testId", attempt.testId)
+                    .put("mode", attempt.mode)
+                    .put("scorePercent", attempt.scorePercent)
+                    .put("grade", attempt.grade)
+                    .put("startedAt", attempt.startedAt)
+                    .put("completedAt", attempt.completedAt)
+                    .put("answersJson", attempt.answersJson),
+            )
+
+            if (progress != null) {
+                val existing = dao.getProgress(progress.contentType, progress.contentId)
+                val merged = mergeProgress(
+                    existing = existing?.toSnapshot(),
+                    incoming = progress.toSnapshot(),
+                )
+                val normalized = progress.copy(
+                    status = merged.status,
+                    completionPercent = merged.completionPercent,
+                    bestScore = merged.bestScore,
+                    bestGrade = merged.bestGrade,
+                    latestGrade = merged.latestGrade,
+                )
+                dao.saveProgress(normalized)
+                enqueue(
+                    entityType = "progress",
+                    entityId = "${normalized.contentType}:${normalized.contentId}",
+                    operation = if (existing == null) "insert" else "update",
+                    payload = JSONObject()
+                        .put("contentType", normalized.contentType)
+                        .put("contentId", normalized.contentId)
+                        .put("status", normalized.status)
+                        .put("completionPercent", normalized.completionPercent)
+                        .put("bestScore", normalized.bestScore)
+                        .put("bestGrade", normalized.bestGrade)
+                        .put("latestGrade", normalized.latestGrade)
+                        .put("updatedAt", normalized.updatedAt),
+                )
+            }
+        }
+    }
+
     suspend fun saveProgress(incoming: LessonProgressEntity) {
         database.withTransaction {
             val existing = dao.getProgress(incoming.contentType, incoming.contentId)
