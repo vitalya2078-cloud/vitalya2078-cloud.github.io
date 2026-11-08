@@ -45,3 +45,27 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.room:room-testing:2.7.1'
 }
+
+
+// Bundle the legacy question illustrations into the native APK so first-use
+// offline testing does not depend on a network download.
+def repositoryRoot = rootProject.projectDir.parentFile.parentFile
+def questionIllustrationsSource = new File(repositoryRoot, 'fizika/pics')
+def generatedQuestionAssets = layout.buildDirectory.dir('generated/questionIllustrations')
+
+tasks.register('bundleQuestionIllustrations', Zip) {
+    from(questionIllustrationsSource)
+    include('*.png')
+    archiveFileName = 'question-illustrations.zip'
+    destinationDirectory = generatedQuestionAssets
+    doFirst {
+        if (!questionIllustrationsSource.isDirectory()) {
+            throw new GradleException("Question illustration source directory is missing: ${questionIllustrationsSource}")
+        }
+    }
+}
+
+android.sourceSets.main.assets.srcDir(generatedQuestionAssets)
+tasks.named('preBuild').configure {
+    dependsOn tasks.named('bundleQuestionIllustrations')
+}
