@@ -147,7 +147,7 @@ create or replace function physics.create_initial_lesson_version()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
+as $func$
 begin
   insert into physics.lesson_versions (
     lesson_id, version, title, summary, estimated_minutes, status, created_at
@@ -158,7 +158,7 @@ begin
   );
   return new;
 end;
-$$;
+$func$;
 
 drop trigger if exists lessons_create_initial_version on physics.lessons;
 create trigger lessons_create_initial_version
@@ -169,7 +169,7 @@ create or replace function physics.guard_lesson_version_pointer()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
+as $func$
 declare
   current_outcomes jsonb;
   approved_review_count integer;
@@ -282,7 +282,7 @@ begin
 
   return new;
 end;
-$$;
+$func$;
 
 drop trigger if exists lessons_guard_version_pointer on physics.lessons;
 create trigger lessons_guard_version_pointer
@@ -293,7 +293,7 @@ create or replace function physics.sync_lesson_version_status()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
+as $func$
 begin
   update physics.lesson_versions
   set status = new.status,
@@ -304,7 +304,7 @@ begin
   where lesson_id = new.id and version = new.content_version;
   return new;
 end;
-$$;
+$func$;
 
 drop trigger if exists lessons_sync_version_status on physics.lessons;
 create trigger lessons_sync_version_status
@@ -315,7 +315,7 @@ create or replace function physics.guard_lesson_version_row()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
+as $func$
 declare
   parent_status text;
 begin
@@ -359,7 +359,7 @@ begin
 
   return new;
 end;
-$$;
+$func$;
 
 drop trigger if exists lesson_versions_guard_mutation on physics.lesson_versions;
 create trigger lesson_versions_guard_mutation
@@ -370,7 +370,7 @@ create or replace function physics.guard_published_lesson_content()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
+as $func$
 begin
   if tg_op = 'UPDATE' then
     if exists (
@@ -411,7 +411,7 @@ begin
   end if;
   return new;
 end;
-$$;
+$func$;
 
 drop trigger if exists lesson_blocks_guard_published on physics.lesson_blocks;
 create trigger lesson_blocks_guard_published
@@ -432,7 +432,7 @@ create or replace function physics.prevent_published_lesson_delete()
 returns trigger
 language plpgsql
 set search_path = ''
-as $$
+as $func$
 begin
   if exists (
     select 1 from physics.lesson_versions
@@ -442,7 +442,7 @@ begin
   end if;
   return old;
 end;
-$$;
+$func$;
 
 drop trigger if exists lessons_prevent_published_delete on physics.lessons;
 create trigger lessons_prevent_published_delete
