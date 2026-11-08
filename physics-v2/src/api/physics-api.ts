@@ -150,3 +150,64 @@ export function getLesson(
     signal,
   );
 }
+
+
+import {
+  cachePublishedCatalog,
+  cachePublishedLesson,
+  readCachedCatalog,
+  readCachedLesson,
+} from '../storage/db';
+
+export interface OfflineApiResult<T> {
+  data: T;
+  source: 'network' | 'cache';
+  cachedAt?: string;
+}
+
+export async function getCatalogOfflineFirst(
+  signal?: AbortSignal,
+): Promise<OfflineApiResult<CatalogProgram[]>> {
+  try {
+    const response = await getCatalog(signal);
+    await cachePublishedCatalog(response.data);
+    return { data: response.data, source: 'network' };
+  } catch (networkError) {
+    if (signal?.aborted) throw networkError;
+
+    const cached = await readCachedCatalog();
+    if (cached) {
+      return {
+        data: cached.payload as CatalogProgram[],
+        source: 'cache',
+        cachedAt: cached.cachedAt,
+      };
+    }
+
+    throw networkError;
+  }
+}
+
+export async function getLessonOfflineFirst(
+  lessonId: string,
+  signal?: AbortSignal,
+): Promise<OfflineApiResult<LessonDocument>> {
+  try {
+    const response = await getLesson(lessonId, signal);
+    await cachePublishedLesson(lessonId, response.data);
+    return { data: response.data, source: 'network' };
+  } catch (networkError) {
+    if (signal?.aborted) throw networkError;
+
+    const cached = await readCachedLesson(lessonId);
+    if (cached) {
+      return {
+        data: cached.payload as LessonDocument,
+        source: 'cache',
+        cachedAt: cached.cachedAt,
+      };
+    }
+
+    throw networkError;
+  }
+}
