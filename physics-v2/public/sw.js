@@ -4,13 +4,14 @@ const APP_SHELL = [
   APP_SCOPE,
   `${APP_SCOPE}index.html`,
   `${APP_SCOPE}manifest.webmanifest`,
+  `${APP_SCOPE}icon.svg`,
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
+  event.waitUntil(Promise.all([
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)),
-  );
-  self.skipWaiting();
+    self.skipWaiting(),
+  ]));
 });
 
 self.addEventListener('activate', (event) => {
