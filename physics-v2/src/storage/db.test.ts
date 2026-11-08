@@ -37,6 +37,7 @@ describe('local record persistence', () => {
       bestScore: 91,
       bestGrade: 5,
       latestGrade: 5,
+      lastAttemptAt: '2026-11-08T09:50:00.000Z',
       updatedAt: '2026-11-08T10:00:00.000Z',
     };
 
@@ -61,6 +62,7 @@ describe('local record persistence', () => {
     expect(progress?.bestScore).toBe(91);
     expect(progress?.bestGrade).toBe(5);
     expect(progress?.latestGrade).toBe(2);
+    expect(progress?.lastAttemptAt).toBe('2026-11-08T09:50:00.000Z');
   });
 
   it('does not lower best score or completion on a later weaker progress update', async () => {
