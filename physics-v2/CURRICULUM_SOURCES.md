@@ -81,6 +81,6 @@ The thematic-planning sections of all four 2025 federal working-program PDFs wer
 | SOO advanced | 10 | 170 | 39–60 |
 | SOO advanced | 11 | 170 | 61–78 |
 
-The metadata is stored in the private `physics.education_level_plans` table. Its schema migration is `supabase/migrations/20261108114500_curriculum_level_plan_metadata.sql`; the idempotent seed is `supabase/seed/education-level-plan-metadata.sql`. All ten rows are `draft`.
+The metadata is stored in the private `physics.education_level_plans` table. Its schema migration is `supabase/migrations/20261108112633_curriculum_level_plan_metadata.sql`; the idempotent seed is `supabase/seed/education-level-plan-metadata.sql`. All ten rows are `draft`.
 
 The next ingestion layer will represent individual thematic-plan rows, their official hours, content scope, student activities, recommended experiments/practical work, and source-page references. It will preserve the official sequence and keep basic/advanced tracks distinct. PHYSICS-authored lesson content and assessment mapping remain separate from the official source metadata.
