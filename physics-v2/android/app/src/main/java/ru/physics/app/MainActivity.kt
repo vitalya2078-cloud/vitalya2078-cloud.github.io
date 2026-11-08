@@ -4,6 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +37,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -53,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -143,9 +151,26 @@ private fun NativeHome(
     val pendingSyncCount by dao.observePendingSyncCount().collectAsStateWithLifecycle(initialValue = 0)
 
     androidx.compose.material3.Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(start = 22.dp, end = 18.dp, top = 10.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                    Text("PHYSICS", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
+                    Text("ПРОСТРАНСТВО ЗНАНИЙ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 1.4.sp)
+                }
+                IconButton(onClick = { selectedSection = AppSection.PROFILE }) {
+                    androidx.compose.material3.Icon(Icons.Default.Person, contentDescription = "Профиль", tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+        },
         bottomBar = {
             NavigationBar {
-                AppSection.entries.forEach { section ->
+                AppSection.entries.filter { it != AppSection.PROFILE }.forEach { section ->
                     val icon = when (section) {
                         AppSection.HOME -> Icons.Default.Home
                         AppSection.LEARNING -> Icons.Default.MenuBook
@@ -193,30 +218,111 @@ private fun NativeHome(
 
 @Composable
 private fun HomeScreen(nickname: String, onOpen: (AppSection) -> Unit) {
-    Text("PHYSICS", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-    Text("Привет, $nickname!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-    Text(
-        "Твоя личная среда для изучения физики. Учись в своём темпе — даже без интернета.",
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+    Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text("ТВОЯ УЧЕБНАЯ СРЕДА", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, letterSpacing = 1.8.sp, fontWeight = FontWeight.Bold)
+            Text("С возвращением, $nickname", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("Выбирай направление и двигайся в своём темпе.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            color = Color(0xFF101F38),
+        ) {
+            Box(
+                modifier = Modifier.background(
+                    Brush.linearGradient(
+                        listOf(Color(0xFF142B4D), Color(0xFF174B72), Color(0xFF172A50)),
+                    ),
+                ).padding(22.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
+                    Text("ОТКРЫВАЙ ЗАКОНЫ МИРА", style = MaterialTheme.typography.labelSmall, color = Color(0xFF83D8F3), letterSpacing = 1.7.sp, fontWeight = FontWeight.Bold)
+                    Text("Физика начинается
+с любопытства.", style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
+                    Text("Теория, задачи и эксперименты — в одном учебном пространстве.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFFD1E1F1))
+                    Button(onClick = { onOpen(AppSection.LEARNING) }) {
+                        Text("Продолжить обучение")
+                    }
+                }
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text("РАЗДЕЛЫ", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, letterSpacing = 1.6.sp, fontWeight = FontWeight.Bold)
+            Text("Что будем изучать?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            HomeFeatureCard(
+                title = "Обучение",
+                subtitle = "Курсы и уроки",
+                icon = Icons.Default.MenuBook,
+                accent = Color(0xFF3978E8),
+                modifier = Modifier.weight(1f),
+            ) { onOpen(AppSection.LEARNING) }
+            HomeFeatureCard(
+                title = "Тесты",
+                subtitle = "Проверь знания",
+                icon = Icons.Default.Quiz,
+                accent = Color(0xFF8068D9),
+                modifier = Modifier.weight(1f),
+            ) { onOpen(AppSection.TESTING) }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            HomeFeatureCard(
+                title = "Лаборатория",
+                subtitle = "Эксперименты",
+                icon = Icons.Default.Science,
+                accent = Color(0xFF168D91),
+                modifier = Modifier.weight(1f),
+            ) { onOpen(AppSection.LAB) }
+            HomeFeatureCard(
+                title = "Мой прогресс",
+                subtitle = "Результаты и цели",
+                icon = Icons.Default.Timeline,
+                accent = Color(0xFFB17A31),
+                modifier = Modifier.weight(1f),
+            ) { onOpen(AppSection.PROGRESS) }
+        }
+    }
+}
+
+@Composable
+private fun HomeFeatureCard(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    accent: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Исследуй физику", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text("Теория, задачи и эксперименты — в одном приложении.")
-            Button(onClick = { onOpen(AppSection.LEARNING) }) {
-                Text("Перейти к обучению")
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(15.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp),
+        ) {
+            Surface(shape = RoundedCornerShape(14.dp), color = accent.copy(alpha = 0.12f)) {
+                androidx.compose.material3.Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = accent,
+                    modifier = Modifier.padding(11.dp).size(22.dp),
+                )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
-    Text("Разделы PHYSICS", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-    SectionCard("Обучение", "Темы, уроки и учебные материалы", Icons.Default.MenuBook) { onOpen(AppSection.LEARNING) }
-    SectionCard("Тестирование", "Проверка знаний и разбор ответов", Icons.Default.Quiz) { onOpen(AppSection.TESTING) }
-    SectionCard("Лаборатория", "Интерактивные физические модели", Icons.Default.Science) { onOpen(AppSection.LAB) }
-    SectionCard("Мой прогресс", "Результаты, ошибки и достижения", Icons.Default.Timeline) { onOpen(AppSection.PROGRESS) }
 }
 
 @Composable
