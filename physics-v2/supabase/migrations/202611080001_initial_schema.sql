@@ -130,6 +130,51 @@ create table if not exists public.lessons (
   unique (topic_id, slug)
 );
 
+create table if not exists public.formulas (
+  id uuid primary key default gen_random_uuid(),
+  topic_id uuid references public.topics(id),
+  lesson_id uuid references public.lessons(id),
+  title text not null,
+  expression text not null,
+  variables jsonb not null default '[]'::jsonb,
+  units jsonb not null default '{}'::jsonb,
+  explanation text,
+  sort_order integer not null default 0
+);
+
+create table if not exists public.definitions (
+  id uuid primary key default gen_random_uuid(),
+  topic_id uuid references public.topics(id),
+  lesson_id uuid references public.lessons(id),
+  term text not null,
+  definition text not null,
+  sort_order integer not null default 0
+);
+
+create table if not exists public.worked_examples (
+  id uuid primary key default gen_random_uuid(),
+  topic_id uuid references public.topics(id),
+  lesson_id uuid references public.lessons(id),
+  title text not null,
+  problem_statement text not null,
+  solution_steps jsonb not null default '[]'::jsonb,
+  final_answer text,
+  difficulty text check (difficulty in ('basic', 'medium', 'advanced')),
+  sort_order integer not null default 0
+);
+
+create table if not exists public.simulations (
+  id uuid primary key default gen_random_uuid(),
+  topic_id uuid references public.topics(id),
+  lesson_id uuid references public.lessons(id),
+  slug text not null unique,
+  title text not null,
+  description text,
+  simulation_config jsonb not null default '{}'::jsonb,
+  asset_id uuid references public.content_assets(id),
+  status text not null default 'draft' check (status in ('draft', 'published', 'archived'))
+);
+
 create table if not exists public.lesson_blocks (
   id uuid primary key default gen_random_uuid(),
   lesson_id uuid not null references public.lessons(id) on delete cascade,
@@ -290,6 +335,25 @@ create table if not exists public.test_answers (
 -- ---------------------------------------------------------------------------
 -- User learning state
 -- ---------------------------------------------------------------------------
+
+create table if not exists public.grading_rules (
+  id uuid primary key default gen_random_uuid(),
+  program_version_id uuid references public.program_versions(id),
+  min_score numeric(5,2) not null check (min_score between 0 and 100),
+  max_score numeric(5,2) not null check (max_score between 0 and 100),
+  grade smallint not null check (grade between 2 and 5),
+  mastery_label text not null,
+  is_default boolean not null default false,
+  check (min_score <= max_score)
+);
+
+insert into public.grading_rules
+  (program_version_id, min_score, max_score, grade, mastery_label, is_default)
+values
+  (null, 0, 59.99, 2, 'Не освоен', true),
+  (null, 60, 74.99, 3, 'Освоен', true),
+  (null, 75, 89.99, 4, 'Хорошо освоен', true),
+  (null, 90, 100, 5, 'Освоен на отлично', true);
 
 create table if not exists public.user_programs (
   id uuid primary key default gen_random_uuid(),
@@ -505,6 +569,8 @@ $$;
 alter table public.profiles enable row level security;
 create policy "profile owner can read" on public.profiles
 for select using (auth_user_id = auth.uid());
+create policy "profile owner can insert" on public.profiles
+for insert with check (auth_user_id = auth.uid());
 create policy "profile owner can update" on public.profiles
 for update using (auth_user_id = auth.uid()) with check (auth_user_id = auth.uid());
 
@@ -538,6 +604,10 @@ alter table public.program_topics enable row level security;
 alter table public.topic_prerequisites enable row level security;
 alter table public.lessons enable row level security;
 alter table public.lesson_blocks enable row level security;
+alter table public.formulas enable row level security;
+alter table public.definitions enable row level security;
+alter table public.worked_examples enable row level security;
+alter table public.simulations enable row level security;
 alter table public.content_assets enable row level security;
 alter table public.lesson_block_assets enable row level security;
 alter table public.laboratory_works enable row level security;
@@ -549,6 +619,7 @@ alter table public.question_answer_keys enable row level security;
 alter table public.tests enable row level security;
 alter table public.test_questions enable row level security;
 alter table public.achievements enable row level security;
+alter table public.grading_rules enable row level security;
 
 create policy "published tracks readable" on public.education_tracks
 for select using (is_active);
@@ -571,6 +642,10 @@ create policy "topic prerequisites readable" on public.topic_prerequisites
 for select using (true);
 create policy "published lessons readable" on public.lessons
 for select using (status = 'published');
+create policy "formulas readable" on public.formulas for select using (true);
+create policy "definitions readable" on public.definitions for select using (true);
+create policy "worked examples readable" on public.worked_examples for select using (true);
+create policy "published simulations readable" on public.simulations for select using (status = 'published');
 create policy "published lesson blocks readable" on public.lesson_blocks
 for select using (exists (
   select 1 from public.lessons l where l.id = lesson_id and l.status = 'published'
@@ -607,6 +682,7 @@ create policy "published test questions readable" on public.test_questions
 for select using (exists (
   select 1 from public.tests t where t.id = test_id and t.is_published
 ));
+create policy "grading rules readable" on public.grading_rules for select using (true);
 create policy "active achievements readable" on public.achievements
 for select using (is_active);
 
