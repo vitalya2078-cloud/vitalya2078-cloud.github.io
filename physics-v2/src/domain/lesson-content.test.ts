@@ -108,6 +108,29 @@ describe('lesson content validation', () => {
     expect(issues.some((issue) => issue.message.includes('Sort order values must be unique'))).toBe(true);
   });
 
+  it('returns validation issues instead of throwing for malformed publication metadata', () => {
+    expect(() => validateLessonForPublication({
+      title: 'Законы Ньютона',
+      summary: 'Краткое описание урока о причинах изменения движения тел.',
+      estimatedMinutes: 35,
+      learningOutcomes: ['Объяснить связь силы и ускорения'],
+      sourceReferences: ['source-1'],
+      review: undefined,
+      blocks: validBlocks,
+    })).not.toThrow();
+
+    const issues = validateLessonForPublication({
+      title: 'Законы Ньютона',
+      summary: 'Краткое описание урока о причинах изменения движения тел.',
+      estimatedMinutes: 35,
+      learningOutcomes: ['Объяснить связь силы и ускорения'],
+      sourceReferences: ['source-1'],
+      review: undefined,
+      blocks: validBlocks,
+    });
+    expect(issues.some((issue) => issue.path === 'review')).toBe(true);
+  });
+
   it('requires sources, measurable outcomes and three review gates before publication', () => {
     const issues = validateLessonForPublication({
       title: 'Законы Ньютона',
