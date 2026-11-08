@@ -10,5 +10,22 @@
   "orientation": "any",
   "background_color": "#101827",
   "theme_color": "#101827",
-  "categories": ["education"]
+  "categories": [
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Обучение",
+      "short_name": "Обучение",
+      "url": "/physics-v2/"
+    }
+  ]
 }
