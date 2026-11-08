@@ -247,13 +247,14 @@ function applyFavoriteTombstones(
   const latestByFavorite = new Map<string, SyncOperation>();
 
   for (const operation of operations) {
-    if (operation.entityType !== 'favorite' || !isRecord(operation.payload)) continue;
+    if (operation.entityType !== 'favorite') continue;
 
-    const targetType = operation.payload.targetType;
-    const targetId = operation.payload.targetId;
-    if (typeof targetType !== 'string' || typeof targetId !== 'string') continue;
-
-    const key = `${targetType}:${targetId}`;
+    const payload = isRecord(operation.payload) ? operation.payload : null;
+    const targetType = payload?.targetType;
+    const targetId = payload?.targetId;
+    const key = typeof targetType === 'string' && typeof targetId === 'string'
+      ? `${targetType}:${targetId}`
+      : `legacy-id:${operation.entityId}`;
     const current = latestByFavorite.get(key);
     if (!current || Date.parse(operation.createdAt) >= Date.parse(current.createdAt)) {
       latestByFavorite.set(key, operation);
@@ -261,7 +262,8 @@ function applyFavoriteTombstones(
   }
 
   return favorites.filter((favorite) => {
-    const latest = latestByFavorite.get(favoriteKey(favorite));
+    const latest = latestByFavorite.get(favoriteKey(favorite))
+      ?? latestByFavorite.get(`legacy-id:${favorite.id}`);
     return latest?.operation !== 'delete';
   });
 }
