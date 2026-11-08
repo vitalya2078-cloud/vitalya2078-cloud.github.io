@@ -131,6 +131,12 @@ describe('local record persistence', () => {
       'insert',
       'update',
     ]);
+    const deletion = operations.find((operation) => operation.operation === 'delete');
+    expect(deletion?.entityId).toBe('lesson-1');
+    expect(deletion?.payload).toMatchObject({
+      targetType: 'lesson',
+      targetId: 'lesson-1',
+    });
     expect(await localDb.favorites.count()).toBe(0);
   });
 
