@@ -16,7 +16,7 @@ import androidx.room.RoomDatabase
         CatalogCacheEntity::class,
         SyncOperationEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class PhysicsDatabase : RoomDatabase() {
@@ -53,6 +53,14 @@ abstract class PhysicsDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : androidx.room.migration.Migration(4, 5) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE lesson_progress ADD COLUMN bestGrade INTEGER",
+                )
+            }
+        }
+
         @Volatile
         private var instance: PhysicsDatabase? = null
 
@@ -62,7 +70,7 @@ abstract class PhysicsDatabase : RoomDatabase() {
                     context.applicationContext,
                     PhysicsDatabase::class.java,
                     "physics-local.db",
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build().also { instance = it }
             }
     }
 }
