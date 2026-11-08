@@ -129,6 +129,33 @@ describe('local backup', () => {
     expect(await localDb.syncQueue.get('favorite-delete-op')).toBeDefined();
   });
 
+  it('honors legacy favorite deletion tombstones from older backups', async () => {
+    await localDb.favorites.add({
+      id: 'legacy-favorite-id',
+      targetType: 'lesson',
+      targetId: 'lesson-legacy',
+      createdAt: '2026-11-08T10:00:00.000Z',
+    });
+
+    const backup = await createLocalBackup();
+
+    await localDb.favorites.delete('legacy-favorite-id');
+    await localDb.syncQueue.add({
+      id: 'legacy-favorite-delete-op',
+      entityType: 'favorite',
+      entityId: 'legacy-favorite-id',
+      operation: 'delete',
+      payload: null,
+      createdAt: '2026-11-09T10:00:00.000Z',
+      status: 'pending',
+      attempts: 0,
+    });
+
+    await restoreLocalBackup(backup as File);
+
+    expect(await localDb.favorites.get('legacy-favorite-id')).toBeUndefined();
+  });
+
   it('keeps the higher mistake count and earliest first-seen date', async () => {
     await localDb.errors.add({
       id: 'question-1',
