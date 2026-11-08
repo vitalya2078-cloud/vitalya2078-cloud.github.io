@@ -1,7 +1,7 @@
-# PHYSICS — next-generation platform
+# PHYSICS — next-generation physics learning platform
 
 This directory contains the new cross-platform PHYSICS application foundation.
-The existing `fizika/` and `fizika-android/` projects are preserved.
+The existing fizika/ and fizika-android/ projects are preserved.
 
 ## Product targets
 
@@ -10,21 +10,59 @@ The existing `fizika/` and `fizika-android/` projects are preserved.
 - Windows: future standalone EXE.
 - Desktop browsers: responsive web application.
 
-## Architecture decisions
+## Architecture
 
-- Local-first operation: core learning, tests, progress and preferences work offline.
+- Local-first operation: core learning, tests, progress and preferences are designed to work offline.
+- IndexedDB is the browser/PWA storage layer; native shells will use SQLite through a storage adapter.
 - Supabase/PostgreSQL is the cloud database and synchronization target when connectivity is available.
-- Browser storage uses IndexedDB; native shells use SQLite through a storage adapter.
-- Offline changes are queued locally and synchronized when connectivity returns.
+- Offline changes will be queued locally and synchronized when connectivity returns.
 - Assessment attempts are append-only; progress and favorites use explicit merge rules.
-- The approved legacy bank of 900 questions is kept as an immutable source dataset.
+- The approved legacy bank of 900 questions is preserved as an immutable source dataset.
 - The curriculum is separate from the legacy question bank and is versioned independently.
-- Authentication is intentionally deferred; profile records already have an optional Supabase Auth link for later account activation.
+- Authentication is intentionally deferred. User-specific API routes and sync writes remain disabled until Auth and ownership-based RLS policies are implemented.
 
-## Database
+## Supabase project
 
-Initial schema migration:
+Project: PHYSICS  
+Project ref: vqiljksvsdjmwbbngimg  
+Region: eu-west-2
 
-`supabase/migrations/202611080001_initial_schema.sql`
+Database schema: physics (private, not exposed to browser Data API).
 
-Apply migrations to a Supabase project only after its project is selected and credentials/permissions are configured. Never commit Supabase service-role keys or other secrets.
+Active database migrations:
+
+- supabase/migrations/20261108104124_physics_foundation_v1.sql
+- supabase/migrations/20261108104138_physics_security_indexes_v1.sql
+- supabase/migrations/20261108104251_official_question_bank_provenance.sql
+
+Official question bank seed:
+
+- supabase/seed/official-900.sql
+- Source file: fizika/src/data.json
+- Expected and imported count: 900 questions in 9 original topics.
+
+## Public read-only API
+
+The deployed Supabase Edge Function is physics-api.
+
+Base URL:
+https://vqiljksvsdjmwbbngimg.supabase.co/functions/v1/physics-api
+
+Routes:
+
+- GET /health
+- GET /v1/catalog
+- GET /v1/lessons/{uuid}
+
+The public API returns only active programs and published curriculum content. It does not expose user profiles, progress, attempts, favorites, mistakes, goals, or synchronization records. It implements GET and OPTIONS only.
+
+API details: supabase/API.md  
+Function source: supabase/functions/physics-api/
+
+## Security rules
+
+- Never commit database passwords, service-role keys, secret keys, or Supabase access tokens.
+- Never place a service-role/secret key in browser code.
+- Keep the physics schema private.
+- Keep deny-all policies until a real authorization model is implemented.
+- Add user-specific endpoints only after Auth and owner-scoped RLS policies are tested.
