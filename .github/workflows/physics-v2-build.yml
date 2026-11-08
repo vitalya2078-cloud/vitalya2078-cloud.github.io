@@ -1,0 +1,45 @@
+name: PHYSICS v2 — build check
+
+on:
+  push:
+    branches:
+      - physics-hybrid-redesign
+    paths:
+      - "physics-v2/**"
+      - ".github/workflows/physics-v2-build.yml"
+  pull_request:
+    branches:
+      - physics-hybrid-redesign
+    paths:
+      - "physics-v2/**"
+      - ".github/workflows/physics-v2-build.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: physics-v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type-check and build
+        run: npm run build
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: physics-v2-web-build
+          path: physics-v2/dist/
+          if-no-files-found: error
+          retention-days: 14
