@@ -35,3 +35,14 @@ https://fgosreestr.edsoo.ru/educational-programs
 ## Important distinction
 
 The federal working programs describe required subject content, planned outcomes, and recommended thematic planning. They are not complete digital lesson scripts. PHYSICS must create its own lessons, examples, explanations, exercises, diagrams, and simulations while retaining traceability to the official curriculum.
+
+
+## 2026/2027 academic-year review
+
+The EDSOO physics methodology index now lists an information-methodological letter on teaching physics in the 2026/2027 academic year (published 17 August 2026):
+
+https://edsoo.ru/category/mmposob/fiz/
+
+This annual letter is a supplementary methodological source. It does not replace the federal working program PDFs registered above. Before publishing any academic-year curriculum release, review the current letter and the current Federal Educational Programs register. Record any resulting curriculum changes as a new version rather than silently changing the 2025 source snapshot.
+
+The 2025 PDF files were checked against the EDSOO working-program index. The 10–11 basic and advanced documents explicitly allocate learning content by grade (10 and 11) and distinguish required content, outcomes, thematic planning, and recommended experiments. The 7–9 basic program likewise allocates content by grade (7, 8, 9). These divisions are preserved as separate PHYSICS grade nodes.
