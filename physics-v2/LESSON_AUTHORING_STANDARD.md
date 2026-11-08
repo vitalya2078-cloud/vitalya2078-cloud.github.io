@@ -97,3 +97,17 @@ The current publication validator blocks release if source references or any of 
 - Published content is never silently overwritten; retain the prior version for audit and migration.
 - Correct factual errors through a reviewed version, with a short change note.
 - Reusable blocks should be shared only when their meaning and prerequisites remain identical across tracks.
+
+
+## 9. Database versioning and publication workflow
+
+The database stores a lesson's current pointer in `lessons` and a version snapshot in `lesson_versions`. Each content block, source reference, and review is attached to the same `content_version`.
+
+- Creating a lesson creates draft version 1.
+- Changing title, summary, duration, learning outcomes, prerequisites, or blocks requires a new content version.
+- A new version starts as draft; the prior published version remains available for audit.
+- The current version can be published only when it has learning outcomes, at least one source with reviewed rights status, two or more content blocks, and approved physics, pedagogy, and rights reviews.
+- The public API returns only the current published version, its matching blocks, and non-restricted reviewed source references.
+- A version that has ever been published remains immutable even after the lesson is archived. Corrections are made in a new version, never by rewriting the published record.
+
+These rules are enforced by database triggers as well as the TypeScript authoring validator. The new versioning tables are private and have deny-all policies for direct anonymous/authenticated access.
