@@ -52,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import ru.physics.app.data.LocalActivityRepository
 import ru.physics.app.data.CatalogRepository
 import ru.physics.app.data.CatalogSummary
 import ru.physics.app.data.PhysicsDatabase
@@ -64,6 +65,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val database = PhysicsDatabase.getInstance(applicationContext)
+        val localRepository = LocalActivityRepository(database)
 
         setContent {
             val profile by database.physicsDao()
@@ -78,7 +80,7 @@ class MainActivity : ComponentActivity() {
                     if (profile == null) {
                         ProfileSetupScreen(
                             onSave = { nickname, tracks, grade ->
-                                database.physicsDao().saveProfile(
+                                localRepository.saveProfile(
                                     ProfileEntity(
                                         nickname = nickname.trim().ifBlank { "Исследователь" },
                                         birthYear = null,
