@@ -12,7 +12,7 @@ import java.net.URL
 class QuestionIllustrationRepository(
     context: Context,
 ) {
-    private val cacheDirectory = File(context.cacheDir, "question-illustrations").apply {
+    private val cacheDirectory = File(context.filesDir, "question-illustrations").apply {
         mkdirs()
     }
 
