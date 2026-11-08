@@ -307,3 +307,10 @@ input[type='range'] { width: 100%; margin: 16px 0 5px; accent-color: var(--prima
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+.form-error {
+  margin: 10px 0 0;
+  color: #c04b4b;
+  font-size: 9px;
+  line-height: 1.6;
+}
