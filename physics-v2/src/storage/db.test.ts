@@ -107,6 +107,11 @@ describe('local record persistence', () => {
       bestGrade: 4,
       latestGrade: 2,
     });
+    const progressOperations = await localDb.syncQueue
+      .where('entityType')
+      .equals('progress')
+      .toArray();
+    expect(progressOperations.every((operation) => operation.entityId === 'lesson-2')).toBe(true);
   });
 
   it('queues favorite insert, update and delete in order', async () => {
