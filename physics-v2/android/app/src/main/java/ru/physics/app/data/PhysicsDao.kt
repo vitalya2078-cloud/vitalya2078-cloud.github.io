@@ -17,6 +17,9 @@ interface PhysicsDao {
     @Query("SELECT COUNT(*) FROM lesson_progress")
     fun observeProgressCount(): Flow<Int>
 
+    @Query("SELECT * FROM lesson_progress WHERE contentType = :type AND contentId = :id LIMIT 1")
+    suspend fun getProgress(type: String, id: String): LessonProgressEntity?
+
     @Query("SELECT COUNT(*) FROM test_attempts")
     fun observeAttemptCount(): Flow<Int>
 
@@ -53,6 +56,9 @@ interface PhysicsDao {
     @Query("SELECT * FROM favorites ORDER BY createdAt DESC")
     fun observeFavorites(): Flow<List<FavoriteEntity>>
 
+    @Query("SELECT * FROM favorites WHERE contentType = :type AND contentId = :id LIMIT 1")
+    suspend fun getFavorite(type: String, id: String): FavoriteEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveCatalogCache(cache: CatalogCacheEntity)
 
@@ -61,4 +67,7 @@ interface PhysicsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveMistake(mistake: MistakeEntity)
+
+    @Query("SELECT * FROM mistakes WHERE questionId = :questionId LIMIT 1")
+    suspend fun getMistake(questionId: String): MistakeEntity?
 }
