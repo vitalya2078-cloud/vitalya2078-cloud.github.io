@@ -48,6 +48,7 @@ export async function saveFinalAssessment(
   }
 
   const result = createAssessmentResult(attempt.scorePercent);
+  const normalizedAttempt: LocalAttempt = { ...attempt, grade: result.grade };
   const now = attempt.completedAt;
 
   await localDb.open();
@@ -101,7 +102,7 @@ export async function saveFinalAssessment(
         updatedAt: now,
       };
 
-      await localDb.attempts.add(attempt);
+      await localDb.attempts.add(normalizedAttempt);
       await localDb.progress.put(progress);
 
       const wrongAnswers = attempt.answers.filter(
@@ -142,7 +143,7 @@ export async function saveFinalAssessment(
           entityType: 'attempt',
           entityId: attempt.id,
           operation: 'insert',
-          payload: attempt,
+          payload: normalizedAttempt,
           createdAt: now,
           status: 'pending',
           attempts: 0,
@@ -162,7 +163,7 @@ export async function saveFinalAssessment(
       await localDb.syncQueue.bulkAdd(operations);
 
       return {
-        attemptId: attempt.id,
+        attemptId: normalizedAttempt.id,
         result,
         progress,
         updatedErrors,
