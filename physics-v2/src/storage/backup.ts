@@ -168,6 +168,9 @@ function mergeProgressRecords(existing: LocalProgress[], incoming: LocalProgress
 
     const latest = recordTimestamp(record) > recordTimestamp(current) ? record : current;
     const mastered = current.status === 'mastered' || record.status === 'mastered';
+    const lastAttemptAt = [current.lastAttemptAt, record.lastAttemptAt]
+      .filter((value): value is string => typeof value === 'string')
+      .sort((left, right) => Date.parse(right) - Date.parse(left))[0];
 
     records.set(key, {
       ...latest,
@@ -179,6 +182,7 @@ function mergeProgressRecords(existing: LocalProgress[], incoming: LocalProgress
       bestScore: Math.max(current.bestScore ?? 0, record.bestScore ?? 0) || undefined,
       bestGrade: Math.max(current.bestGrade ?? 0, record.bestGrade ?? 0) || undefined,
       latestGrade: latest.latestGrade ?? current.latestGrade ?? record.latestGrade,
+      lastAttemptAt,
       updatedAt: latest.updatedAt,
     });
   }
