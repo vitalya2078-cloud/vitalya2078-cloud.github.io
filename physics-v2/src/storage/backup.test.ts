@@ -71,7 +71,7 @@ describe('local backup', () => {
     const backup = await createLocalBackup();
 
     await localDb.progress.put({
-      id: 'progress-monotonic',
+      id: 'progress-current-copy',
       entityType: 'lesson',
       entityId: 'lesson-2',
       status: 'mastered',
@@ -90,6 +90,7 @@ describe('local backup', () => {
       bestScore: 95,
       bestGrade: 5,
     });
+    expect(await localDb.progress.count()).toBe(1);
   });
 
   it('honors favorite deletion tombstones when restoring an older backup', async () => {
@@ -106,9 +107,13 @@ describe('local backup', () => {
     await localDb.syncQueue.add({
       id: 'favorite-delete-op',
       entityType: 'favorite',
-      entityId: 'favorite-deleted',
+      entityId: 'lesson-3',
       operation: 'delete',
-      payload: null,
+      payload: {
+        targetType: 'lesson',
+        targetId: 'lesson-3',
+        favoriteId: 'favorite-deleted',
+      },
       createdAt: '2026-11-09T10:00:00.000Z',
       status: 'pending',
       attempts: 0,
