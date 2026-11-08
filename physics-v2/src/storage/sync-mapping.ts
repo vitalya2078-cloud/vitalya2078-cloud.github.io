@@ -148,8 +148,8 @@ function mapProgress(operation: SyncOperation): SyncMappingResult {
       best_score: progress.bestScore,
       best_grade: progress.bestGrade,
       is_mastered: progress.status === 'mastered',
-      ...(progress.latestGrade !== undefined
-        ? { last_attempt_at: progress.updatedAt }
+      ...(progress.lastAttemptAt
+        ? { last_attempt_at: progress.lastAttemptAt }
         : {}),
     };
   }
