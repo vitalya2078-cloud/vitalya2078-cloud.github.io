@@ -180,7 +180,10 @@ export async function saveLocalProfile(profile: LocalProfile): Promise<void> {
 
 export async function saveLocalProgress(progress: LocalProgress): Promise<void> {
   await localDb.transaction('rw', localDb.progress, localDb.syncQueue, async () => {
-    const existing = await localDb.progress.get(progress.id);
+    const existing = await localDb.progress
+      .where('[entityType+entityId]')
+      .equals([progress.entityType, progress.entityId])
+      .first();
     const statusRank = {
       not_started: 0,
       in_progress: 1,
@@ -194,6 +197,7 @@ export async function saveLocalProgress(progress: LocalProgress): Promise<void> 
 
     const normalized: LocalProgress = {
       ...progress,
+      id: existing?.id ?? progress.id,
       status,
       completionPercent: status === 'mastered'
         ? 100
@@ -225,14 +229,14 @@ export async function saveLocalAttempt(attempt: LocalAttempt): Promise<void> {
 
 export async function saveLocalFavorite(favorite: LocalFavorite): Promise<void> {
   await localDb.transaction('rw', localDb.favorites, localDb.syncQueue, async () => {
-    const exists = await localDb.favorites.get(favorite.id);
-    await localDb.favorites.put(favorite);
-    await queueOperation(
-      'favorite',
-      favorite.targetId,
-      exists ? 'update' : 'insert',
-      favorite,
-    );
+    const exists = await localDb.favorites
+      .where('[targetType+targetId]')
+      .equals([favorite.targetType, favorite.targetId])
+      .first();
+    if (exists) return;
+
+    await localDb.favorites.add(favorite);
+    await queueOperation('favorite', favorite.targetId, 'insert', favorite);
   });
 }
 
