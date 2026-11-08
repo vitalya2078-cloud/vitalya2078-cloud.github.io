@@ -24,6 +24,7 @@ import {
   getCatalogOfflineFirst,
   type CatalogProgram,
 } from './api/physics-api';
+import { calculateFreeFall } from './domain/free-fall';
 import {
   createLocalId,
   getLocalStorageHealth,
@@ -93,11 +94,17 @@ function App() {
   const [height, setHeight] = useState(20);
 
   useEffect(() => {
-    const resolvedTheme = theme === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : theme;
-    document.documentElement.dataset.theme = resolvedTheme;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const applyTheme = () => {
+      const resolvedTheme = theme === 'system' ? (media.matches ? 'dark' : 'light') : theme;
+      document.documentElement.dataset.theme = resolvedTheme;
+    };
+    applyTheme();
     localStorage.setItem('physics-theme', theme);
+    if (theme === 'system') {
+      media.addEventListener('change', applyTheme);
+      return () => media.removeEventListener('change', applyTheme);
+    }
   }, [theme]);
 
   useEffect(() => {
@@ -137,7 +144,10 @@ function App() {
           errors,
         });
       } catch {
-        if (active) setLocalStatus('Не удалось открыть локальное хранилище');
+        if (active) {
+          setLocalStatus('Не удалось открыть локальное хранилище');
+          setIsOnboarding(true);
+        }
       } finally {
         if (active) setIsProfileLoading(false);
       }
@@ -441,8 +451,7 @@ function TestingPage() {
 
 function LaboratoryPage({ height, onHeightChange }: { height: number; onHeightChange: (value: number) => void }) {
   const gravity = 9.81;
-  const time = Math.sqrt((2 * height) / gravity);
-  const velocity = gravity * time;
+  const result = calculateFreeFall(height, gravity);
   return (
     <section className="page-content">
       <PageHeader eyebrow="ИНТЕРАКТИВНЫЕ ЭКСПЕРИМЕНТЫ" title="Лаборатория" description="Исследуй физические закономерности с помощью моделей, параметров и измерений." />
@@ -455,8 +464,8 @@ function LaboratoryPage({ height, onHeightChange }: { height: number; onHeightCh
             <div className="range-value"><strong>{height} м</strong><span>1–100 м</span></div>
             <input id="drop-height" type="range" min="1" max="100" value={height} onChange={(event) => onHeightChange(Number(event.target.value))} />
             <div className="range-labels"><span>1 м</span><span>100 м</span></div>
-            <div className="formula-block"><span>Время падения</span><strong>t = √(2h / g)</strong><b>{time.toFixed(2)} с</b></div>
-            <div className="formula-block"><span>Скорость перед ударом</span><strong>v = g · t</strong><b>{velocity.toFixed(2)} м/с</b></div>
+            <div className="formula-block"><span>Время падения</span><strong>t = √(2h / g)</strong><b>{result.timeSeconds.toFixed(2)} с</b></div>
+            <div className="formula-block"><span>Скорость перед ударом</span><strong>v = g · t</strong><b>{result.finalVelocityMetersPerSecond.toFixed(2)} м/с</b></div>
             <button className="secondary-button" onClick={() => onHeightChange(20)}><FontAwesomeIcon icon={faRotate} /> Сбросить параметры</button>
           </div>
         </div>
