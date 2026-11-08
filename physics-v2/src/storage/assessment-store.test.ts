@@ -44,9 +44,10 @@ describe('saveFinalAssessment', () => {
       lessonId: 'lesson-1',
     });
 
-    expect(await localDb.attempts.get('attempt-1')).toEqual(attempt);
+    expect(await localDb.attempts.get('attempt-1')).toEqual({ ...attempt, grade: 4 });
     expect(saved.progress.status).toBe('mastered');
     expect(saved.progress.bestGrade).toBe(4);
+    expect(saved.progress.bestScore).toBe(82);
     expect(saved.updatedErrors).toBe(2);
     expect((await localDb.errors.get('q-1'))?.errorCount).toBe(1);
     expect(await localDb.syncQueue.count()).toBe(4);
@@ -68,6 +69,7 @@ describe('saveFinalAssessment', () => {
 
     expect(saved.progress.status).toBe('mastered');
     expect(saved.progress.bestGrade).toBe(4);
+    expect(saved.progress.bestScore).toBe(80);
     expect(saved.progress.latestGrade).toBe(2);
     expect(await localDb.attempts.count()).toBe(2);
   });
