@@ -171,7 +171,7 @@ create table if not exists public.simulations (
   title text not null,
   description text,
   simulation_config jsonb not null default '{}'::jsonb,
-  asset_id uuid references public.content_assets(id),
+  asset_id uuid,
   status text not null default 'draft' check (status in ('draft', 'published', 'archived'))
 );
 
@@ -198,6 +198,10 @@ create table if not exists public.content_assets (
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
+
+alter table public.simulations
+  add constraint simulations_asset_id_fkey
+  foreign key (asset_id) references public.content_assets(id);
 
 create table if not exists public.lesson_block_assets (
   lesson_block_id uuid not null references public.lesson_blocks(id) on delete cascade,
@@ -642,9 +646,18 @@ create policy "topic prerequisites readable" on public.topic_prerequisites
 for select using (true);
 create policy "published lessons readable" on public.lessons
 for select using (status = 'published');
-create policy "formulas readable" on public.formulas for select using (true);
-create policy "definitions readable" on public.definitions for select using (true);
-create policy "worked examples readable" on public.worked_examples for select using (true);
+create policy "formulas readable" on public.formulas for select using (
+  (lesson_id is not null and exists (select 1 from public.lessons l where l.id = lesson_id and l.status = 'published'))
+  or (topic_id is not null and exists (select 1 from public.topics t where t.id = topic_id and t.is_published))
+);
+create policy "definitions readable" on public.definitions for select using (
+  (lesson_id is not null and exists (select 1 from public.lessons l where l.id = lesson_id and l.status = 'published'))
+  or (topic_id is not null and exists (select 1 from public.topics t where t.id = topic_id and t.is_published))
+);
+create policy "worked examples readable" on public.worked_examples for select using (
+  (lesson_id is not null and exists (select 1 from public.lessons l where l.id = lesson_id and l.status = 'published'))
+  or (topic_id is not null and exists (select 1 from public.topics t where t.id = topic_id and t.is_published))
+);
 create policy "published simulations readable" on public.simulations for select using (status = 'published');
 create policy "published lesson blocks readable" on public.lesson_blocks
 for select using (exists (
