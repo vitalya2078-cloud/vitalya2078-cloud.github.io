@@ -108,7 +108,7 @@ describe('local-to-cloud sync mapping', () => {
       status: 'mapped',
       command: {
         entityType: 'favorite',
-        entityId: 'lesson-uuid',
+        entityId: '00000000-0000-4000-8000-000000000004',
         operationType: 'delete',
         payload: { target_type: 'lesson', target_id: '00000000-0000-4000-8000-000000000004' },
       },
