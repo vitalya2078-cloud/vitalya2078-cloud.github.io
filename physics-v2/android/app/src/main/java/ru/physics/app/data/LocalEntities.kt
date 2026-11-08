@@ -59,3 +59,10 @@ data class AppSettingEntity(
     val value: String,
     val updatedAt: Long,
 )
+
+@Entity(tableName = "catalog_cache")
+data class CatalogCacheEntity(
+    @PrimaryKey val id: Int = 1,
+    val payload: String,
+    val cachedAt: Long,
+)
