@@ -36,6 +36,35 @@ jobs:
       - name: Type-check and build
         run: npm run build
 
+      - name: Smoke test PHYSICS public API
+        env:
+          API_URL: https://vqiljksvsdjmwbbngimg.supabase.co/functions/v1/physics-api
+        run: |
+          curl --fail --silent --show-error "$API_URL/health" | node -e '
+            let input = "";
+            process.stdin.on("data", chunk => input += chunk);
+            process.stdin.on("end", () => {
+              const result = JSON.parse(input);
+              if (result.ok !== true || result.database !== "connected") {
+                console.error("PHYSICS API health check failed:", result);
+                process.exit(1);
+              }
+              console.log("PHYSICS API health check passed.");
+            });
+          '
+          curl --fail --silent --show-error "$API_URL/v1/catalog" | node -e '
+            let input = "";
+            process.stdin.on("data", chunk => input += chunk);
+            process.stdin.on("end", () => {
+              const result = JSON.parse(input);
+              if (!Array.isArray(result.data)) {
+                console.error("PHYSICS catalog response is invalid:", result);
+                process.exit(1);
+              }
+              console.log("PHYSICS catalog endpoint passed.");
+            });
+          '
+
       - name: Upload web build
         uses: actions/upload-artifact@v4
         with:
