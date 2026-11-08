@@ -41,6 +41,8 @@ A transient network retry must never create a second attempt or increment a mist
 - `best_grade` is derived from the best score using the PHYSICS grade thresholds.
 - `is_mastered` is monotonic: once true, it never returns to false.
 - `mastered_at` is set once, on the first transition to mastered.
+
+- Local progress writes are monotonic too: status cannot move backward, completion percentage cannot decrease, and best score/grade remain the maximum observed values. The latest grade remains separately tracked.
 - `last_attempt_at` follows the newest accepted final attempt.
 - Per-block progress must merge by stable block ID and per-record version; never replace the entire JSON object with a stale device snapshot.
 
