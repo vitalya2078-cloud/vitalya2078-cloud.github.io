@@ -14,8 +14,9 @@ import androidx.room.RoomDatabase
         MistakeEntity::class,
         AppSettingEntity::class,
         CatalogCacheEntity::class,
+        SyncOperationEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class PhysicsDatabase : RoomDatabase() {
@@ -41,6 +42,17 @@ abstract class PhysicsDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : androidx.room.migration.Migration(3, 4) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS sync_operations (id TEXT NOT NULL PRIMARY KEY, entityType TEXT NOT NULL, entityId TEXT NOT NULL, operation TEXT NOT NULL, payloadJson TEXT NOT NULL, createdAt INTEGER NOT NULL, status TEXT NOT NULL, attemptCount INTEGER NOT NULL, lastError TEXT)",
+                )
+                database.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_sync_operations_status_createdAt ON sync_operations(status, createdAt)",
+                )
+            }
+        }
+
         @Volatile
         private var instance: PhysicsDatabase? = null
 
@@ -50,7 +62,7 @@ abstract class PhysicsDatabase : RoomDatabase() {
                     context.applicationContext,
                     PhysicsDatabase::class.java,
                     "physics-local.db",
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { instance = it }
             }
     }
 }
