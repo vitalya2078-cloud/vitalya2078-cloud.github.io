@@ -115,6 +115,7 @@ private fun NativeHome(profile: ProfileEntity, dao: PhysicsDao) {
     val progressCount by dao.observeProgressCount().collectAsStateWithLifecycle(initialValue = 0)
     val attemptCount by dao.observeAttemptCount().collectAsStateWithLifecycle(initialValue = 0)
     val mistakeCount by dao.observeOpenMistakeCount().collectAsStateWithLifecycle(initialValue = 0)
+    val pendingSyncCount by dao.observePendingSyncCount().collectAsStateWithLifecycle(initialValue = 0)
 
     androidx.compose.material3.Scaffold(
         bottomBar = {
@@ -150,7 +151,7 @@ private fun NativeHome(profile: ProfileEntity, dao: PhysicsDao) {
                 AppSection.LEARNING -> LearningScreen(dao)
                 AppSection.TESTING -> TestingScreen()
                 AppSection.LAB -> LaboratoryScreen()
-                AppSection.PROGRESS -> ProgressScreen(progressCount, attemptCount, mistakeCount)
+                AppSection.PROGRESS -> ProgressScreen(progressCount, attemptCount, mistakeCount, pendingSyncCount)
                 AppSection.PROFILE -> ProfileScreen(profile)
             }
         }
@@ -297,13 +298,14 @@ private fun LaboratoryScreen() {
 }
 
 @Composable
-private fun ProgressScreen(progressCount: Int, attemptCount: Int, mistakeCount: Int) {
+private fun ProgressScreen(progressCount: Int, attemptCount: Int, mistakeCount: Int, pendingSyncCount: Int) {
     ScreenTitle("Мой прогресс", "Статистика хранится на устройстве и не пропадёт при отсутствии интернета.")
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         MetricCard("Темы", progressCount.toString(), Modifier.weight(1f))
         MetricCard("Попытки", attemptCount.toString(), Modifier.weight(1f))
     }
     MetricCard("Неразобранные ошибки", mistakeCount.toString(), Modifier.fillMaxWidth())
+    MetricCard("Ожидают синхронизации", pendingSyncCount.toString(), Modifier.fillMaxWidth())
     InfoCard("Синхронизация", "Локальное хранилище работает независимо от сети. Облачная синхронизация включится после внедрения авторизации и проверки прав доступа.")
 }
 
@@ -332,7 +334,7 @@ private fun ProfileSetupScreen(
     onSave: suspend (String, Set<String>, String?) -> Unit,
 ) {
     var nickname by rememberSaveable { mutableStateOf("") }
-    var selectedTracks by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var selectedTracks by remember { mutableStateOf(setOf<String>()) }
     var grade by rememberSaveable { mutableStateOf("7") }
     var saving by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
