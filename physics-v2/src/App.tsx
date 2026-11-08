@@ -15,7 +15,8 @@ import {
   faTriangleExclamation,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
-import { localDb } from './storage/db';
+import { getLocalStorageHealth } from './storage/db';
+import { getCatalogOfflineFirst } from './api/physics-api';
 
 type SectionKey = 'learning' | 'testing' | 'laboratory' | 'progress' | 'profile';
 type ThemeMode = 'light' | 'dark';
@@ -36,7 +37,9 @@ function App() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
   const nickname = 'Исследователь';
-  const [localStatus, setLocalStatus] = useState('Локальное хранилище готово');
+  const [localStatus, setLocalStatus] = useState('Проверяем локальное хранилище…');
+  const [catalogStatus, setCatalogStatus] = useState('Загружаем каталог…');
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -44,11 +47,43 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    localDb.profiles.count().then((count) => {
-      setLocalStatus(count > 0 ? 'Профиль сохранён на устройстве' : 'Работаем в автономном режиме');
-    }).catch(() => {
-      setLocalStatus('Локальное хранилище пока недоступно');
+    let active = true;
+
+    const refreshConnection = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', refreshConnection);
+    window.addEventListener('offline', refreshConnection);
+
+    getLocalStorageHealth().then((health) => {
+      if (!active) return;
+      setLocalStatus(
+        health.database === 'ready'
+          ? 'Локальная база готова'
+          : 'Локальная база недоступна',
+      );
     });
+
+    const controller = new AbortController();
+    getCatalogOfflineFirst(controller.signal).then((result) => {
+      if (!active) return;
+      if (result.source === 'cache') {
+        setCatalogStatus('Открыта сохранённая копия каталога');
+      } else if (result.data.length > 0) {
+        setCatalogStatus(`Каталог загружен: программ — ${result.data.length}`);
+      } else {
+        setCatalogStatus('Каталог доступен; учебные программы пока не опубликованы');
+      }
+    }).catch(() => {
+      if (active) {
+        setCatalogStatus('Каталог пока недоступен — проверь подключение');
+      }
+    });
+
+    return () => {
+      active = false;
+      controller.abort();
+      window.removeEventListener('online', refreshConnection);
+      window.removeEventListener('offline', refreshConnection);
+    };
   }, []);
 
   const toggleTheme = () => setTheme((current) => current === 'dark' ? 'light' : 'dark');
@@ -81,7 +116,7 @@ function App() {
         <div className="sidebar-bottom">
           <div className="offline-indicator">
             <span className="status-dot" />
-            <span>{localStatus}</span>
+            <span>{isOnline ? localStatus : 'Офлайн • данные остаются на устройстве'}</span>
           </div>
           <button className="theme-button" onClick={toggleTheme}>
             <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
@@ -174,7 +209,7 @@ function App() {
                 </div>
                 <div className="empty-state">
                   <span className="empty-state-icon"><FontAwesomeIcon icon={faCirclePlay} /></span>
-                  <div><strong>Здесь появится твой маршрут</strong><p>После выбора программы мы подберём темы и задания под твой уровень.</p></div>
+                  <div><strong>Здесь появится твой маршрут</strong><p>После выбора программы мы подберём темы и задания под твой уровень.</p><small className="catalog-status">{catalogStatus}</small></div>
                 </div>
               </section>
 
