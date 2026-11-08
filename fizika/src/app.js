@@ -231,9 +231,13 @@ function frame({ title, back = false, acts = '', sub = '', abar = '', tabs = tru
 const actBtn = (act, icon, label, extra = '') => `<button class="ib" type="button" data-act="${act}" aria-label="${label}" title="${label}" ${extra}>${ico(icon)}</button>`;
 let searchOpen = false, searchText = '';
 
+// Перерисовка того же экрана (нажал кнопку, выбрал вариант) — без анимации и с той же прокруткой.
+// Анимация появления и прокрутка наверх — только при переходе на другой экран.
+let lastView = null, sameView = false;
 function render() {
   stopTimer();
-  const r = route();
+  const r = route(), y = ui.main.scrollTop;
+  sameView = lastView === location.hash; lastView = location.hash;
   document.body.dataset.view = r.name;
   ui.main.classList.remove('map'); // фон карты темы — только на карте
   ui.tabs.querySelectorAll('a').forEach(a => a.setAttribute('aria-current', a.dataset.tab === r.tab ? 'page' : 'false'));
@@ -241,11 +245,13 @@ function render() {
   stopGame();
   ({ home: vHome, topics: vTopics, hub: vHub, note: vNote, game: vGame, topic: vTopic, test: vTest, me: vMe, err: vList, fav: vList, due: vList, hist: vHist, settings: vSettings, backup: vBackup,
     practice: vPractice, ref: vRef, games: vGames, formulas: vFormulas })[r.name](r);
+  if (sameView) ui.main.scrollTop = y;
   miniUpd();
 }
 function setMain(html) {
   ui.main.innerHTML = html;
-  ui.main.classList.remove('enter'); void ui.main.offsetWidth; ui.main.classList.add('enter');
+  ui.main.classList.remove('enter');
+  if (!sameView) { void ui.main.offsetWidth; ui.main.classList.add('enter'); }
 }
 
 const progressText = items => { const s = tstat(items); return s.s ? `Решено ${s.s} из ${items.length}` + (s.e ? `, ошибок ${s.e}` : '') : `${nQ(items.length)}, пока не начато`; };
