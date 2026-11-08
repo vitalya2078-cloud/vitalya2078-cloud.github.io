@@ -355,7 +355,7 @@ export async function restoreLocalBackup(file: File): Promise<{
       );
       const mergedQueue = mergeByKey(currentQueue, syncQueue, 'id', false);
       const mergedFavorites = applyFavoriteTombstones(
-        mergeByKey(currentFavorites, favorites, 'id', true),
+        mergeFavoriteRecords(currentFavorites, favorites),
         mergedQueue,
       );
       importedAttempts = mergedAttempts.length - currentAttempts.length;
