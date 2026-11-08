@@ -62,7 +62,7 @@ The outline seeds are reproducible and idempotent:
 - `supabase/seed/school-curriculum-outline-ooo.sql`
 - `supabase/seed/school-curriculum-outline-soo.sql`
 
-All 10 sections and 48 topic headings remain `draft`. No curriculum program or lesson has been published to the public API. This is deliberate: each outline must still be checked against the complete thematic planning, expected outcomes, and recommended laboratory work before lesson authoring and publication.
+All 10 sections remain `draft`. Of the 48 imported topic headings, 47 remain active drafts and one duplicate grade-8 basic-level optics heading has been archived after checking the source: the 2025 federal program places the full optics content in grade 9, not grade 8. No curriculum program or lesson has been published to the public API. This is deliberate: each outline must still be checked against the complete thematic planning, expected outcomes, and recommended laboratory work before lesson authoring and publication.
 
 ## Verified thematic-plan workload metadata
 
@@ -84,3 +84,33 @@ The thematic-planning sections of all four 2025 federal working-program PDFs wer
 The metadata is stored in the private `physics.education_level_plans` table. Its schema migration is `supabase/migrations/20261108112633_curriculum_level_plan_metadata.sql`; the idempotent seed is `supabase/seed/education-level-plan-metadata.sql`. All ten rows are `draft`.
 
 The next ingestion layer will represent individual thematic-plan rows, their official hours, content scope, student activities, recommended experiments/practical work, and source-page references. It will preserve the official sequence and keep basic/advanced tracks distinct. PHYSICS-authored lesson content and assessment mapping remain separate from the official source metadata.
+
+
+## Thematic unit ingestion — grades 7 and 8
+
+A separate `physics.curriculum_units` table now stores individual rows from the official thematic plans. Each row is linked to its grade-level node and, where applicable, its parent topic. It records the official row code and title, planned hours, a PHYSICS-authored paraphrase of the content scope and learning activities, recommended practical work, printed-page references, source URL/version, and draft/review status.
+
+The following grades have been transcribed into draft thematic units and verified against the official annual totals:
+
+| Track | Grade | Unit rows | Hours represented | Reserve | Review |
+|---|---:|---:|---:|---:|---:|
+| OOO basic | 7 | 17 | 68 | 3 | 0 |
+| OOO advanced | 7 | 17 | 102 | 0 | 6 |
+| OOO basic | 8 | 7 | 68 | 3 | 0 |
+| OOO advanced | 8 | 7 | 102 | 0 | 5 |
+
+The hours include reserve/review entries so that the unit totals reconcile exactly with the federal annual total. These are not lesson durations or a learner-facing timetable.
+
+Idempotent seed files:
+
+- `supabase/seed/curriculum-grade-7-thematic-units.sql`
+- `supabase/seed/curriculum-grade-8-thematic-units.sql`
+
+Schema migrations:
+
+- `supabase/migrations/20261108113809_curriculum_units_v1.sql`
+- `supabase/migrations/20261108113826_curriculum_units_level_scope.sql`
+
+Both seed files were replayed/verified without creating duplicates. All imported unit rows remain `draft`. The database security advisor reports no findings after the schema change.
+
+**Source alignment note:** the grade-8 basic-level outline originally contained an extra `Световые явления` topic. The 2025 basic OOO document's grade-8 content and thematic plan cover thermal and electrical/magnetic phenomena; optics is allocated to grade 9. The erroneous grade-8 duplicate is therefore archived, not deleted, and the grade-9 source-aligned topic remains in place.
