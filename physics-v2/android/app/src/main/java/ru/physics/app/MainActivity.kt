@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import ru.physics.app.data.LocalActivityRepository
 import ru.physics.app.data.CatalogRepository
 import ru.physics.app.data.CatalogSummary
@@ -84,13 +86,14 @@ class MainActivity : ComponentActivity() {
                 ) {
                     if (profile == null) {
                         ProfileSetupScreen(
-                            onSave = { nickname, tracks, grade ->
+                            onSave = { nickname, tracks, levels ->
                                 localRepository.saveProfile(
                                     ProfileEntity(
                                         nickname = nickname.trim().ifBlank { "Исследователь" },
                                         birthYear = null,
                                         educationTracks = tracks.sorted().joinToString(","),
-                                        gradeLevel = grade,
+                                        gradeLevel = levels.values.singleOrNull(),
+                                        educationTrackLevels = JSONObject(levels).toString(),
                                         updatedAt = System.currentTimeMillis(),
                                     ),
                                 )
@@ -321,36 +324,50 @@ private fun ProgressScreen(progressCount: Int, attemptCount: Int, mistakeCount: 
 
 @Composable
 private fun ProfileScreen(profile: ProfileEntity) {
-    val trackNames = profile.educationTracks.split(",")
+    val trackLabels = mapOf(
+        "school_base" to "Школа · базовый уровень",
+        "school_advanced" to "Школа · углублённый уровень",
+        "college" to "Колледж",
+        "technical_college" to "Техникум",
+        "university" to "Университет",
+    )
+    val trackLevels = runCatching { JSONObject(profile.educationTrackLevels) }.getOrNull()
+    val tracks = profile.educationTracks.split(",")
         .filter { it.isNotBlank() }
-        .mapNotNull { track ->
-            when (track) {
-                "school_base" -> "Школа · базовый уровень"
-                "school_advanced" -> "Школа · углублённый уровень"
-                "college" -> "Колледж / техникум"
-                "university" -> "Университет"
-                else -> null
-            }
+        .map { key ->
+            val level = trackLevels?.optString(key).orEmpty()
+            val label = trackLabels[key] ?: key
+            val unit = if (key.startsWith("school_")) "класс" else "курс"
+            if (level.isNotBlank()) "$label · $level $unit" else label
         }
+
     ScreenTitle("Профиль", "Твои образовательные направления и настройки.")
     InfoCard("Имя в PHYSICS", profile.nickname)
-    InfoCard("Образовательные направления", trackNames.joinToString("\n").ifBlank { "Не выбраны" })
-    profile.gradeLevel?.let { InfoCard("Класс / курс", it) }
+    InfoCard("Образовательные направления", tracks.joinToString("\n").ifBlank { "Не выбраны" })
     InfoCard("Локальные данные", "Профиль хранится в базе Room на этом устройстве. Интернет для работы не обязателен.")
 }
 
 @Composable
 private fun ProfileSetupScreen(
-    onSave: suspend (String, Set<String>, String?) -> Unit,
+    onSave: suspend (String, Set<String>, Map<String, String>) -> Unit,
 ) {
     var nickname by rememberSaveable { mutableStateOf("") }
     var selectedTracks by remember { mutableStateOf(setOf<String>()) }
-    var grade by rememberSaveable { mutableStateOf("7") }
+    var trackLevels by remember { mutableStateOf(mapOf<String, String>()) }
     var saving by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val schoolSelected = selectedTracks.any { it == "school_base" || it == "school_advanced" }
-    val higherEducationSelected = selectedTracks.any { it == "college" || it == "university" }
-    val levelOptions = if (schoolSelected) (7..11).map(Int::toString) else (1..6).map(Int::toString)
+
+    val tracks = listOf(
+        "school_base" to "Школа · базовый уровень",
+        "school_advanced" to "Школа · углублённый уровень",
+        "college" to "Колледж",
+        "technical_college" to "Техникум",
+        "university" to "Университет",
+    )
+
+    fun optionsFor(track: String): List<String> =
+        if (track.startsWith("school_")) (7..11).map(Int::toString)
+        else (1..6).map(Int::toString)
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
@@ -369,14 +386,12 @@ private fun ProfileSetupScreen(
         )
 
         Text("Выбери образовательные направления", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Text("Можно выбрать несколько. Позже направления можно будет изменить в профиле.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-
-        val tracks = listOf(
-            "school_base" to "Школа · базовый уровень",
-            "school_advanced" to "Школа · углублённый уровень",
-            "college" to "Колледж / техникум",
-            "university" to "Университет",
+        Text(
+            "Можно выбрать несколько. Для каждого направления укажи свой класс или курс.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+
         tracks.forEach { (key, label) ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -386,23 +401,31 @@ private fun ProfileSetupScreen(
                     checked = key in selectedTracks,
                     onCheckedChange = { checked ->
                         selectedTracks = if (checked) selectedTracks + key else selectedTracks - key
+                        trackLevels = if (checked) {
+                            trackLevels + (key to optionsFor(key).first())
+                        } else {
+                            trackLevels - key
+                        }
                     },
                 )
                 Text(label, style = MaterialTheme.typography.bodyMedium)
             }
         }
 
-        if (schoolSelected || higherEducationSelected) {
+        tracks.filter { it.first in selectedTracks }.forEach { (key, label) ->
             Text(
-                if (schoolSelected) "Класс" else "Курс",
+                if (key.startsWith("school_")) "$label · класс" else "$label · курс",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                levelOptions.forEach { option ->
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                optionsFor(key).forEach { option ->
                     FilterChip(
-                        selected = grade == option,
-                        onClick = { grade = option },
+                        selected = trackLevels[key] == option,
+                        onClick = { trackLevels = trackLevels + (key to option) },
                         label = { Text(option) },
                     )
                 }
@@ -415,7 +438,7 @@ private fun ProfileSetupScreen(
             onClick = {
                 saving = true
                 scope.launch {
-                    onSave(nickname, selectedTracks, if (schoolSelected || higherEducationSelected) grade else null)
+                    onSave(nickname, selectedTracks, trackLevels.filterKeys { it in selectedTracks })
                     saving = false
                 }
             },
