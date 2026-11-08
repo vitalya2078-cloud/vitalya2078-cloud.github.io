@@ -92,7 +92,7 @@ const lessonQuery = [
   "select jsonb_build_object(",
   "  'id', l.id, 'slug', l.slug, 'title', l.title, 'summary', l.summary,",
   "  'estimatedMinutes', l.estimated_minutes, 'contentVersion', l.content_version,",
-  "  'learningOutcomes', lv.learning_outcomes, 'prerequisites', lv.prerequisites,",
+  "  'learningOutcomes', lesson_version.learning_outcomes, 'prerequisites', lesson_version.prerequisites,",
   "  'topic', jsonb_build_object('id', t.id, 'slug', t.slug, 'title', t.title),",
   "  'sources', coalesce((",
   "    select jsonb_agg(jsonb_build_object(",
