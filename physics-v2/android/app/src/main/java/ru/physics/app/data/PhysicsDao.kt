@@ -76,4 +76,7 @@ interface PhysicsDao {
 
     @Query("SELECT * FROM mistakes WHERE questionId = :questionId LIMIT 1")
     suspend fun getMistake(questionId: String): MistakeEntity?
+
+    @Query("UPDATE mistakes SET correctedAt = :correctedAt WHERE questionId = :questionId")
+    suspend fun markMistakeCorrected(questionId: String, correctedAt: Long)
 }
