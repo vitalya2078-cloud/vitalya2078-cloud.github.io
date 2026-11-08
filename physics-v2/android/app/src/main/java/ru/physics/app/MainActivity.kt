@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import ru.physics.app.data.CatalogRepository
+import ru.physics.app.data.CatalogSummary
 import ru.physics.app.data.PhysicsDatabase
 import ru.physics.app.data.PhysicsDao
 import ru.physics.app.data.ProfileEntity
@@ -140,7 +143,7 @@ private fun NativeHome(nickname: String, dao: PhysicsDao) {
         ) {
             when (selectedSection) {
                 AppSection.HOME -> HomeScreen(nickname, onOpen = { selectedSection = it })
-                AppSection.LEARNING -> LearningScreen()
+                AppSection.LEARNING -> LearningScreen(dao)
                 AppSection.TESTING -> TestingScreen()
                 AppSection.LAB -> LaboratoryScreen()
                 AppSection.PROGRESS -> ProgressScreen(progressCount, attemptCount, mistakeCount)
@@ -201,10 +204,64 @@ private fun SectionCard(
 }
 
 @Composable
-private fun LearningScreen() {
-    ScreenTitle("Обучение", "Учебный каталог появится здесь после подключения проверенных программ и уроков.")
-    InfoCard("Структура обучения", "Программы → классы и уровни → разделы → темы → уроки. Материалы будут доступны для предварительной загрузки и занятий без интернета.")
-    InfoCard("Каталог готовится", "Учебные планы уже заведены в базу как черновики. Они не показываются как опубликованные, пока не пройдут проверку.")
+private fun LearningScreen(dao: PhysicsDao) {
+    val repository = remember(dao) { CatalogRepository(dao) }
+    var summary by remember { mutableStateOf<CatalogSummary?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    suspend fun refreshCatalog() {
+        loading = true
+        errorMessage = null
+        try {
+            summary = repository.loadPublishedCatalog()
+        } catch (error: Exception) {
+            errorMessage = error.message ?: "Не удалось загрузить каталог."
+        } finally {
+            loading = false
+        }
+    }
+
+    LaunchedEffect(repository) {
+        refreshCatalog()
+    }
+
+    ScreenTitle("Обучение", "Программы, разделы, темы и уроки с возможностью заниматься офлайн.")
+    if (loading && summary == null) {
+        InfoCard("Загружаем каталог", "Проверяем опубликованные учебные материалы. Первый запуск не требует авторизации.")
+    }
+    summary?.let { catalog ->
+        InfoCard(
+            "Опубликованный каталог",
+            "Программ: ${catalog.programCount}. Тем: ${catalog.topicCount}. Уроков: ${catalog.lessonCount}.",
+        )
+        InfoCard(
+            if (catalog.fromCache) "Офлайн-копия" else "Источник данных",
+            if (catalog.fromCache) {
+                "Показана сохранённая на устройстве копия каталога."
+            } else {
+                "Данные получены из PHYSICS API и сохранены локально."
+            },
+        )
+        if (catalog.programCount == 0) {
+            InfoCard(
+                "Материалы проходят проверку",
+                "Черновики учебных программ не выдаются пользователям. Опубликованные уроки появятся после редакционной и методической проверки.",
+            )
+        }
+    }
+    errorMessage?.let { InfoCard("Каталог недоступен", it) }
+    Button(
+        enabled = !loading,
+        onClick = { scope.launch { refreshCatalog() } },
+    ) {
+        Text(if (loading) "Обновляем..." else "Обновить каталог")
+    }
+    InfoCard(
+        "Офлайн-режим",
+        "Загруженный каталог сохраняется в локальной базе Room. Следующий запуск сможет показать его без подключения к интернету.",
+    )
 }
 
 @Composable
