@@ -140,3 +140,19 @@ The local progress record now keeps `lastAttemptAt` independently from `updatedA
 Cloud sync commands validate UUID identifiers before mapping. The official 900-question bank uses UUID primary keys; its source question number is only unique within a legacy topic. The new client must therefore keep the canonical `official_questions.id` in each mistake record. A displayed question number, array index, or legacy topic-local number is not a cloud question ID and is rejected by the mapper.
 
 Assessment attempts are append-only: only an `insert` operation is mappable. Attempt updates/deletes are rejected rather than translated into mutation of historical results. Favorites support insert/delete by the canonical `(target_type, target_id)` pair; update operations are rejected. Progress supports insert/update but not deletion. Mistake records support idempotent insert/update operations; the server increments the aggregate miss count once per accepted operation ID.
+
+
+## Device enrollment, batch acceptance, and pull cursor
+
+The existing schema has `sync_devices` with a unique `(user_id, device_key)` pair and a platform allow-list (`android`, `ios`, `web`, `windows`, `other`). The device key is a client-generated UUID used to recognize a local installation; it is **not** an authentication credential.
+
+The planned authenticated protocol is:
+
+1. The client signs in and sends its access token. The server derives the account exclusively from `auth.uid()`; a `user_id` in the request body is ignored/rejected.
+2. Device enrollment accepts a client `device_key`, allowed platform, and optional short label. The server upserts only within the authenticated user's scope and returns the server-owned `sync_devices.id`. A caller cannot choose or claim another account's `device_id`.
+3. A sync batch is size-limited and schema-validated. Each operation must reference the enrolled device owned by `auth.uid()`. Canonical UUIDs and entity-specific operation rules are checked before any domain write.
+4. Idempotency is enforced by the existing unique key `(user_id, device_id, operation_id)`. A retry returns the stored outcome and must not repeat side effects.
+5. The server returns a pull cursor independent of device clocks. A simple global sequence alone is insufficient for a commit-ordered cursor under concurrent transactions. The intended design is a per-user `user_sync_state` row locked `FOR UPDATE` while an applied event receives its next `server_version`; the version and domain mutation commit in the same transaction. Pull requests return only applied events with `server_version > cursor`, ordered by version.
+6. Each operation has an isolated outcome (`applied`, `conflict`, or `rejected`). A malformed operation must not silently mark later operations as applied. The server's `received_at` and assigned version determine synchronization order; client timestamps are informational and are never used as the conflict-order authority.
+
+Before enabling delivery, implementation still needs: the per-user cursor table/column migration, authenticated device-enrollment endpoint, batch RPC/Edge Function, per-entity transactional handlers, duplicate/concurrency tests, cross-account device-isolation tests, and end-to-end tests using real authenticated sessions. Until those exist, the local queue remains persistent but network delivery remains disabled.
