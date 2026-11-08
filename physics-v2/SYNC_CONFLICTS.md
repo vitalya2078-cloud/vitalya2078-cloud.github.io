@@ -75,3 +75,15 @@ A transient network retry must never create a second attempt or increment a mist
 ## Current implementation boundary
 
 The browser currently persists local attempts, progress, mistakes, favorites, and queued operations in IndexedDB. Queue management is implemented, but it intentionally performs no network delivery. Authenticated delivery is a later security milestone.
+
+## Backup merge invariants now covered by local tests
+
+Backup restoration applies the following merge rules before writing records:
+
+- Assessment attempts are append-only; an existing local attempt with the same ID is never overwritten by an imported copy.
+- Lesson progress cannot regress from mastered, and completion/best score/best grade do not decrease when merging a stale backup.
+- Mistake aggregates preserve the larger recorded count and earliest first-seen timestamp; the newest record controls last-seen/correction state.
+- Favorite deletions are honored from the newest retained favorite operation, so an older backup cannot resurrect an item after a queued delete.
+- The merged sync queue is retained so pending operations remain available for a future authenticated sync phase.
+
+These rules are local backup-restore behavior only. They do not replace server-side idempotency, ownership checks, or versioned tombstones required before network sync is enabled.
