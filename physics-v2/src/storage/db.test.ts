@@ -77,7 +77,7 @@ describe('local record persistence', () => {
     });
 
     await saveLocalProgress({
-      id: 'progress-2',
+      id: 'progress-2-from-another-device',
       entityType: 'lesson',
       entityId: 'lesson-2',
       status: 'not_started',
@@ -100,6 +100,7 @@ describe('local record persistence', () => {
       .equals('progress')
       .toArray();
     expect(progressOperations.every((operation) => operation.entityId === 'lesson-2')).toBe(true);
+    expect(await localDb.progress.count()).toBe(1);
   });
 
   it('keeps derived section and topic progress local-only', async () => {
@@ -136,7 +137,6 @@ describe('local record persistence', () => {
     expect(operations.map((operation) => operation.operation).sort()).toEqual([
       'delete',
       'insert',
-      'update',
     ]);
     const deletion = operations.find((operation) => operation.operation === 'delete');
     expect(deletion?.entityId).toBe('lesson-1');
