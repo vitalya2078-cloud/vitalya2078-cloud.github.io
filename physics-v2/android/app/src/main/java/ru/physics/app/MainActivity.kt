@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -74,11 +76,13 @@ class MainActivity : ComponentActivity() {
                 ) {
                     if (profile == null) {
                         ProfileSetupScreen(
-                            onSave = { nickname ->
+                            onSave = { nickname, tracks, grade ->
                                 database.physicsDao().saveProfile(
                                     ProfileEntity(
                                         nickname = nickname.trim().ifBlank { "Исследователь" },
                                         birthYear = null,
+                                        educationTracks = tracks.sorted().joinToString(","),
+                                        gradeLevel = grade,
                                         updatedAt = System.currentTimeMillis(),
                                     ),
                                 )
@@ -86,7 +90,7 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         NativeHome(
-                            nickname = profile?.nickname.orEmpty(),
+                            profile = profile!!,
                             dao = database.physicsDao(),
                         )
                     }
@@ -106,7 +110,7 @@ private enum class AppSection(val label: String) {
 }
 
 @Composable
-private fun NativeHome(nickname: String, dao: PhysicsDao) {
+private fun NativeHome(profile: ProfileEntity, dao: PhysicsDao) {
     var selectedSection by rememberSaveable { mutableStateOf(AppSection.HOME) }
     val progressCount by dao.observeProgressCount().collectAsStateWithLifecycle(initialValue = 0)
     val attemptCount by dao.observeAttemptCount().collectAsStateWithLifecycle(initialValue = 0)
@@ -142,12 +146,12 @@ private fun NativeHome(nickname: String, dao: PhysicsDao) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             when (selectedSection) {
-                AppSection.HOME -> HomeScreen(nickname, onOpen = { selectedSection = it })
+                AppSection.HOME -> HomeScreen(profile.nickname, onOpen = { selectedSection = it })
                 AppSection.LEARNING -> LearningScreen(dao)
                 AppSection.TESTING -> TestingScreen()
                 AppSection.LAB -> LaboratoryScreen()
                 AppSection.PROGRESS -> ProgressScreen(progressCount, attemptCount, mistakeCount)
-                AppSection.PROFILE -> ProfileScreen(nickname)
+                AppSection.PROFILE -> ProfileScreen(profile)
             }
         }
     }
@@ -304,29 +308,46 @@ private fun ProgressScreen(progressCount: Int, attemptCount: Int, mistakeCount: 
 }
 
 @Composable
-private fun ProfileScreen(nickname: String) {
-    ScreenTitle("Профиль", "Твой профиль и настройки обучения.")
-    InfoCard("Имя в PHYSICS", nickname)
-    InfoCard("Данные", "Профиль хранится локально. В дальнейшем можно будет подключить учётную запись и синхронизацию между устройствами.")
+private fun ProfileScreen(profile: ProfileEntity) {
+    val trackNames = profile.educationTracks.split(",")
+        .filter { it.isNotBlank() }
+        .mapNotNull { track ->
+            when (track) {
+                "school_base" -> "Школа · базовый уровень"
+                "school_advanced" -> "Школа · углублённый уровень"
+                "college" -> "Колледж / техникум"
+                "university" -> "Университет"
+                else -> null
+            }
+        }
+    ScreenTitle("Профиль", "Твои образовательные направления и настройки.")
+    InfoCard("Имя в PHYSICS", profile.nickname)
+    InfoCard("Образовательные направления", trackNames.joinToString("\n").ifBlank { "Не выбраны" })
+    profile.gradeLevel?.let { InfoCard("Класс / курс", it) }
+    InfoCard("Локальные данные", "Профиль хранится в базе Room на этом устройстве. Интернет для работы не обязателен.")
 }
 
 @Composable
-private fun ProfileSetupScreen(onSave: suspend (String) -> Unit) {
+private fun ProfileSetupScreen(
+    onSave: suspend (String, Set<String>, String?) -> Unit,
+) {
     var nickname by rememberSaveable { mutableStateOf("") }
+    var selectedTracks by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var grade by rememberSaveable { mutableStateOf("7") }
     var saving by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val schoolSelected = selectedTracks.any { it == "school_base" || it == "school_advanced" }
+    val higherEducationSelected = selectedTracks.any { it == "college" || it == "university" }
+    val levelOptions = if (schoolSelected) (7..11).map(Int::toString) else (1..6).map(Int::toString)
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Text("PHYSICS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-        Spacer(Modifier.height(12.dp))
         Text("Начнём знакомство", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        Text("Как к тебе обращаться в приложении?", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(20.dp))
+        Text("Как к тебе обращаться в приложении?")
         OutlinedTextField(
             value = nickname,
             onValueChange = { nickname = it.take(32) },
@@ -334,23 +355,63 @@ private fun ProfileSetupScreen(onSave: suspend (String) -> Unit) {
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(Modifier.height(16.dp))
+
+        Text("Выбери образовательные направления", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text("Можно выбрать несколько. Позже направления можно будет изменить в профиле.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+        val tracks = listOf(
+            "school_base" to "Школа · базовый уровень",
+            "school_advanced" to "Школа · углублённый уровень",
+            "college" to "Колледж / техникум",
+            "university" to "Университет",
+        )
+        tracks.forEach { (key, label) ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = key in selectedTracks,
+                    onCheckedChange = { checked ->
+                        selectedTracks = if (checked) selectedTracks + key else selectedTracks - key
+                    },
+                )
+                Text(label, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        if (schoolSelected || higherEducationSelected) {
+            Text(
+                if (schoolSelected) "Класс" else "Курс",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                levelOptions.forEach { option ->
+                    FilterChip(
+                        selected = grade == option,
+                        onClick = { grade = option },
+                        label = { Text(option) },
+                    )
+                }
+            }
+        }
+
         Button(
-            enabled = !saving,
+            enabled = !saving && selectedTracks.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),
             onClick = {
                 saving = true
                 scope.launch {
-                    onSave(nickname)
+                    onSave(nickname, selectedTracks, if (schoolSelected || higherEducationSelected) grade else null)
                     saving = false
                 }
             },
         ) {
             Text(if (saving) "Сохраняем..." else "Продолжить")
         }
-        Spacer(Modifier.height(10.dp))
         Text(
-            "Данные сохраняются на этом устройстве. Интернет для начала работы не нужен.",
+            "Профиль и выбор программ сохраняются на устройстве. Интернет для начала работы не нужен.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
