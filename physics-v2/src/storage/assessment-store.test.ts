@@ -51,6 +51,11 @@ describe('saveFinalAssessment', () => {
     expect(saved.updatedErrors).toBe(2);
     expect((await localDb.errors.get('q-1'))?.errorCount).toBe(1);
     expect(await localDb.syncQueue.count()).toBe(4);
+    const progressOperation = await localDb.syncQueue
+      .where('entityType')
+      .equals('progress')
+      .first();
+    expect(progressOperation?.entityId).toBe('lesson-1');
   });
 
   it('does not revoke mastery after a lower later result', async () => {
