@@ -127,7 +127,7 @@ const lessonQuery = [
   "and t.status = 'published' and s.status = 'published'",
   "and v.status = 'active' and p.status = 'active'",
   "limit 1",
-].join("\\n");
+].join("\n");
 
 Deno.serve(async (request: Request) => {
   if (request.method === "OPTIONS") {
