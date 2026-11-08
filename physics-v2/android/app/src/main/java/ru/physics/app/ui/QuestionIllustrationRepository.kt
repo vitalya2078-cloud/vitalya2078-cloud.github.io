@@ -8,9 +8,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.zip.ZipInputStream
 
 class QuestionIllustrationRepository(
-    context: Context,
+    private val context: Context,
 ) {
     private val cacheDirectory = File(context.filesDir, "question-illustrations").apply {
         mkdirs()
@@ -24,6 +25,8 @@ class QuestionIllustrationRepository(
             BitmapFactory.decodeFile(cachedFile.absolutePath)?.let { return@withContext it }
             cachedFile.delete()
         }
+
+        loadBundledIllustration(fileName)?.let { return@withContext it }
 
         for (baseUrl in MIRRORS) {
             val connection = runCatching {
@@ -50,7 +53,27 @@ class QuestionIllustrationRepository(
         null
     }
 
+    private fun loadBundledIllustration(fileName: String): Bitmap? {
+        return runCatching {
+            ZipInputStream(context.assets.open(BUNDLED_ARCHIVE)).use { archive ->
+                var entry = archive.nextEntry
+                while (entry != null) {
+                    if (!entry.isDirectory && entry.name == fileName) {
+                        val bytes = archive.readBytes()
+                        val cachedFile = File(cacheDirectory, fileName)
+                        cachedFile.writeBytes(bytes)
+                        return@runCatching BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    }
+                    archive.closeEntry()
+                    entry = archive.nextEntry
+                }
+                null
+            }
+        }.getOrNull()
+    }
+
     private companion object {
+        const val BUNDLED_ARCHIVE = "question-illustrations.zip"
         val FILE_NAME = Regex("^[A-Za-z0-9_.-]{1,80}$")
         val MIRRORS = listOf(
             "https://fizika.gitverse.site/pics/",
