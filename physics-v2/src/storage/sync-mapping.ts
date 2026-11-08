@@ -1,7 +1,6 @@
 import type {
   LocalAttempt,
   LocalError,
-  LocalFavorite,
   LocalProgress,
   SyncOperation,
 } from './db';
@@ -52,14 +51,6 @@ function isLocalProgress(value: unknown): value is LocalProgress {
     && typeof value.status === 'string'
     && typeof value.completionPercent === 'number'
     && typeof value.updatedAt === 'string';
-}
-
-function isLocalFavorite(value: unknown): value is LocalFavorite {
-  return isRecord(value)
-    && typeof value.id === 'string'
-    && typeof value.targetType === 'string'
-    && typeof value.targetId === 'string'
-    && typeof value.createdAt === 'string';
 }
 
 function isLocalError(value: unknown): value is LocalError {
