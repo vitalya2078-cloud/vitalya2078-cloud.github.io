@@ -120,6 +120,34 @@ describe('local backup', () => {
     expect(await localDb.syncQueue.get('favorite-delete-op')).toBeDefined();
   });
 
+  it('keeps the higher mistake count and earliest first-seen date', async () => {
+    await localDb.errors.add({
+      id: 'question-1',
+      questionId: 'question-1',
+      errorCount: 2,
+      firstSeenAt: '2026-11-07T10:00:00.000Z',
+      lastSeenAt: '2026-11-08T10:00:00.000Z',
+    });
+
+    const backup = await createLocalBackup();
+
+    await localDb.errors.put({
+      id: 'question-1',
+      questionId: 'question-1',
+      errorCount: 5,
+      firstSeenAt: '2026-11-08T12:00:00.000Z',
+      lastSeenAt: '2026-11-09T10:00:00.000Z',
+    });
+
+    await restoreLocalBackup(backup as File);
+
+    expect(await localDb.errors.get('question-1')).toMatchObject({
+      errorCount: 5,
+      firstSeenAt: '2026-11-07T10:00:00.000Z',
+      lastSeenAt: '2026-11-09T10:00:00.000Z',
+    });
+  });
+
   it('rejects unsupported backup formats without changing local data', async () => {
     await localDb.attempts.add(attempt('keep-me', 70));
     const invalid = new Blob([
