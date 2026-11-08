@@ -84,7 +84,11 @@ describe('local backup', () => {
 
     await restoreLocalBackup(backup as File);
 
-    expect(await localDb.progress.get('progress-monotonic')).toMatchObject({
+    const mergedProgress = await localDb.progress
+      .where('[entityType+entityId]')
+      .equals(['lesson', 'lesson-2'])
+      .first();
+    expect(mergedProgress).toMatchObject({
       status: 'mastered',
       completionPercent: 100,
       bestScore: 95,
