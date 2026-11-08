@@ -129,11 +129,11 @@ class PhysicsDatabase extends Dexie {
 export const localDb = new PhysicsDatabase();
 
 export function createLocalId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
 
-  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
+  if (typeof crypto !== 'undefined') {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
     return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
