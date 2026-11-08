@@ -11,6 +11,9 @@ interface PhysicsDao {
     @Query("SELECT * FROM local_profile WHERE id = 1 LIMIT 1")
     fun observeProfile(): Flow<ProfileEntity?>
 
+    @Query("SELECT * FROM local_profile WHERE id = 1 LIMIT 1")
+    suspend fun getProfile(): ProfileEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveProfile(profile: ProfileEntity)
 
@@ -40,6 +43,9 @@ interface PhysicsDao {
 
     @Query("UPDATE sync_operations SET status = 'failed', attemptCount = attemptCount + 1, lastError = :error WHERE id = :operationId")
     suspend fun markSyncOperationFailed(operationId: String, error: String)
+
+    @Query("UPDATE sync_operations SET status = 'pending', lastError = NULL WHERE status = 'failed'")
+    suspend fun retryFailedSyncOperations()
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun appendAttempt(attempt: TestAttemptEntity)
