@@ -16,7 +16,7 @@ import androidx.room.RoomDatabase
         CatalogCacheEntity::class,
         SyncOperationEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class PhysicsDatabase : RoomDatabase() {
@@ -61,6 +61,14 @@ abstract class PhysicsDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : androidx.room.migration.Migration(5, 6) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE local_profile ADD COLUMN educationTrackLevels TEXT NOT NULL DEFAULT '{}'",
+                )
+            }
+        }
+
         @Volatile
         private var instance: PhysicsDatabase? = null
 
@@ -70,7 +78,7 @@ abstract class PhysicsDatabase : RoomDatabase() {
                     context.applicationContext,
                     PhysicsDatabase::class.java,
                     "physics-local.db",
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build().also { instance = it }
             }
     }
 }
