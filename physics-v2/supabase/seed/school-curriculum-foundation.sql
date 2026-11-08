@@ -80,3 +80,28 @@ on conflict (program_id, version_code) do update set
   title = excluded.title,
   source_name = excluded.source_name,
   source_url = excluded.source_url;
+
+
+-- Grade/year nodes are seeded separately from subject sections and lessons.
+-- Content remains draft until the full official hierarchy is mapped and reviewed.
+with level_rows(program_code, level_code, level_title, sort_order) as (
+  values
+    ('school-physics-ooo-basic','7','7 класс',1),
+    ('school-physics-ooo-basic','8','8 класс',2),
+    ('school-physics-ooo-basic','9','9 класс',3),
+    ('school-physics-ooo-advanced','7','7 класс',1),
+    ('school-physics-ooo-advanced','8','8 класс',2),
+    ('school-physics-ooo-advanced','9','9 класс',3),
+    ('school-physics-soo-basic','10','10 класс',1),
+    ('school-physics-soo-basic','11','11 класс',2),
+    ('school-physics-soo-advanced','10','10 класс',1),
+    ('school-physics-soo-advanced','11','11 класс',2)
+)
+insert into physics.education_levels(program_version_id, code, title, sort_order)
+select pv.id, lr.level_code, lr.level_title, lr.sort_order
+from level_rows lr
+join physics.education_programs ep on ep.code=lr.program_code
+join physics.program_versions pv on pv.program_id=ep.id and pv.version_code='2025'
+on conflict (program_version_id, code) do update set
+  title=excluded.title,
+  sort_order=excluded.sort_order;
