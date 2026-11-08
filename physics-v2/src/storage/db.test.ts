@@ -117,7 +117,7 @@ describe('local record persistence', () => {
     expect(await localDb.syncQueue.count()).toBe(0);
   });
 
-  it('queues favorite insert, update and delete in order', async () => {
+  it('queues one favorite insert and a canonical delete', async () => {
     const favorite = {
       id: 'favorite-1',
       targetType: 'lesson',
