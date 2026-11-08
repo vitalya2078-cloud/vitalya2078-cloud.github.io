@@ -47,7 +47,8 @@ export async function saveFinalAssessment(
     throw new Error('A lesson ID is required.');
   }
 
-  const result = createAssessmentResult(attempt.scorePercent);
+  const scorePercent = attempt.scorePercent;
+  const result = createAssessmentResult(scorePercent);
   const normalizedAttempt: LocalAttempt = { ...attempt, grade: result.grade };
   const now = attempt.completedAt;
 
@@ -81,7 +82,7 @@ export async function saveFinalAssessment(
 
       const mastery = mergeLessonMastery(
         previousMastery,
-        attempt.scorePercent,
+        scorePercent,
         now,
       );
 
@@ -94,7 +95,7 @@ export async function saveFinalAssessment(
           : 'in_progress',
         completionPercent: mastery.isMastered ? 100 : Math.max(
           previousProgress?.completionPercent ?? 0,
-          attempt.scorePercent,
+          scorePercent,
         ),
         bestScore: mastery.bestScore,
         bestGrade: mastery.bestGrade,
