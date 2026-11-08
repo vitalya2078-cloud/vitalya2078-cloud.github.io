@@ -86,6 +86,48 @@ jobs:
           retention-days: 14
 
 
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout existing public site from main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: legacy-site
+
+      - name: Download PHYSICS web build
+        uses: actions/download-artifact@v4
+        with:
+          name: physics-v2-web-build
+          path: web-dist
+
+      - name: Assemble site without replacing the existing homepage
+        run: |
+          mkdir -p _site
+          rsync -a --exclude='.git' legacy-site/ _site/
+          mkdir -p _site/physics-v2
+          rsync -a --delete web-dist/ _site/physics-v2/
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload combined GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy PHYSICS alongside the existing site
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   android-native:
     runs-on: ubuntu-latest
     steps:
