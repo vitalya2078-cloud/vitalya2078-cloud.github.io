@@ -176,15 +176,37 @@ async function queueOperation(
 
 export async function saveLocalProfile(profile: LocalProfile): Promise<void> {
   await localDb.transaction('rw', localDb.profiles, localDb.syncQueue, async () => {
+    const exists = await localDb.profiles.get(profile.id);
     await localDb.profiles.put(profile);
-    await queueOperation('profile', profile.id, 'update', profile);
+    await queueOperation(
+      'profile',
+      profile.id,
+      exists ? 'update' : 'insert',
+      profile,
+    );
   });
 }
 
 export async function saveLocalProgress(progress: LocalProgress): Promise<void> {
   await localDb.transaction('rw', localDb.progress, localDb.syncQueue, async () => {
-    await localDb.progress.put(progress);
-    await queueOperation('progress', progress.id, 'update', progress);
+    const existing = await localDb.progress.get(progress.id);
+    const normalized: LocalProgress = existing?.status === 'mastered'
+      ? {
+          ...progress,
+          status: 'mastered',
+          completionPercent: 100,
+          bestScore: Math.max(existing.bestScore ?? 0, progress.bestScore ?? 0),
+          bestGrade: Math.max(existing.bestGrade ?? 2, progress.bestGrade ?? 2),
+        }
+      : progress;
+
+    await localDb.progress.put(normalized);
+    await queueOperation(
+      'progress',
+      normalized.id,
+      existing ? 'update' : 'insert',
+      normalized,
+    );
   });
 }
 
@@ -197,13 +219,22 @@ export async function saveLocalAttempt(attempt: LocalAttempt): Promise<void> {
 
 export async function saveLocalFavorite(favorite: LocalFavorite): Promise<void> {
   await localDb.transaction('rw', localDb.favorites, localDb.syncQueue, async () => {
+    const exists = await localDb.favorites.get(favorite.id);
     await localDb.favorites.put(favorite);
-    await queueOperation('favorite', favorite.id, 'update', favorite);
+    await queueOperation(
+      'favorite',
+      favorite.id,
+      exists ? 'update' : 'insert',
+      favorite,
+    );
   });
 }
 
 export async function removeLocalFavorite(favoriteId: string): Promise<void> {
   await localDb.transaction('rw', localDb.favorites, localDb.syncQueue, async () => {
+    const exists = await localDb.favorites.get(favoriteId);
+    if (!exists) return;
+
     await localDb.favorites.delete(favoriteId);
     await queueOperation('favorite', favoriteId, 'delete', null);
   });
