@@ -170,7 +170,7 @@ export async function getCatalogOfflineFirst(
 ): Promise<OfflineApiResult<CatalogProgram[]>> {
   try {
     const response = await getCatalog(signal);
-    await cachePublishedCatalog(response.data);
+    await cachePublishedCatalog(response.data).catch(() => undefined);
     return { data: response.data, source: 'network' };
   } catch (networkError) {
     if (signal?.aborted) throw networkError;
@@ -194,7 +194,7 @@ export async function getLessonOfflineFirst(
 ): Promise<OfflineApiResult<LessonDocument>> {
   try {
     const response = await getLesson(lessonId, signal);
-    await cachePublishedLesson(lessonId, response.data);
+    await cachePublishedLesson(lessonId, response.data).catch(() => undefined);
     return { data: response.data, source: 'network' };
   } catch (networkError) {
     if (signal?.aborted) throw networkError;
