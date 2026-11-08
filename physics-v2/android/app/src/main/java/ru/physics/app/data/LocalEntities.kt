@@ -8,6 +8,8 @@ data class ProfileEntity(
     @PrimaryKey val id: Int = 1,
     val nickname: String,
     val birthYear: Int?,
+    val educationTracks: String,
+    val gradeLevel: String?,
     val updatedAt: Long,
 )
 
