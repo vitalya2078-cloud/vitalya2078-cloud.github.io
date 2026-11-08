@@ -126,7 +126,10 @@ describe('local record persistence', () => {
     };
 
     await saveLocalFavorite(favorite);
-    await saveLocalFavorite(favorite);
+    await saveLocalFavorite({
+      ...favorite,
+      id: 'favorite-from-another-device',
+    });
     await removeLocalFavorite(favorite.id);
 
     const operations = await localDb.syncQueue
