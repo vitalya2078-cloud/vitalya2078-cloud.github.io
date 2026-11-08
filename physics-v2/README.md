@@ -111,3 +111,20 @@ Run locally in a Node.js environment:
 - `npm run smoke:pwa`
 
 GitHub Actions runs the same checks on `physics-hybrid-redesign`.
+
+
+## Native Android application
+
+Android is developed as a separate native client in `android/`:
+
+- Kotlin + Jetpack Compose + Material 3; no WebView, Capacitor, or embedded website.
+- Room/SQLite for local profile, progress, attempts, favorites, mistakes, and settings.
+- Local-first behavior: first launch and the current native screens do not require an account or internet connection.
+- Native Android build and unit tests run in the `android-native` GitHub Actions job.
+- The CI debug APK is uploaded as `physics-android-debug-apk` for installation/testing. It is not a production-signed release.
+
+The React + TypeScript application remains the iOS PWA and desktop web client. The clients share API/data contracts and backend rules, not UI code or a single local database.
+
+Current native Android screens: first-run nickname setup, home, learning placeholder, testing status, interactive free-fall lab, local progress summary, and profile overview.
+
+Not yet connected in the native client: published curriculum download/cache, the official 900-question delivery and assessment engine, secure account sign-in, cloud sync, backup import/export, and release signing. These are explicit next implementation tasks; the native shell must not be mistaken for a completed learning product.
