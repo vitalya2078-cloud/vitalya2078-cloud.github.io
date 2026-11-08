@@ -133,3 +133,10 @@ The mapper deliberately returns `local_only` for profiles and progress records t
 ## Attempt timestamps in progress sync
 
 The local progress record now keeps `lastAttemptAt` independently from `updatedAt`. A learner may open a lesson or update reading progress after the last assessment; those actions must not rewrite the timestamp of the most recent graded attempt. Final assessment persistence records the attempt completion timestamp, local merges retain the newest actual attempt timestamp, and the cloud mapper only sends `last_attempt_at` when that dedicated field exists.
+
+
+## Canonical identifiers and append-only entities
+
+Cloud sync commands validate UUID identifiers before mapping. The official 900-question bank uses UUID primary keys; its source question number is only unique within a legacy topic. The new client must therefore keep the canonical `official_questions.id` in each mistake record. A displayed question number, array index, or legacy topic-local number is not a cloud question ID and is rejected by the mapper.
+
+Assessment attempts are append-only: only an `insert` operation is mappable. Attempt updates/deletes are rejected rather than translated into mutation of historical results. Favorites support insert/delete by the canonical `(target_type, target_id)` pair; update operations are rejected. Progress supports insert/update but not deletion. Mistake records support idempotent insert/update operations; the server increments the aggregate miss count once per accepted operation ID.
