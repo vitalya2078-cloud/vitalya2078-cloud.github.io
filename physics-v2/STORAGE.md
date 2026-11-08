@@ -24,3 +24,10 @@ Do not send queued personal data until Auth and ownership policies are implement
 ## Browser storage limitations
 
 IndexedDB is device-local and may be cleared by browser settings or storage pressure. The app must surface backup/export and storage-health affordances before production release. Offline capability must be tested on Android Chrome and iOS Safari/PWA; service-worker support and persistence behavior differ by browser.
+
+
+## Sync queue lifecycle
+
+The queue API in `src/storage/sync-queue.ts` provides deterministic pending-operation reads, success marking, retryable/permanent failure recording, explicit retry of failed operations, queue statistics, and cleanup of old successful operations.
+
+No queue function sends data over the network. Network delivery is intentionally absent until authentication, device ownership, authorization policies, and idempotent server writes are implemented and tested. A transient failure remains pending; a permanent rejection is marked failed and requires explicit retry.
