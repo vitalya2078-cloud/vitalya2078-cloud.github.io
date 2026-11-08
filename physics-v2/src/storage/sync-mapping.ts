@@ -82,6 +82,9 @@ function mapAttempt(operation: SyncOperation): SyncMappingResult {
     || operation.operation !== 'insert'
     || !isUuid(attempt.id)
     || operation.entityId !== attempt.id
+    || !Number.isFinite(Date.parse(attempt.startedAt))
+    || (attempt.completedAt !== undefined && !Number.isFinite(Date.parse(attempt.completedAt)))
+    || (attempt.status === 'completed' && !attempt.completedAt)
     || (attempt.testId !== undefined && !isUuid(attempt.testId))
   ) {
     return {
@@ -148,6 +151,7 @@ function mapProgress(operation: SyncOperation): SyncMappingResult {
     || operation.operation === 'delete'
     || !isUuid(progress.entityId)
     || operation.entityId !== progress.entityId
+    || !Number.isFinite(Date.parse(progress.updatedAt))
   ) {
     return {
       status: 'invalid',
@@ -158,7 +162,7 @@ function mapProgress(operation: SyncOperation): SyncMappingResult {
   if (progress.entityType !== 'lesson') {
     return {
       status: 'local_only',
-      reason: 'Section/topic progress is derived locally; block progress requires its parent lesson ID.',
+      reason: 'Section/topic progress is derived locally; block progress stays local until its parent lesson mapping is explicit.',
     };
   }
 
@@ -236,6 +240,8 @@ function mapFavorite(operation: SyncOperation): SyncMappingResult {
     || !favoriteTargetTypes.has(targetType)
     || !isUuid(targetId)
     || operation.entityId !== targetId
+    || (typeof operation.payload.createdAt === 'string'
+      && !Number.isFinite(Date.parse(operation.payload.createdAt)))
   ) {
     return { status: 'invalid', reason: 'Favorite target is not supported by the cloud schema.' };
   }
@@ -270,6 +276,11 @@ function mapMistake(operation: SyncOperation): SyncMappingResult {
     || operation.operation === 'delete'
     || !isUuid(mistake.questionId)
     || operation.entityId !== mistake.questionId
+    || mistake.id !== mistake.questionId
+    || !Number.isFinite(Date.parse(mistake.firstSeenAt))
+    || !Number.isFinite(Date.parse(mistake.lastSeenAt))
+    || (mistake.correctedAt !== undefined
+      && !Number.isFinite(Date.parse(mistake.correctedAt)))
     || !Number.isInteger(mistake.errorCount)
     || mistake.errorCount < 1
   ) {
