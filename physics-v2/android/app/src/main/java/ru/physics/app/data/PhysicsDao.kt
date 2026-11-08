@@ -23,6 +23,21 @@ interface PhysicsDao {
     @Query("SELECT COUNT(*) FROM mistakes WHERE correctedAt IS NULL")
     fun observeOpenMistakeCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM sync_operations WHERE status = 'pending'")
+    fun observePendingSyncCount(): Flow<Int>
+
+    @Query("SELECT * FROM sync_operations WHERE status = 'pending' ORDER BY createdAt ASC LIMIT :limit")
+    suspend fun getPendingSyncOperations(limit: Int = 100): List<SyncOperationEntity>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun enqueueSyncOperation(operation: SyncOperationEntity)
+
+    @Query("UPDATE sync_operations SET status = 'synced', lastError = NULL WHERE id = :operationId")
+    suspend fun markSyncOperationSynced(operationId: String)
+
+    @Query("UPDATE sync_operations SET status = 'failed', attemptCount = attemptCount + 1, lastError = :error WHERE id = :operationId")
+    suspend fun markSyncOperationFailed(operationId: String, error: String)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun appendAttempt(attempt: TestAttemptEntity)
 
