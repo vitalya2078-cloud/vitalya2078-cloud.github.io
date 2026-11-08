@@ -321,9 +321,12 @@ export function validateLessonBlocks(value: unknown): LessonValidationIssue[] {
   return issues;
 }
 
-export function validateLessonForPublication(
-  lesson: LessonPublicationInput,
-): LessonValidationIssue[] {
+export function validateLessonForPublication(lessonValue: unknown): LessonValidationIssue[] {
+  if (!isRecord(lessonValue)) {
+    return [{ path: 'lesson', message: 'Lesson publication data must be an object.' }];
+  }
+
+  const lesson = lessonValue;
   const issues: LessonValidationIssue[] = [];
 
   if (!isNonEmptyString(lesson.title) || lesson.title.length > 180) {
@@ -332,7 +335,7 @@ export function validateLessonForPublication(
   if (!isNonEmptyString(lesson.summary) || lesson.summary.length < 20) {
     issues.push({ path: 'summary', message: 'A meaningful lesson summary is required.' });
   }
-  if (!Number.isInteger(lesson.estimatedMinutes) || lesson.estimatedMinutes < 1) {
+  if (!Number.isInteger(lesson.estimatedMinutes) || (lesson.estimatedMinutes as number) < 1) {
     issues.push({ path: 'estimatedMinutes', message: 'Estimated duration must be a positive integer.' });
   }
   if (!hasStringArray(lesson.learningOutcomes)) {
@@ -342,9 +345,17 @@ export function validateLessonForPublication(
     issues.push({ path: 'sourceReferences', message: 'At least one source reference is required.' });
   }
 
-  for (const [key, value] of Object.entries(lesson.review)) {
-    if (value !== true) {
-      issues.push({ path: `review.${key}`, message: 'All required reviews must be approved before publication.' });
+  const reviewKeys = ['physicsReviewed', 'pedagogyReviewed', 'rightsReviewed'] as const;
+  if (!isRecord(lesson.review)) {
+    issues.push({ path: 'review', message: 'Review approvals must be provided.' });
+  } else {
+    for (const key of reviewKeys) {
+      if (lesson.review[key] !== true) {
+        issues.push({
+          path: `review.${key}`,
+          message: 'All required reviews must be approved before publication.',
+        });
+      }
     }
   }
 
