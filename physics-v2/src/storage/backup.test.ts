@@ -55,6 +55,71 @@ describe('local backup', () => {
     expect(await localDb.progress.get('progress-1')).toBeDefined();
   });
 
+  it('does not restore stale progress over mastered progress', async () => {
+    await localDb.progress.add({
+      id: 'progress-monotonic',
+      entityType: 'lesson',
+      entityId: 'lesson-2',
+      status: 'in_progress',
+      completionPercent: 40,
+      bestScore: 40,
+      bestGrade: 2,
+      latestGrade: 2,
+      updatedAt: '2026-11-08T10:00:00.000Z',
+    });
+
+    const backup = await createLocalBackup();
+
+    await localDb.progress.put({
+      id: 'progress-monotonic',
+      entityType: 'lesson',
+      entityId: 'lesson-2',
+      status: 'mastered',
+      completionPercent: 100,
+      bestScore: 95,
+      bestGrade: 5,
+      latestGrade: 5,
+      updatedAt: '2026-11-09T10:00:00.000Z',
+    });
+
+    await restoreLocalBackup(backup as File);
+
+    expect(await localDb.progress.get('progress-monotonic')).toMatchObject({
+      status: 'mastered',
+      completionPercent: 100,
+      bestScore: 95,
+      bestGrade: 5,
+    });
+  });
+
+  it('honors favorite deletion tombstones when restoring an older backup', async () => {
+    await localDb.favorites.add({
+      id: 'favorite-deleted',
+      targetType: 'lesson',
+      targetId: 'lesson-3',
+      createdAt: '2026-11-08T10:00:00.000Z',
+    });
+
+    const backup = await createLocalBackup();
+
+    await localDb.favorites.delete('favorite-deleted');
+    await localDb.syncQueue.add({
+      id: 'favorite-delete-op',
+      entityType: 'favorite',
+      entityId: 'favorite-deleted',
+      operation: 'delete',
+      payload: null,
+      createdAt: '2026-11-09T10:00:00.000Z',
+      status: 'pending',
+      attempts: 0,
+    });
+
+    await restoreLocalBackup(backup as File);
+
+    expect(await localDb.favorites.get('favorite-deleted')).toBeUndefined();
+    expect(await localDb.syncQueue.get('favorite-delete-op')).toBeDefined();
+  });
+
   it('rejects unsupported backup formats without changing local data', async () => {
     await localDb.attempts.add(attempt('keep-me', 70));
     const invalid = new Blob([
