@@ -100,6 +100,10 @@ The following grades have been transcribed into draft thematic units and verifie
 | OOO advanced | 8 | 7 | 102 | 0 | 5 |
 | OOO basic | 9 | 13 | 102 | 0 | 9 |
 | OOO advanced | 9 | 17 | 136 | 0 | 17 |
+| SOO basic | 10 | 10 | 68 | 2 | 0 |
+| SOO advanced | 10 | 12 | 170 | 10 | 0 |
+| SOO basic | 11 | 11 | 68 | 3 | 4 |
+| SOO advanced | 11 | 14 | 170 | 10 | 15 |
 
 The hours include reserve/review entries so that the unit totals reconcile exactly with the federal annual total. These are not lesson durations or a learner-facing timetable.
 
@@ -108,6 +112,8 @@ Idempotent seed files:
 - `supabase/seed/curriculum-grade-7-thematic-units.sql`
 - `supabase/seed/curriculum-grade-8-thematic-units.sql`
 - `supabase/seed/curriculum-grade-9-thematic-units.sql`
+- `supabase/seed/curriculum-grade-10-thematic-units.sql`
+- `supabase/seed/curriculum-grade-11-thematic-units.sql`
 
 Schema migrations:
 
@@ -122,3 +128,19 @@ Both seed files were replayed/verified without creating duplicates. All imported
 Grade 9 is now also represented in detail. The base-level 102 hours reconcile as 40 hours of mechanics, 15 of oscillations/waves, 6 of electromagnetic fields/waves, 15 of optics, 17 of quantum/nuclear topics, and 9 hours of review. The advanced-level 136 hours reconcile as 63 mechanics, 18 oscillations/waves, 6 electromagnetic fields/waves, 16 optics, 16 quantum/nuclear topics, and 17 review hours. The grade-9 seed was replayed and verified idempotently; all 30 rows remain `draft` and are linked to their grade and parent topic.
 
 The grade-9 nuclear/ionizing-radiation curriculum metadata is deliberately limited to conceptual scope and analysis of supplied educational data. It does not define student procedures involving radioactive materials or sources.
+
+
+## Full school-track thematic outline — grades 7–11
+
+The thematic plan import now covers all ten combinations of school grade and official track (OOO basic/advanced, SOO basic/advanced). Across these combinations, 125 thematic-unit rows represent 1,054 annual teaching hours. Each grade's total reconciles with the relevant 2025 federal working program, including reserve time and review/practicum modules where specified.
+
+The five grade seed files were replayed after import. The unique grade/source-row key kept the row counts stable, every unit remained `draft`, and all topic units are linked to a parent topic. A dedicated draft topic for grade-11 advanced special relativity was added because that distinct curriculum block was not represented in the initial outline.
+
+The annual totals verified in Supabase are:
+
+- OOO basic: grades 7, 8 and 9 — 68, 68 and 102 hours
+- OOO advanced: grades 7, 8 and 9 — 102, 102 and 136 hours
+- SOO basic: grades 10 and 11 — 68 and 68 hours
+- SOO advanced: grades 10 and 11 — 170 and 170 hours
+
+All rows carry the 2025 source URL and printed page range. Content summaries and practical-work descriptions are PHYSICS-authored paraphrases, not copied textbook lessons. Practical metadata for nuclear topics is restricted to conceptual treatment and analysis of supplied educational material; no handling procedures for radioactive sources are specified.
