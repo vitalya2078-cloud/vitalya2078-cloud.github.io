@@ -63,3 +63,24 @@ The outline seeds are reproducible and idempotent:
 - `supabase/seed/school-curriculum-outline-soo.sql`
 
 All 10 sections and 48 topic headings remain `draft`. No curriculum program or lesson has been published to the public API. This is deliberate: each outline must still be checked against the complete thematic planning, expected outcomes, and recommended laboratory work before lesson authoring and publication.
+
+## Verified thematic-plan workload metadata
+
+The thematic-planning sections of all four 2025 federal working-program PDFs were checked. PHYSICS stores the official annual total hours separately for every grade and level, along with the exact printed-page range containing that grade's thematic plan. These values are source metadata, not a prescribed learner schedule; individual schools may form their own working plans within the federal framework.
+
+| Track | Grade | Total hours | Printed pages |
+|---|---:|---:|---:|
+| OOO basic | 7 | 68 | 31–40 |
+| OOO basic | 8 | 68 | 41–49 |
+| OOO basic | 9 | 102 | 50–63 |
+| OOO advanced | 7 | 102 | 33–45 |
+| OOO advanced | 8 | 102 | 46–56 |
+| OOO advanced | 9 | 136 | 57–72 |
+| SOO basic | 10 | 68 | 29–43 |
+| SOO basic | 11 | 68 | 44–58 |
+| SOO advanced | 10 | 170 | 39–60 |
+| SOO advanced | 11 | 170 | 61–78 |
+
+The metadata is stored in the private `physics.education_level_plans` table. Its schema migration is `supabase/migrations/20261108114500_curriculum_level_plan_metadata.sql`; the idempotent seed is `supabase/seed/education-level-plan-metadata.sql`. All ten rows are `draft`.
+
+The next ingestion layer will represent individual thematic-plan rows, their official hours, content scope, student activities, recommended experiments/practical work, and source-page references. It will preserve the official sequence and keep basic/advanced tracks distinct. PHYSICS-authored lesson content and assessment mapping remain separate from the official source metadata.
