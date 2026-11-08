@@ -1,4 +1,4 @@
-const CACHE_NAME = 'physics-shell-v2';
+const CACHE_NAME = 'physics-shell-v3';
 const APP_SCOPE = self.registration.scope;
 const APP_SHELL = [
   APP_SCOPE,
@@ -34,40 +34,31 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            event.waitUntil(
-              caches.open(CACHE_NAME).then((cache) =>
-                cache.put(`${APP_SCOPE}index.html`, copy),
-              ),
-            );
-          }
-          return response;
-        })
-        .catch(async () => {
-          const cachedPage = await caches.match(`${APP_SCOPE}index.html`);
-          return cachedPage || caches.match(APP_SCOPE);
-        }),
+      fetch(request).then(async (response) => {
+        if (response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(`${APP_SCOPE}index.html`, response.clone());
+        }
+        return response;
+      }).catch(async () => {
+        const cachedPage = await caches.match(`${APP_SCOPE}index.html`);
+        return cachedPage || caches.match(APP_SCOPE);
+      }),
     );
     return;
   }
 
   if (requestUrl.pathname.startsWith(new URL(APP_SCOPE).pathname)) {
     event.respondWith(
-      caches.match(request).then((cached) => {
+      caches.match(request).then(async (cached) => {
         if (cached) return cached;
 
-        return fetch(request).then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            event.waitUntil(
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)),
-            );
-          }
-          return response;
-        });
+        const response = await fetch(request);
+        if (response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, response.clone());
+        }
+        return response;
       }),
     );
   }
