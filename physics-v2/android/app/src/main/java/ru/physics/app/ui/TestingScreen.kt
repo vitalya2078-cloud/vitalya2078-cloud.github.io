@@ -274,7 +274,7 @@ fun TestingScreen(
         )
         Text(question.topicTitle, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-    LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+    LinearProgressIndicator(progress = progress, modifier = Modifier.fillMaxWidth())
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(question.text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
@@ -283,7 +283,7 @@ fun TestingScreen(
             if (questionItem.options != null) {
                 questionItem.options.forEach { option ->
                     val isCorrectOption = option == question.correctAnswer
-                    val isSelectedWrong = answer?.selectedValue == option && !answer.isCorrect
+                    val isSelectedWrong = answer?.let { it.selectedValue == option && !it.isCorrect } == true
                     val label = when {
                         answer == null -> option
                         isCorrectOption -> "✓  $option"
