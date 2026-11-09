@@ -331,7 +331,7 @@ let LAB_RUNS=(()=>{try{return JSON.parse(localStorage.getItem('f2-lab-runs')||'[
 const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),0);
 const labTopic=(ch,n)=>LAB_TOPIC_GROUPS.find(x=>x.ch===ch&&x.n===n);
 function labOpen(id){const x=LABS[id];if(!x)return;LAB={id:id,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};location.hash='lab-exp-'+id;}
-function labTabs(){return '<div class="lab-switch"><button class="btn active" data-act="lab" type="button">'+ic('flask-conical')+' Опыты <small>175</small></button><button class="btn line" data-act="labGames" type="button">'+ic('gamepad-2')+' Игры <small>скоро</small></button></div>';}
+function labTabs(){return '<div class="lab-switch"><button class="btn active" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>175</small></button><button class="btn line" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
 function vLab(){
  frame('Лаборатория',{sub:'Опыты и игровые задания'});
  setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · 175 экспериментов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из 175 опытов пройдено</span><i><em style="width:'+(labDoneCount()/175*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length;return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/25*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/25</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
@@ -346,7 +346,7 @@ function vLabChapter(r){
 function vLabTopic(r){
  const g=labTopic(r.ch,r.topic);if(!g){location.hash='lab-ch-'+r.ch;return;}
  frame(g.title,{back:true,sub:'Глава '+r.ch+' · Тема '+r.topic});
- setMain('<section class="lab-intro"><b class="h">'+esc(g.title)+'</b><p class="mute">'+esc(g.desc)+'</p><p class="mute">Пять отдельных исследовательских задач</p></section><div class="lab-experiment-list">'+g.experiments.map((x,i)=>'<button class="lab-experiment-card '+(LAB_DONE.has(x.id)?'done':'')+'" data-act="labOpen" data-v="'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(['activity','gauge','target','sliders-horizontal','microscope'][i])+'</span><span class="lab-experiment-badge">Опыт '+(i+1)+'</span><span class="lab-experiment-status">'+(LAB_DONE.has(x.id)?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title.replace(' · '+LAB_VARIANTS[i].name,''))+'</b><small>'+esc(LAB_VARIANTS[i].name)+' · '+esc(x.task)+'</small></button>').join('')+'</div>');
+ setMain('<section class="lab-intro"><b class="h">'+esc(g.title)+'</b><p class="mute">'+esc(g.desc)+'</p><p class="mute">Пять отдельных исследовательских задач</p></section><div class="lab-experiment-list">'+g.experiments.map((x,i)=>'<button class="lab-experiment-card '+(LAB_DONE.has(x.id)?'done':'')+'" data-act="labOpen" data-v="'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(['zap','target','sliders-horizontal','trophy','star'][i])+'</span><span class="lab-experiment-badge">Опыт '+(i+1)+'</span><span class="lab-experiment-status">'+(LAB_DONE.has(x.id)?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title.replace(' · '+LAB_VARIANTS[i].name,''))+'</b><small>'+esc(LAB_VARIANTS[i].name)+' · '+esc(x.task)+'</small></button>').join('')+'</div>');
 }
 function vLabExp(r){
  const x=LABS[r.exp];if(!x){location.hash='lab';return;}
@@ -378,7 +378,7 @@ function labResult(){
  case 'torque':value=a*b;label='Момент силы';unit='Н·м';break;
  case 'pressure':value=b*g*a/1000;label='Гидростатическое давление';unit='кПа';break;
  case 'buoyancy':value=b*g*a;label='Сила Архимеда';unit='Н';break;
- case 'pascal':value=100*a*(b/a);label='Сила на большом поршне';unit='Н';break;
+ case 'pascal':value=100*(b/a);label='Сила на большом поршне';unit='Н';break;
  case 'bernoulli':value=a*b;label='Скорость в узком сечении';unit='м/с';break;
  case 'gaspressure':value=8.314*a/(b/1000);label='Давление (n = 1 моль)';unit='кПа';value/=1000;break;
  case 'spring':value=2*Math.PI*Math.sqrt(a/b);label='Период колебаний';unit='с';break;
@@ -390,7 +390,7 @@ function labResult(){
  case 'conduction':value=a*.01*b/.02;label='Тепловая мощность';unit='Вт';break;
  case 'idealgas':value=a*b/(8.314);label='Температура (ν = 1 моль)';unit='К';break;
  case 'firstlaw':value=a-b;label='Изменение внутренней энергии';unit='Дж';break;
- case 'heatengine':value=(a-b)/a*100;label='Предельный КПД Карно';unit='%';break;
+ case 'heatengine':value=Math.max(0,(a-b)/a*100);label='Предельный КПД Карно';unit='%';break;
  case 'ohm':value=a/b;label='Сила тока';unit='А';break;
  case 'parallel':value=a*b/(a+b);label='Общее сопротивление';unit='Ом';break;
  case 'power':value=a*b;label='Электрическая мощность';unit='Вт';break;
