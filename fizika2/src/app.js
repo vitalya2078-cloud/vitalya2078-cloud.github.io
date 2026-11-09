@@ -298,7 +298,7 @@ function quizEnd() {
 
 /* ---------- Тренировка: 900 вопросов экзамена ---------- */
 let BANK = null;
-async function bank() { if (BANK) return BANK; const c = await fetch('content.json').then(r => r.json()); BANK = []; c.topics.forEach(t => t.q.forEach((q, j) => { if (q.x && q.x.length) BANK.push({ key: t.id + '-' + (j + 1), tid: t.id, q: q.t, a: q.a, x: q.x, p: q.p ? 'pics/' + encodeURIComponent(q.p) : '', e: typeof q.e === 'string' ? q.e.replace('⚠', '') : q.e ? [q.e.i, q.e.r].filter(Boolean).join(' ') : '' }); })); return BANK; }
+async function bank() { if (BANK) return BANK; let c = null; if (F2_IN_APP) { try { c = JSON.parse(localStorage.getItem('f2-content') || 'null'); } catch (e) {} } if (!c) c = await fetch('content.json').then(r => r.json()); BANK = []; c.topics.forEach(t => t.q.forEach((q, j) => { if (q.x && q.x.length) BANK.push({ key: t.id + '-' + (j + 1), tid: t.id, q: q.t, a: q.a, x: q.x, p: q.p ? 'pics/' + encodeURIComponent(q.p) : '', e: typeof q.e === 'string' ? q.e.replace('⚠', '') : q.e ? [q.e.i, q.e.r].filter(Boolean).join(' ') : '' }); })); return BANK; }
 // привязка вопросов экзамена к главам учебника (пилот: глава 1 — кинематика)
 // вопросы экзамена, отобранные вручную по главам учебника (номер темы-номер вопроса в базе)
 const CH_KEYS = { 1: ['1-5', '1-6', '1-10', '1-19', '1-34', '1-45', '1-47', '1-58', '1-67', '1-68', '1-74', '1-80', '1-81', '1-82'] };
@@ -352,12 +352,50 @@ document.addEventListener('click', async e => {
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
 document.addEventListener('change', e => { if (e.target.id === 'pname') { S.name = e.target.value.trim().slice(0, 24); save(); toast(ic('check') + 'Имя сохранено'); } });
 
+/* ---------- обновления Android ---------- */
+async function checkAppUpdates() {
+  if (!F2_IN_APP) return;
+  const get = async path => {
+    let last;
+    for (const prefix of ['/mirror/gv2/', '/mirror/gh2/']) {
+      try {
+        const r = await fetch(prefix + path + (path.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+        if (r.ok) return r;
+        last = new Error('HTTP ' + r.status);
+      } catch (e) { last = e; }
+    }
+    throw last || new Error('Нет зеркала обновлений');
+  };
+  try {
+    const v = await (await get('version.json')).json();
+    if (Number.isInteger(v.data) && v.data > Number(localStorage.getItem('f2-data') || 0)) {
+      const c = await (await get('content.json')).json();
+      if (c && c.v === v.data && Array.isArray(c.topics)) {
+        localStorage.setItem('f2-content', JSON.stringify(c));
+        localStorage.setItem('f2-data', String(v.data));
+        BANK = null;
+      }
+    }
+    if (Number.isInteger(v.build) && v.build > F2_BUILD && localStorage.getItem('f2-app-bad') !== String(v.build)) {
+      const h = await (await get('index.html')).text();
+      if (h.includes('const F2_BUILD = ' + v.build + ';')) {
+        localStorage.setItem('f2-app-html', h);
+        localStorage.setItem('f2-app-build', String(v.build));
+      }
+    }
+  } catch (e) {
+    // Offline is expected: the APK already contains a complete working copy.
+  }
+}
+
 /* ---------- запуск ---------- */
 function boot() {
+  if (F2_IN_APP) { try { localStorage.setItem('f2-app-ok', String(F2_BUILD)); } catch (e) {} }
   Object.assign(ui, { main: $('#main'), ttl: $('#ttl'), back: $('#back'), tabs: $('#tabs'), lv: $('#lv') });
   ui.back.addEventListener('click', () => { const r = route(); if (r.name === 'quiz') { if (Q && Q.i < Q.items.length && Q.i > 0 && !confirm('Выйти из проверки? Результат не сохранится.')) return; const back = Q && Q.back; Q = null; location.hash = back ? back.slice(1) : ''; } else location.hash = r.parent || ''; });
   window.addEventListener('hashchange', render);
   render();
-  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (!F2_IN_APP && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (F2_IN_APP) setTimeout(checkAppUpdates, 1800);
 }
 boot();
