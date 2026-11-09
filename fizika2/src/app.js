@@ -185,7 +185,7 @@ function videoInit(ch, li, L) {
   V = { L, key: lessonKey(ch, li), starts, dur, t: 0, playing: false, audio: null, last: 0, cc: S.cc !== 0, raf: 0 };
   if (meta) { // файл целиком в память: перемотка работает на любом хостинге и без интернета
     const A = V.audio = new Audio(); A.addEventListener('ended', vEnd);
-    V.ready = fetch('audio/' + id + '.mp3').then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); }).then(b => { A.src = URL.createObjectURL(b); }).catch(() => { if (V && V.audio === A) V.audio = null; });
+    V.ready = fetch('audio/' + id + '.mp3').then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); }).then(b => { A.src = URL.createObjectURL(new Blob([b], { type: 'audio/mpeg' })); }).catch(() => { if (V && V.audio === A) V.audio = null; });
   }
   $('#vsub').hidden = !V.cc; vDraw();
 }
