@@ -170,7 +170,7 @@ private fun NativeHome(
         },
         bottomBar = {
             NavigationBar {
-                AppSection.entries.filter { it != AppSection.PROFILE }.forEach { section ->
+                AppSection.entries.forEach { section ->
                     val icon = when (section) {
                         AppSection.HOME -> Icons.Default.Home
                         AppSection.LEARNING -> Icons.Default.MenuBook
@@ -411,19 +411,48 @@ private fun LearningScreen(dao: PhysicsDao) {
 private fun LaboratoryScreen() {
     var height by rememberSaveable { mutableFloatStateOf(20f) }
     val result = calculateFreeFall(height.toDouble())
-    ScreenTitle("Лаборатория", "Свободное падение без начальной скорости")
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Высота", style = MaterialTheme.typography.titleMedium)
-            Text(height.toInt().toString() + " м", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
-            Slider(value = height, onValueChange = { height = it }, valueRange = 1f..100f)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("1 м", style = MaterialTheme.typography.labelSmall)
-                Text("100 м", style = MaterialTheme.typography.labelSmall)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFF171126),
+        shape = RoundedCornerShape(26.dp),
+    ) {
+        Column(
+            Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp),
+        ) {
+            Text("ЛАБОРАТОРИЯ", color = Color(0xFFBDA8FF), style = MaterialTheme.typography.labelMedium, letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
+            Text("Свободное падение", color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("Измени высоту и наблюдай, как меняются параметры движения.", color = Color(0xFFC8BEDD), style = MaterialTheme.typography.bodyMedium)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color(0xFF2A2042),
+                shape = RoundedCornerShape(20.dp),
+            ) {
+                Column(Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Высота старта", color = Color(0xFFC8BEDD), style = MaterialTheme.typography.labelLarge)
+                    Text("${height.toInt()} м", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.ExtraBold)
+                    Slider(value = height, onValueChange = { height = it }, valueRange = 1f..100f)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("1 м", color = Color(0xFFC8BEDD), style = MaterialTheme.typography.labelSmall)
+                        Text("100 м", color = Color(0xFFC8BEDD), style = MaterialTheme.typography.labelSmall)
+                    }
+                }
             }
-            InfoCard("Время падения", String.format(Locale.getDefault(), "%.2f с", result.timeSeconds))
-            InfoCard("Скорость перед касанием земли", String.format(Locale.getDefault(), "%.2f м/с", result.finalVelocityMetersPerSecond))
-            Text("Модель: сопротивлением воздуха пренебрегаем, g = 9,81 м/с².", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                LabResultCard("Время падения", String.format(Locale.getDefault(), "%.2f с", result.timeSeconds), Modifier.weight(1f))
+                LabResultCard("Скорость", String.format(Locale.getDefault(), "%.2f м/с", result.finalVelocityMetersPerSecond), Modifier.weight(1f))
+            }
+            Text("Модель: сопротивлением воздуха пренебрегаем, g = 9,81 м/с².", color = Color(0xFFC8BEDD), style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun LabResultCard(title: String, value: String, modifier: Modifier = Modifier) {
+    Surface(modifier = modifier, color = Color(0xFF33274E), shape = RoundedCornerShape(16.dp)) {
+        Column(Modifier.padding(13.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Text(title, color = Color(0xFFC8BEDD), style = MaterialTheme.typography.labelSmall)
+            Text(value, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         }
     }
 }
