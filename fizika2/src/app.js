@@ -373,7 +373,7 @@ function labResult(){
  case 'circular':value=4*Math.PI*Math.PI*a/(b*b);label='Центростремительное ускорение';unit='м/с²';break;
  case 'newton':value=b/a;label='Ускорение';unit='м/с²';break;
  case 'friction':value=a*b*g;label='Сила трения';unit='Н';break;
- case 'incline':value=g*(Math.sin(a*Math.PI/180)-b*Math.cos(a*Math.PI/180));label='Ускорение вдоль плоскости';unit='м/с²';break;
+ case 'incline':value=Math.max(0,g*(Math.sin(a*Math.PI/180)-b*Math.cos(a*Math.PI/180)));label='Ускорение вдоль плоскости';unit='м/с²';break;
  case 'elasticity':value=a*b;label='Сила упругости';unit='Н';break;
  case 'torque':value=a*b;label='Момент силы';unit='Н·м';break;
  case 'pressure':value=b*g*a/1000;label='Гидростатическое давление';unit='кПа';break;
@@ -396,7 +396,7 @@ function labResult(){
  case 'power':value=a*b;label='Электрическая мощность';unit='Вт';break;
  case 'magnetic':value=(a*1e-6)*(b*1000)*.5;label='Магнитная сила';unit='Н';break;
  case 'induction':value=100*.5*a*b;label='Средняя ЭДС (100 витков)';unit='В';break;
- case 'reflection':value=a;label='Угол отражения';unit='°';break;
+ case 'reflection':value=Math.abs(2*b-a);label='Направление отражённого луча';unit='°';break;
  case 'refraction':value=Math.asin(Math.min(1,Math.sin(a*Math.PI/180)/b))*180/Math.PI;label='Угол преломления';unit='°';break;
  case 'lens':case 'mirror':value=a*b/(b-a);label=x.model==='lens'?'Расстояние до изображения':'Расстояние до изображения';unit='см';break;
  case 'interference':value=(a*1e-9)/(b*1e-3)*1*1000;label='Расстояние между полосами';unit='мм';break;
@@ -508,7 +508,7 @@ function labDraw(){
   c.setLineDash([7,7]);c.beginPath();c.moveTo(360,25);c.lineTo(360,280);c.stroke();c.setLineDash([]);
   const angle=a*Math.PI/180;
   if(x.model==='lens'||x.model==='mirror'){c.strokeStyle='#3DD6C3';c.lineWidth=7;c.beginPath();c.moveTo(360,65);c.quadraticCurveTo(330,155,360,245);c.stroke();labArrow(c,90,80,355,155,'#FFC24B');labArrow(c,365,155,610,225,'#3DD6A0');}
-  else{labArrow(c,360-160*Math.sin(angle),155-160*Math.cos(angle),360,155,'#FFC24B');const out=x.model==='refraction'?Math.asin(Math.min(1,Math.sin(angle)/b)):angle;labArrow(c,360,155,360+160*Math.sin(out),155+160*Math.cos(out),'#3DD6A0');}
+  else{labArrow(c,360-160*Math.sin(angle),155-160*Math.cos(angle),360,155,'#FFC24B');const out=x.model==='refraction'?Math.asin(Math.min(1,Math.sin(angle)/b)):x.model==='reflection'?(2*b-a)*Math.PI/180:angle;labArrow(c,360,155,360+160*Math.sin(out),155+160*Math.cos(out),'#3DD6A0');}
   c.fillStyle='#AAB3CD';c.fillText('Ход световых лучей',45,28);
  }
  labMetrics();
