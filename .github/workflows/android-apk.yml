@@ -32,6 +32,9 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Check JavaScript syntax
+        run: node --check fizika2/src/app.js
+
       - name: Build website data and textbook course
         run: |
           python fizika/src/build.py
