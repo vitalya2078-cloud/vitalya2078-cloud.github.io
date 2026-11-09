@@ -1,0 +1,55 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fizika/**'
+      - 'fizika2/**'
+      - 'fizika-android/**'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Build website data and textbook course
+        run: |
+          python fizika/src/build.py
+          python fizika2/src/build.py
+
+      - name: Build APK
+        working-directory: fizika-android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+
+      - name: Rename APK
+        run: cp fizika-android/app/build/outputs/apk/release/app-release.apk Fizika-2.4-debug-signed.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fizika-2.4-Android-APK
+          path: Fizika-2.4-debug-signed.apk
+          if-no-files-found: error
+          retention-days: 14
