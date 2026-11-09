@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.horizontalScroll
@@ -37,6 +38,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -61,6 +64,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -150,12 +154,21 @@ private fun NativeHome(
     val openMistakes by dao.observeOpenMistakes().collectAsStateWithLifecycle(initialValue = emptyList())
     val pendingSyncCount by dao.observePendingSyncCount().collectAsStateWithLifecycle(initialValue = 0)
 
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    val isExpanded = screenWidth >= 700
+    val isCompact = screenWidth < 390
+
     androidx.compose.material3.Scaffold(
         topBar = {
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(start = 22.dp, end = 18.dp, top = 10.dp, bottom = 8.dp),
+                    .padding(
+                        start = if (isExpanded) 28.dp else 16.dp,
+                        end = if (isExpanded) 24.dp else 12.dp,
+                        top = 10.dp,
+                        bottom = 8.dp,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -169,48 +182,86 @@ private fun NativeHome(
             }
         },
         bottomBar = {
-            NavigationBar {
-                AppSection.entries.forEach { section ->
-                    val icon = when (section) {
-                        AppSection.HOME -> Icons.Default.Home
-                        AppSection.LEARNING -> Icons.Default.MenuBook
-                        AppSection.TESTING -> Icons.Default.Quiz
-                        AppSection.LAB -> Icons.Default.Science
-                        AppSection.PROGRESS -> Icons.Default.Timeline
-                        AppSection.PROFILE -> Icons.Default.Person
+            if (!isExpanded) {
+                NavigationBar {
+                    AppSection.entries.forEach { section ->
+                        val icon = when (section) {
+                            AppSection.HOME -> Icons.Default.Home
+                            AppSection.LEARNING -> Icons.Default.MenuBook
+                            AppSection.TESTING -> Icons.Default.Quiz
+                            AppSection.LAB -> Icons.Default.Science
+                            AppSection.PROGRESS -> Icons.Default.Timeline
+                            AppSection.PROFILE -> Icons.Default.Person
+                        }
+                        NavigationBarItem(
+                            selected = selectedSection == section,
+                            onClick = { selectedSection = section },
+                            icon = { androidx.compose.material3.Icon(icon, contentDescription = section.label) },
+                            label = if (isCompact) null else ({ Text(section.label, maxLines = 1, softWrap = false) }),
+                        )
                     }
-                    NavigationBarItem(
-                        selected = selectedSection == section,
-                        onClick = { selectedSection = section },
-                        icon = { androidx.compose.material3.Icon(icon, contentDescription = null) },
-                        label = { Text(section.label) },
-                    )
                 }
             }
         },
     ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        Row(
+            modifier = Modifier.fillMaxSize().padding(padding),
         ) {
-            when (selectedSection) {
-                AppSection.HOME -> HomeScreen(profile.nickname, onOpen = { selectedSection = it })
-                AppSection.LEARNING -> LearningScreen(dao)
-                AppSection.TESTING -> TestingScreen(questionBankRepository, activityRepository, illustrationRepository)
-                AppSection.LAB -> LaboratoryScreen()
-                AppSection.PROGRESS -> ProgressScreen(
-                    progressCount,
-                    attemptCount,
-                    mistakeCount,
-                    pendingSyncCount,
-                    openMistakes,
-                    questionBankRepository,
-                    activityRepository,
-                )
-                AppSection.PROFILE -> ProfileScreen(profile)
+            if (isExpanded) {
+                NavigationRail {
+                    AppSection.entries.forEach { section ->
+                        val icon = when (section) {
+                            AppSection.HOME -> Icons.Default.Home
+                            AppSection.LEARNING -> Icons.Default.MenuBook
+                            AppSection.TESTING -> Icons.Default.Quiz
+                            AppSection.LAB -> Icons.Default.Science
+                            AppSection.PROGRESS -> Icons.Default.Timeline
+                            AppSection.PROFILE -> Icons.Default.Person
+                        }
+                        NavigationRailItem(
+                            selected = selectedSection == section,
+                            onClick = { selectedSection = section },
+                            icon = { androidx.compose.material3.Icon(icon, contentDescription = section.label) },
+                            label = { Text(section.label, maxLines = 1) },
+                            alwaysShowLabel = true,
+                        )
+                    }
+                }
+            }
+            Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .widthIn(max = 1100.dp)
+                        .fillMaxSize()
+                        .align(Alignment.TopCenter)
+                        .verticalScroll(rememberScrollState())
+                        .padding(
+                            horizontal = when {
+                                screenWidth < 360 -> 14.dp
+                                isExpanded -> 32.dp
+                                else -> 20.dp
+                            },
+                            vertical = if (isExpanded) 26.dp else 18.dp,
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(if (isExpanded) 20.dp else 16.dp),
+                ) {
+                    when (selectedSection) {
+                        AppSection.HOME -> HomeScreen(profile.nickname, onOpen = { selectedSection = it })
+                        AppSection.LEARNING -> LearningScreen(dao)
+                        AppSection.TESTING -> TestingScreen(questionBankRepository, activityRepository, illustrationRepository)
+                        AppSection.LAB -> LaboratoryScreen()
+                        AppSection.PROGRESS -> ProgressScreen(
+                            progressCount,
+                            attemptCount,
+                            mistakeCount,
+                            pendingSyncCount,
+                            openMistakes,
+                            questionBankRepository,
+                            activityRepository,
+                        )
+                        AppSection.PROFILE -> ProfileScreen(profile)
+                    }
+                }
             }
         }
     }
@@ -657,8 +708,9 @@ private fun ProfileSetupScreen(
         if (track.startsWith("school_")) (7..11).map(Int::toString)
         else (1..6).map(Int::toString)
 
+    val horizontalPadding = if (LocalConfiguration.current.screenWidthDp < 360) 16.dp else 24.dp
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontalPadding),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.Start,
     ) {
@@ -696,7 +748,7 @@ private fun ProfileSetupScreen(
                         }
                     },
                 )
-                Text(label, style = MaterialTheme.typography.bodyMedium)
+                Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             }
         }
 
