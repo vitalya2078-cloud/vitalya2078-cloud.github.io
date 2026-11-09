@@ -81,7 +81,7 @@ function route() {
   if ((m = /^c(\d+)$/.exec(h))) return { name: 'chapter', ch: +m[1], tab: 'book', parent: 'book' };
   if ((m = /^l(\d+)-(\d+)$/.exec(h))) return { name: 'lesson', ch: +m[1], li: +m[2], tab: 'book', parent: 'c' + m[1] };
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
-  if (h === 'lab') return { name: 'lab', tab: 'train' };
+  if (h === 'lab') return { name: 'lab', tab: 'train', parent: 'train' };
   if (['book', 'train', 'profile'].includes(h)) return { name: h, tab: h };
   return { name: 'home', tab: 'home' };
 }
