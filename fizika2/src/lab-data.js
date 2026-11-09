@@ -1,4 +1,4 @@
-/* Каталог виртуальной лаборатории: 7 глав × 5 тем × 5 самостоятельных опытов = 175 */
+/* Каталог виртуальной лаборатории: 7 глав, 35 тем, 35 самостоятельных опытов */
 const LAB_CHAPTERS = [
  {n:1,title:'Механика и кинематика',desc:'Движение, скорость, ускорение и траектории'},
  {n:2,title:'Силы и равновесие',desc:'Законы Ньютона, трение, упругость и моменты сил'},
@@ -7,13 +7,6 @@ const LAB_CHAPTERS = [
  {n:5,title:'Термодинамика',desc:'Тепло, температура, газовые процессы и энергия'},
  {n:6,title:'Электричество и магнетизм',desc:'Цепи, ток, мощность, магнитное поле и индукция'},
  {n:7,title:'Оптика',desc:'Отражение, преломление, линзы и интерференция'}
-];
-const LAB_VARIANTS = [
- {name:'Базовое измерение',task:'Запусти модель, сними показания и сопоставь результат с расчётом.'},
- {name:'Влияние первого параметра',task:'Измени первый параметр, оставив второй неизменным. Определи, как меняется результат.'},
- {name:'Влияние второго параметра',task:'Измени второй параметр и сравни показания с исходным запуском.'},
- {name:'Поиск границы',task:'Подбери параметры так, чтобы найти границу режима или заметное изменение поведения модели.'},
- {name:'Контрольный опыт',task:'Проверь физическую зависимость на другом наборе параметров и сравни два запуска.'}
 ];
 const LAB_TOPICS = [
  // Глава 1 — механика и кинематика
@@ -98,12 +91,12 @@ const LAB_MISSIONS = {
 };
 const LAB_VARIANT_FACTORS = [[1,1],[.72,1],[1.28,1],[1,.72],[1,1.28]];
 const clampLab = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
-const LAB_EXPERIMENTS = LAB_TOPICS.flatMap((topic,ti)=>LAB_VARIANTS.map((variant,vi)=>{
- const f=LAB_VARIANT_FACTORS[vi],a=topic.a,b=topic.b,mission=LAB_MISSIONS[topic.id][vi];
- return {id:topic.id+'-'+(vi+1),ch:topic.ch,topic:ti%5+1,topicId:topic.id,topicTitle:topic.title,model:topic.model,scene:topic.scene,
-  title:topic.title+' · '+mission[0],desc:topic.desc,task:mission[1],mission:mission[0],formula:topic.formula,
-  a:a[0],a0:clampLab(a[1]*f[0],a[2],a[3]),amin:a[2],amax:a[3],stA:a[4],uA:a[5],
-  b:b[0],b0:clampLab(b[1]*f[1],b[2],b[3]),bmin:b[2],bmax:b[3],stB:b[4],uB:b[5],variant:vi+1};
-}));
+const LAB_EXPERIMENTS = LAB_TOPICS.map((topic,ti)=>{
+ const a=topic.a,b=topic.b,mission=LAB_MISSIONS[topic.id][0];
+ return {id:topic.id+'-1',ch:topic.ch,topic:ti%5+1,topicId:topic.id,topicTitle:topic.title,model:topic.model,scene:topic.scene,
+  title:mission[0],desc:topic.desc,task:mission[1],mission:mission[0],formula:topic.formula,
+  a:a[0],a0:a[1],amin:a[2],amax:a[3],stA:a[4],uA:a[5],
+  b:b[0],b0:b[1],bmin:b[2],bmax:b[3],stB:b[4],uB:b[5],variant:1};
+});
 const LABS = Object.fromEntries(LAB_EXPERIMENTS.map(x=>[x.id,x]));
 const LAB_TOPIC_GROUPS = LAB_TOPICS.map((topic,ti)=>({ch:topic.ch,n:ti%5+1,id:topic.id,title:topic.title,desc:topic.desc,experiments:LAB_EXPERIMENTS.filter(x=>x.topicId===topic.id)}));
