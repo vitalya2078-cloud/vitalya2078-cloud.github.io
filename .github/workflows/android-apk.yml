@@ -54,12 +54,12 @@ jobs:
           ./gradlew --no-daemon assembleRelease
 
       - name: Rename APK
-        run: cp fizika-android/app/build/outputs/apk/release/app-release.apk Fizika-2.5-debug-signed.apk
+        run: cp fizika-android/app/build/outputs/apk/release/app-release.apk Fizika-2.6-debug-signed.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fizika-2.5-Android-APK
-          path: Fizika-2.5-debug-signed.apk
+          name: Fizika-2.6-Android-APK
+          path: Fizika-2.6-debug-signed.apk
           if-no-files-found: error
           retention-days: 14
