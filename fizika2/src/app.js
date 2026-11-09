@@ -94,6 +94,7 @@ const ui = {};
 let lastHash = null, same = false;
 function render() {
   stopLoops();
+  if (typeof LAB !== 'undefined' && LAB.run && !location.hash.startsWith('#lab-exp-')) labStop('Пауза');
   const r = route(), y = ui.main.scrollTop; same = lastHash === location.hash; lastHash = location.hash;
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
@@ -322,45 +323,45 @@ function vTrain() {
 }
 
 
-/* ---------- Виртуальная лаборатория: 175 опытов ---------- */
+/* ---------- Виртуальная лаборатория: 35 самостоятельных опытов ---------- */
 const LAB_LEGACY_MAP={spring:'spring-1',pendulum:'pendulum-1',fall:'freefall-1',projectile:'projectile-1',incline:'incline-1',wave:'wave-1',ohm:'ohm-1',refraction:'refraction-1',buoyancy:'buoyancy-1',gas:'gaspressure-1'};
 let LAB={id:'uniform-1',a:4,b:5,va:4,vb:5,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};
 const LAB_DONE=new Set((()=>{try{return JSON.parse(localStorage.getItem('f2-lab-done')||'[]')}catch(e){return []}})());
 Object.entries(LAB_LEGACY_MAP).forEach(([oldId,newId])=>{if(LAB_DONE.has(oldId))LAB_DONE.add(newId)});
-let LAB_RUNS=(()=>{try{return JSON.parse(localStorage.getItem('f2-lab-runs')||'[]')}catch(e){return []}})();
+LAB_EXPERIMENTS.forEach(x=>{if([2,3,4,5].some(n=>LAB_DONE.has(x.topicId+'-'+n)))LAB_DONE.add(x.id)});
 const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),0);
+const labChapterCount=ch=>LAB_EXPERIMENTS.filter(x=>x.ch===ch).length;
 const labTopic=(ch,n)=>LAB_TOPIC_GROUPS.find(x=>x.ch===ch&&x.n===n);
 function labOpen(id){const x=LABS[id];if(!x)return;LAB={id:id,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};location.hash='lab-exp-'+id;}
-function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>175</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
+function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>'+LAB_EXPERIMENTS.length+'</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
 function vLab(){
  frame('Лаборатория',{sub:'Опыты и игровые задания'});
- setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · 175 экспериментов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из 175 опытов пройдено</span><i><em style="width:'+(labDoneCount()/175*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length;return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/25*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/25</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
+ setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · '+LAB_EXPERIMENTS.length+' самостоятельных опытов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из '+LAB_EXPERIMENTS.length+' опытов пройдено</span><i><em style="width:'+(labDoneCount()/LAB_EXPERIMENTS.length*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length,total=labChapterCount(ch.n);return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/total*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/'+total+'</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
 }
 function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="card lab-coming"><div class="lab-coming-icon">'+ic('gamepad-2','big')+'</div><b class="h">Игры лаборатории</b><p class="mute">Здесь будут отдельные игровые режимы по всем семи главам физики. Сначала завершаем интерактивные опыты, затем вернёмся к разработке игр.</p></section>');}
 function vLabChapter(r){
  const ch=LAB_CHAPTERS[r.ch-1];if(!ch){location.hash='lab';return;}
  const groups=LAB_TOPIC_GROUPS.filter(x=>x.ch===r.ch);
  frame('Глава '+ch.n,{back:true,sub:ch.title});
- setMain('<section class="lab-intro"><b class="h">'+esc(ch.title)+'</b><p class="mute">'+esc(ch.desc)+'</p><p class="mute">5 тем · 25 опытов</p></section><div class="lab-topic-list">'+groups.map(g=>{const n=g.experiments.filter(x=>LAB_DONE.has(x.id)).length;return '<a class="lab-topic-card" href="#lab-topic-'+g.ch+'-'+g.n+'"><span class="lab-topic-index">ТЕМА '+g.n+'</span><b>'+esc(g.title)+'</b><small>'+esc(g.desc)+'</small><span class="lab-topic-foot"><i><em style="width:'+(n/5*100)+'%"></em></i><small>'+n+'/5 пройдено</small>'+ic('chevron-right')+'</span></a>'}).join('')+'</div>');
+ setMain('<section class="lab-intro"><b class="h">'+esc(ch.title)+'</b><p class="mute">'+esc(ch.desc)+'</p><p class="mute">5 тем · '+labChapterCount(ch.n)+' самостоятельных опытов</p></section><div class="lab-topic-list">'+groups.map(g=>{const n=g.experiments.filter(x=>LAB_DONE.has(x.id)).length,total=g.experiments.length;return '<a class="lab-topic-card" href="#lab-topic-'+g.ch+'-'+g.n+'"><span class="lab-topic-index">ТЕМА '+g.n+'</span><b>'+esc(g.title)+'</b><small>'+esc(g.desc)+'</small><span class="lab-topic-foot"><i><em style="width:'+(n/total*100)+'%"></em></i><small>'+n+'/'+total+' пройдено</small>'+ic('chevron-right')+'</span></a>'}).join('')+'</div>');
 }
 function vLabTopic(r){
  const g=labTopic(r.ch,r.topic);if(!g){location.hash='lab-ch-'+r.ch;return;}
  frame(g.title,{back:true,sub:'Глава '+r.ch+' · Тема '+r.topic});
- setMain('<section class="lab-intro"><b class="h">'+esc(g.title)+'</b><p class="mute">'+esc(g.desc)+'</p><p class="mute">Пять отдельных исследовательских задач</p></section><div class="lab-experiment-list">'+g.experiments.map((x,i)=>'<button class="lab-experiment-card '+(LAB_DONE.has(x.id)?'done':'')+'" data-act="labOpen" data-v="'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(['zap','target','sliders-horizontal','trophy','star'][i])+'</span><span class="lab-experiment-badge">Опыт '+(i+1)+'</span><span class="lab-experiment-status">'+(LAB_DONE.has(x.id)?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title)+'</b><small>'+esc(x.task)+'</small></button>').join('')+'</div>');
+ setMain('<section class="lab-intro"><b class="h">'+esc(g.title)+'</b><p class="mute">'+esc(g.desc)+'</p><p class="mute">Самостоятельный эксперимент</p></section><div class="lab-experiment-list">'+g.experiments.map((x,i)=>'<button class="lab-experiment-card '+(LAB_DONE.has(x.id)?'done':'')+'" data-act="labOpen" data-v="'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(['zap','target','sliders-horizontal','trophy','star'][i])+'</span><span class="lab-experiment-badge">Опыт '+(i+1)+'</span><span class="lab-experiment-status">'+(LAB_DONE.has(x.id)?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title)+'</b><small>'+esc(x.task)+'</small></button>').join('')+'</div>');
 }
 function vLabExp(r){
  const x=LABS[r.exp];if(!x){location.hash='lab';return;}
  if(LAB.id!==r.exp)LAB={id:r.exp,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};
  const g=labTopic(x.ch,x.topic);
  frame(x.title,{back:true,sub:'Глава '+x.ch+' · '+(g?g.title:'Эксперимент')});
- setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Настрой параметры и запусти модель. Можно ставить на паузу и сравнивать результаты.</p></section>'+
+ setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску · 30 секунд</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-progress" role="progressbar" aria-label="Время до автоматического зачёта" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0"><i id="lab-progress-fill"></i></div><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Изучи установку и запусти опыт. Он автоматически засчитается после 30 секунд активной работы.</p></section>'+
  '<section class="card lab-controls"><div class="lab-section-title"><b>Параметры</b><small>Можно менять во время опыта</small></div><label>'+esc(x.a)+' <strong id="lab-av">'+f1(LAB.a,2)+' '+esc(x.uA)+'</strong><input type="range" min="'+x.amin+'" max="'+x.amax+'" step="'+x.stA+'" value="'+LAB.a+'" data-lab="a"></label><label>'+esc(x.b)+' <strong id="lab-bv">'+f1(LAB.b,2)+' '+esc(x.uB)+'</strong><input type="range" min="'+x.bmin+'" max="'+x.bmax+'" step="'+x.stB+'" value="'+LAB.b+'" data-lab="b"></label></section>'+
- '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Время модели</small><b id="lab-time">0,00 с</b></div></section>'+
- '<section class="lab-analysis"><div class="lab-section-title"><b>График измерений</b><small>обновляется при запуске</small></div><canvas id="lab-graph" width="720" height="220"></canvas><div class="lab-graph-legend"><span>● Текущий запуск</span><span>● Предыдущие запуски</span></div><button class="btn line lab-compare" data-act="labCompare">＋ Сохранить запуск для сравнения</button><button class="btn lab-complete" data-act="labComplete">'+(LAB_DONE.has(x.id)?'Опыт уже засчитан':'Завершить опыт · +15 XP')+'</button></section>'+
+ '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Время модели</small><b id="lab-time">0 / 30 с</b></div></section>'+
  '<section class="card lab-meaning"><b>Задача исследования</b><p class="mute">'+esc(x.task)+'</p><b>Что показывает модель</b><p class="mute">'+esc(x.desc)+'</p><div class="formula">'+esc(x.formula)+'</div></section>');
- labSetButtons();labDraw();labGraph();labMetrics();
+ labSetButtons();labDraw();labMetrics();
 }
-function labSetButtons(){const s=$('#lab-start'),p=$('#lab-pause');if(s){s.disabled=LAB.run;s.classList.toggle('active',!LAB.run&&LAB.paused)}if(p){p.disabled=!LAB.run;p.classList.toggle('active',LAB.run)}}
+function labSetButtons(){const s=$('#lab-start'),p=$('#lab-pause');if(s){s.disabled=LAB.run||LAB.t>=30;s.classList.toggle('active',!LAB.run&&LAB.paused)}if(p){p.disabled=!LAB.run;p.classList.toggle('active',LAB.run)}}
 function labStop(msg,paused=false){LAB.run=false;LAB.paused=paused;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;if(msg&&$('#lab-state'))$('#lab-state').textContent=msg;labSetButtons();}
 function labResult(){
  const x=LABS[LAB.id],a=LAB.a,b=LAB.b,g=9.81;if(!x)return {label:'Результат',value:0,unit:''};
@@ -446,7 +447,7 @@ function labObservable(){
 function labMetrics(){
  const x=LABS[LAB.id];if(!x)return;const r=labResult();
  $('#lab-mv').textContent=f1(r.value,2)+' '+r.unit;$('#lab-ml').textContent=r.label;
- $('#lab-time').textContent=f1(LAB.t,2)+' с';$('#lab-av').textContent=f1(LAB.a,2)+' '+x.uA;$('#lab-bv').textContent=f1(LAB.b,2)+' '+x.uB;
+ $('#lab-time').textContent=f1(LAB.t,1)+' / 30 с';$('#lab-av').textContent=f1(LAB.a,2)+' '+x.uA;$('#lab-bv').textContent=f1(LAB.b,2)+' '+x.uB;
 }
 function labArrow(c,x1,y1,x2,y2,color){const ang=Math.atan2(y2-y1,x2-x1);c.strokeStyle=color;c.fillStyle=color;c.lineWidth=3;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-10*Math.cos(ang-.45),y2-10*Math.sin(ang-.45));c.lineTo(x2-10*Math.cos(ang+.45),y2-10*Math.sin(ang+.45));c.closePath();c.fill();}
 function labDraw(){
@@ -514,31 +515,25 @@ function labDraw(){
  labMetrics();
 }
 function labFrame(now){
- if(!LAB.run)return;const dt=Math.min(.04,(now-LAB.last)/1000||0);LAB.last=now;LAB.t+=dt;
+ if(!LAB.run)return;const dt=Math.min(.04,(now-LAB.last)/1000||0);LAB.last=now;LAB.t=Math.min(30,LAB.t+dt);
  LAB.va+=(LAB.a-LAB.va)*Math.min(1,dt*7);LAB.vb+=(LAB.b-LAB.vb)*Math.min(1,dt*7);
- if(LAB.t-LAB.lastSample>.08){LAB.trace.push([+LAB.t.toFixed(2),+labObservable().toFixed(4)]);if(LAB.trace.length>240)LAB.trace.shift();LAB.lastSample=LAB.t;}
- labDraw();labGraph();if(LAB.run)LAB.raf=requestAnimationFrame(labFrame);
+ labDraw();const fill=$('#lab-progress-fill'),bar=fill&&fill.parentElement;if(fill)fill.style.width=(LAB.t/30*100)+'%';if(bar)bar.setAttribute('aria-valuenow',String(Math.floor(LAB.t)));
+ const state=$('#lab-state');if(state)state.textContent='Идёт опыт · '+Math.floor(LAB.t)+' / 30 с';
+ if(LAB.t>=30){labComplete();return;}
+ if(LAB.run)LAB.raf=requestAnimationFrame(labFrame);
 }
-function labRun(){if(LAB.run)return;LAB.run=true;LAB.paused=false;LAB.last=performance.now();const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent='Эксперимент идёт';if(hint)hint.textContent='Модель запущена. Поставь на паузу или измени параметры на ходу.';labSetButtons();LAB.raf=requestAnimationFrame(labFrame);}
-function labGraph(){
- const cv=$('#lab-graph');if(!cv)return;const c=cv.getContext('2d'),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);c.fillStyle='#0E1424';c.fillRect(0,0,w,h);
- c.save();c.strokeStyle='rgba(141,151,181,.20)';c.lineWidth=1;
- for(let gx=48;gx<w-10;gx+=84){c.beginPath();c.moveTo(gx,12);c.lineTo(gx,h-28);c.stroke();}
- for(let gy=20;gy<h-25;gy+=36){c.beginPath();c.moveTo(42,gy);c.lineTo(w-12,gy);c.stroke();}
- c.restore();c.fillStyle='#8D97B5';c.font='13px sans-serif';c.fillText('значение',8,16);c.fillText('время →',w-90,h-7);
- const sets=LAB_RUNS.filter(z=>z.id===LAB.id).slice(-2).concat(LAB.trace.length?[{trace:LAB.trace}]:[]);
- const all=sets.flatMap(z=>z.trace||[]).map(p=>p[1]);let lo=Math.min(0,...all),hi=Math.max(1,...all);if(hi-lo<.001){hi=lo+1;}
- const maxT=Math.max(5,LAB.t,...sets.flatMap(z=>(z.trace||[]).map(p=>p[0])));
- sets.forEach((z,idx)=>{const pts=z.trace||[];if(pts.length<2)return;c.strokeStyle=idx===sets.length-1?'#6C8CFF':'#FFC24B';c.lineWidth=idx===sets.length-1?3:2;c.beginPath();pts.forEach((p,k)=>{const px=48+p[0]/maxT*(w-65),py=h-30-(p[1]-lo)/(hi-lo)*(h-55);k?c.lineTo(px,py):c.moveTo(px,py)});c.stroke();});
-}
-function labCompare(){if(LAB.trace.length<3){toast('Сначала запусти опыт хотя бы на секунду');return;}LAB_RUNS.push({id:LAB.id,trace:LAB.trace.slice(),a:LAB.a,b:LAB.b});LAB_RUNS=LAB_RUNS.slice(-30);try{localStorage.setItem('f2-lab-runs',JSON.stringify(LAB_RUNS))}catch(e){}labGraph();toast('Запуск сохранён для сравнения');}
+function labRun(){if(LAB.run||LAB.t>=30)return;LAB.run=true;LAB.paused=false;LAB.last=performance.now();const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent='Идёт опыт · '+Math.floor(LAB.t)+' / 30 с';if(hint)hint.textContent='Время идёт только во время запуска. Пауза остановит отсчёт, сброс начнёт заново.';labSetButtons();LAB.raf=requestAnimationFrame(labFrame);}
 function labComplete(){
- if(LAB.t<.8){toast('Проведи опыт не менее 1 секунды');return;}
- if(LAB_DONE.has(LAB.id)){toast('Этот опыт уже засчитан');return;}
- LAB_DONE.add(LAB.id);try{localStorage.setItem('f2-lab-done',JSON.stringify([...LAB_DONE]))}catch(e){}
- addXP(15,'Опыт');toast('Опыт пройден · +15 XP');const st=$('#lab-state'),btn=$('.lab-complete');if(st)st.textContent='Опыт засчитан';if(btn)btn.textContent='Опыт засчитан';
+ const alreadyDone=LAB_DONE.has(LAB.id);
+ if(!alreadyDone){
+  LAB_DONE.add(LAB.id);try{localStorage.setItem('f2-lab-done',JSON.stringify([...LAB_DONE]))}catch(e){}
+  addXP(15,'Опыт');toast('Опыт пройден · +15 XP');
+ }else toast('Время опыта завершено');
+ LAB.run=false;LAB.paused=false;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;
+ const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent=alreadyDone?'Уже засчитан':'Опыт засчитан';
+ if(hint)hint.textContent=alreadyDone?'Этот опыт уже был пройден. Повторный запуск не начисляет XP.':'Готово! Опыт автоматически засчитан · +15 XP. Нажми «Сброс», чтобы провести его снова.';
+ labSetButtons();
 }
-
 /* ---------- Профиль ---------- */
 function vProfile() {
   frame('Профиль');
@@ -573,9 +568,7 @@ document.addEventListener('click', async e => {
     case 'labHome': labStop(); location.hash='lab'; break;
     case 'labStart': labRun(); break;
     case 'labPause': labStop('Пауза',true); if($('#lab-hint'))$('#lab-hint').textContent='Пауза. Нажми «Запустить», чтобы продолжить с того же момента.'; break;
-    case 'labReset': labStop('Готов к запуску'); LAB.t=0;LAB.trace=[];LAB.lastSample=0;LAB.va=LAB.a;LAB.vb=LAB.b;labDraw();labGraph();if($('#lab-hint'))$('#lab-hint').textContent='Опыт сброшен. Можно запускать снова.'; break;
-    case 'labCompare': labCompare(); break;
-    case 'labComplete': labComplete(); break;
+    case 'labReset': labStop('Готов к запуску'); LAB.t=0;LAB.trace=[];LAB.lastSample=0;LAB.va=LAB.a;LAB.vb=LAB.b;labDraw();if($('#lab-progress-fill'))$('#lab-progress-fill').style.width='0%';if($('#lab-progress-fill')?.parentElement)$('#lab-progress-fill').parentElement.setAttribute('aria-valuenow','0');labMetrics();if($('#lab-hint'))$('#lab-hint').textContent='Отсчёт сброшен. Опыт снова засчитается после 30 секунд активной работы.';labSetButtons(); break;
     case 'trainBack': location.hash = 'train'; break;
     case 'warm': { const B = await bank(); startQuiz({ kind: 'warm', title: 'Разминка', items: shuffle(B).slice(0, 10) }); break; }
     case 'exam': { const B = await bank(); startQuiz({ kind: 'exam', title: 'Экзамен', items: shuffle(B).slice(0, 30) }); break; }
@@ -591,7 +584,7 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
-document.addEventListener('input', e => { const k=e.target.dataset.lab;if(k){LAB[k]=Number(e.target.value);if(!LAB.run){LAB.va=LAB.a;LAB.vb=LAB.b;}labDraw();labGraph();if($('#lab-state'))$('#lab-state').textContent=LAB.run?'Параметры плавно меняются':'Параметры изменены';} });
+document.addEventListener('input', e => { const k=e.target.dataset.lab;if(k){LAB[k]=Number(e.target.value);if(!LAB.run){LAB.va=LAB.a;LAB.vb=LAB.b;}labDraw();if($('#lab-state'))$('#lab-state').textContent=LAB.run?'Параметры плавно меняются':'Параметры изменены';} });
 document.addEventListener('change', e => { if (e.target.id === 'pname') { S.name = e.target.value.trim().slice(0, 24); save(); toast(ic('check') + 'Имя сохранено'); } });
 
 /* ---------- обновления Android ---------- */
