@@ -94,6 +94,7 @@ const ui = {};
 let lastHash = null, same = false;
 function render() {
   stopLoops();
+  if (typeof LAB !== 'undefined' && LAB.run && !location.hash.startsWith('#lab-exp-')) labStop('Пауза');
   const r = route(), y = ui.main.scrollTop; same = lastHash === location.hash; lastHash = location.hash;
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
@@ -328,7 +329,6 @@ let LAB={id:'uniform-1',a:4,b:5,va:4,vb:5,t:0,run:false,paused:false,raf:0,last:
 const LAB_DONE=new Set((()=>{try{return JSON.parse(localStorage.getItem('f2-lab-done')||'[]')}catch(e){return []}})());
 Object.entries(LAB_LEGACY_MAP).forEach(([oldId,newId])=>{if(LAB_DONE.has(oldId))LAB_DONE.add(newId)});
 LAB_EXPERIMENTS.forEach(x=>{if([2,3,4,5].some(n=>LAB_DONE.has(x.topicId+'-'+n)))LAB_DONE.add(x.id)});
-let LAB_RUNS=(()=>{try{return JSON.parse(localStorage.getItem('f2-lab-runs')||'[]')}catch(e){return []}})();
 const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),0);
 const labChapterCount=ch=>LAB_EXPERIMENTS.filter(x=>x.ch===ch).length;
 const labTopic=(ch,n)=>LAB_TOPIC_GROUPS.find(x=>x.ch===ch&&x.n===n);
@@ -357,7 +357,7 @@ function vLabExp(r){
  frame(x.title,{back:true,sub:'Глава '+x.ch+' · '+(g?g.title:'Эксперимент')});
  setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску · 30 секунд</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-progress" role="progressbar" aria-label="Время до автоматического зачёта" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0"><i id="lab-progress-fill"></i></div><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Изучи установку и запусти опыт. Он автоматически засчитается после 30 секунд активной работы.</p></section>'+
  '<section class="card lab-controls"><div class="lab-section-title"><b>Параметры</b><small>Можно менять во время опыта</small></div><label>'+esc(x.a)+' <strong id="lab-av">'+f1(LAB.a,2)+' '+esc(x.uA)+'</strong><input type="range" min="'+x.amin+'" max="'+x.amax+'" step="'+x.stA+'" value="'+LAB.a+'" data-lab="a"></label><label>'+esc(x.b)+' <strong id="lab-bv">'+f1(LAB.b,2)+' '+esc(x.uB)+'</strong><input type="range" min="'+x.bmin+'" max="'+x.bmax+'" step="'+x.stB+'" value="'+LAB.b+'" data-lab="b"></label></section>'+
- '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Время модели</small><b id="lab-time">0,00 с</b></div></section>'+
+ '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Время модели</small><b id="lab-time">0 / 30 с</b></div></section>'+
  '<section class="card lab-meaning"><b>Задача исследования</b><p class="mute">'+esc(x.task)+'</p><b>Что показывает модель</b><p class="mute">'+esc(x.desc)+'</p><div class="formula">'+esc(x.formula)+'</div></section>');
  labSetButtons();labDraw();labMetrics();
 }
