@@ -17,6 +17,9 @@ for f in FILES:
     if os.path.exists(os.path.join(SITE, f)): shutil.copy2(os.path.join(SITE, f), DST)
 for d in DIRS:
     shutil.copytree(os.path.join(SITE, d), os.path.join(DST, d))
+# пилот нового приложения по учебнику — в папку v2 (без исходников: GitVerse Pages запрещает .py)
+F2 = os.path.normpath(os.path.join(SITE, '..', 'fizika2'))
+if os.path.isdir(F2): shutil.copytree(F2, os.path.join(DST, 'v2'), ignore=shutil.ignore_patterns('src'))
 open(os.path.join(DST, '.nojekyll'), 'w').close()
 open(os.path.join(DST, 'README.md'), 'w', encoding='utf-8').write(
     '# Физика: ответы и тесты\n\nЗеркало сайта https://fizika.gitverse.site/ (доступно из России без VPN).\n'

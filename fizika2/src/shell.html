@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1424">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Физика: курс по учебнику</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+@font-face{font-family:"Golos UI"; font-weight:400; font-display:swap; src:url(data:font/woff2;base64,{{F400}}) format("woff2")}
+@font-face{font-family:"Golos UI"; font-weight:600; font-display:swap; src:url(data:font/woff2;base64,{{F600}}) format("woff2")}
+@font-face{font-family:"Golos UI"; font-weight:700; font-display:swap; src:url(data:font/woff2;base64,{{F700}}) format("woff2")}
+:root{
+  --bg:#0B1020; --bg2:#0E1424; --card:#151D33; --card2:#1B2542; --line:#26324F; --text:#E8ECF6; --mute:#8D97B5;
+  --blue:#6C8CFF; --coral:#FF7A59; --mint:#3DD6A0; --gold:#FFC24B; --violet:#B48CFF; --pink:#FF6B8B; --cyan:#3DD6C3;
+  --ui:"Golos UI", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --math:"Cambria Math", "STIX Two Math", "STIX Two Text", "Times New Roman", serif;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font:16px/1.5 var(--ui); -webkit-tap-highlight-color:transparent; -webkit-text-size-adjust:100%}
+body{overflow:hidden}
+[hidden]{display:none!important}
+a{color:inherit; text-decoration:none}
+button{font:inherit; color:inherit; cursor:pointer}
+svg.ic{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex:none}
+svg.ic.big{width:34px; height:34px}
+.fire{color:var(--coral)} .gold{color:var(--gold)} .blue{color:var(--blue)} .pink{color:var(--pink)} .mint{color:var(--mint)} .mute{color:var(--mute)} .small{font-size:13px}
+.app{display:flex; flex-direction:column; height:100vh; height:100dvh; max-width:720px; margin:0 auto}
+.top{flex:none; display:flex; align-items:center; gap:8px; min-height:58px; padding:var(--sat) 12px 0; background:var(--bg)}
+#back{width:40px; height:40px; border:0; border-radius:12px; background:var(--card); display:grid; place-items:center}
+#ttl{flex:1; min-width:0; margin:0; font-size:21px; font-weight:700; line-height:1.2; display:grid; white-space:nowrap}
+#ttl small{font-size:12.5px; font-weight:400; color:var(--mute); overflow:hidden; text-overflow:ellipsis}
+body[data-view=lesson] #ttl, body[data-view=quiz] #ttl{font-size:17px}
+#ttl{overflow:hidden; text-overflow:ellipsis}
+#lv{display:flex; align-items:center; gap:6px}
+.lvb{width:30px; height:30px; border-radius:10px; display:grid; place-items:center; background:linear-gradient(135deg,var(--blue),var(--violet)); font-weight:700; font-size:14px}
+.lvbar{width:54px; height:6px; border-radius:6px; background:var(--line); overflow:hidden}
+.lvbar i{display:block; height:100%; background:var(--gold); border-radius:6px; transition:width .5s}
+main{flex:1; min-height:0; overflow-y:auto; overscroll-behavior-y:contain; padding:10px 16px 28px}
+main.enter > *{animation:enter .22s ease-out both}
+@keyframes enter{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+.tabs{flex:none; display:grid; grid-template-columns:repeat(4,1fr); background:var(--bg2); border-top:1px solid var(--line); padding:0 0 var(--sab)}
+.tabs a{display:grid; justify-items:center; gap:3px; padding:9px 0 10px; font-size:11.5px; font-weight:600; color:var(--mute)}
+.tabs a span{display:grid; place-items:center; width:56px; height:30px; border-radius:15px; transition:background .2s}
+.tabs a.on{color:var(--text)} .tabs a.on span{background:var(--card2); color:var(--blue)}
+
+.card{background:var(--card); border-radius:20px; padding:16px; margin-bottom:12px}
+.card.center{text-align:center; display:grid; justify-items:center; gap:6px; padding:22px 18px}
+.h{font-size:19px; display:block}
+.row{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
+.row small{color:var(--mute)}
+.bar,.pbar{height:8px; border-radius:8px; background:var(--line); overflow:hidden; margin-top:10px}
+.bar i,.pbar i{display:block; height:100%; border-radius:8px; background:linear-gradient(90deg,var(--blue),var(--violet))}
+.pbar{height:5px; margin-top:6px}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:50px; padding:0 18px; border:0; border-radius:16px; background:var(--blue); color:#fff; font-weight:700}
+.btn.line{background:var(--card2); color:var(--text)}
+.btn.wide{flex:1; width:100%}
+.btn.danger{color:var(--pink)}
+.mt{margin-top:12px}
+.sec{font-size:15px; margin:22px 2px 10px; color:var(--mute); font-weight:600; text-transform:uppercase; letter-spacing:.06em}
+
+/* главная */
+.hello{display:flex; align-items:center; gap:14px; margin:4px 0 14px}
+.hello h1{margin:0; font-size:24px; line-height:1.2}
+.hello p{margin:2px 0 0; color:var(--mute)}
+.hava .ava{display:block}
+.lvcard b{font-size:20px}
+.cont{display:flex; width:100%; border:0; padding:0; text-align:left; background:var(--card); border-radius:22px; overflow:hidden; margin-bottom:12px}
+.cart{flex:none; width:44%; min-height:140px; display:block}
+.cart svg{display:block; width:100%; height:100%}
+.ctx{flex:1; display:flex; flex-direction:column; gap:4px; padding:14px}
+.ctx small{color:var(--mute); font-size:12.5px}
+.ctx b{font-size:18px; line-height:1.25}
+.cbtn{margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px; background:var(--blue); color:#fff; font-weight:700; border-radius:12px; padding:8px 14px; font-size:14px}
+.cbtn svg{width:16px; height:16px}
+.duo{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.goal{display:flex; align-items:center; gap:12px; margin:0 0 12px}
+.goal > div{display:grid} .goal small{color:var(--mute); font-size:12.5px}
+.ring{width:46px; height:46px; flex:none}
+.qk{padding:4px 14px}
+.qrow{display:flex; align-items:center; gap:12px; width:100%; padding:12px 0; border:0; background:none; text-align:left}
+.qrow + .qrow{border-top:1px solid var(--line)}
+.qrow > span{flex:1; display:grid} .qrow small{color:var(--mute); font-size:13px}
+.qrow > svg:first-child{color:var(--blue)} .qrow > svg:last-child{color:var(--mute)}
+
+/* учебник */
+.part{margin-bottom:22px}
+.ph{display:grid; margin:6px 2px 10px; padding-left:12px; border-left:4px solid var(--pc)}
+.pn{color:var(--pc); font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em}
+.ph h2{margin:0; font-size:18px; line-height:1.25}
+.chrow{display:flex; align-items:center; gap:12px; background:var(--card); border-radius:18px; padding:8px 12px 8px 8px; margin-bottom:8px}
+.chrow.soon{opacity:.55}
+.cthumb{flex:none; width:92px; height:56px; border-radius:12px; overflow:hidden; display:block}
+.cthumb svg{display:block; width:100%; height:100%}
+.cinfo{flex:1; min-width:0; display:grid}
+.cinfo small{color:var(--mute); font-size:12px}
+.cinfo b{font-size:15px; line-height:1.25}
+.tag{justify-self:start; margin-top:4px; font-size:11.5px; color:var(--mute); background:var(--card2); border-radius:8px; padding:1px 8px}
+.chrow > svg{color:var(--mute)}
+
+/* глава */
+.chead{background:var(--card); border-radius:22px; overflow:hidden; margin-bottom:16px}
+.cart.big{width:100%; min-height:0; aspect-ratio:36/17}
+.chx{padding:14px 16px 16px}
+.chx small{color:var(--mute)}
+.chx h1{margin:2px 0 0; font-size:22px; line-height:1.2}
+.path{display:grid}
+.node{display:flex; align-items:center; gap:14px; width:100%; border:0; padding:0; background:none; text-align:left}
+.node .dot{flex:none; width:58px; height:58px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:20px; background:var(--card2); color:var(--mute); border:3px solid var(--line)}
+.node.now .dot{background:var(--blue); color:#fff; border-color:transparent; box-shadow:0 0 0 6px rgba(108,140,255,.22)}
+.node.done .dot{background:var(--mint); color:#0B1020; border-color:transparent}
+.node.boss .dot{background:linear-gradient(135deg,var(--coral),var(--pink)); color:#fff; border-color:transparent}
+.node.boss.done .dot{background:var(--gold); color:#0B1020}
+.nl{flex:1; display:grid; background:var(--card); border-radius:16px; padding:10px 14px}
+.nl small{color:var(--mute); font-size:12.5px} .nl b{font-size:15.5px; line-height:1.25}
+.conn{display:block; width:4px; height:20px; margin-left:27px; background:repeating-linear-gradient(var(--line) 0 6px,transparent 6px 12px)}
+.stars{display:inline-flex; gap:2px; margin-top:2px}
+.stars svg{width:18px; height:18px; color:var(--line)} .stars svg.on{color:var(--gold); fill:var(--gold)}
+.res .stars svg{width:38px; height:38px}
+.sci{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.scard{background:var(--card); border-radius:16px; padding:12px; display:grid; gap:2px}
+.scard small{color:var(--mute); font-size:12px} .scard p{margin:4px 0 0; font-size:13.5px; color:var(--mute)}
+.scard.locked{opacity:.5}
+
+/* урок */
+.steps{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:12px}
+.steps button{display:grid; justify-items:center; gap:3px; padding:8px 2px; border:0; border-radius:14px; background:var(--card); color:var(--mute); font-size:12px; font-weight:600}
+.steps button.on{background:var(--blue); color:#fff}
+.steps button.ok:not(.on){color:var(--mint)}
+.vid{background:var(--card); border-radius:20px; overflow:hidden}
+.vwrap{position:relative}
+#vc{display:block; width:100%; height:auto; aspect-ratio:16/9; background:#0E1424}
+.vplay{position:absolute; inset:0; margin:auto; width:76px; height:76px; border-radius:50%; border:0; background:rgba(108,140,255,.92); color:#fff; display:grid; place-items:center; box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.vplay svg{width:34px; height:34px; fill:currentColor}
+.vctl{display:flex; align-items:center; gap:10px; padding:10px 12px}
+.vb{width:40px; height:40px; border:0; border-radius:12px; background:var(--card2); display:grid; place-items:center}
+.vseek{flex:1; height:28px; position:relative; cursor:pointer; touch-action:none}
+.vseek::before{content:""; position:absolute; left:0; right:0; top:11px; height:6px; border-radius:6px; background:var(--line)}
+.vseek i{position:absolute; left:0; top:11px; height:6px; border-radius:6px; background:var(--coral)}
+#vtime{font-size:12.5px; color:var(--mute); font-variant-numeric:tabular-nums; min-width:76px; text-align:right}
+.vsub{margin:0; padding:0 16px 16px; font-size:15.5px; line-height:1.45; color:var(--text)}
+.cards{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:0; scrollbar-width:none; border-radius:22px}
+.cards::-webkit-scrollbar{display:none}
+.kcard{flex:0 0 100%; scroll-snap-align:start; background:var(--card); border-radius:22px; padding:18px 18px 14px; display:flex; flex-direction:column; gap:8px; min-height:52vh}
+.kind{align-self:flex-start; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--kc); background:color-mix(in srgb,var(--kc) 14%,transparent); border-radius:8px; padding:2px 10px}
+.kcard h3{margin:0; font-size:21px; line-height:1.2}
+.kcard p{margin:0; font-size:16px; line-height:1.55; color:#D3D9EA}
+.kn{margin-top:auto; color:var(--mute); font-size:12px}
+.vec{position:relative; display:inline-block; padding-top:.18em; line-height:1}
+.vec::before{content:""; position:absolute; left:.04em; right:.18em; top:.02em; height:.085em; min-height:1.6px; background:currentColor; border-radius:1px}
+.vec::after{content:""; position:absolute; right:0; top:-.1em; border-top:.15em solid transparent; border-bottom:.15em solid transparent; border-left:.28em solid currentColor}
+.fig{width:100%; height:auto; display:block; border-radius:14px}
+.formula{display:grid; gap:4px; padding:12px 14px; border-radius:14px; background:var(--card2); font:italic 600 20px/1.45 var(--math); color:var(--gold)}
+.dots{display:flex; justify-content:center; gap:6px; margin:12px 0}
+.dots i{width:7px; height:7px; border-radius:50%; background:var(--line)} .dots i.on{background:var(--blue); width:18px; border-radius:4px}
+.cnav{display:flex; gap:8px}
+.cnav .btn:first-child:not(.wide){flex:none; width:56px; padding:0}
+.cnav.two .btn{flex:1; width:auto; padding:0 14px}
+.sim .task{margin:8px 0 10px; color:#D3D9EA}
+#sc{display:block; width:100%; height:auto; border-radius:14px}
+.smsg{min-height:2.8em; margin:10px 0 0; font-size:14.5px; color:var(--mute)}
+.smsg.ok{color:var(--mint)} .smsg.bad{color:var(--pink)}
+.stp{background:var(--card2); border-radius:16px; padding:12px; margin-top:6px}
+.stp-h{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px}
+.stp-h span{color:var(--mute); font-size:14px} .stp-h b{font-size:21px; font-variant-numeric:tabular-nums}
+.stp-b{display:grid; grid-template-columns:1fr 1.3fr 1.3fr 1fr; gap:8px}
+.stp-b button{min-height:52px; border:0; border-radius:14px; background:var(--line); color:var(--text); font-weight:700; font-size:16px; touch-action:manipulation; user-select:none; -webkit-user-select:none}
+.stp-b button.m{background:var(--blue); color:#fff; font-size:24px}
+.stp-b button:active{transform:scale(.96)}
+.qic{color:var(--mint)}
+
+/* проверки */
+.qtop{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+.qprog{flex:1; height:8px; border-radius:8px; background:var(--line); overflow:hidden}
+.qprog i{display:block; height:100%; background:var(--mint); border-radius:8px; transition:width .3s}
+.combo{display:inline-flex; align-items:center; gap:4px; background:var(--card); border-radius:12px; padding:5px 10px; color:var(--mute); font-weight:700}
+.combo svg{width:18px; height:18px}
+.combo.hot{color:var(--coral); background:rgba(255,122,89,.14); animation:pulse 1.2s infinite}
+.combo i{font-style:normal; color:var(--gold); font-size:13px}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.qcard{background:var(--card); border-radius:22px; padding:18px}
+.qt{margin:0 0 14px; font-size:18px; line-height:1.4}
+.qpic{max-width:100%; max-height:220px; background:#fff; border-radius:12px; padding:6px; margin-bottom:12px}
+.opts{display:grid; gap:8px}
+.opt{display:flex; gap:12px; align-items:flex-start; width:100%; min-height:54px; padding:12px 14px; border-radius:16px; border:2px solid var(--line); background:var(--bg2); text-align:left}
+.opt .ln{flex:none; width:28px; height:28px; display:grid; place-items:center; border-radius:9px; background:var(--card2); font-size:13px; font-weight:700; color:var(--mute)}
+.opt.right{border-color:var(--mint); background:rgba(61,214,160,.12)} .opt.right .ln{background:var(--mint); color:#0B1020}
+.opt.wrong{border-color:var(--pink); background:rgba(255,107,139,.12)} .opt.wrong .ln{background:var(--pink); color:#fff}
+.opt.dim{opacity:.5}
+.verdict{margin-top:14px; border-radius:16px; padding:12px 14px}
+.verdict.ok{background:rgba(61,214,160,.12)} .verdict.ok b{color:var(--mint)}
+.verdict.bad{background:rgba(255,107,139,.12)} .verdict.bad b{color:var(--pink)}
+.verdict p{margin:4px 0 0; color:#D3D9EA; font-size:15px}
+.grade{width:86px; height:86px; border-radius:50%; display:grid; place-items:center; font:italic 700 52px/1 var(--math); border:4px solid}
+.grade.g5{color:var(--mint)} .grade.g4{color:var(--blue)} .grade.g3{color:var(--gold)} .grade.g2{color:var(--pink)}
+.werr .qt{font-size:15.5px; margin-bottom:8px}
+.okans{display:flex; gap:8px; align-items:flex-start; color:var(--mint); margin:0 0 6px; font-weight:600}
+.okans svg{width:18px; height:18px; margin-top:3px}
+.hero2{display:grid; gap:6px; justify-items:start; background:linear-gradient(135deg,#1F2A52,#2A1F48)}
+.tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.tile{display:grid; gap:4px; align-content:start; justify-items:start; text-align:left; min-height:132px; padding:16px; border:0; border-radius:20px; background:var(--card)}
+.tile b{font-size:16px; margin-top:8px} .tile small{color:var(--mute); font-size:13px}
+
+/* профиль */
+.prof{display:flex; gap:16px; align-items:center}
+.prof > div{flex:1; min-width:0}
+.pava{position:relative; border:0; padding:0; background:none; border-radius:50%}
+.pava span{position:absolute; right:-2px; bottom:-2px; width:28px; height:28px; border-radius:50%; background:var(--card2); display:grid; place-items:center; border:2px solid var(--card)}
+.pava span svg{width:15px; height:15px}
+#pname{width:100%; font:700 20px var(--ui); color:var(--text); background:none; border:0; border-bottom:1px dashed var(--line); padding:2px 0; outline:0}
+.prof p{margin:6px 0 0; color:var(--mute)}
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:6px}
+.stats div{background:var(--card); border-radius:16px; padding:12px; display:grid}
+.stats b{font-size:22px} .stats span{color:var(--mute); font-size:12px}
+.badges{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.bdg{display:grid; gap:2px; background:var(--card); border-radius:16px; padding:12px; opacity:.45}
+.bdg.on{opacity:1} .bdg svg{color:var(--mute)} .bdg.on svg{color:var(--gold)}
+.bdg small{color:var(--mute); font-size:12px}
+.avas{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:14px}
+.avas button{border:3px solid transparent; background:none; border-radius:50%; padding:2px}
+.avas button.on{border-color:var(--gold)}
+
+/* всплывашки */
+#toasts{position:fixed; left:0; right:0; bottom:calc(84px + var(--sab)); display:grid; justify-items:center; gap:8px; pointer-events:none; z-index:40}
+.toast{display:flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:10px 16px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.35); animation:tin .3s ease-out}
+.toast.fire{color:var(--coral)} .toast.gold{color:var(--gold)}
+.toast.out{opacity:0; transform:translateY(-10px); transition:.4s}
+@keyframes tin{from{opacity:0; transform:translateY(10px)}}
+.fxp{position:fixed; left:50%; top:40%; transform:translateX(-50%); font-weight:700; font-size:22px; color:var(--gold); pointer-events:none; z-index:41; animation:fxp 1.2s ease-out forwards}
+@keyframes fxp{to{opacity:0; transform:translate(-50%,-70px)}}
+#sheet{position:fixed; inset:0; z-index:50; background:rgba(5,8,18,.6); display:flex; align-items:flex-end; justify-content:center}
+.sbox{width:100%; max-width:560px; background:var(--card); border-radius:26px 26px 0 0; padding:22px 18px calc(22px + var(--sab)); animation:enter .2s ease-out}
+.lvup{display:grid; justify-items:center; text-align:center; gap:8px}
+.lvnum{width:96px; height:96px; border-radius:28px; display:grid; place-items:center; font-size:46px; font-weight:700; background:linear-gradient(135deg,var(--blue),var(--violet)); box-shadow:0 0 0 10px rgba(108,140,255,.18)}
+.lvup b{font-size:22px} .lvup p{margin:0 0 8px; color:var(--mute)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body data-view="home">
+<div class="app">
+  <header class="top"><button id="back" aria-label="Назад" hidden><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1 id="ttl">Физика</h1><a href="#profile" id="lv" aria-label="Уровень и профиль"></a></header>
+  <main id="main"></main>
+  <nav class="tabs" id="tabs" aria-label="Разделы">
+    <a href="#" data-tab="home"><span>{{I_house}}</span>Главная</a>
+    <a href="#book" data-tab="book"><span>{{I_book-open}}</span>Учебник</a>
+    <a href="#train" data-tab="train"><span>{{I_dumbbell}}</span>Тренировка</a>
+    <a href="#profile" data-tab="profile"><span>{{I_user}}</span>Профиль</a>
+  </nav>
+</div>
+<div id="toasts"></div>
+<div id="sheet" hidden></div>
+<script>
+{{JS}}</script>
+</body>
+</html>

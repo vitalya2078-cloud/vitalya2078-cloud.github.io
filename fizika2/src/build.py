@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+"""Сборка пилота fizika2/: index.html (всё в одном файле), content.json и pics/ (база вопросов экзамена из ../fizika),
+audio/ (озвучка роликов), sw.js (офлайн), manifest. Запуск: python3 fizika2/src/build.py"""
+import base64, json, os, re, shutil
+D = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(D, '..')); OLD = os.path.normpath(os.path.join(OUT, '..', 'fizika'))
+rd = lambda p, b=False: open(os.path.join(D, p), 'rb' if b else 'r', **({} if b else {'encoding': 'utf-8'})).read()
+html = rd('shell.html')
+for w in ('400', '600', '700'): html = html.replace('{{F%s}}' % w, base64.b64encode(open(os.path.join(OLD, 'src', 'g%s.woff2' % w), 'rb').read()).decode())
+icons = json.loads(re.search(r'const ICONS = (\{.*?\});', rd('icons.js')).group(1))
+html = re.sub(r'\{\{I_([\w-]+)\}\}', lambda m: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % icons[m.group(1)], html)
+voice = json.load(open(os.path.join(D, 'voice.json'), encoding='utf-8')) if os.path.exists(os.path.join(D, 'voice.json')) else {}
+js = 'const VOICE = %s;\n' % json.dumps(voice) + '\n'.join(rd(f) for f in ('book.js', 'scenes.js', 'icons.js', 'app.js'))
+app = html.replace('{{JS}}', js)
+assert '{{' not in app.replace('{{', '', 0) or not re.search(r'\{\{(F\d+|JS|I_[\w-]+)\}\}', app)
+open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(app)
+# база вопросов экзамена и рисунки к ним — из основного приложения
+shutil.copy2(os.path.join(OLD, 'content.json'), OUT)
+if os.path.exists(os.path.join(OUT, 'pics')): shutil.rmtree(os.path.join(OUT, 'pics'))
+shutil.copytree(os.path.join(OLD, 'pics'), os.path.join(OUT, 'pics'))
+os.makedirs(os.path.join(OUT, 'audio'), exist_ok=True)
+shutil.copy2(os.path.join(OUT, '..', 'fizika-android', 'app', 'src', 'main', 'res', 'mipmap-xxxhdpi', 'ic_launcher.png'), os.path.join(OUT, 'icon-192.png'))
+json.dump({'name': 'Физика: курс по учебнику', 'short_name': 'Физика', 'start_url': './', 'scope': './', 'display': 'standalone', 'background_color': '#0B1020', 'theme_color': '#0E1424', 'lang': 'ru',
+           'icons': [{'src': 'icon-192.png', 'sizes': '192x192', 'type': 'image/png'}]}, open(os.path.join(OUT, 'manifest.webmanifest'), 'w', encoding='utf-8'), ensure_ascii=False)
+ver = __import__('hashlib').sha256(app.encode()).hexdigest()[:10]
+open(os.path.join(OUT, 'sw.js'), 'w').write("""const C='f2-%s';
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','content.json'])).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;
+ if(/\\/(pics|audio)\\//.test(u.pathname)){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res})));return}
+ e.respondWith(fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res}).catch(()=>caches.match(e.request).then(r=>r||caches.match('index.html'))))});
+""" % ver)
+print('index.html', len(app.encode()) // 1024, 'КБ; озвучка:', ', '.join(sorted(voice)) or 'нет')
