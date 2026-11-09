@@ -331,12 +331,12 @@ let LAB_RUNS=(()=>{try{return JSON.parse(localStorage.getItem('f2-lab-runs')||'[
 const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),0);
 const labTopic=(ch,n)=>LAB_TOPIC_GROUPS.find(x=>x.ch===ch&&x.n===n);
 function labOpen(id){const x=LABS[id];if(!x)return;LAB={id:id,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};location.hash='lab-exp-'+id;}
-function labTabs(){return '<div class="lab-switch"><button class="btn active" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>175</small></button><button class="btn line" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
+function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>175</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
 function vLab(){
  frame('Лаборатория',{sub:'Опыты и игровые задания'});
  setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · 175 экспериментов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из 175 опытов пройдено</span><i><em style="width:'+(labDoneCount()/175*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length;return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/25*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/25</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
 }
-function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs()+'<section class="card lab-coming"><div class="lab-coming-icon">'+ic('gamepad-2','big')+'</div><b class="h">Игры лаборатории</b><p class="mute">Здесь будут отдельные игровые режимы по всем семи главам физики. Сначала завершаем интерактивные опыты, затем вернёмся к разработке игр.</p></section>');}
+function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="card lab-coming"><div class="lab-coming-icon">'+ic('gamepad-2','big')+'</div><b class="h">Игры лаборатории</b><p class="mute">Здесь будут отдельные игровые режимы по всем семи главам физики. Сначала завершаем интерактивные опыты, затем вернёмся к разработке игр.</p></section>');}
 function vLabChapter(r){
  const ch=LAB_CHAPTERS[r.ch-1];if(!ch){location.hash='lab';return;}
  const groups=LAB_TOPIC_GROUPS.filter(x=>x.ch===r.ch);
@@ -398,7 +398,7 @@ function labResult(){
  case 'induction':value=100*.5*a*b;label='Средняя ЭДС (100 витков)';unit='В';break;
  case 'reflection':value=Math.abs(2*b-a);label='Направление отражённого луча';unit='°';break;
  case 'refraction':value=Math.asin(Math.min(1,Math.sin(a*Math.PI/180)/b))*180/Math.PI;label='Угол преломления';unit='°';break;
- case 'lens':case 'mirror':value=a*b/(b-a);label=x.model==='lens'?'Расстояние до изображения':'Расстояние до изображения';unit='см';break;
+ case 'lens':case 'mirror':value=Math.abs(b-a)<.001?Infinity:a*b/(b-a);label=Math.abs(b-a)<.001?'Изображение на бесконечности':'Расстояние до изображения';unit=Math.abs(b-a)<.001?'':'см';break;
  case 'interference':value=(a*1e-9)/(b*1e-3)*1*1000;label='Расстояние между полосами';unit='мм';break;
  }
  return {label:label,value:value,unit:unit};
