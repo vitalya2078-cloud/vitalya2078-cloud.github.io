@@ -327,6 +327,7 @@ const LAB_LEGACY_MAP={spring:'spring-1',pendulum:'pendulum-1',fall:'freefall-1',
 let LAB={id:'uniform-1',a:4,b:5,va:4,vb:5,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};
 const LAB_DONE=new Set((()=>{try{return JSON.parse(localStorage.getItem('f2-lab-done')||'[]')}catch(e){return []}})());
 Object.entries(LAB_LEGACY_MAP).forEach(([oldId,newId])=>{if(LAB_DONE.has(oldId))LAB_DONE.add(newId)});
+LAB_EXPERIMENTS.forEach(x=>{if([2,3,4,5].some(n=>LAB_DONE.has(x.topicId+'-'+n)))LAB_DONE.add(x.id)});
 let LAB_RUNS=(()=>{try{return JSON.parse(localStorage.getItem('f2-lab-runs')||'[]')}catch(e){return []}})();
 const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),0);
 const labChapterCount=ch=>LAB_EXPERIMENTS.filter(x=>x.ch===ch).length;
