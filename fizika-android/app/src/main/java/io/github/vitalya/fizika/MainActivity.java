@@ -107,14 +107,17 @@ public class MainActivity extends Activity {
      */
     private WebResourceResponse mirror(Uri u) {
         String path = u.getPath(), base;
-        if (path.startsWith("/mirror/gv/")) { base = "https://fizika.gitverse.site/"; path = path.substring(11); }
-        else if (path.startsWith("/mirror/gh/")) { base = "https://vitalya2078-cloud.github.io/fizika/"; path = path.substring(11); }
+        int prefix;
+        if (path.startsWith("/mirror/gv2/")) { base = "https://fizika.gitverse.site/v2/"; prefix = 12; }
+        else if (path.startsWith("/mirror/gh2/")) { base = "https://vitalya2078-cloud.github.io/fizika2/"; prefix = 12; }
+        else if (path.startsWith("/mirror/gv/")) { base = "https://fizika.gitverse.site/"; prefix = 11; }
+        else if (path.startsWith("/mirror/gh/")) { base = "https://vitalya2078-cloud.github.io/fizika/"; prefix = 11; }
         else return new WebResourceResponse("text/plain", "utf-8", 404, "Not Found", null, null);
         java.util.Map<String, String> hdr = new java.util.HashMap<>();
         hdr.put("Cache-Control", "no-store");
         try {
             String q = u.getEncodedQuery();
-            java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(base + u.getEncodedPath().substring(11) + (q != null ? "?" + q : "")).openConnection();
+            java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(base + u.getEncodedPath().substring(prefix) + (q != null ? "?" + q : "")).openConnection();
             c.setConnectTimeout(12000); c.setReadTimeout(30000); c.setUseCaches(false);
             int code = c.getResponseCode();
             String type = c.getContentType();
