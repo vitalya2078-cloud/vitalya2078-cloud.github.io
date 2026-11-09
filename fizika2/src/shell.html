@@ -449,6 +449,51 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 @media(max-width:390px){.lab-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-tile{min-height:142px;padding:10px}.lab-tile small{font-size:10.5px}.lab-actions .btn{font-size:10.5px}.lab-metrics b{font-size:17px}}
 @media(prefers-reduced-motion:reduce){.lab-tile,.lab-actions .btn{transition:none}}
 
+
+/* 175-experiment laboratory */
+.lab-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+.lab-switch .btn{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px}
+.lab-switch small{padding:2px 7px;border-radius:20px;background:rgba(255,255,255,.08);font-size:10px;color:var(--mute)}
+.lab-total{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 10px;margin-top:12px;padding:11px 13px;border-radius:14px;background:var(--card)}
+.lab-total>b{grid-row:span 2;font:700 24px/1 var(--numbers);color:var(--mint)}
+.lab-total>span{font-size:11px;color:var(--mute)}
+.lab-total>i,.lab-chapter-copy>i,.lab-topic-foot>i{display:block;height:5px;overflow:hidden;border-radius:8px;background:var(--line)}
+.lab-total>i em,.lab-chapter-copy>i em,.lab-topic-foot>i em{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--mint))}
+.lab-chapters,.lab-topic-list,.lab-experiment-list{display:grid;gap:9px}
+.lab-chapter{display:grid;grid-template-columns:38px minmax(0,1fr) auto 16px;align-items:center;gap:10px;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;color:var(--text);text-decoration:none}
+.lab-chapter-num{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--card2);color:var(--blue);font:700 13px var(--numbers)}
+.lab-chapter-copy{display:grid;min-width:0;gap:4px}
+.lab-chapter-copy b{font-size:13px;line-height:1.3}
+.lab-chapter-copy small{font-size:10px;line-height:1.35;color:var(--mute)}
+.lab-chapter-copy>i{margin-top:3px}
+.lab-chapter-count{font:600 11px var(--numbers);color:var(--mute)}
+.lab-topic-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lab-topic-card{display:grid;gap:7px;min-width:0;padding:13px;background:var(--card);border:1px solid var(--line);border-radius:16px;color:var(--text);text-decoration:none}
+.lab-topic-index{font-size:9px;letter-spacing:.09em;color:var(--blue);font-weight:700}
+.lab-topic-card>b{font-size:13px;line-height:1.3}
+.lab-topic-card>small{font-size:10px;line-height:1.4;color:var(--mute)}
+.lab-topic-foot{display:flex;align-items:center;gap:8px;margin-top:3px}
+.lab-topic-foot>i{flex:1}
+.lab-topic-foot small{font-size:10px;color:var(--mute);white-space:nowrap}
+.lab-experiment-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lab-experiment-card{display:grid;gap:7px;min-width:0;padding:12px;text-align:left;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:16px}
+.lab-experiment-card.done{border-color:rgba(61,214,160,.42)}
+.lab-experiment-top{display:flex;align-items:center;gap:7px;min-width:0}
+.lab-experiment-icon{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:var(--card2);color:var(--blue)}
+.lab-experiment-icon .ic{width:17px;height:17px}
+.lab-experiment-badge{padding:4px 8px;border-radius:20px;background:var(--card2);font-size:10px;color:var(--mute);white-space:nowrap}
+.lab-experiment-status{margin-left:auto;color:var(--mint)}
+.lab-experiment-card>b{font-size:12px;line-height:1.3}
+.lab-experiment-card>small{font-size:10px;line-height:1.4;color:var(--mute)}
+.lab-coming{display:grid;justify-items:center;gap:10px;padding:26px 18px;text-align:center}
+.lab-coming-icon{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:var(--card2);color:var(--blue)}
+.lab-coming p{max-width:420px;margin:0;font-size:13px;line-height:1.55}
+.lab-stage-head span{font-variant-numeric:tabular-nums}
+.lab-actions .btn:disabled{background:var(--card2);border-color:var(--line);color:var(--mute);box-shadow:none;opacity:.55}
+.lab-experiment-card:active,.lab-chapter:active,.lab-topic-card:active{transform:scale(.99)}
+@media(max-width:520px){.lab-topic-list,.lab-experiment-list{grid-template-columns:1fr}.lab-experiment-card{padding:11px}.lab-topic-card{padding:12px}}
+@media(min-width:900px){.lab-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-experiment-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
 </style>
 </head>
 <body data-view="home">

@@ -33,7 +33,9 @@ jobs:
           cache: gradle
 
       - name: Check JavaScript syntax
-        run: node --check fizika2/src/app.js
+        run: |
+          node --check fizika2/src/lab-data.js
+          node --check fizika2/src/app.js
 
       - name: Build website data and textbook course
         run: |
