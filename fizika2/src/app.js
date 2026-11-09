@@ -83,8 +83,8 @@ function route() {
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
   if (h === 'lab') return { name: 'lab', tab: 'lab' };
   if (h === 'lab-games') return { name: 'labGames', tab: 'lab', parent: 'lab' };
-  if ((m = /^lab-ch-(\\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab' };
-  if ((m = /^lab-topic-(\\d+)-(\\d+)$/.exec(h))) return { name: 'labTopic', ch: +m[1], topic: +m[2], tab: 'lab', parent: 'lab-ch-' + m[1] };
+  if ((m = /^lab-ch-(\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab' };
+  if ((m = /^lab-topic-(\d+)-(\d+)$/.exec(h))) return { name: 'labTopic', ch: +m[1], topic: +m[2], tab: 'lab', parent: 'lab-ch-' + m[1] };
   if ((m = /^lab-exp-([a-z0-9-]+)$/.exec(h))) return { name: 'labExp', exp: m[1], tab: 'lab', parent: 'lab-topic-' + ((LABS[m[1]]||{}).ch||1) + '-' + ((LABS[m[1]]||{}).topic||1) };
   if ((m = /^lab-(spring|pendulum|fall|projectile|incline|wave|ohm|refraction|buoyancy|gas)$/.exec(h))) return { name: 'labExp', exp: LAB_LEGACY_MAP[m[1]] ? LAB_LEGACY_MAP[m[1]] : m[1], tab: 'lab', parent: 'lab' };
   if (['book', 'train', 'profile'].includes(h)) return { name: h, tab: h };
