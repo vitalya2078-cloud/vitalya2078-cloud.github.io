@@ -104,6 +104,6 @@ const LAB_EXPERIMENTS = LAB_TOPICS.flatMap((topic,ti)=>LAB_VARIANTS.map((variant
   title:topic.title+' · '+mission[0],desc:topic.desc,task:mission[1],mission:mission[0],formula:topic.formula,
   a:a[0],a0:clampLab(a[1]*f[0],a[2],a[3]),amin:a[2],amax:a[3],stA:a[4],uA:a[5],
   b:b[0],b0:clampLab(b[1]*f[1],b[2],b[3]),bmin:b[2],bmax:b[3],stB:b[4],uB:b[5],variant:vi+1};
-})));
+}));
 const LABS = Object.fromEntries(LAB_EXPERIMENTS.map(x=>[x.id,x]));
 const LAB_TOPIC_GROUPS = LAB_TOPICS.map((topic,ti)=>({ch:topic.ch,n:ti%5+1,id:topic.id,title:topic.title,desc:topic.desc,experiments:LAB_EXPERIMENTS.filter(x=>x.topicId===topic.id)}));
