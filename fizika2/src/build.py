@@ -14,7 +14,9 @@ probe = html.replace('{{JS}}', js)
 meta_path = os.path.join(D, 'meta.json')
 meta = json.load(open(meta_path, encoding='utf-8')) if os.path.exists(meta_path) else {'build': 1, 'app_hash': ''}
 app_hash = __import__('hashlib').sha256(probe.encode()).hexdigest()[:16]
-if app_hash != meta.get('app_hash'):
+if not meta.get('app_hash'):
+    meta['app_hash'] = app_hash
+elif app_hash != meta.get('app_hash'):
     meta['build'] = int(meta.get('build', 0)) + 1
     meta['app_hash'] = app_hash
 app = probe.replace('__F2_BUILD__', str(meta['build']))
