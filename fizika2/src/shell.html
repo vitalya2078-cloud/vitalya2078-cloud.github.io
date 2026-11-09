@@ -10,6 +10,26 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Физика: курс по учебнику</title>
+<script>
+/* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
+(function () {
+  if (!/FizikaApp/.test(navigator.userAgent)) return;
+  var embedded = __F2_BUILD__;
+  try {
+    var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
+    if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
+    if (localStorage.getItem('f2-app-try') === n && localStorage.getItem('f2-app-ok') !== n) {
+      localStorage.setItem('f2-app-bad', n);
+      return;
+    }
+    localStorage.setItem('f2-app-try', n);
+    addEventListener('DOMContentLoaded', function () {
+      var guard = '<script>setTimeout(function(){try{if(localStorage.getItem("f2-app-ok")!=="' + n + '"){localStorage.setItem("f2-app-bad","' + n + '");location.reload()}}catch(e){}},7000)<\/script>';
+      document.open(); document.write(h.replace('<head>', '<head>' + guard)); document.close();
+    }, { once: true });
+  } catch (e) {}
+})();
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 @font-face{font-family:"Golos UI"; font-weight:400; font-display:swap; src:url(data:font/woff2;base64,{{F400}}) format("woff2")}
