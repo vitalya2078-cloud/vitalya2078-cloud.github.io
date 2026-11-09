@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 11;
+  var embedded = 12;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -494,7 +494,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 @media(max-width:520px){.lab-topic-list,.lab-experiment-list{grid-template-columns:1fr}.lab-experiment-card{padding:11px}.lab-topic-card{padding:12px}}
 @media(min-width:900px){.lab-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-experiment-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
-</style>
+\n.lab-progress{height:6px;margin:8px 0 10px;overflow:hidden;border-radius:8px;background:var(--line)}.lab-progress i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--mint));transition:width .12s linear}\n</style>
 </head>
 <body data-view="home">
 <div class="app">
@@ -511,7 +511,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 11;
+const F2_BUILD = 12;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1030,7 +1030,7 @@ const SIMS = {
 const ICONS = {"house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "book-open": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "dumbbell": "<path d=\"M14.4 14.4 9.6 9.6\" /> <path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\" /> <path d=\"m21.5 21.5-1.4-1.4\" /> <path d=\"M3.9 3.9 2.5 2.5\" /> <path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\" />", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "pause": "<rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" /> <rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" />", "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />", "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\" />", "zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />", "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" /> <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "sliders-horizontal": "<line x1=\"21\" x2=\"14\" y1=\"4\" y2=\"4\" /> <line x1=\"10\" x2=\"3\" y1=\"4\" y2=\"4\" /> <line x1=\"21\" x2=\"12\" y1=\"12\" y2=\"12\" /> <line x1=\"8\" x2=\"3\" y1=\"12\" y2=\"12\" /> <line x1=\"21\" x2=\"16\" y1=\"20\" y2=\"20\" /> <line x1=\"12\" x2=\"3\" y1=\"20\" y2=\"20\" /> <line x1=\"14\" x2=\"14\" y1=\"2\" y2=\"6\" /> <line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\" /> <line x1=\"16\" x2=\"16\" y1=\"18\" y2=\"22\" />", "layers": "<path d=\"m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z\" /> <path d=\"m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65\" /> <path d=\"m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" /> <path d=\"m6.2 5.3 3.1 3.9\" /> <path d=\"m12.4 3.4 3.1 4\" /> <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "target": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />", "award": "<path d=\"m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526\" /> <circle cx=\"12\" cy=\"8\" r=\"6\" />", "calendar": "<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "swords": "<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\" /> <line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\" /> <line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\" /> <line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\" /> <polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\" /> <line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\" /> <line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\" /> <line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\" />", "sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "timer": "<line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "repeat": "<path d=\"m17 2 4 4-4 4\" /> <path d=\"M3 11v-1a4 4 0 0 1 4-4h14\" /> <path d=\"m7 22-4-4 4-4\" /> <path d=\"M21 13v1a4 4 0 0 1-4 4H3\" />"};
 const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
-/* Каталог виртуальной лаборатории: 7 глав × 5 тем × 5 самостоятельных опытов = 175 */
+/* Каталог виртуальной лаборатории: 7 глав, 35 тем, 35 самостоятельных опытов */
 const LAB_CHAPTERS = [
  {n:1,title:'Механика и кинематика',desc:'Движение, скорость, ускорение и траектории'},
  {n:2,title:'Силы и равновесие',desc:'Законы Ньютона, трение, упругость и моменты сил'},
@@ -1039,13 +1039,6 @@ const LAB_CHAPTERS = [
  {n:5,title:'Термодинамика',desc:'Тепло, температура, газовые процессы и энергия'},
  {n:6,title:'Электричество и магнетизм',desc:'Цепи, ток, мощность, магнитное поле и индукция'},
  {n:7,title:'Оптика',desc:'Отражение, преломление, линзы и интерференция'}
-];
-const LAB_VARIANTS = [
- {name:'Базовое измерение',task:'Запусти модель, сними показания и сопоставь результат с расчётом.'},
- {name:'Влияние первого параметра',task:'Измени первый параметр, оставив второй неизменным. Определи, как меняется результат.'},
- {name:'Влияние второго параметра',task:'Измени второй параметр и сравни показания с исходным запуском.'},
- {name:'Поиск границы',task:'Подбери параметры так, чтобы найти границу режима или заметное изменение поведения модели.'},
- {name:'Контрольный опыт',task:'Проверь физическую зависимость на другом наборе параметров и сравни два запуска.'}
 ];
 const LAB_TOPICS = [
  // Глава 1 — механика и кинематика
@@ -1130,13 +1123,13 @@ const LAB_MISSIONS = {
 };
 const LAB_VARIANT_FACTORS = [[1,1],[.72,1],[1.28,1],[1,.72],[1,1.28]];
 const clampLab = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
-const LAB_EXPERIMENTS = LAB_TOPICS.flatMap((topic,ti)=>LAB_VARIANTS.map((variant,vi)=>{
- const f=LAB_VARIANT_FACTORS[vi],a=topic.a,b=topic.b,mission=LAB_MISSIONS[topic.id][vi];
- return {id:topic.id+'-'+(vi+1),ch:topic.ch,topic:ti%5+1,topicId:topic.id,topicTitle:topic.title,model:topic.model,scene:topic.scene,
-  title:topic.title+' · '+mission[0],desc:topic.desc,task:mission[1],mission:mission[0],formula:topic.formula,
-  a:a[0],a0:clampLab(a[1]*f[0],a[2],a[3]),amin:a[2],amax:a[3],stA:a[4],uA:a[5],
-  b:b[0],b0:clampLab(b[1]*f[1],b[2],b[3]),bmin:b[2],bmax:b[3],stB:b[4],uB:b[5],variant:vi+1};
-}));
+const LAB_EXPERIMENTS = LAB_TOPICS.map((topic,ti)=>{
+ const a=topic.a,b=topic.b,mission=LAB_MISSIONS[topic.id][0];
+ return {id:topic.id+'-1',ch:topic.ch,topic:ti%5+1,topicId:topic.id,topicTitle:topic.title,model:topic.model,scene:topic.scene,
+  title:mission[0],desc:topic.desc,task:mission[1],mission:mission[0],formula:topic.formula,
+  a:a[0],a0:a[1],amin:a[2],amax:a[3],stA:a[4],uA:a[5],
+  b:b[0],b0:b[1],bmin:b[2],bmax:b[3],stB:b[4],uB:b[5],variant:1};
+});
 const LABS = Object.fromEntries(LAB_EXPERIMENTS.map(x=>[x.id,x]));
 const LAB_TOPIC_GROUPS = LAB_TOPICS.map((topic,ti)=>({ch:topic.ch,n:ti%5+1,id:topic.id,title:topic.title,desc:topic.desc,experiments:LAB_EXPERIMENTS.filter(x=>x.topicId===topic.id)}));
 
@@ -1236,6 +1229,7 @@ const ui = {};
 let lastHash = null, same = false;
 function render() {
   stopLoops();
+  if (typeof LAB !== 'undefined' && LAB.run && !location.hash.startsWith('#lab-exp-')) labStop('Пауза');
   const r = route(), y = ui.main.scrollTop; same = lastHash === location.hash; lastHash = location.hash;
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
@@ -1464,45 +1458,45 @@ function vTrain() {
 }
 
 
-/* ---------- Виртуальная лаборатория: 175 опытов ---------- */
+/* ---------- Виртуальная лаборатория: 35 самостоятельных опытов ---------- */
 const LAB_LEGACY_MAP={spring:'spring-1',pendulum:'pendulum-1',fall:'freefall-1',projectile:'projectile-1',incline:'incline-1',wave:'wave-1',ohm:'ohm-1',refraction:'refraction-1',buoyancy:'buoyancy-1',gas:'gaspressure-1'};
 let LAB={id:'uniform-1',a:4,b:5,va:4,vb:5,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};
 const LAB_DONE=new Set((()=>{try{return JSON.parse(localStorage.getItem('f2-lab-done')||'[]')}catch(e){return []}})());
 Object.entries(LAB_LEGACY_MAP).forEach(([oldId,newId])=>{if(LAB_DONE.has(oldId))LAB_DONE.add(newId)});
-let LAB_RUNS=(()=>{try{return JSON.parse(localStorage.getItem('f2-lab-runs')||'[]')}catch(e){return []}})();
+LAB_EXPERIMENTS.forEach(x=>{if([2,3,4,5].some(n=>LAB_DONE.has(x.topicId+'-'+n)))LAB_DONE.add(x.id)});
 const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),0);
+const labChapterCount=ch=>LAB_EXPERIMENTS.filter(x=>x.ch===ch).length;
 const labTopic=(ch,n)=>LAB_TOPIC_GROUPS.find(x=>x.ch===ch&&x.n===n);
 function labOpen(id){const x=LABS[id];if(!x)return;LAB={id:id,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};location.hash='lab-exp-'+id;}
-function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>175</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
+function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>'+LAB_EXPERIMENTS.length+'</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
 function vLab(){
  frame('Лаборатория',{sub:'Опыты и игровые задания'});
- setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · 175 экспериментов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из 175 опытов пройдено</span><i><em style="width:'+(labDoneCount()/175*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length;return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/25*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/25</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
+ setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · '+LAB_EXPERIMENTS.length+' самостоятельных опытов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из '+LAB_EXPERIMENTS.length+' опытов пройдено</span><i><em style="width:'+(labDoneCount()/LAB_EXPERIMENTS.length*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length,total=labChapterCount(ch.n);return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/total*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/'+total+'</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
 }
 function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="card lab-coming"><div class="lab-coming-icon">'+ic('gamepad-2','big')+'</div><b class="h">Игры лаборатории</b><p class="mute">Здесь будут отдельные игровые режимы по всем семи главам физики. Сначала завершаем интерактивные опыты, затем вернёмся к разработке игр.</p></section>');}
 function vLabChapter(r){
  const ch=LAB_CHAPTERS[r.ch-1];if(!ch){location.hash='lab';return;}
  const groups=LAB_TOPIC_GROUPS.filter(x=>x.ch===r.ch);
  frame('Глава '+ch.n,{back:true,sub:ch.title});
- setMain('<section class="lab-intro"><b class="h">'+esc(ch.title)+'</b><p class="mute">'+esc(ch.desc)+'</p><p class="mute">5 тем · 25 опытов</p></section><div class="lab-topic-list">'+groups.map(g=>{const n=g.experiments.filter(x=>LAB_DONE.has(x.id)).length;return '<a class="lab-topic-card" href="#lab-topic-'+g.ch+'-'+g.n+'"><span class="lab-topic-index">ТЕМА '+g.n+'</span><b>'+esc(g.title)+'</b><small>'+esc(g.desc)+'</small><span class="lab-topic-foot"><i><em style="width:'+(n/5*100)+'%"></em></i><small>'+n+'/5 пройдено</small>'+ic('chevron-right')+'</span></a>'}).join('')+'</div>');
+ setMain('<section class="lab-intro"><b class="h">'+esc(ch.title)+'</b><p class="mute">'+esc(ch.desc)+'</p><p class="mute">5 тем · '+labChapterCount(ch.n)+' самостоятельных опытов</p></section><div class="lab-topic-list">'+groups.map(g=>{const n=g.experiments.filter(x=>LAB_DONE.has(x.id)).length,total=g.experiments.length;return '<a class="lab-topic-card" href="#lab-topic-'+g.ch+'-'+g.n+'"><span class="lab-topic-index">ТЕМА '+g.n+'</span><b>'+esc(g.title)+'</b><small>'+esc(g.desc)+'</small><span class="lab-topic-foot"><i><em style="width:'+(n/total*100)+'%"></em></i><small>'+n+'/'+total+' пройдено</small>'+ic('chevron-right')+'</span></a>'}).join('')+'</div>');
 }
 function vLabTopic(r){
  const g=labTopic(r.ch,r.topic);if(!g){location.hash='lab-ch-'+r.ch;return;}
  frame(g.title,{back:true,sub:'Глава '+r.ch+' · Тема '+r.topic});
- setMain('<section class="lab-intro"><b class="h">'+esc(g.title)+'</b><p class="mute">'+esc(g.desc)+'</p><p class="mute">Пять отдельных исследовательских задач</p></section><div class="lab-experiment-list">'+g.experiments.map((x,i)=>'<button class="lab-experiment-card '+(LAB_DONE.has(x.id)?'done':'')+'" data-act="labOpen" data-v="'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(['zap','target','sliders-horizontal','trophy','star'][i])+'</span><span class="lab-experiment-badge">Опыт '+(i+1)+'</span><span class="lab-experiment-status">'+(LAB_DONE.has(x.id)?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title)+'</b><small>'+esc(x.task)+'</small></button>').join('')+'</div>');
+ setMain('<section class="lab-intro"><b class="h">'+esc(g.title)+'</b><p class="mute">'+esc(g.desc)+'</p><p class="mute">Самостоятельный эксперимент</p></section><div class="lab-experiment-list">'+g.experiments.map((x,i)=>'<button class="lab-experiment-card '+(LAB_DONE.has(x.id)?'done':'')+'" data-act="labOpen" data-v="'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(['zap','target','sliders-horizontal','trophy','star'][i])+'</span><span class="lab-experiment-badge">Опыт '+(i+1)+'</span><span class="lab-experiment-status">'+(LAB_DONE.has(x.id)?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title)+'</b><small>'+esc(x.task)+'</small></button>').join('')+'</div>');
 }
 function vLabExp(r){
  const x=LABS[r.exp];if(!x){location.hash='lab';return;}
  if(LAB.id!==r.exp)LAB={id:r.exp,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};
  const g=labTopic(x.ch,x.topic);
  frame(x.title,{back:true,sub:'Глава '+x.ch+' · '+(g?g.title:'Эксперимент')});
- setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Настрой параметры и запусти модель. Можно ставить на паузу и сравнивать результаты.</p></section>'+
+ setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску · 30 секунд</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-progress" role="progressbar" aria-label="Время до автоматического зачёта" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0"><i id="lab-progress-fill"></i></div><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Изучи установку и запусти опыт. Он автоматически засчитается после 30 секунд активной работы.</p></section>'+
  '<section class="card lab-controls"><div class="lab-section-title"><b>Параметры</b><small>Можно менять во время опыта</small></div><label>'+esc(x.a)+' <strong id="lab-av">'+f1(LAB.a,2)+' '+esc(x.uA)+'</strong><input type="range" min="'+x.amin+'" max="'+x.amax+'" step="'+x.stA+'" value="'+LAB.a+'" data-lab="a"></label><label>'+esc(x.b)+' <strong id="lab-bv">'+f1(LAB.b,2)+' '+esc(x.uB)+'</strong><input type="range" min="'+x.bmin+'" max="'+x.bmax+'" step="'+x.stB+'" value="'+LAB.b+'" data-lab="b"></label></section>'+
- '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Время модели</small><b id="lab-time">0,00 с</b></div></section>'+
- '<section class="lab-analysis"><div class="lab-section-title"><b>График измерений</b><small>обновляется при запуске</small></div><canvas id="lab-graph" width="720" height="220"></canvas><div class="lab-graph-legend"><span>● Текущий запуск</span><span>● Предыдущие запуски</span></div><button class="btn line lab-compare" data-act="labCompare">＋ Сохранить запуск для сравнения</button><button class="btn lab-complete" data-act="labComplete">'+(LAB_DONE.has(x.id)?'Опыт уже засчитан':'Завершить опыт · +15 XP')+'</button></section>'+
+ '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Время модели</small><b id="lab-time">0 / 30 с</b></div></section>'+
  '<section class="card lab-meaning"><b>Задача исследования</b><p class="mute">'+esc(x.task)+'</p><b>Что показывает модель</b><p class="mute">'+esc(x.desc)+'</p><div class="formula">'+esc(x.formula)+'</div></section>');
- labSetButtons();labDraw();labGraph();labMetrics();
+ labSetButtons();labDraw();labMetrics();
 }
-function labSetButtons(){const s=$('#lab-start'),p=$('#lab-pause');if(s){s.disabled=LAB.run;s.classList.toggle('active',!LAB.run&&LAB.paused)}if(p){p.disabled=!LAB.run;p.classList.toggle('active',LAB.run)}}
+function labSetButtons(){const s=$('#lab-start'),p=$('#lab-pause');if(s){s.disabled=LAB.run||LAB.t>=30;s.classList.toggle('active',!LAB.run&&LAB.paused)}if(p){p.disabled=!LAB.run;p.classList.toggle('active',LAB.run)}}
 function labStop(msg,paused=false){LAB.run=false;LAB.paused=paused;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;if(msg&&$('#lab-state'))$('#lab-state').textContent=msg;labSetButtons();}
 function labResult(){
  const x=LABS[LAB.id],a=LAB.a,b=LAB.b,g=9.81;if(!x)return {label:'Результат',value:0,unit:''};
@@ -1588,7 +1582,7 @@ function labObservable(){
 function labMetrics(){
  const x=LABS[LAB.id];if(!x)return;const r=labResult();
  $('#lab-mv').textContent=f1(r.value,2)+' '+r.unit;$('#lab-ml').textContent=r.label;
- $('#lab-time').textContent=f1(LAB.t,2)+' с';$('#lab-av').textContent=f1(LAB.a,2)+' '+x.uA;$('#lab-bv').textContent=f1(LAB.b,2)+' '+x.uB;
+ $('#lab-time').textContent=f1(LAB.t,1)+' / 30 с';$('#lab-av').textContent=f1(LAB.a,2)+' '+x.uA;$('#lab-bv').textContent=f1(LAB.b,2)+' '+x.uB;
 }
 function labArrow(c,x1,y1,x2,y2,color){const ang=Math.atan2(y2-y1,x2-x1);c.strokeStyle=color;c.fillStyle=color;c.lineWidth=3;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-10*Math.cos(ang-.45),y2-10*Math.sin(ang-.45));c.lineTo(x2-10*Math.cos(ang+.45),y2-10*Math.sin(ang+.45));c.closePath();c.fill();}
 function labDraw(){
@@ -1656,31 +1650,25 @@ function labDraw(){
  labMetrics();
 }
 function labFrame(now){
- if(!LAB.run)return;const dt=Math.min(.04,(now-LAB.last)/1000||0);LAB.last=now;LAB.t+=dt;
+ if(!LAB.run)return;const dt=Math.min(.04,(now-LAB.last)/1000||0);LAB.last=now;LAB.t=Math.min(30,LAB.t+dt);
  LAB.va+=(LAB.a-LAB.va)*Math.min(1,dt*7);LAB.vb+=(LAB.b-LAB.vb)*Math.min(1,dt*7);
- if(LAB.t-LAB.lastSample>.08){LAB.trace.push([+LAB.t.toFixed(2),+labObservable().toFixed(4)]);if(LAB.trace.length>240)LAB.trace.shift();LAB.lastSample=LAB.t;}
- labDraw();labGraph();if(LAB.run)LAB.raf=requestAnimationFrame(labFrame);
+ labDraw();const fill=$('#lab-progress-fill'),bar=fill&&fill.parentElement;if(fill)fill.style.width=(LAB.t/30*100)+'%';if(bar)bar.setAttribute('aria-valuenow',String(Math.floor(LAB.t)));
+ const state=$('#lab-state');if(state)state.textContent='Идёт опыт · '+Math.floor(LAB.t)+' / 30 с';
+ if(LAB.t>=30){labComplete();return;}
+ if(LAB.run)LAB.raf=requestAnimationFrame(labFrame);
 }
-function labRun(){if(LAB.run)return;LAB.run=true;LAB.paused=false;LAB.last=performance.now();const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent='Эксперимент идёт';if(hint)hint.textContent='Модель запущена. Поставь на паузу или измени параметры на ходу.';labSetButtons();LAB.raf=requestAnimationFrame(labFrame);}
-function labGraph(){
- const cv=$('#lab-graph');if(!cv)return;const c=cv.getContext('2d'),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);c.fillStyle='#0E1424';c.fillRect(0,0,w,h);
- c.save();c.strokeStyle='rgba(141,151,181,.20)';c.lineWidth=1;
- for(let gx=48;gx<w-10;gx+=84){c.beginPath();c.moveTo(gx,12);c.lineTo(gx,h-28);c.stroke();}
- for(let gy=20;gy<h-25;gy+=36){c.beginPath();c.moveTo(42,gy);c.lineTo(w-12,gy);c.stroke();}
- c.restore();c.fillStyle='#8D97B5';c.font='13px sans-serif';c.fillText('значение',8,16);c.fillText('время →',w-90,h-7);
- const sets=LAB_RUNS.filter(z=>z.id===LAB.id).slice(-2).concat(LAB.trace.length?[{trace:LAB.trace}]:[]);
- const all=sets.flatMap(z=>z.trace||[]).map(p=>p[1]);let lo=Math.min(0,...all),hi=Math.max(1,...all);if(hi-lo<.001){hi=lo+1;}
- const maxT=Math.max(5,LAB.t,...sets.flatMap(z=>(z.trace||[]).map(p=>p[0])));
- sets.forEach((z,idx)=>{const pts=z.trace||[];if(pts.length<2)return;c.strokeStyle=idx===sets.length-1?'#6C8CFF':'#FFC24B';c.lineWidth=idx===sets.length-1?3:2;c.beginPath();pts.forEach((p,k)=>{const px=48+p[0]/maxT*(w-65),py=h-30-(p[1]-lo)/(hi-lo)*(h-55);k?c.lineTo(px,py):c.moveTo(px,py)});c.stroke();});
-}
-function labCompare(){if(LAB.trace.length<3){toast('Сначала запусти опыт хотя бы на секунду');return;}LAB_RUNS.push({id:LAB.id,trace:LAB.trace.slice(),a:LAB.a,b:LAB.b});LAB_RUNS=LAB_RUNS.slice(-30);try{localStorage.setItem('f2-lab-runs',JSON.stringify(LAB_RUNS))}catch(e){}labGraph();toast('Запуск сохранён для сравнения');}
+function labRun(){if(LAB.run||LAB.t>=30)return;LAB.run=true;LAB.paused=false;LAB.last=performance.now();const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent='Идёт опыт · '+Math.floor(LAB.t)+' / 30 с';if(hint)hint.textContent='Время идёт только во время запуска. Пауза остановит отсчёт, сброс начнёт заново.';labSetButtons();LAB.raf=requestAnimationFrame(labFrame);}
 function labComplete(){
- if(LAB.t<.8){toast('Проведи опыт не менее 1 секунды');return;}
- if(LAB_DONE.has(LAB.id)){toast('Этот опыт уже засчитан');return;}
- LAB_DONE.add(LAB.id);try{localStorage.setItem('f2-lab-done',JSON.stringify([...LAB_DONE]))}catch(e){}
- addXP(15,'Опыт');toast('Опыт пройден · +15 XP');const st=$('#lab-state'),btn=$('.lab-complete');if(st)st.textContent='Опыт засчитан';if(btn)btn.textContent='Опыт засчитан';
+ const alreadyDone=LAB_DONE.has(LAB.id);
+ if(!alreadyDone){
+  LAB_DONE.add(LAB.id);try{localStorage.setItem('f2-lab-done',JSON.stringify([...LAB_DONE]))}catch(e){}
+  addXP(15,'Опыт');toast('Опыт пройден · +15 XP');
+ }else toast('Время опыта завершено');
+ LAB.run=false;LAB.paused=false;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;
+ const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent=alreadyDone?'Уже засчитан':'Опыт засчитан';
+ if(hint)hint.textContent=alreadyDone?'Этот опыт уже был пройден. Повторный запуск не начисляет XP.':'Готово! Опыт автоматически засчитан · +15 XP. Нажми «Сброс», чтобы провести его снова.';
+ labSetButtons();
 }
-
 /* ---------- Профиль ---------- */
 function vProfile() {
   frame('Профиль');
@@ -1715,9 +1703,7 @@ document.addEventListener('click', async e => {
     case 'labHome': labStop(); location.hash='lab'; break;
     case 'labStart': labRun(); break;
     case 'labPause': labStop('Пауза',true); if($('#lab-hint'))$('#lab-hint').textContent='Пауза. Нажми «Запустить», чтобы продолжить с того же момента.'; break;
-    case 'labReset': labStop('Готов к запуску'); LAB.t=0;LAB.trace=[];LAB.lastSample=0;LAB.va=LAB.a;LAB.vb=LAB.b;labDraw();labGraph();if($('#lab-hint'))$('#lab-hint').textContent='Опыт сброшен. Можно запускать снова.'; break;
-    case 'labCompare': labCompare(); break;
-    case 'labComplete': labComplete(); break;
+    case 'labReset': labStop('Готов к запуску'); LAB.t=0;LAB.trace=[];LAB.lastSample=0;LAB.va=LAB.a;LAB.vb=LAB.b;labDraw();if($('#lab-progress-fill'))$('#lab-progress-fill').style.width='0%';if($('#lab-progress-fill')?.parentElement)$('#lab-progress-fill').parentElement.setAttribute('aria-valuenow','0');labMetrics();if($('#lab-hint'))$('#lab-hint').textContent='Отсчёт сброшен. Опыт снова засчитается после 30 секунд активной работы.';labSetButtons(); break;
     case 'trainBack': location.hash = 'train'; break;
     case 'warm': { const B = await bank(); startQuiz({ kind: 'warm', title: 'Разминка', items: shuffle(B).slice(0, 10) }); break; }
     case 'exam': { const B = await bank(); startQuiz({ kind: 'exam', title: 'Экзамен', items: shuffle(B).slice(0, 30) }); break; }
@@ -1733,7 +1719,7 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
-document.addEventListener('input', e => { const k=e.target.dataset.lab;if(k){LAB[k]=Number(e.target.value);if(!LAB.run){LAB.va=LAB.a;LAB.vb=LAB.b;}labDraw();labGraph();if($('#lab-state'))$('#lab-state').textContent=LAB.run?'Параметры плавно меняются':'Параметры изменены';} });
+document.addEventListener('input', e => { const k=e.target.dataset.lab;if(k){LAB[k]=Number(e.target.value);if(!LAB.run){LAB.va=LAB.a;LAB.vb=LAB.b;}labDraw();if($('#lab-state'))$('#lab-state').textContent=LAB.run?'Параметры плавно меняются':'Параметры изменены';} });
 document.addEventListener('change', e => { if (e.target.id === 'pname') { S.name = e.target.value.trim().slice(0, 24); save(); toast(ic('check') + 'Имя сохранено'); } });
 
 /* ---------- обновления Android ---------- */
