@@ -228,19 +228,19 @@ private fun HomeScreen(nickname: String, onOpen: (AppSection) -> Unit) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            color = Color(0xFF101F38),
+            color = Color(0xFF7655D9),
         ) {
             Box(
                 modifier = Modifier.background(
                     Brush.linearGradient(
-                        listOf(Color(0xFF142B4D), Color(0xFF174B72), Color(0xFF172A50)),
+                        listOf(Color(0xFFAA91F4), Color(0xFF7655D9), Color(0xFF49338D)),
                     ),
                 ).padding(22.dp),
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
-                    Text("ОТКРЫВАЙ ЗАКОНЫ МИРА", style = MaterialTheme.typography.labelSmall, color = Color(0xFF83D8F3), letterSpacing = 1.7.sp, fontWeight = FontWeight.Bold)
+                    Text("ОТКРЫВАЙ ЗАКОНЫ МИРА", style = MaterialTheme.typography.labelSmall, color = Color(0xFFFFE69A), letterSpacing = 1.7.sp, fontWeight = FontWeight.Bold)
                     Text("Физика начинается\\nс любопытства.", style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
-                    Text("Теория, задачи и эксперименты — в одном учебном пространстве.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFFD1E1F1))
+                    Text("Теория, задачи и эксперименты — в одном учебном пространстве.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFFF4EEFF))
                     Button(onClick = { onOpen(AppSection.LEARNING) }) {
                         Text("Продолжить обучение")
                     }
@@ -742,23 +742,23 @@ private fun MetricCard(label: String, value: String, modifier: Modifier = Modifi
 private fun PhysicsTheme(content: @Composable () -> Unit) {
     val colors = if (isSystemInDarkTheme()) {
         darkColorScheme(
-            primary = Color(0xFF8CB7FF),
+            primary = Color(0xFFB29AFF),
             onPrimary = Color(0xFF10233E),
-            secondary = Color(0xFFB5A4FF),
+            secondary = Color(0xFFC7B7FF),
             tertiary = Color(0xFF65C7BE),
-            background = Color(0xFF0E1726),
-            surface = Color(0xFF172337),
-            surfaceVariant = Color(0xFF1D2B40),
+            background = Color(0xFF171126),
+            surface = Color(0xFF241B38),
+            surfaceVariant = Color(0xFF33274E),
         )
     } else {
         lightColorScheme(
-            primary = Color(0xFF3978E8),
+            primary = Color(0xFF7655D9),
             onPrimary = Color.White,
-            secondary = Color(0xFF735FE5),
+            secondary = Color(0xFF9B80E8),
             tertiary = Color(0xFF259A9A),
-            background = Color(0xFFF3F6FB),
+            background = Color(0xFFF8F5FF),
             surface = Color.White,
-            surfaceVariant = Color(0xFFEAF0F8),
+            surfaceVariant = Color(0xFFF0EAFF),
         )
     }
     MaterialTheme(colorScheme = colors, content = content)
