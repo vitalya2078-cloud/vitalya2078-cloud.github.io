@@ -57,7 +57,11 @@ const BADGES = [
   ['st7', 'Неделя физики', 'Занимайся 7 дней подряд', () => streak() >= 7],
   ['lv5', 'Экспериментатор', 'Достигни 5 уровня', s => levelOf(s.xp).l >= 5],
   ['q100', 'Сотня', 'Ответь на 100 вопросов', s => s.tot >= 100],
-  ['perfect', 'Без единой ошибки', 'Пройди проверку урока на 100%', s => Object.values(s.lessons).some(l => l.best === 100)]
+  ['perfect', 'Без единой ошибки', 'Пройди проверку урока на 100%', s => Object.values(s.lessons).some(l => l.best === 100)],
+  ['q50', 'Практик', 'Ответь на 50 вопросов', s => s.tot >= 50],
+  ['xp500', 'Энергия знаний', 'Набери 500 XP', s => s.xp >= 500],
+  ['l10', 'Путь исследователя', 'Пройди 10 уроков', s => Object.keys(s.lessons).length >= 10],
+  ['perfect5', 'Точность', 'Пять раз пройди урок без ошибок', s => Object.values(s.lessons).filter(l => l.best === 100).length >= 5]
 ];
 function checkBadges() {
   BADGES.forEach(([id, t, , f]) => { if (!S.badges.includes(id) && f(S)) { S.badges.push(id); save(); setTimeout(() => toast(ic('award') + 'Новый значок: ' + t, 'gold'), 1200); } });
@@ -77,6 +81,7 @@ function route() {
   if ((m = /^c(\d+)$/.exec(h))) return { name: 'chapter', ch: +m[1], tab: 'book', parent: 'book' };
   if ((m = /^l(\d+)-(\d+)$/.exec(h))) return { name: 'lesson', ch: +m[1], li: +m[2], tab: 'book', parent: 'c' + m[1] };
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
+  if (h === 'lab') return { name: 'lab', tab: 'train', parent: 'train' };
   if (['book', 'train', 'profile'].includes(h)) return { name: h, tab: h };
   return { name: 'home', tab: 'home' };
 }
@@ -88,7 +93,7 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
   ui.tabs.hidden = r.name === 'quiz' || r.name === 'lesson';
-  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, profile: vProfile })[r.name](r);
+  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, profile: vProfile })[r.name](r);
   if (same) ui.main.scrollTop = y; else ui.main.scrollTop = 0;
 }
 function frame(title, { back = false, sub = '' } = {}) {
@@ -298,16 +303,74 @@ function quizEnd() {
 
 /* ---------- Тренировка: 900 вопросов экзамена ---------- */
 let BANK = null;
-async function bank() { if (BANK) return BANK; let c = null; if (F2_IN_APP) { try { c = JSON.parse(localStorage.getItem('f2-content') || 'null'); } catch (e) {} } if (!c) c = await fetch('content.json').then(r => r.json()); BANK = []; c.topics.forEach(t => t.q.forEach((q, j) => { if (q.x && q.x.length) BANK.push({ key: t.id + '-' + (j + 1), tid: t.id, q: q.t, a: q.a, x: q.x, p: q.p ? 'pics/' + encodeURIComponent(q.p) : '', e: typeof q.e === 'string' ? q.e.replace('⚠', '') : q.e ? [q.e.i, q.e.r].filter(Boolean).join(' ') : '' }); })); return BANK; }
+async function bank() { if (BANK) return BANK; let c = null; if (F2_IN_APP) { try { c = JSON.parse(localStorage.getItem('f2-content') || 'null'); } catch (e) {} } if (!c) c = await fetch('content.json').then(r => r.json()); BANK = []; c.topics.forEach(t => t.q.forEach((q, j) => { if (q.x && q.x.length) BANK.push({ key: t.id + '-' + (j + 1), tid: t.id, topicTitle: t.title, q: q.t, a: q.a, x: q.x, p: q.p ? 'pics/' + encodeURIComponent(q.p) : '', e: typeof q.e === 'string' ? q.e.replace('⚠', '') : q.e ? [q.e.i, q.e.r].filter(Boolean).join(' ') : '' }); })); return BANK; }
 // привязка вопросов экзамена к главам учебника (пилот: глава 1 — кинематика)
 // вопросы экзамена, отобранные вручную по главам учебника (номер темы-номер вопроса в базе)
 const CH_KEYS = { 1: ['1-5', '1-6', '1-10', '1-19', '1-34', '1-45', '1-47', '1-58', '1-67', '1-68', '1-74', '1-80', '1-81', '1-82'] };
 const CH_FILTER = Object.fromEntries(Object.entries(CH_KEYS).map(([n, ks]) => [n, it => ks.includes(it.key)]));
 function vTrain() {
-  frame('Тренировка');
-  setMain(`<section class="card hero2">${comboChip()}<b class="h">Комбо умножает опыт</b><p class="mute">3 верных подряд — ×2, 6 — ×3, 10 — ×4. Ошибка сбрасывает комбо. Рекорд: ${S.bestCombo}.</p></section>` +
-    `<div class="tiles"><button class="tile" data-act="warm">${ic('zap', 'big blue')}<b>Разминка</b><small>10 случайных вопросов</small></button><button class="tile" data-act="exam">${ic('graduation-cap', 'big gold')}<b>Экзамен</b><small>30 вопросов, оценка 60/75/90</small></button>` +
-    `<button class="tile" data-act="errs">${ic('repeat', 'big pink')}<b>Мои ошибки</b><small>${plural(S.wrong.length, 'вопрос', 'вопроса', 'вопросов')}</small></button><button class="tile" data-act="chQuiz" data-ch="1">${ic('target', 'big mint')}<b>Глава 1</b><small>14 вопросов экзамена по кинематике</small></button></div>`);
+  frame('Тренировка', { sub: 'Выбирай формат и закрепляй знания' });
+  setMain(`<section class="card hero2">${comboChip()}<b class="h">Тренируйся — получай опыт</b><p class="mute">3 верных ответа подряд — ×2, 6 — ×3, 10 — ×4. Ошибка сбрасывает комбо. Твой рекорд: ${S.bestCombo}.</p></section>` +
+    `<h2 class="sec">Быстрый старт</h2><div class="tiles"><button class="tile" data-act="warm">${ic('zap', 'big blue')}<b>Разминка</b><small>10 случайных вопросов · 2–3 минуты</small></button><button class="tile" data-act="exam">${ic('graduation-cap', 'big gold')}<b>Пробный экзамен</b><small>30 вопросов · итоговая оценка</small></button>` +
+    `<button class="tile" data-act="topics">${ic('layers', 'big mint')}<b>По темам</b><small>Выбери раздел физики и тренируйся точечно</small></button><button class="tile" data-act="errs">${ic('repeat', 'big pink')}<b>Разбор ошибок</b><small>${plural(S.wrong.length, 'вопрос', 'вопроса', 'вопросов')} ждут повторения</small></button></div>` +
+    `<h2 class="sec">Практика по учебнику</h2><button class="qrow card" data-act="chQuiz" data-ch="1">${ic('target')}<span><b>Кинематика · глава 1</b><small>14 вопросов по пройденному материалу</small></span>${ic('chevron-right')}</button>` +
+    `<button class="qrow card" data-act="lab"><span class="blue">${ic('flask-conical')}</span><span><b>Виртуальная лаборатория</b><small>Исследуй пружинный маятник и математический маятник</small></span>${ic('chevron-right')}</button>`);
+}
+
+
+/* ---------- Виртуальная лаборатория ---------- */
+let LAB = { mode: 'spring', mass: 1, k: 20, length: 1, angle: 20 };
+function vLab() {
+  frame('Лаборатория', { back: true, sub: 'Меняй параметры и наблюдай результат' });
+  const spring = LAB.mode === 'spring';
+  setMain(`<div class="lab-switch"><button class="btn ${spring ? '' : 'line'}" data-act="labMode" data-v="spring">Пружинный маятник</button><button class="btn ${!spring ? '' : 'line'}" data-act="labMode" data-v="pendulum">Математический маятник</button></div>` +
+    `<section class="card lab-card"><div class="row"><b>${spring ? 'Колебания груза на пружине' : 'Колебания маятника'}</b><small>интерактивный опыт</small></div><canvas id="lab-canvas" width="720" height="300" aria-label="Схема физического эксперимента"></canvas><p class="mute small" id="lab-caption">${spring ? 'Увеличивай массу — система колеблется медленнее. Увеличивай жёсткость — быстрее.' : 'Чем длиннее нить, тем больше период. Масса груза на период идеального маятника не влияет.'}</p></section>` +
+    (spring ? `<section class="card lab-controls"><label>Масса груза <b id="lab-mass-val">${f1(LAB.mass, 1)} кг</b><input type="range" min="0.2" max="3" step="0.1" value="${LAB.mass}" data-lab="mass"></label><label>Жёсткость пружины <b id="lab-k-val">${f1(LAB.k, 0)} Н/м</b><input type="range" min="5" max="60" step="1" value="${LAB.k}" data-lab="k"></label></section>` :
+    `<section class="card lab-controls"><label>Длина нити <b id="lab-length-val">${f1(LAB.length, 1)} м</b><input type="range" min="0.3" max="2" step="0.1" value="${LAB.length}" data-lab="length"></label><label>Начальный угол <b id="lab-angle-val">${f1(LAB.angle, 0)}°</b><input type="range" min="5" max="45" step="1" value="${LAB.angle}" data-lab="angle"></label></section>`) +
+    `<section class="lab-results"><div class="card"><small>Период T</small><b id="lab-period">—</b></div><div class="card"><small>Частота ν</small><b id="lab-frequency">—</b></div></section><section class="card"><b>Физический смысл</b><p class="mute" id="lab-explain">${spring ? 'Период пружинного маятника зависит от массы и жёсткости пружины.' : 'Для малых колебаний период математического маятника зависит от длины нити и ускорения свободного падения.'}</p><div class="formula" id="lab-formula">${spring ? 'T = 2π√(m / k)' : 'T = 2π√(l / g)'}</div></section>` +
+    `<button class="btn line wide" data-act="trainBack">Вернуться к тренировке</button>`);
+  labDraw();
+}
+function labDraw() {
+  const cv = $('#lab-canvas'); if (!cv) return;
+  const c = cv.getContext('2d'), w = cv.width, h = cv.height;
+  c.clearRect(0, 0, w, h); c.fillStyle = '#0E1424'; c.fillRect(0, 0, w, h);
+  c.strokeStyle = 'rgba(141,151,181,.12)'; c.lineWidth = 1;
+  for (let x = 0; x < w; x += 36) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
+  for (let y = 0; y < h; y += 36) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  if (LAB.mode === 'spring') {
+    const top = 28, left = 310, massW = 76 + LAB.mass * 12, massH = 48 + LAB.mass * 5, endY = 178;
+    c.fillStyle = '#26324F'; c.fillRect(220, top, 280, 12);
+    c.strokeStyle = '#8D97B5'; c.lineWidth = 3; c.beginPath(); c.moveTo(left, top + 12); c.lineTo(left, 58); c.stroke();
+    const coils = 12, springLen = 95 + LAB.mass * 17;
+    c.strokeStyle = '#6C8CFF'; c.lineWidth = 5; c.beginPath(); c.moveTo(left, 58);
+    for (let i = 1; i <= coils; i++) c.lineTo(left + (i % 2 ? 22 : -22), 58 + springLen * i / coils);
+    c.lineTo(left, 58 + springLen); c.stroke();
+    const y = 58 + springLen;
+    c.fillStyle = '#B48CFF'; c.strokeStyle = '#D8C8FF'; c.lineWidth = 3;
+    c.beginPath(); c.roundRect(left - massW/2, y, massW, massH, 12); c.fill(); c.stroke();
+    c.fillStyle = '#F2F4FF'; c.font = 'bold 22px sans-serif'; c.textAlign = 'center'; c.fillText(f1(LAB.mass,1) + ' кг', left, y + massH/2 + 7);
+    c.fillStyle = '#8D97B5'; c.font = '16px sans-serif'; c.fillText('Пружина', 500, 82); c.fillText('Груз', 500, y + massH/2 + 6);
+    c.strokeStyle = '#3DD6A0'; c.lineWidth = 4; c.beginPath(); c.moveTo(430, y + 4); c.lineTo(430, y + massH - 4); c.stroke();
+  } else {
+    const px = 360, py = 32, len = 75 + LAB.length * 90, a = LAB.angle * Math.PI / 180;
+    const bx = px + len * Math.sin(a), by = py + len * Math.cos(a);
+    c.fillStyle = '#26324F'; c.fillRect(px - 145, py - 10, 290, 14);
+    c.strokeStyle = '#6C8CFF'; c.lineWidth = 5; c.beginPath(); c.moveTo(px, py); c.lineTo(bx, by); c.stroke();
+    c.strokeStyle = 'rgba(255,194,75,.7)'; c.lineWidth = 2; c.beginPath(); c.arc(px, py, 56, Math.PI/2, Math.PI/2 + a, false); c.stroke();
+    c.fillStyle = '#FFC24B'; c.beginPath(); c.arc(bx, by, 24, 0, Math.PI*2); c.fill();
+    c.fillStyle = '#F2F4FF'; c.beginPath(); c.arc(px, py, 7, 0, Math.PI*2); c.fill();
+    c.fillStyle = '#8D97B5'; c.font = '16px sans-serif'; c.textAlign = 'left'; c.fillText('Точка подвеса', px + 18, py + 5); c.fillText('L = ' + f1(LAB.length,1) + ' м', 500, 110);
+  }
+  const T = LAB.mode === 'spring' ? 2 * Math.PI * Math.sqrt(LAB.mass / LAB.k) : 2 * Math.PI * Math.sqrt(LAB.length / 9.81);
+  $('#lab-period').textContent = f1(T, 2) + ' с';
+  $('#lab-frequency').textContent = f1(1 / T, 2) + ' Гц';
+  if (LAB.mode === 'spring') {
+    $('#lab-mass-val').textContent = f1(LAB.mass,1) + ' кг'; $('#lab-k-val').textContent = f1(LAB.k,0) + ' Н/м';
+  } else {
+    $('#lab-length-val').textContent = f1(LAB.length,1) + ' м'; $('#lab-angle-val').textContent = f1(LAB.angle,0) + '°';
+  }
 }
 
 /* ---------- Профиль ---------- */
@@ -336,6 +399,11 @@ document.addEventListener('click', async e => {
     case 'simGo': simGo(); break;
     case 'lessonQuiz': { const L = CONTENT[d.ch].lessons[d.li - 1]; startQuiz({ kind: 'lesson', key: lessonKey(+d.ch, +d.li), title: 'Проверка: ' + L.title, items: L.quiz, back: '#l' + d.ch + '-' + d.li }); break; }
     case 'boss': { const C1 = CONTENT[d.ch]; startQuiz({ kind: 'boss', ch: +d.ch, title: 'Финал главы ' + d.ch, items: shuffle(C1.boss), back: '#c' + d.ch }); break; }
+    case 'topics': { const B = await bank(), topics = [...new Map(B.map(x => [x.tid, x.topicTitle])).entries()]; sheet(`<b class="h">Тренировка по теме</b><p class="mute">Выбери раздел — подберём вопросы из экзаменационной базы.</p><div class="topic-list">${topics.map(([id, title]) => `<button class="qrow" data-act="topicQuiz" data-topic="${id}"><span><b>${esc(title || ('Раздел ' + id))}</b><small>${B.filter(x => x.tid === id).length} вопросов в базе</small></span>${ic('chevron-right')}</button>`).join('')}</div>`); break; }
+    case 'topicQuiz': { const B = await bank(), W = B.filter(x => String(x.tid) === String(d.topic)); closeSheet(); startQuiz({ kind: 'topic', title: 'Тема: ' + (W[0] ? W[0].topicTitle : 'физика'), items: shuffle(W).slice(0, 15) }); break; }
+    case 'lab': location.hash = 'lab'; break;
+    case 'labMode': LAB.mode = d.v; render(); break;
+    case 'trainBack': location.hash = 'train'; break;
     case 'warm': { const B = await bank(); startQuiz({ kind: 'warm', title: 'Разминка', items: shuffle(B).slice(0, 10) }); break; }
     case 'exam': { const B = await bank(); startQuiz({ kind: 'exam', title: 'Экзамен', items: shuffle(B).slice(0, 30) }); break; }
     case 'errs': { const B = await bank(), W = B.filter(x => S.wrong.includes(x.key)); if (!W.length) { toast(ic('check') + 'Ошибок нет — отлично!'); break; } startQuiz({ kind: 'errs', title: 'Мои ошибки', items: shuffle(W).slice(0, 20) }); break; }
@@ -350,6 +418,7 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
+document.addEventListener('input', e => { const k = e.target.dataset.lab; if (k) { LAB[k] = Number(e.target.value); labDraw(); } });
 document.addEventListener('change', e => { if (e.target.id === 'pname') { S.name = e.target.value.trim().slice(0, 24); save(); toast(ic('check') + 'Имя сохранено'); } });
 
 /* ---------- обновления Android ---------- */

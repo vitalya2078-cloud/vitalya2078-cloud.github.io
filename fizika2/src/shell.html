@@ -396,6 +396,33 @@ button, a { -webkit-tap-highlight-color:transparent; }
   *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; }
 }
 
+
+/* Полировка интерфейса и виртуальная лаборатория */
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+button:disabled{cursor:default}
+.tile{min-height:142px;transition:transform .16s ease,background .16s ease,border-color .16s ease}
+.tile:active{transform:scale(.985)}
+.tile small{line-height:1.45}
+.qrow.card{margin:0 0 10px;padding:14px;border-radius:18px}
+.lab-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
+.lab-switch .btn{min-height:46px;padding:8px 10px;font-size:13px}
+.lab-card{padding:14px}
+#lab-canvas{display:block;width:100%;height:auto;aspect-ratio:12/5;margin:12px 0;border-radius:14px;background:#0E1424}
+.lab-controls{display:grid;gap:18px}
+.lab-controls label{display:grid;grid-template-columns:1fr auto;gap:8px;color:var(--mute);font-size:14px}
+.lab-controls label b{color:var(--text);font-variant-numeric:tabular-nums}
+.lab-controls input{grid-column:1/-1;width:100%;accent-color:var(--blue);min-height:28px}
+.lab-results{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lab-results .card{margin:0;display:grid;gap:4px}
+.lab-results small{color:var(--mute)}
+.lab-results b{font-size:22px;color:var(--mint);font-variant-numeric:tabular-nums}
+.topic-list{max-height:min(58vh,520px);overflow:auto;margin-top:12px}
+.topic-list .qrow{border-top:1px solid var(--line);padding:13px 2px}
+.topic-list .qrow span{display:grid;gap:2px}
+.topic-list .qrow small{color:var(--mute)}
+@media(max-width:390px){.lab-switch{grid-template-columns:1fr}.lab-switch .btn{min-height:42px}.lab-results b{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.tile{transition:none}}
+
 </style>
 </head>
 <body data-view="home">
