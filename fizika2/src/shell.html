@@ -66,7 +66,7 @@ body[data-view=lesson] #ttl, body[data-view=quiz] #ttl{font-size:17px}
 main{flex:1; min-height:0; overflow-y:auto; overscroll-behavior-y:contain; padding:10px 16px 28px}
 main.enter > *{animation:enter .22s ease-out both}
 @keyframes enter{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
-.tabs{flex:none; display:grid; grid-template-columns:repeat(4,1fr); background:var(--bg2); border-top:1px solid var(--line); padding:0 0 var(--sab)}
+.tabs{flex:none; display:grid; grid-template-columns:repeat(5,1fr); background:var(--bg2); border-top:1px solid var(--line); padding:0 0 var(--sab)}
 .tabs a{display:grid; justify-items:center; gap:3px; padding:9px 0 10px; font-size:11.5px; font-weight:600; color:var(--mute)}
 .tabs a span{display:grid; place-items:center; width:56px; height:30px; border-radius:15px; transition:background .2s}
 .tabs a.on{color:var(--text)} .tabs a.on span{background:var(--card2); color:var(--blue)}
@@ -423,6 +423,7 @@ button:disabled{cursor:default}
 @media(max-width:390px){.lab-switch{grid-template-columns:1fr}.lab-switch .btn{min-height:42px}.lab-results b{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.tile{transition:none}}
 
+.lab-intro p{margin:7px 0 0}.lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.lab-tile{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;min-height:185px;padding:16px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:20px;color:var(--text)}.lab-num{align-self:flex-end;color:var(--mute);font-size:10px;letter-spacing:.08em}.lab-art{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:var(--card2);color:var(--blue);font-size:34px}.lab-tile b{font-size:16px;line-height:1.25}.lab-tile small{color:var(--mute);font-size:12px;line-height:1.4}.lab-tile i{margin-top:auto;color:var(--mint);font-size:12px;font-style:normal;font-weight:700}.lab-stage{padding:14px}.lab-stage-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}.lab-stage-head span{color:var(--mint);font-size:12px}#lab-canvas{display:block;width:100%;height:auto;aspect-ratio:12/5;margin:12px 0;border-radius:14px;background:#0E1424}.lab-actions{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:7px}.lab-actions .btn{min-height:44px;padding:0 5px;font-size:12px}.lab-hint{margin:10px 0 0;color:var(--mute);font-size:12px}.lab-controls{display:grid;gap:18px}.lab-controls label{display:grid;grid-template-columns:1fr auto;gap:8px;color:var(--mute);font-size:14px}.lab-controls strong{color:var(--text);font-variant-numeric:tabular-nums}.lab-controls input{grid-column:1/-1;width:100%;accent-color:var(--blue);min-height:30px}.lab-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.lab-metrics .card{margin:0;display:grid;gap:4px;min-width:0}.lab-metrics small{color:var(--mute);font-size:12px}.lab-metrics b{font-size:20px;color:var(--mint);font-variant-numeric:tabular-nums}@media(max-width:390px){.lab-grid{grid-template-columns:1fr}.lab-tile{min-height:150px}.lab-actions .btn{font-size:11px}}
 </style>
 </head>
 <body data-view="home">
@@ -433,6 +434,7 @@ button:disabled{cursor:default}
     <a href="#" data-tab="home"><span>{{I_house}}</span>Главная</a>
     <a href="#book" data-tab="book"><span>{{I_book-open}}</span>Учебник</a>
     <a href="#train" data-tab="train"><span>{{I_dumbbell}}</span>Тренировка</a>
+    <a href="#lab" data-tab="lab"><span>{{I_flask-conical}}</span>Лаборатория</a>
     <a href="#profile" data-tab="profile"><span>{{I_user}}</span>Профиль</a>
   </nav>
 </div>

@@ -81,7 +81,8 @@ function route() {
   if ((m = /^c(\d+)$/.exec(h))) return { name: 'chapter', ch: +m[1], tab: 'book', parent: 'book' };
   if ((m = /^l(\d+)-(\d+)$/.exec(h))) return { name: 'lesson', ch: +m[1], li: +m[2], tab: 'book', parent: 'c' + m[1] };
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
-  if (h === 'lab') return { name: 'lab', tab: 'train', parent: 'train' };
+  if (h === 'lab') return { name: 'lab', tab: 'lab' };
+  if ((m = /^lab-(spring|pendulum|fall|projectile|incline|wave)$/.exec(h))) return { name: 'labExp', exp: m[1], tab: 'lab', parent: 'lab' };
   if (['book', 'train', 'profile'].includes(h)) return { name: h, tab: h };
   return { name: 'home', tab: 'home' };
 }
@@ -93,7 +94,7 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
   ui.tabs.hidden = r.name === 'quiz' || r.name === 'lesson';
-  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, profile: vProfile })[r.name](r);
+  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labExp: vLabExp, profile: vProfile })[r.name](r);
   if (same) ui.main.scrollTop = y; else ui.main.scrollTop = 0;
 }
 function frame(title, { back = false, sub = '' } = {}) {
@@ -216,7 +217,7 @@ async function vToggle() {
 }
 function vEnd() { if (!V) return; V.playing = false; $('.vplay') && ($('.vplay').hidden = false); $('#vpp') && ($('#vpp').innerHTML = ic('rotate-ccw')); stepDone(V.key, 'video', 10); }
 function vSeek(e) { const b = $('#vseek'); if (!b || !V) return; const r = b.getBoundingClientRect(), f = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); V.t = f * V.dur; if (V.audio) V.audio.currentTime = V.t; vDraw(); }
-function stopLoops() { if (V) { V.playing = false; cancelAnimationFrame(V.raf); if (V.audio) V.audio.pause(); V = null; } if (G && G.raf) cancelAnimationFrame(G.raf); }
+function stopLoops() { if (V) { V.playing = false; cancelAnimationFrame(V.raf); if (V.audio) V.audio.pause(); V = null; } if (G && G.raf) cancelAnimationFrame(G.raf); if (LAB && LAB.raf) { cancelAnimationFrame(LAB.raf); LAB.raf=0; LAB.run=false; } }
 
 /* ---------- карточки конспекта: листаются пальцем ---------- */
 const KIND = { idea: ['Главное', 'var(--blue)'], def: ['Определение', 'var(--mint)'], formula: ['Формула', 'var(--gold)'], trap: ['Ловушка', 'var(--pink)'], ex: ['Пример', 'var(--violet)'] };
@@ -313,66 +314,35 @@ function vTrain() {
   setMain(`<section class="card hero2">${comboChip()}<b class="h">Тренируйся — получай опыт</b><p class="mute">3 верных ответа подряд — ×2, 6 — ×3, 10 — ×4. Ошибка сбрасывает комбо. Твой рекорд: ${S.bestCombo}.</p></section>` +
     `<h2 class="sec">Быстрый старт</h2><div class="tiles"><button class="tile" data-act="warm">${ic('zap', 'big blue')}<b>Разминка</b><small>10 случайных вопросов · 2–3 минуты</small></button><button class="tile" data-act="exam">${ic('graduation-cap', 'big gold')}<b>Пробный экзамен</b><small>30 вопросов · итоговая оценка</small></button>` +
     `<button class="tile" data-act="topics">${ic('layers', 'big mint')}<b>По темам</b><small>Выбери раздел физики и тренируйся точечно</small></button><button class="tile" data-act="errs">${ic('repeat', 'big pink')}<b>Разбор ошибок</b><small>${plural(S.wrong.length, 'вопрос', 'вопроса', 'вопросов')} ждут повторения</small></button></div>` +
-    `<h2 class="sec">Практика по учебнику</h2><button class="qrow card" data-act="chQuiz" data-ch="1">${ic('target')}<span><b>Кинематика · глава 1</b><small>14 вопросов по пройденному материалу</small></span>${ic('chevron-right')}</button>` +
-    `<button class="qrow card" data-act="lab"><span class="blue">${ic('flask-conical')}</span><span><b>Виртуальная лаборатория</b><small>Исследуй пружинный маятник и математический маятник</small></span>${ic('chevron-right')}</button>`);
+    `<h2 class="sec">Практика по учебнику</h2><button class="qrow card" data-act="chQuiz" data-ch="1">${ic('target')}<span><b>Кинематика · глава 1</b><small>14 вопросов по пройденному материалу</small></span>${ic('chevron-right')}</button>`);
 }
 
 
-/* ---------- Виртуальная лаборатория ---------- */
-let LAB = { mode: 'spring', mass: 1, k: 20, length: 1, angle: 20 };
-function vLab() {
-  frame('Лаборатория', { back: true, sub: 'Меняй параметры и наблюдай результат' });
-  const spring = LAB.mode === 'spring';
-  setMain(`<div class="lab-switch"><button class="btn ${spring ? '' : 'line'}" data-act="labMode" data-v="spring">Пружинный маятник</button><button class="btn ${!spring ? '' : 'line'}" data-act="labMode" data-v="pendulum">Математический маятник</button></div>` +
-    `<section class="card lab-card"><div class="row"><b>${spring ? 'Колебания груза на пружине' : 'Колебания маятника'}</b><small>интерактивный опыт</small></div><canvas id="lab-canvas" width="720" height="300" aria-label="Схема физического эксперимента"></canvas><p class="mute small" id="lab-caption">${spring ? 'Увеличивай массу — система колеблется медленнее. Увеличивай жёсткость — быстрее.' : 'Чем длиннее нить, тем больше период. Масса груза на период идеального маятника не влияет.'}</p></section>` +
-    (spring ? `<section class="card lab-controls"><label>Масса груза <b id="lab-mass-val">${f1(LAB.mass, 1)} кг</b><input type="range" min="0.2" max="3" step="0.1" value="${LAB.mass}" data-lab="mass"></label><label>Жёсткость пружины <b id="lab-k-val">${f1(LAB.k, 0)} Н/м</b><input type="range" min="5" max="60" step="1" value="${LAB.k}" data-lab="k"></label></section>` :
-    `<section class="card lab-controls"><label>Длина нити <b id="lab-length-val">${f1(LAB.length, 1)} м</b><input type="range" min="0.3" max="2" step="0.1" value="${LAB.length}" data-lab="length"></label><label>Начальный угол <b id="lab-angle-val">${f1(LAB.angle, 0)}°</b><input type="range" min="5" max="45" step="1" value="${LAB.angle}" data-lab="angle"></label></section>`) +
-    `<section class="lab-results"><div class="card"><small>Период T</small><b id="lab-period">—</b></div><div class="card"><small>Частота ν</small><b id="lab-frequency">—</b></div></section><section class="card"><b>Физический смысл</b><p class="mute" id="lab-explain">${spring ? 'Период пружинного маятника зависит от массы и жёсткости пружины.' : 'Для малых колебаний период математического маятника зависит от длины нити и ускорения свободного падения.'}</p><div class="formula" id="lab-formula">${spring ? 'T = 2π√(m / k)' : 'T = 2π√(l / g)'}</div></section>` +
-    `<button class="btn line wide" data-act="trainBack">Вернуться к тренировке</button>`);
-  labDraw();
-}
-function labDraw() {
-  const cv = $('#lab-canvas'); if (!cv) return;
-  const c = cv.getContext('2d'), w = cv.width, h = cv.height;
-  c.clearRect(0, 0, w, h); c.fillStyle = '#0E1424'; c.fillRect(0, 0, w, h);
-  c.strokeStyle = 'rgba(141,151,181,.12)'; c.lineWidth = 1;
-  for (let x = 0; x < w; x += 36) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
-  for (let y = 0; y < h; y += 36) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
-  c.lineCap = 'round'; c.lineJoin = 'round';
-  if (LAB.mode === 'spring') {
-    const top = 28, left = 310, massW = 76 + LAB.mass * 12, massH = 48 + LAB.mass * 5, endY = 178;
-    c.fillStyle = '#26324F'; c.fillRect(220, top, 280, 12);
-    c.strokeStyle = '#8D97B5'; c.lineWidth = 3; c.beginPath(); c.moveTo(left, top + 12); c.lineTo(left, 58); c.stroke();
-    const coils = 12, springLen = 95 + LAB.mass * 17;
-    c.strokeStyle = '#6C8CFF'; c.lineWidth = 5; c.beginPath(); c.moveTo(left, 58);
-    for (let i = 1; i <= coils; i++) c.lineTo(left + (i % 2 ? 22 : -22), 58 + springLen * i / coils);
-    c.lineTo(left, 58 + springLen); c.stroke();
-    const y = 58 + springLen;
-    c.fillStyle = '#B48CFF'; c.strokeStyle = '#D8C8FF'; c.lineWidth = 3;
-    c.beginPath(); c.roundRect(left - massW/2, y, massW, massH, 12); c.fill(); c.stroke();
-    c.fillStyle = '#F2F4FF'; c.font = 'bold 22px sans-serif'; c.textAlign = 'center'; c.fillText(f1(LAB.mass,1) + ' кг', left, y + massH/2 + 7);
-    c.fillStyle = '#8D97B5'; c.font = '16px sans-serif'; c.fillText('Пружина', 500, 82); c.fillText('Груз', 500, y + massH/2 + 6);
-    c.strokeStyle = '#3DD6A0'; c.lineWidth = 4; c.beginPath(); c.moveTo(430, y + 4); c.lineTo(430, y + massH - 4); c.stroke();
-  } else {
-    const px = 360, py = 32, len = 75 + LAB.length * 90, a = LAB.angle * Math.PI / 180;
-    const bx = px + len * Math.sin(a), by = py + len * Math.cos(a);
-    c.fillStyle = '#26324F'; c.fillRect(px - 145, py - 10, 290, 14);
-    c.strokeStyle = '#6C8CFF'; c.lineWidth = 5; c.beginPath(); c.moveTo(px, py); c.lineTo(bx, by); c.stroke();
-    c.strokeStyle = 'rgba(255,194,75,.7)'; c.lineWidth = 2; c.beginPath(); c.arc(px, py, 56, Math.PI/2, Math.PI/2 + a, false); c.stroke();
-    c.fillStyle = '#FFC24B'; c.beginPath(); c.arc(bx, by, 24, 0, Math.PI*2); c.fill();
-    c.fillStyle = '#F2F4FF'; c.beginPath(); c.arc(px, py, 7, 0, Math.PI*2); c.fill();
-    c.fillStyle = '#8D97B5'; c.font = '16px sans-serif'; c.textAlign = 'left'; c.fillText('Точка подвеса', px + 18, py + 5); c.fillText('L = ' + f1(LAB.length,1) + ' м', 500, 110);
-  }
-  const T = LAB.mode === 'spring' ? 2 * Math.PI * Math.sqrt(LAB.mass / LAB.k) : 2 * Math.PI * Math.sqrt(LAB.length / 9.81);
-  $('#lab-period').textContent = f1(T, 2) + ' с';
-  $('#lab-frequency').textContent = f1(1 / T, 2) + ' Гц';
-  if (LAB.mode === 'spring') {
-    $('#lab-mass-val').textContent = f1(LAB.mass,1) + ' кг'; $('#lab-k-val').textContent = f1(LAB.k,0) + ' Н/м';
-  } else {
-    $('#lab-length-val').textContent = f1(LAB.length,1) + ' м'; $('#lab-angle-val').textContent = f1(LAB.angle,0) + '°';
-  }
-}
-
+/* ---------- Лаборатория: интерактивные опыты ---------- */
+const LABS={
+ spring:{title:'Пружинный маятник',desc:'Масса и жёсткость пружины влияют на период колебаний.',a:'Масса груза',a0:1,amin:.2,amax:3,stA:.1,uA:'кг',b:'Жёсткость пружины',b0:20,bmin:5,bmax:60,stB:1,uB:'Н/м',formula:'T = 2π√(m / k)'},
+ pendulum:{title:'Математический маятник',desc:'Наблюдай колебания груза на нити и влияние её длины.',a:'Длина нити',a0:1,amin:.3,amax:2,stA:.1,uA:'м',b:'Начальный угол',b0:25,bmin:5,bmax:45,stB:1,uB:'°',formula:'T = 2π√(l / g)'},
+ fall:{title:'Свободное падение',desc:'Отпусти тело с высоты и измерь время и скорость падения.',a:'Высота',a0:20,amin:2,amax:80,stA:1,uA:'м',b:'Начальная скорость',b0:0,bmin:0,bmax:15,stB:.5,uB:'м/с',formula:'h = h₀ − v₀t − gt²/2'},
+ projectile:{title:'Бросок под углом',desc:'Запусти тело и наблюдай параболическую траекторию.',a:'Начальная скорость',a0:20,amin:5,amax:40,stA:1,uA:'м/с',b:'Угол броска',b0:45,bmin:10,bmax:80,stB:1,uB:'°',formula:'x=v₀cos(α)t · y=v₀sin(α)t−gt²/2'},
+ incline:{title:'Наклонная плоскость',desc:'Меняй угол и трение: брусок движется, если ускорение положительно.',a:'Угол наклона',a0:30,amin:5,amax:60,stA:1,uA:'°',b:'Коэффициент трения',b0:.15,bmin:0,bmax:.6,stB:.01,uB:'μ',formula:'a = g(sin α − μ cos α)'},
+ wave:{title:'Поперечная волна',desc:'Измени частоту и амплитуду и наблюдай распространение волны.',a:'Частота',a0:1.5,amin:.2,amax:4,stA:.1,uA:'Гц',b:'Амплитуда',b0:40,bmin:10,bmax:70,stB:1,uB:'px',formula:'y = A sin(2π(ft − x/λ))'}
+};
+let LAB={id:'spring',a:1,b:20,t:0,run:false,raf:0,last:0};
+function labOpen(id){const x=LABS[id];LAB={id,a:x.a0,b:x.b0,t:0,run:false,raf:0,last:0};location.hash='lab-'+id;}
+function vLab(){frame('Лаборатория',{sub:'Шесть экспериментов · настрой и запускай'});setMain('<section class="card lab-intro"><b class="h">Физика в действии</b><p class="mute">Выбирай установку, задавай условия и наблюдай настоящий расчётный процесс в движении.</p></section><div class="lab-grid">'+Object.entries(LABS).map(([id,x],i)=>'<button class="lab-tile" data-act="labOpen" data-v="'+id+'"><span class="lab-num">ОПЫТ '+(i+1)+'</span><span class="lab-art">'+['↕','◉','↓','↗','▱','∿'][i]+'</span><b>'+x.title+'</b><small>'+x.desc+'</small><i>Открыть эксперимент →</i></button>').join('')+'</div>');}
+function vLabExp(r){const x=LABS[r.exp];if(!x){location.hash='lab';return;}if(LAB.id!==r.exp)LAB={id:r.exp,a:x.a0,b:x.b0,t:0,run:false,raf:0,last:0};frame(x.title,{back:true,sub:'Выставь параметры и запусти опыт'});setMain('<button class="lab-back" data-act="labHome">← Все эксперименты</button><section class="card lab-stage"><div class="lab-stage-head"><b>Экспериментальная установка</b><span id="lab-state">Готов к запуску</span></div><canvas id="lab-canvas" width="720" height="330"></canvas><div class="lab-actions"><button class="btn" data-act="labStart">▶ Запустить</button><button class="btn line" data-act="labPause">Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Настрой параметры и нажми «Запустить»</p></section><section class="card lab-controls"><b class="h">Параметры опыта</b><label>'+x.a+' <strong id="lab-av">'+f1(LAB.a,2)+' '+x.uA+'</strong><input type="range" min="'+x.amin+'" max="'+x.amax+'" step="'+x.stA+'" value="'+LAB.a+'" data-lab="a"></label><label>'+x.b+' <strong id="lab-bv">'+f1(LAB.b,2)+' '+x.uB+'</strong><input type="range" min="'+x.bmin+'" max="'+x.bmax+'" step="'+x.stB+'" value="'+LAB.b+'" data-lab="b"></label></section><section class="lab-metrics"><div class="card"><small id="lab-ml">Результат модели</small><b id="lab-mv">—</b></div><div class="card"><small>Время опыта</small><b id="lab-time">0,00 с</b></div></section><section class="card"><b>Физический смысл</b><p class="mute">'+x.desc+'</p><div class="formula">'+x.formula+'</div></section>');labDraw();}
+function labStop(msg){LAB.run=false;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;if(msg&&$('#lab-state'))$('#lab-state').textContent=msg;}
+function labMetrics(){let val='—',label='Результат модели',a=LAB.a,b=LAB.b,id=LAB.id;if(id==='spring'){val=f1(2*Math.PI*Math.sqrt(a/b),2)+' с';label='Период колебаний';}if(id==='pendulum'){val=f1(2*Math.PI*Math.sqrt(a/9.81),2)+' с';label='Период колебаний';}if(id==='fall'){val=f1((-b+Math.sqrt(b*b+19.62*a))/9.81,2)+' с';label='Время падения';}if(id==='projectile'){val=f1(a*a*Math.sin(2*b*Math.PI/180)/9.81,1)+' м';label='Дальность полёта';}if(id==='incline'){val=f1(9.81*(Math.sin(a*Math.PI/180)-b*Math.cos(a*Math.PI/180)),2)+' м/с²';label='Ускорение';}if(id==='wave'){val=f1(1/a,2)+' с';label='Период волны';}$('#lab-mv').textContent=val;$('#lab-ml').textContent=label;$('#lab-time').textContent=f1(LAB.t,2)+' с';$('#lab-av').textContent=f1(a,2)+' '+LABS[id].uA;$('#lab-bv').textContent=f1(b,2)+' '+LABS[id].uB;}
+function labDraw(){const cv=$('#lab-canvas');if(!cv)return;const c=cv.getContext('2d'),w=cv.width,h=cv.height,t=LAB.t,id=LAB.id;c.fillStyle='#0E1424';c.fillRect(0,0,w,h);c.strokeStyle='rgba(141,151,181,.13)';for(let x=0;x<w;x+=36){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}const ball=(x,y,r,col)=>{c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.strokeStyle='#E8ECF6';c.lineWidth=2;c.stroke();};c.lineCap='round';c.lineJoin='round';c.font='18px sans-serif';c.fillStyle='#AAB3CD';
+if(id==='spring'){const x=360,eq=180,period=2*Math.PI*Math.sqrt(LAB.a/LAB.b),y=eq+42*Math.cos(2*Math.PI*t/period);c.fillStyle='#26324F';c.fillRect(220,35,280,13);c.strokeStyle='#6C8CFF';c.lineWidth=5;c.beginPath();c.moveTo(x,48);for(let i=1;i<=14;i++)c.lineTo(x+(i%2?22:-22),48+(y-48)*i/14);c.stroke();c.fillStyle='#B48CFF';c.fillRect(x-38,y,76,48);c.fillStyle='#F2F4FF';c.textAlign='center';c.fillText(f1(LAB.a,1)+' кг',x,y+29);c.strokeStyle='#3DD6A0';c.setLineDash([6,6]);c.beginPath();c.moveTo(220,eq+24);c.lineTo(500,eq+24);c.stroke();c.setLineDash([]);}
+else if(id==='pendulum'){const px=360,py=38,len=60+LAB.a*95,ang=LAB.b*Math.PI/180*Math.cos(Math.sqrt(9.81/LAB.a)*t),bx=px+len*Math.sin(ang),by=py+len*Math.cos(ang);c.fillStyle='#26324F';c.fillRect(220,28,280,13);c.strokeStyle='#6C8CFF';c.lineWidth=5;c.beginPath();c.moveTo(px,py);c.lineTo(bx,by);c.stroke();ball(bx,by,22,'#FFC24B');}
+else if(id==='fall'){const ground=278,top=35,dist=LAB.b*t+4.905*t*t,p=Math.min(1,dist/LAB.a),y=top+(ground-top)*p;c.fillStyle='#26324F';c.fillRect(80,ground,560,9);c.setLineDash([5,7]);c.beginPath();c.moveTo(360,top);c.lineTo(360,ground);c.stroke();c.setLineDash([]);ball(360,y,17,'#FFC24B');c.fillText('Высота '+f1(LAB.a,1)+' м',390,55);if(p>=1&&LAB.run)labStop('Падение завершено');}
+else if(id==='projectile'){const v=LAB.a,ang=LAB.b*Math.PI/180,flight=2*v*Math.sin(ang)/9.81,tt=Math.min(t,flight),sc=5.4,x0=75,ground=278,px=v*Math.cos(ang)*tt*sc,py=(v*Math.sin(ang)*tt-4.905*tt*tt)*sc;c.strokeStyle='#3DD6A0';c.lineWidth=3;c.beginPath();for(let q=0;q<=80;q++){const z=flight*q/80,xx=x0+v*Math.cos(ang)*z*sc,yy=ground-(v*Math.sin(ang)*z-4.905*z*z)*sc;q?c.lineTo(xx,yy):c.moveTo(xx,yy);}c.stroke();c.fillStyle='#26324F';c.fillRect(45,ground,630,8);ball(x0+px,ground-py,13,'#FFC24B');if(t>=flight&&LAB.run)labStop('Полёт завершён');}
+else if(id==='incline'){const ang=LAB.a*Math.PI/180,x0=115,y0=278,len=500,x1=x0+len*Math.cos(ang),y1=y0-len*Math.sin(ang),acc=9.81*(Math.sin(ang)-LAB.b*Math.cos(ang)),dist=Math.min(len,Math.max(0,acc)*t*t*8),bx=x0+dist*Math.cos(ang),by=y0-dist*Math.sin(ang);c.strokeStyle='#8D97B5';c.lineWidth=8;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();c.save();c.translate(bx,by-12);c.rotate(-ang);c.fillStyle='#B48CFF';c.fillRect(-22,-18,44,30);c.restore();}
+else if(id==='wave'){const mid=165,amp=LAB.b,cycles=2.5;c.strokeStyle='#3DD6A0';c.lineWidth=2;c.beginPath();c.moveTo(0,mid);c.lineTo(w,mid);c.stroke();c.strokeStyle='#6C8CFF';c.lineWidth=4;c.beginPath();for(let x=0;x<w;x++){const y=mid-amp*Math.sin(2*Math.PI*(cycles*x/w-LAB.a*t));x?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();ball((t*95)%w,mid,8,'#FFC24B');}
+labMetrics();}
+function labFrame(now){if(!LAB.run)return;LAB.t+=Math.min(.05,(now-LAB.last)/1000||0);LAB.last=now;labDraw();if(LAB.run)LAB.raf=requestAnimationFrame(labFrame);}
+function labRun(){if(LAB.run)return;LAB.run=true;LAB.last=performance.now();$('#lab-state').textContent='Эксперимент идёт';$('#lab-hint').textContent='Процесс запущен. Можно поставить на паузу или сбросить.';LAB.raf=requestAnimationFrame(labFrame);}
 /* ---------- Профиль ---------- */
 function vProfile() {
   frame('Профиль');
@@ -402,7 +372,11 @@ document.addEventListener('click', async e => {
     case 'topics': { const B = await bank(), topics = [...new Map(B.map(x => [x.tid, x.topicTitle])).entries()]; sheet(`<b class="h">Тренировка по теме</b><p class="mute">Выбери раздел — подберём вопросы из экзаменационной базы.</p><div class="topic-list">${topics.map(([id, title]) => `<button class="qrow" data-act="topicQuiz" data-topic="${id}"><span><b>${esc(title || ('Раздел ' + id))}</b><small>${B.filter(x => x.tid === id).length} вопросов в базе</small></span>${ic('chevron-right')}</button>`).join('')}</div>`); break; }
     case 'topicQuiz': { const B = await bank(), W = B.filter(x => String(x.tid) === String(d.topic)); closeSheet(); startQuiz({ kind: 'topic', title: 'Тема: ' + (W[0] ? W[0].topicTitle : 'физика'), items: shuffle(W).slice(0, 15) }); break; }
     case 'lab': location.hash = 'lab'; break;
-    case 'labMode': LAB.mode = d.v; render(); break;
+    case 'labOpen': labOpen(d.v); break;
+    case 'labHome': labStop(); location.hash='lab'; break;
+    case 'labStart': labRun(); break;
+    case 'labPause': labStop('Пауза'); break;
+    case 'labReset': labStop('Готов к запуску'); LAB.t=0; labDraw(); $('#lab-hint').textContent='Опыт сброшен. Можно запускать снова.'; break;
     case 'trainBack': location.hash = 'train'; break;
     case 'warm': { const B = await bank(); startQuiz({ kind: 'warm', title: 'Разминка', items: shuffle(B).slice(0, 10) }); break; }
     case 'exam': { const B = await bank(); startQuiz({ kind: 'exam', title: 'Экзамен', items: shuffle(B).slice(0, 30) }); break; }
@@ -418,7 +392,7 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
-document.addEventListener('input', e => { const k = e.target.dataset.lab; if (k) { LAB[k] = Number(e.target.value); labDraw(); } });
+document.addEventListener('input', e => { const k = e.target.dataset.lab; if (k) { LAB[k] = Number(e.target.value); labDraw(); if ($('#lab-state')) $('#lab-state').textContent='Параметры изменены'; } });
 document.addEventListener('change', e => { if (e.target.id === 'pname') { S.name = e.target.value.trim().slice(0, 24); save(); toast(ic('check') + 'Имя сохранено'); } });
 
 /* ---------- обновления Android ---------- */
