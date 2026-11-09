@@ -1094,7 +1094,7 @@ function vProfile() {
     `<section class="stats"><div><b>${S.xp}</b><span>опыт</span></div><div><b>${streak()}</b><span>дней подряд</span></div><div><b>${S.bestCombo}</b><span>лучшее комбо</span></div><div><b>${acc}%</b><span>точность</span></div><div><b>${nl_}</b><span>уроков</span></div><div><b>${S.badges.length}/${BADGES.length}</b><span>значков</span></div></section>` +
     `<h2 class="sec">Значки</h2><div class="badges">${BADGES.map(([id, t, d]) => `<div class="bdg${S.badges.includes(id) ? ' on' : ''}">${ic(S.badges.includes(id) ? 'award' : 'lock')}<b>${t}</b><small>${d}</small></div>`).join('')}</div>` +
     `<h2 class="sec">Коллекция учёных</h2><div class="sci">${Object.values(CONTENT).flatMap(c => c.scientists).map(x => `<div class="scard${S.sci.includes(x.id) ? '' : ' locked'}"><b>${S.sci.includes(x.id) ? esc(x.name) : '???'}</b><small>${S.sci.includes(x.id) ? esc(x.years) : 'пройди финал главы'}</small></div>`).join('')}</div>` +
-    `<button class="btn line wide mt danger" data-act="reset">Сбросить прогресс</button><p class="mute small">Пилотная версия: открыта глава 1. Конспекты, ролики и задания — собственные, по программе учебника Т. И. Трофимовой «Курс физики». Значки — Lucide (ISC).</p>`);
+    `<button class="btn line wide mt danger" data-act="reset">Сбросить прогресс</button><p class="mute small">Пилотная версия: открыта глава 1. Конспекты, ролики и задания — собственные, по программе учебника Т. И. Трофимовой «Курс физики». Озвучка роликов — ElevenLabs (elevenlabs.io). Значки — Lucide (ISC).</p>`);
 }
 
 /* ---------- события ---------- */
