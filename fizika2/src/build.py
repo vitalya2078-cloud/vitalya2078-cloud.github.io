@@ -9,9 +9,18 @@ for w in ('400', '600', '700'): html = html.replace('{{F%s}}' % w, base64.b64enc
 icons = json.loads(re.search(r'const ICONS = (\{.*?\});', rd('icons.js')).group(1))
 html = re.sub(r'\{\{I_([\w-]+)\}\}', lambda m: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % icons[m.group(1)], html)
 voice = json.load(open(os.path.join(D, 'voice.json'), encoding='utf-8')) if os.path.exists(os.path.join(D, 'voice.json')) else {}
-js = 'const VOICE = %s;\n' % json.dumps(voice) + '\n'.join(rd(f) for f in ('book.js', 'scenes.js', 'icons.js', 'app.js'))
-app = html.replace('{{JS}}', js)
-assert '{{' not in app.replace('{{', '', 0) or not re.search(r'\{\{(F\d+|JS|I_[\w-]+)\}\}', app)
+js = 'const F2_BUILD = __F2_BUILD__;\nconst F2_IN_APP = /FizikaApp/.test(navigator.userAgent);\nconst VOICE = %s;\n' % json.dumps(voice) + '\n'.join(rd(f) for f in ('book.js', 'scenes.js', 'icons.js', 'app.js'))
+probe = html.replace('{{JS}}', js)
+meta_path = os.path.join(D, 'meta.json')
+meta = json.load(open(meta_path, encoding='utf-8')) if os.path.exists(meta_path) else {'build': 1, 'app_hash': ''}
+app_hash = __import__('hashlib').sha256(probe.encode()).hexdigest()[:16]
+if not meta.get('app_hash'):
+    meta['app_hash'] = app_hash
+elif app_hash != meta.get('app_hash'):
+    meta['build'] = int(meta.get('build', 0)) + 1
+    meta['app_hash'] = app_hash
+app = probe.replace('__F2_BUILD__', str(meta['build']))
+assert not re.search(r'\{\{(F\d+|JS|I_[\w-]+)\}\}', app) and '__F2_BUILD__' not in app
 open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(app)
 # база вопросов экзамена и рисунки к ним — из основного приложения
 shutil.copy2(os.path.join(OLD, 'content.json'), OUT)
@@ -29,4 +38,7 @@ self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.me
  if(/\\/(pics|audio)\\//.test(u.pathname)){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res})));return}
  e.respondWith(fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res}).catch(()=>caches.match(e.request).then(r=>r||caches.match('index.html'))))});
 """ % ver)
-print('index.html', len(app.encode()) // 1024, 'КБ; озвучка:', ', '.join(sorted(voice)) or 'нет')
+data_version = json.load(open(os.path.join(OUT, 'content.json'), encoding='utf-8')).get('v', 0)
+json.dump({'build': meta['build'], 'data': data_version}, open(os.path.join(OUT, 'version.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+json.dump(meta, open(meta_path, 'w', encoding='utf-8'), ensure_ascii=False)
+print('index.html', len(app.encode()) // 1024, 'КБ; сборка:', meta['build'], '; данные:', data_version, '; озвучка:', ', '.join(sorted(voice)) or 'нет')
