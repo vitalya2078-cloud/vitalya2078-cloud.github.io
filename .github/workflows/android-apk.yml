@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -37,6 +37,16 @@ jobs:
           python fizika/src/build.py
           python fizika2/src/build.py
 
+      - name: Publish generated website files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fizika2/index.html fizika2/content.json fizika2/version.json fizika2/sw.js fizika2/manifest.webmanifest fizika2/icon-192.png fizika2/src/meta.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish generated Fizika 2 site"
+            git push
+          fi
+
       - name: Build APK
         working-directory: fizika-android
         run: |
@@ -44,12 +54,12 @@ jobs:
           ./gradlew --no-daemon assembleRelease
 
       - name: Rename APK
-        run: cp fizika-android/app/build/outputs/apk/release/app-release.apk Fizika-2.4-debug-signed.apk
+        run: cp fizika-android/app/build/outputs/apk/release/app-release.apk Fizika-2.5-debug-signed.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fizika-2.4-Android-APK
-          path: Fizika-2.4-debug-signed.apk
+          name: Fizika-2.5-Android-APK
+          path: Fizika-2.5-debug-signed.apk
           if-no-files-found: error
           retention-days: 14
