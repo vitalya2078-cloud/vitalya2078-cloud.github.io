@@ -711,6 +711,16 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 
 
 .b3-scan-copy .b3-evidence{display:block;margin-top:2px;color:#b4c9c9;font-size:9px;line-height:1.4}
+
+/* Interactive inspection points on the bridge scene */
+.b3-hotspots{position:absolute;inset:0;z-index:4;pointer-events:none}
+.b3-hotspot{position:absolute;display:flex;align-items:center;gap:6px;min-height:34px;padding:5px 9px;border:1px solid rgba(126,239,211,.72);border-radius:999px;background:rgba(5,20,32,.88);color:#cffff0;font:800 9px/1 var(--numbers);letter-spacing:.65px;box-shadow:0 0 0 3px rgba(82,224,190,.12),0 0 18px rgba(82,224,190,.35);transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}
+.b3-hotspot i{width:8px;height:8px;border-radius:50%;background:#82f5d0;box-shadow:0 0 9px #82f5d0;animation:b3-hotspot-pulse 1.8s ease-in-out infinite}
+.b3-hotspot:active{transform:translate(-50%,-50%) scale(.94)}
+.b3-hotspot.scanned{border-color:rgba(255,190,117,.72);background:rgba(50,40,29,.9);color:#ffdaa9;box-shadow:0 0 0 3px rgba(255,190,117,.12),0 0 16px rgba(255,190,117,.2)}
+.b3-hotspot.scanned i{background:#ffc27f;box-shadow:0 0 9px #ffc27f;animation:none}
+@keyframes b3-hotspot-pulse{0%,100%{box-shadow:0 0 0 0 rgba(130,245,208,.5)}50%{box-shadow:0 0 0 7px rgba(130,245,208,0)}}
+@media(max-width:520px){.b3-hotspot{min-height:30px;padding:4px 7px;font-size:8px}.b3-hotspot span{max-width:64px}}
 </style>
 </head>
 <body data-view="home">
