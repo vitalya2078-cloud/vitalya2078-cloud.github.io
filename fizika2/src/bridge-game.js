@@ -112,8 +112,9 @@ function bridgeDraw() {
 
 document.addEventListener('click', e => {
   const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
-  const d=b.dataset, g=BRIDGE_GAME; if(!g)return;
+  const d=b.dataset;
   if(d.act==='bridgeLaunch'){BRIDGE_GAME=bridgeFresh();location.hash='game-bridge';return;}
+  const g=BRIDGE_GAME; if(!g)return;
   if(d.act==='bridgeInspect'){
     if(d.v==='brace'){g.inspected=true;g.stage='repair';g.message='Верно. Диагональный раскос передаёт усилия между узлами фермы. Его повреждение нарушило силовую схему.';}
     else {g.message='Осмотр продолжен: этот элемент не объясняет потерю устойчивости пролёта. Ищи повреждение в силовой ферме.';toast('Проверь центральную часть пролёта.');}
