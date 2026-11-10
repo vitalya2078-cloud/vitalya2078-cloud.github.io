@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 28;
+  var embedded = 29;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -613,7 +613,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 28;
+const F2_BUILD = 29;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1810,7 +1810,6 @@ document.addEventListener('click', async e => {
     case 'topicQuiz': { const B = await bank(), W = B.filter(x => String(x.tid) === String(d.topic)); closeSheet(); startQuiz({ kind: 'topic', title: 'Тема: ' + (W[0] ? W[0].topicTitle : 'физика'), items: shuffle(W).slice(0, 15) }); break; }
     case 'lab': location.hash = 'lab'; break;
     case 'labGames': location.hash = 'lab-games'; break;
-    case 'bridgeLaunch': bridgeLaunch(); break;
     case 'labOpen': labOpen(d.v); break;
     case 'labHome': labStop(); location.hash='lab'; break;
     case 'labStart': labRun(); break;
@@ -2135,7 +2134,12 @@ function bridgeStartAnimation(){
 document.addEventListener('click', e => {
   const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
   const d=b.dataset;
-  if(d.act==='bridgeLaunch') return;
+  // Единственная точка запуска миссии: обработчик самой игры.
+  if(d.act==='bridgeLaunch'){
+    e.preventDefault();
+    bridgeLaunch();
+    return;
+  }
   if(BRIDGE_GAME&&BRIDGE_GAME.anim&&d.act!=='bridgeReset')return;
   const g=BRIDGE_GAME; if(!g)return;
   if(d.act==='bridgeInspect'){
