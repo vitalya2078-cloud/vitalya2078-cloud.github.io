@@ -63,7 +63,7 @@ try {
   await page.mouse.down();
   await page.mouse.move(bounds.x + bounds.width * 0.62, bounds.y + bounds.height * 0.42, { steps: 8 });
   await page.mouse.up();
-  await page.locator('[data-sbr="g"]').fill('4.9');
+  await page.locator('[data-sbr="g"]').evaluate(el => { el.value = '4.9'; el.dispatchEvent(new Event('input', { bubbles: true })); });
   await page.locator('[data-sb="run"]').first().click();
   await page.waitForTimeout(180);
   await page.locator('[data-sb="run"]').first().click();
