@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 27;
+  var embedded = 28;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -613,7 +613,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 27;
+const F2_BUILD = 28;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -2042,7 +2042,7 @@ function bridgeDraw() {
     const failed=g.result==='fail'||collapsing;
     const truckX=driving?110+760*g.animProgress:(collapsing?110+760*.55:(g.stage==='done'?790:500));
     const roadSag=Math.max(0,1-Math.pow((truckX-480)/405,2))*sag;
-    const truckY=208+roadSag-14+(collapsing?Math.pow(g.animProgress,1.7)*112:0)+(broken?112:0);
+    const truckY=208+roadSag-14+(collapsing?Math.pow(g.animProgress,1.7)*48:0)+(broken?48:0);
     x.save();x.translate(truckX,truckY);
     x.fillStyle='rgba(0,0,0,.34)';x.beginPath();x.ellipse(-5,13,62,7,0,0,Math.PI*2);x.fill();
     x.fillStyle='#b96b32';x.fillRect(-61,-26,107,27);x.fillStyle='#e7a64b';x.fillRect(-58,-29,101,24);
