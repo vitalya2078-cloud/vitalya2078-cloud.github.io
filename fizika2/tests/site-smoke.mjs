@@ -5,7 +5,7 @@ const browser = await chromium.launch({ headless: true });
 const errors = [];
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
-  page.on('pageerror', error => errors.push(error.message));
+  page.on('pageerror', error => errors.push(error.stack || error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   await page.waitForSelector('#main');
