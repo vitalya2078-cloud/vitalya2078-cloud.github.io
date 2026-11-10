@@ -36,6 +36,7 @@ jobs:
         run: |
           node --check fizika2/src/lab-data.js
           node --check fizika2/src/app.js
+          node --check fizika2/src/bridge-game.js
 
       - name: Build website data and textbook course
         run: |
