@@ -21,7 +21,13 @@ try {
     // Каждый раздел открываем отдельной навигацией браузера: проверяем инициализацию
     // маршрута на прямой ссылке, а не полагаемся на состояние предыдущего экрана.
     await page.goto('http://127.0.0.1:4173/' + hash, { waitUntil: 'networkidle' });
-    await page.waitForFunction(expected => document.body.dataset.view === expected, view, { timeout: 10000 });
+    try {
+      await page.waitForFunction(expected => document.body.dataset.view === expected, view, { timeout: 10000 });
+    } catch (error) {
+      throw new Error('Не запустился маршрут ' + hash + '; URL=' + page.url() +
+        '; view=' + await page.locator('body').getAttribute('data-view') +
+        '; JS errors=' + errors.join(' | ') + '; cause=' + error.message);
+    }
     await page.waitForFunction(() => document.querySelector('#ttl')?.textContent.trim().length > 0);
     assert.ok((await page.locator('#ttl').innerText()).includes(title), 'Заголовок раздела не обновился: ' + title);
   }
