@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 18;
+  var embedded = 19;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -589,7 +589,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 18;
+const F2_BUILD = 19;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1972,8 +1972,9 @@ function bridgeDraw() {
 
 document.addEventListener('click', e => {
   const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
-  const d=b.dataset, g=BRIDGE_GAME; if(!g)return;
+  const d=b.dataset;
   if(d.act==='bridgeLaunch'){BRIDGE_GAME=bridgeFresh();location.hash='game-bridge';return;}
+  const g=BRIDGE_GAME; if(!g)return;
   if(d.act==='bridgeInspect'){
     if(d.v==='brace'){g.inspected=true;g.stage='repair';g.message='Верно. Диагональный раскос передаёт усилия между узлами фермы. Его повреждение нарушило силовую схему.';}
     else {g.message='Осмотр продолжен: этот элемент не объясняет потерю устойчивости пролёта. Ищи повреждение в силовой ферме.';toast('Проверь центральную часть пролёта.');}
