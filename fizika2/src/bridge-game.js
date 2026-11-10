@@ -26,7 +26,7 @@ function bridgeMarkup(){
     const rows=[['joint','01','Центральный узел','Ультразвуковой контроль соединения'],['deck','02','Дорожное полотно','Сканирование поверхности'],['pier','03','Береговая опора','Проверка геометрии опоры']];
     controls='<div class="b3-instruction"><span class="b3-eyebrow">ПРОТОКОЛ ОБСЛЕДОВАНИЯ</span><h3>Проверь три контрольные точки</h3><p>Собери данные с объекта. Не делай вывод по одному визуальному признаку.</p></div><div class="b3-scan-list">'+rows.map(r=>{
       const done=g.findings.includes(r[0]),f=BRIDGE_FINDINGS[r[0]];
-      return '<button class="b3-scan '+(done?'scanned':'')+'" data-act="bridgeScan" data-v="'+r[0]+'" '+(done?'disabled':'')+'><span class="b3-scan-num">'+r[1]+'</span><span class="b3-scan-copy"><b>'+r[2]+'</b><small>'+r[3]+'</small>'+(done?'<em>'+f.status+'</em>':'')+'</span><span class="b3-scan-state">'+(done?'✓':'＋')+'</span></button>';
+      return '<button class="b3-scan '+(done?'scanned':'')+'" data-act="bridgeScan" data-v="'+r[0]+'" '+(done?'disabled':'')+'><span class="b3-scan-num">'+r[1]+'</span><span class="b3-scan-copy"><b>'+r[2]+'</b><small>'+r[3]+'</small>'+(done?'<em>'+f.status+'</em><small class="b3-evidence">'+f.detail+'</small>':'')+'</span><span class="b3-scan-state">'+(done?'✓':'＋')+'</span></button>';
     }).join('')+'</div><div class="b3-progress-note"><span>ДАННЫЕ СОБРАНЫ</span><b>'+g.findings.length+' / 3</b><i><em style="width:'+(g.findings.length/3*100)+'%"></em></i></div>';
   }else if(g.stage==='diagnose'){
     controls='<div class="b3-instruction"><span class="b3-eyebrow">АНАЛИЗ ПОВРЕЖДЕНИЙ</span><h3>Что стало причиной аварии?</h3><p>Сопоставь результаты трёх проверок и выбери первопричину. Ошибка не завершит миссию, но повлияет на результат испытания.</p></div><div class="b3-choice-grid">'+
@@ -61,13 +61,14 @@ function bridgeMorphNode(oldNode,newNode){
   if(oldNode.nodeType!==Node.ELEMENT_NODE||oldNode.tagName==='CANVAS')return oldNode;
   for(const a of [...oldNode.attributes])if(!newNode.hasAttribute(a.name))oldNode.removeAttribute(a.name);
   for(const a of [...newNode.attributes])if(oldNode.getAttribute(a.name)!==a.value)oldNode.setAttribute(a.name,a.value);
-  for(let i=0;i<Math.max(oldNode.childNodes.length,newNode.childNodes.length);i++){
-    const o=oldNode.childNodes[i],n=newNode.childNodes[i];
-    if(!n){if(o)oldNode.removeChild(o);}
-    else if(!o)oldNode.appendChild(n.cloneNode(true));
+  const oldChildren=[...oldNode.childNodes],newChildren=[...newNode.childNodes];
+  for(let i=0;i<newChildren.length;i++){
+    const o=oldChildren[i],n=newChildren[i];
+    if(!o)oldNode.appendChild(n.cloneNode(true));
     else if(o.nodeType!==n.nodeType||o.nodeName!==n.nodeName)oldNode.replaceChild(n.cloneNode(true),o);
     else bridgeMorphNode(o,n);
   }
+  for(let i=newChildren.length;i<oldChildren.length;i++)if(oldChildren[i].parentNode===oldNode)oldNode.removeChild(oldChildren[i]);
   return oldNode;
 }
 function bridgeRefresh(){
