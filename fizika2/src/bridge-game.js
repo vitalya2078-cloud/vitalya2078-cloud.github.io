@@ -157,7 +157,7 @@ function bridgeDraw() {
     const failed=g.result==='fail'||collapsing;
     const truckX=driving?110+760*g.animProgress:(collapsing?110+760*.55:(g.stage==='done'?790:500));
     const roadSag=Math.max(0,1-Math.pow((truckX-480)/405,2))*sag;
-    const truckY=208+roadSag-14+(collapsing?Math.pow(g.animProgress,1.7)*112:0)+(broken?112:0);
+    const truckY=208+roadSag-14+(collapsing?Math.pow(g.animProgress,1.7)*48:0)+(broken?48:0);
     x.save();x.translate(truckX,truckY);
     x.fillStyle='rgba(0,0,0,.34)';x.beginPath();x.ellipse(-5,13,62,7,0,0,Math.PI*2);x.fill();
     x.fillStyle='#b96b32';x.fillRect(-61,-26,107,27);x.fillStyle='#e7a64b';x.fillRect(-58,-29,101,24);
