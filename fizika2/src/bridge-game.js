@@ -103,8 +103,8 @@ function bridgeDraw() {
   // vehicle during test
   if(g.stage==='test'||g.stage==='done'){
     const failed=g.result==='fail'||collapsing;
-    const truckX=driving?110+760*g.animProgress:(g.stage==='done'?790:500);
-    const truckY=178+Math.sin(Math.max(0,1-Math.abs(truckX-480)/480)*Math.PI/2)*sag;
+    const truckX=driving?110+760*g.animProgress:(collapsing?110+760*.55:(g.stage==='done'?790:500));
+    const truckY=178+Math.sin(Math.max(0,1-Math.abs(truckX-480)/480)*Math.PI/2)*sag+(collapsing?g.animProgress*90:0);
     x.save();x.translate(truckX,truckY);
     x.fillStyle='#e7a64b';x.fillRect(-60,-28,105,28);x.fillStyle='#d9e5e8';x.fillRect(-34,-49,50,22);
     x.fillStyle='#f3c66d';x.fillRect(10,-22,25,14);x.fillStyle='#1a2738';
@@ -117,9 +117,10 @@ function bridgeDraw() {
   x.fillStyle='rgba(7,13,25,.58)';x.fillRect(20,18,230,35);
   x.fillStyle='#c6d5e1';x.font='600 13px sans-serif';x.textAlign='left';x.fillText(g.stage==='inspect'?'BR-04 / STRUCTURAL SCAN':g.stage==='repair'?'BR-04 / REPAIR MODE':'BR-04 / LOAD TEST',34,41);
   if(g.stage==='inspect'){x.strokeStyle='rgba(255,120,109,.85)';x.lineWidth=2;x.beginPath();x.arc(486,141,28,0,Math.PI*2);x.stroke();}
+  if(collapsing){x.save();x.translate(480,205+sag*.35);x.rotate(.25+g.animProgress*.65);x.strokeStyle='#ff786d';x.lineWidth=12;x.lineCap='round';x.beginPath();x.moveTo(-58,-20);x.lineTo(-8,12);x.stroke();x.rotate(-.7);x.beginPath();x.moveTo(8,12);x.lineTo(62,-24);x.stroke();x.restore();}
   if(driving||collapsing){x.fillStyle='rgba(5,12,22,.78)';x.fillRect(700,18,240,35);x.fillStyle=collapsing?'#ff8276':'#8be4ca';x.font='bold 12px sans-serif';x.textAlign='right';x.fillText(collapsing?'КРИТИЧЕСКАЯ ДЕФОРМАЦИЯ':'ГРУЗОВИК В ДВИЖЕНИИ',925,40);}
 }
-function bridgeStartAnimation(){const g=BRIDGE_GAME;if(!g)return;g.anim='drive';g.animProgress=0;g.result=null;g.message='Грузовик въезжает на пролёт. Следи за прогибом конструкции.';bridgeRefresh();const start=performance.now();const tick=now=>{if(BRIDGE_GAME!==g)return;g.animProgress=Math.min(1,(now-start)/4200);bridgeDraw();if(g.animProgress<1){g.animFrame=requestAnimationFrame(tick);return;}const cap=g.repair==='brace'?26:14;if(g.load>cap){g.anim='collapse';g.animProgress=0;g.message='Перегрузка! Центральный пролёт теряет устойчивость.';const t0=performance.now();const fall=t=>{if(BRIDGE_GAME!==g)return;g.animProgress=Math.min(1,(t-t0)/1500);bridgeDraw();if(g.animProgress<1){g.animFrame=requestAnimationFrame(fall);return;}g.anim='';g.result='fail';g.stage='test';g.message='Мост не выдержал '+g.load+' т: расчётный предел — '+cap+' т. Пролёт прогнулся и разрушился. Вернись к ремонту.';bridgeRefresh();toast('Испытание провалено — мост разрушен.');};g.animFrame=requestAnimationFrame(fall);}else{g.anim='';g.result='pass';g.stage='done';g.message='Грузовик массой '+g.load+' т пересёк мост. Конструкция выдержала нагрузку '+cap+' т.';bridgeRefresh();toast('Мост выдержал испытание!');}};g.animFrame=requestAnimationFrame(tick);}
+function bridgeStartAnimation(){const g=BRIDGE_GAME;if(!g)return;g.anim='drive';g.animProgress=0;g.result=null;g.message='Грузовик въезжает на пролёт. Следи за прогибом конструкции.';bridgeRefresh();const start=performance.now();const tick=now=>{if(BRIDGE_GAME!==g)return;const target=g.load>(g.repair==='brace'?26:14)?.55:1;g.animProgress=Math.min(target,(now-start)/4200*target);bridgeDraw();if(g.animProgress<target){g.animFrame=requestAnimationFrame(tick);return;}const cap=g.repair==='brace'?26:14;if(g.load>cap){g.anim='collapse';g.animProgress=0;g.message='Перегрузка! Центральный пролёт теряет устойчивость.';const t0=performance.now();const fall=t=>{if(BRIDGE_GAME!==g)return;g.animProgress=Math.min(1,(t-t0)/1500);bridgeDraw();if(g.animProgress<1){g.animFrame=requestAnimationFrame(fall);return;}g.anim='';g.result='fail';g.stage='test';g.message='Мост не выдержал '+g.load+' т: расчётный предел — '+cap+' т. Пролёт прогнулся и разрушился. Вернись к ремонту.';bridgeRefresh();toast('Испытание провалено — мост разрушен.');};g.animFrame=requestAnimationFrame(fall);}else{g.anim='';g.result='pass';g.stage='done';g.message='Грузовик массой '+g.load+' т пересёк мост. Конструкция выдержала нагрузку '+cap+' т.';bridgeRefresh();toast('Мост выдержал испытание!');}};g.animFrame=requestAnimationFrame(tick);}
 
 document.addEventListener('click', e => {
   const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
