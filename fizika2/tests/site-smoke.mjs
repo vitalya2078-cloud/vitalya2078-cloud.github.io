@@ -55,6 +55,7 @@ try {
   await page.locator('[data-sb="drawer"]').click();
   await page.locator('.sb-cat, #sb-cats button').filter({ hasText: 'Механика' }).first().click();
   await page.locator('.sb-item').filter({ hasText: 'Брусок' }).click();
+  await page.locator('[data-sb="properties"]').click();
   await page.waitForSelector('.sb-picked');
   await page.locator('[data-sb="mode"][data-v="rotate"]').click();
   const scene = page.locator('#sb-canvas');
@@ -67,7 +68,6 @@ try {
   await page.locator('[data-sb="run"]').first().click();
   await page.waitForTimeout(180);
   await page.locator('[data-sb="run"]').first().click();
-  await page.locator('[data-sb="properties"]').click();
   await page.locator('[data-sb="duplicate"]').click();
   await page.locator('[data-sb="delete"]').click();
   await page.locator('[data-sb="cat"][data-v="electric"]').click().catch(async () => {
