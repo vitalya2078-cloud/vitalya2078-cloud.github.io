@@ -49,6 +49,33 @@ try {
   await page.locator('[data-act="labPause"]').click();
   await page.locator('[data-act="labReset"]').click();
 
+  // Свободная лаборатория: категории, добавление, перетаскивание, вращение, физические параметры и запуск.
+  await page.goto('http://127.0.0.1:4173/#sandbox', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#sb-canvas');
+  await page.locator('[data-sb="drawer"]').click();
+  await page.locator('.sb-cat, #sb-cats button').filter({ hasText: 'Механика' }).first().click();
+  await page.locator('.sb-item').filter({ hasText: 'Брусок' }).click();
+  await page.waitForSelector('.sb-picked');
+  await page.locator('[data-sb="mode"][data-v="rotate"]').click();
+  const scene = page.locator('#sb-canvas');
+  const bounds = await scene.boundingBox();
+  await page.mouse.move(bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.55);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width * 0.62, bounds.y + bounds.height * 0.42, { steps: 8 });
+  await page.mouse.up();
+  await page.locator('[data-sbr="g"]').fill('4.9');
+  await page.locator('[data-sb="run"]').first().click();
+  await page.waitForTimeout(180);
+  await page.locator('[data-sb="run"]').first().click();
+  await page.locator('[data-sb="duplicate"]').click();
+  await page.locator('[data-sb="delete"]').click();
+  await page.locator('[data-sb="cat"][data-v="electric"]').click().catch(async () => {
+    await page.locator('[data-sb="drawer"]').click();
+    await page.locator('#sb-cats button').filter({ hasText: 'Электричество' }).click();
+  });
+  await page.locator('.sb-item').filter({ hasText: 'Батарея' }).click();
+  await page.locator('[data-sb="clear"]').click();
+
   // Полный успешный сценарий «Инженера катастроф».
   await page.goto('http://127.0.0.1:4173/#lab-games', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('.bridge-lobby-cta');
