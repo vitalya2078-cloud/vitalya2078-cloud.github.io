@@ -18,10 +18,10 @@ try {
     ['#profile', 'profile', 'Профиль'],
     ['', 'home', 'Физика']
   ]) {
-    // Навигацию проверяем через реальное изменение URL: это исключает нестабильность
-    // синтетического клика по нижней панели в headless Chromium на мобильном viewport.
-    await page.evaluate(nextHash => { location.hash = nextHash; }, hash);
-    await page.waitForFunction(expected => document.body.dataset.view === expected, view, { timeout: 5000 });
+    // Каждый раздел открываем отдельной навигацией браузера: проверяем инициализацию
+    // маршрута на прямой ссылке, а не полагаемся на состояние предыдущего экрана.
+    await page.goto('http://127.0.0.1:4173/' + hash, { waitUntil: 'networkidle' });
+    await page.waitForFunction(expected => document.body.dataset.view === expected, view, { timeout: 10000 });
     await page.waitForFunction(() => document.querySelector('#ttl')?.textContent.trim().length > 0);
     assert.ok((await page.locator('#ttl').innerText()).includes(title), 'Заголовок раздела не обновился: ' + title);
   }
