@@ -1,7 +1,16 @@
 /* ---------- Игра лаборатории: Инженер катастроф ---------- */
 let BRIDGE_GAME = null;
 
-function bridgeLaunch() { BRIDGE_GAME = bridgeFresh(); location.hash = 'game-bridge'; }
+function bridgeLaunch() {
+  if (BRIDGE_GAME && BRIDGE_GAME.anim && BRIDGE_GAME.animFrame) cancelAnimationFrame(BRIDGE_GAME.animFrame);
+  BRIDGE_GAME = bridgeFresh();
+  if (location.hash === '#game-bridge') {
+    if (typeof render === 'function') render();
+    else vBridgeGame();
+  } else {
+    location.hash = 'game-bridge';
+  }
+}
 
 function bridgeFresh() {
   return { stage: 'inspect', inspected: false, diagnosisCorrect: false, repair: null, load: 20, result: null, message: '', anim: '', animProgress: 0, animFrame: 0 };
