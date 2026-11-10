@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 13;
+  var embedded = 14;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -496,6 +496,10 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 
 \n.lab-progress{height:6px;margin:8px 0 10px;overflow:hidden;border-radius:8px;background:var(--line)}.lab-progress i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--mint));transition:width .12s linear}\n
 .lab-setup-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.lab-setup-grid>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(108,140,255,.045)}.lab-setup-grid small{display:block;color:var(--accent);font-weight:700;margin-bottom:6px}.lab-setup-grid p{margin:0;color:var(--text);font-size:13px;line-height:1.45}@media(max-width:620px){.lab-setup-grid{grid-template-columns:1fr;gap:8px}}
+
+.lab-setup-grid{gap:14px!important;margin:18px 0!important}.lab-setup-grid>div{padding:16px!important;min-width:0}.lab-setup-grid p{line-height:1.6!important;overflow-wrap:anywhere}
+.lab-stepper{display:grid;gap:7px;padding:12px 0;border-bottom:1px solid var(--line)}.lab-stepper:last-child{border-bottom:0}.lab-stepper>span{font-size:13px;color:var(--mute)}.lab-stepper-row{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;gap:10px}.lab-stepper-row button{height:44px;border:1px solid var(--line);border-radius:13px;background:var(--card2);color:var(--text);font-size:25px;font-weight:600}.lab-stepper-row button:active{background:var(--blue);color:white}.lab-stepper-row b{text-align:center;font:700 17px/1.3 var(--numbers);font-variant-numeric:tabular-nums}.lab-stepper>small{font-size:10px;color:var(--mute)}.lab-controls{gap:8px!important}.lab-actions{margin-top:4px}
+@media(max-width:620px){.lab-setup-grid{grid-template-columns:1fr!important;gap:12px!important}.lab-setup-grid>div{padding:15px!important}.lab-stepper-row{grid-template-columns:52px minmax(0,1fr) 52px}}
 </style>
 </head>
 <body data-view="home">
@@ -513,7 +517,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 13;
+const F2_BUILD = 14;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1491,16 +1495,17 @@ function vLabTopic(r){
 }
 function vLabExp(r){
  const x=LABS[r.exp];if(!x){location.hash='lab';return;}
- if(LAB.id!==r.exp)LAB={id:r.exp,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};
+ if(LAB.id!==r.exp)LAB={id:r.exp,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,completed:false,raf:0,last:0,trace:[],lastSample:0};
  const g=labTopic(x.ch,x.topic);
  frame(x.title,{back:true,sub:'Глава '+x.ch+' · '+(g?g.title:'Эксперимент')});
- setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску · 30 секунд</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-progress" role="progressbar" aria-label="Время до автоматического зачёта" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0"><i id="lab-progress-fill"></i></div><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Изучи установку и запусти опыт. Он автоматически засчитается после 30 секунд активной работы.</p></section>'+
- '<section class="card lab-controls"><div class="lab-section-title"><b>Параметры</b><small>Можно менять во время опыта</small></div><label>'+esc(x.a)+' <strong id="lab-av">'+f1(LAB.a,2)+' '+esc(x.uA)+'</strong><input type="range" min="'+x.amin+'" max="'+x.amax+'" step="'+x.stA+'" value="'+LAB.a+'" data-lab="a"></label><label>'+esc(x.b)+' <strong id="lab-bv">'+f1(LAB.b,2)+' '+esc(x.uB)+'</strong><input type="range" min="'+x.bmin+'" max="'+x.bmax+'" step="'+x.stB+'" value="'+LAB.b+'" data-lab="b"></label></section>'+
- '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Время модели</small><b id="lab-time">0 / 30 с</b></div></section>'+
+ const control=(key,label,value,unit,step,min,max)=>'<div class="lab-stepper"><span>'+esc(label)+'</span><div class="lab-stepper-row"><button type="button" data-act="labAdjust" data-key="'+key+'" data-delta="-1" aria-label="Уменьшить '+esc(label)+'">−</button><b id="lab-'+key+'v">'+f1(value,2)+' '+esc(unit)+'</b><button type="button" data-act="labAdjust" data-key="'+key+'" data-delta="1" aria-label="Увеличить '+esc(label)+'">+</button></div><small>Шаг '+f1(step,3)+' · '+f1(min,2)+'–'+f1(max,2)+' '+esc(unit)+'</small></div>';
+ setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Запусти установку. Опыт завершится, когда будет выполнено исследовательское действие.</p></section>'+
+ '<section class="card lab-controls"><div class="lab-section-title"><b>Настройка установки</b><small>Меняй значения кнопками − / +</small></div>'+control('a',x.a,LAB.a,x.uA,x.stA,x.amin,x.amax)+control('b',x.b,LAB.b,x.uB,x.stB,x.bmin,x.bmax)+'</section>'+
+ '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Состояние установки</small><b id="lab-time">Готова</b></div></section>'+
  '<section class="card lab-meaning"><b>Задача исследования</b><p class="mute">'+esc(x.task)+'</p><div class="lab-setup-grid"><div><small>Оборудование</small><p>'+esc(x.apparatus)+'</p></div><div><small>Порядок опыта</small><p>'+esc(x.procedure)+'</p></div><div><small>На что обратить внимание</small><p>'+esc(x.observe)+'</p></div></div><b>Физическая модель</b><p class="mute">'+esc(x.desc)+'</p><div class="formula">'+esc(x.formula)+'</div></section>');
  labSetButtons();labDraw();labMetrics();
 }
-function labSetButtons(){const s=$('#lab-start'),p=$('#lab-pause');if(s){s.disabled=LAB.run||LAB.t>=30;s.classList.toggle('active',!LAB.run&&LAB.paused)}if(p){p.disabled=!LAB.run;p.classList.toggle('active',LAB.run)}}
+function labSetButtons(){const s=$('#lab-start'),p=$('#lab-pause');if(s){s.disabled=LAB.run||!!LAB.completed;s.classList.toggle('active',!LAB.run&&LAB.paused)}if(p){p.disabled=!LAB.run;p.classList.toggle('active',LAB.run)}}
 function labStop(msg,paused=false){LAB.run=false;LAB.paused=paused;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;if(msg&&$('#lab-state'))$('#lab-state').textContent=msg;labSetButtons();}
 function labResult(){
  const x=LABS[LAB.id],a=LAB.a,b=LAB.b,g=9.81;if(!x)return {label:'Результат',value:0,unit:''};
@@ -1585,8 +1590,11 @@ function labObservable(){
 }
 function labMetrics(){
  const x=LABS[LAB.id];if(!x)return;const r=labResult();
- $('#lab-mv').textContent=f1(r.value,2)+' '+r.unit;$('#lab-ml').textContent=r.label;
- $('#lab-time').textContent=f1(LAB.t,1)+' / 30 с';$('#lab-av').textContent=f1(LAB.a,2)+' '+x.uA;$('#lab-bv').textContent=f1(LAB.b,2)+' '+x.uB;
+ const av=$('#lab-av'),bv=$('#lab-bv'),mv=$('#lab-mv'),ml=$('#lab-ml'),state=$('#lab-time');
+ if(x.model==='pressure'){const depth=LAB.t>0?LAB.a*Math.min(1,LAB.t/2.6):0;r.value=LAB.b*9.81*depth/1000;}
+ if(mv)mv.textContent=f1(r.value,2)+' '+r.unit;if(ml)ml.textContent=r.label;
+ if(av)av.textContent=f1(LAB.a,2)+' '+x.uA;if(bv)bv.textContent=f1(LAB.b,2)+' '+x.uB;
+ if(state)state.textContent=LAB.completed?'Завершено':LAB.run?'Выполняется':'Готова';
 }
 function labArrow(c,x1,y1,x2,y2,color){const ang=Math.atan2(y2-y1,x2-x1);c.strokeStyle=color;c.fillStyle=color;c.lineWidth=3;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-10*Math.cos(ang-.45),y2-10*Math.sin(ang-.45));c.lineTo(x2-10*Math.cos(ang+.45),y2-10*Math.sin(ang+.45));c.closePath();c.fill();}
 function labDraw(){
@@ -1596,17 +1604,17 @@ function labDraw(){
  const txt=(s,X=25,Y=28,col=muted,size=15)=>{c.fillStyle=col;c.font=size+'px sans-serif';c.fillText(s,X,Y)},ln=(x1,y1,x2,y2,col=white,lw=3)=>{c.strokeStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke()},box=(X,Y,W,H,col=blue)=>{c.fillStyle=col;c.fillRect(X,Y,W,H);c.strokeStyle=white;c.lineWidth=2;c.strokeRect(X,Y,W,H)},dot=(X,Y,r=10,col=gold)=>{c.fillStyle=col;c.beginPath();c.arc(X,Y,r,0,Math.PI*2);c.fill();c.strokeStyle=white;c.lineWidth=2;c.stroke()},arr=(x1,y1,x2,y2,col=green)=>{const q=Math.atan2(y2-y1,x2-x1);ln(x1,y1,x2,y2,col,3);ln(x2,y2,x2-10*Math.cos(q-.45),y2-10*Math.sin(q-.45),col,3);ln(x2,y2,x2-10*Math.cos(q+.45),y2-10*Math.sin(q+.45),col,3)},wave=(x0,x1,y0,amp,cycles,phase=0,col=cyan)=>{c.strokeStyle=col;c.lineWidth=3;c.beginPath();for(let px=x0;px<=x1;px+=2){const py=y0-amp*Math.sin((px-x0)/(x1-x0)*cycles*2*Math.PI+phase);px===x0?c.moveTo(px,py):c.lineTo(px,py)}c.stroke()},spr=(X,Y1,Y2)=>{c.strokeStyle=cyan;c.lineWidth=3;c.beginPath();c.moveTo(X,Y1);for(let i=1;i<=20;i++)c.lineTo(X+(i%2?23:-23),Y1+(Y2-Y1)*i/20);c.lineTo(X,Y2);c.stroke()};
  const head=s=>txt(s,25,27,gold,17);
  switch(x.model){
- case 'uniform':head('Рельсовая дорожка · постоянная скорость');ln(60,240,660,240,white,5);for(let i=0;i<10;i++)ln(80+i*58,240,80+i*58,252,muted,2);{const X=80+(t*48)%520;box(X,185,65,42,blue);dot(X+15,235,8,gold);dot(X+50,235,8,gold);arr(X+25,165,X+100,165);txt('s = v · t',510,80,white,18)}break;
- case 'accelerated':head('Разгон тележки · равноускоренное движение');ln(60,240,660,240,white,5);{const X=80+Math.min(490,.5*b*t*t*2.2);box(X,185,65,42,violet);dot(X+15,235,8,gold);dot(X+50,235,8,gold);for(let i=1;i<5;i++)ln(X-i*(15+i*9),215,X-i*(15+i*9),240,blue,2);arr(X+20,160,X+110,160);txt('v = v₀ + at',490,80,white,18)}break;
+ case 'uniform':head('Рельсовая дорожка · постоянная скорость');ln(60,240,660,240,white,5);for(let i=0;i<10;i++)ln(80+i*58,240,80+i*58,252,muted,2);{const X=80+Math.min(520,t*65);box(X,185,65,42,blue);dot(X+15,235,8,gold);dot(X+50,235,8,gold);arr(X+25,165,X+100,165);txt('s = v · t',510,80,white,18)}break;
+ case 'accelerated':head('Наклонная дорожка · тележка и датчик скорости');{const X0=85,Y0=242,L=540,q=.16;ln(X0,Y0,X0+L*Math.cos(q),Y0-L*Math.sin(q),white,9);ln(X0,Y0+12,X0+L*Math.cos(q),Y0-L*Math.sin(q)+12,muted,3);for(let i=0;i<12;i++){const xx=X0+i*45,yy=Y0-i*45*Math.tan(q);ln(xx,yy+10,xx+8,yy+20,muted,2)}const dist=Math.min(500,(a*t+.5*b*t*t)*62.5),tx=X0+dist*Math.cos(q),ty=Y0-dist*Math.sin(q);c.save();c.translate(tx,ty-18);c.rotate(-q);box(-30,-18,60,34,violet);dot(-17,18,7,gold);dot(18,18,7,gold);c.restore();const sx=X0+L*.72*Math.cos(q),sy=Y0-L*.72*Math.sin(q);box(sx-9,sy-48,18,40,red);ln(sx,sy-48,sx,sy-5,gold,3);txt('ДАТЧИК',sx-38,sy-58,gold,12);arr(tx+25,ty-60,tx+95,ty-60,green);txt('v = '+f1(a+b*t,2)+' м/с',430,55,white,16);txt('a = '+f1(b,2)+' м/с²',90,75,cyan,15)}break;
  case 'freefall':head('Свободное падение · высотная шкала');ln(540,55,540,255,white,3);for(let i=0;i<=8;i++){ln(530,55+i*24,550,55+i*24,muted,2);txt((80-i*10)+' м',555,60+i*24,muted,11)}{const Y=55+Math.min(1,(b*t+4.905*t*t)/a)*190;dot(280,Y,13,gold);arr(320,Y-25,320,Y+35,green)}txt('g = 9,81 м/с²',65,90,white,17);break;
  case 'projectile':head('Пусковая установка · параболическая траектория');ln(55,250,670,250,white,4);{const q=b*Math.PI/180,T=2*a*Math.sin(q)/9.81,X0=90,scale=7;c.strokeStyle=green;c.lineWidth=3;c.beginPath();for(let i=0;i<=100;i++){const z=T*i/100,xx=X0+a*Math.cos(q)*z*scale,yy=248-(a*Math.sin(q)*z-4.905*z*z)*scale;i?c.lineTo(xx,yy):c.moveTo(xx,yy)}c.stroke();box(50,205,45,42,blue);ln(80,220,120,220,white,8);const z=Math.min(t,T);dot(X0+a*Math.cos(q)*z*scale,248-(a*Math.sin(q)*z-4.905*z*z)*scale,10,gold);txt('α = '+f1(b,0)+'°',60,65,white,17)}break;
  case 'circular':head('Вращающийся диск · центростремительное ускорение');c.strokeStyle=blue;c.lineWidth=4;c.beginPath();c.arc(360,150,94,0,Math.PI*2);c.stroke();{const q=2*Math.PI*t/Math.max(.5,b),X=360+94*Math.cos(q),Y=150+94*Math.sin(q);dot(360,150,7,muted);dot(X,Y,13,gold);arr(X,Y,360,150,green);arr(X,Y,X-45*Math.sin(q),Y+45*Math.cos(q),violet)}break;
  case 'newton':head('Тележка и динамометр · второй закон Ньютона');ln(70,235,650,235,white,5);box(285,175,115,55,blue);dot(310,237,9,gold);dot(375,237,9,gold);ln(400,195,485,195,gold,5);box(485,180,85,30,red);arr(295,145,470,145,green);txt('F = '+f1(b,1)+' Н',490,125,white,16);txt('m = '+f1(a,1)+' кг',90,90,white,16);break;
  case 'friction':head('Брусок · силы трения и тяги');ln(75,230,645,230,white,7);for(let i=0;i<28;i++)ln(80+i*20,235,90+i*20,245,muted,2);box(275,170,140,58,violet);arr(345,115,345,165,gold);arr(275,200,185,200,red);arr(415,200,505,200,green);txt('Fтр',175,185,red,15);txt('F тяги',510,185,green,15);break;
- case 'incline':head('Наклонная плоскость · начало скольжения');{const q=a*Math.PI/180,X=110,Y=245,L=480;ln(X,Y,X+L*Math.cos(q),Y-L*Math.sin(q),white,7);ln(X,Y,X+L*Math.cos(q),Y,muted,2);const bx=X+230*Math.cos(q),by=Y-230*Math.sin(q);c.save();c.translate(bx,by-20);c.rotate(-q);box(-30,-25,60,45,violet);c.restore();arr(bx,by-35,bx,by-100,green);txt('α = '+f1(a,0)+'°',120,205,gold,16)}break;
+ case 'incline':head('Наклонная плоскость · брусок и угол наклона');{const q=a*Math.PI/180,X=95,Y=252,L=520,bx=X+Math.min(430,Math.max(0,.5*labResult().value*t*t*18))*Math.cos(q),by=Y-Math.min(430,Math.max(0,.5*labResult().value*t*t*18))*Math.sin(q);ln(X,Y,X+L*Math.cos(q),Y-L*Math.sin(q),white,9);ln(X,Y,X+L*Math.cos(q),Y,muted,2);c.save();c.translate(bx,by-22);c.rotate(-q);box(-32,-25,64,44,violet);c.restore();arr(bx,by-38,bx-20*Math.sin(q),by-38-20*Math.cos(q),green);txt('α = '+f1(a,0)+'°',110,205,gold,16);txt('Fтр = '+f1(b,2)+' · N',475,55,white,14)}break;
  case 'elasticity':head('Пружина и груз · закон Гука');ln(160,55,560,55,white,6);spr(360,62,205);box(326,205,68,48,violet);arr(445,95,445,190,gold);txt('x = '+f1(b,2)+' м',470,140,white,16);txt('Fупр = kx',70,90,green,17);break;
  case 'torque':head('Рычаг на опоре · моменты сил');ln(105,190,615,190,white,7);c.fillStyle=violet;c.beginPath();c.moveTo(340,190);c.lineTo(390,260);c.lineTo(290,260);c.closePath();c.fill();box(180,145,52,42,blue);box(520,145,52,42,red);arr(205,90,205,140,gold);arr(545,90,545,140,green);txt('M = F · l',300,70,gold,17);break;
- case 'pressure':head('Сосуд с жидкостью · датчик давления');box(210,65,300,190,'rgba(61,140,255,.18)');box(214,120,292,132,'rgba(61,140,255,.24)');ln(214,120,506,120,cyan,3);for(let i=0;i<5;i++)wave(225,495,140+i*22,3,7,t*.5+i,cyan);{const Y=120+Math.min(115,a*12);ln(350,65,350,Y,gold,3);dot(350,Y,12,red);txt('h = '+f1(a,1)+' м',365,Y-10,white,15)}txt('p = ρgh',70,90,gold,17);break;
+ case 'pressure':head('Гидростатика · погружение датчика давления');{const tankX=190,tankY=66,tankW=310,tankH=194,waterY=112;box(tankX,tankY,tankW,tankH,'rgba(61,140,255,.12)');c.fillStyle='rgba(42,126,226,.28)';c.fillRect(tankX+5,waterY,tankW-10,tankY+tankH-waterY-5);ln(tankX+5,waterY,tankX+tankW-5,waterY,cyan,3);for(let i=0;i<5;i++)wave(tankX+18,tankX+tankW-18,waterY+18+i*25,2,6,t*.8+i,cyan);for(let i=0;i<=5;i++){const yy=waterY+i*25;ln(tankX-12,yy,tankX,yy,muted,2);txt(f1(i*a/5,1)+' м',tankX-58,yy+4,muted,10)}const p=Math.min(1,t/2.6),Y=waterY+Math.min(1,a/10)*125*p;ln(345,58,345,Y,gold,4);box(331,Y-8,28,18,red);dot(345,Y,7,gold);ln(345,Y+8,345,Y+20,white,2);c.strokeStyle=gold;c.lineWidth=3;c.beginPath();c.arc(590,158,48,Math.PI*.75,Math.PI*2.25);c.stroke();const actualDepth=a*p,pressure=b*9.81*actualDepth/1000,angle=Math.PI*.75+Math.min(1,pressure/130)*Math.PI*1.5;arr(590,158,590+35*Math.cos(angle),158+35*Math.sin(angle),red);dot(590,158,5,gold);txt('МАНОМЕТР',548,92,gold,12);txt('p = '+f1(pressure,2)+' кПа',530,235,white,14);txt('ρ = '+f1(b,0)+' кг/м³',525,265,muted,12);txt('Глубина '+f1(actualDepth,2)+' м',220,290,muted,12)}break;
  case 'buoyancy':head('Погружённое тело · сила Архимеда');box(190,90,340,165,'rgba(61,140,255,.18)');ln(195,135,525,135,cyan,3);box(310,150,100,75,violet);arr(360,225,360,95,green);arr(430,155,430,70,gold);txt('FА вверх',440,80,green,15);txt('P вниз',440,170,gold,15);break;
  case 'pascal':head('Гидравлический пресс · передача давления');box(130,170,180,60,'rgba(61,140,255,.18)');box(410,110,180,120,'rgba(61,140,255,.18)');ln(215,170,215,115,white,6);ln(500,110,500,55,white,8);box(185,100,60,15,gold);box(460,40,80,15,red);ln(215,230,215,260,cyan,8);ln(500,230,500,260,cyan,8);ln(215,260,500,260,cyan,8);arr(215,65,215,100,gold);arr(500,10,500,40,green);txt('S₁',175,290,white,15);txt('S₂',475,290,white,15);break;
  case 'bernoulli':head('Труба Вентури · скорость и давление');c.strokeStyle=blue;c.lineWidth=5;c.beginPath();c.moveTo(65,95);c.lineTo(225,95);c.lineTo(310,145);c.lineTo(415,145);c.lineTo(500,95);c.lineTo(655,95);c.lineTo(655,205);c.lineTo(500,205);c.lineTo(415,155);c.lineTo(310,155);c.lineTo(225,205);c.lineTo(65,205);c.closePath();c.stroke();arr(85,150,205,150,gold);arr(320,150,405,150,green);arr(505,150,625,150,gold);txt('v ↑',335,55,green,16);txt('p ↓',400,80,gold,16);break;
@@ -1635,25 +1643,45 @@ function labDraw(){
  }
  const r=labResult();txt(r.label+': '+f1(r.value,2)+' '+r.unit,25,286,white,13);labMetrics();
 }
+function labEndCondition(){
+ const x=LABS[LAB.id],a=LAB.a,b=LAB.b,g=9.81;if(!x)return 3;
+ switch(x.model){
+  case 'uniform':return Math.max(1,Math.min(12,8/Math.max(.2,a)));
+  case 'accelerated':return Math.max(1,Math.min(12,(-a+Math.sqrt(a*a+16*b))/b));
+  case 'freefall':return Math.sqrt(2*a/g);
+  case 'projectile':return 2*a*Math.sin(b*Math.PI/180)/g;
+  case 'circular':return Math.max(2,3*b);
+  case 'incline':{const acc=g*(Math.sin(a*Math.PI/180)-b*Math.cos(a*Math.PI/180));return acc>0.05?Math.sqrt(8/acc):Infinity;}
+  case 'spring':return 4*2*Math.PI*Math.sqrt(a/b);
+  case 'pendulum':return 4*2*Math.PI*Math.sqrt(a/g);
+  case 'wave':return 3/Math.max(.1,a);
+  case 'sound':return 3/Math.max(.1,a);
+  case 'resonance':return 3/Math.max(.1,b);
+  case 'pressure':return 3.8;
+  case 'buoyancy':case 'pascal':case 'bernoulli':case 'gaspressure':return 3.4;
+  case 'calorimetry':return Math.max(2,Math.min(8,b*1.4));
+  case 'induction':return 3.2;
+  default:return 2.8;
+ }
+}
 function labFrame(now){
- if(!LAB.run)return;const dt=Math.min(.04,(now-LAB.last)/1000||0);LAB.last=now;LAB.t=Math.min(30,LAB.t+dt);
+ if(!LAB.run)return;const dt=Math.min(.04,(now-LAB.last)/1000||0);LAB.last=now;LAB.t+=dt;
  LAB.va+=(LAB.a-LAB.va)*Math.min(1,dt*7);LAB.vb+=(LAB.b-LAB.vb)*Math.min(1,dt*7);
- labDraw();const fill=$('#lab-progress-fill'),bar=fill&&fill.parentElement;if(fill)fill.style.width=(LAB.t/30*100)+'%';if(bar)bar.setAttribute('aria-valuenow',String(Math.floor(LAB.t)));
- const state=$('#lab-state');if(state)state.textContent='Идёт опыт · '+Math.floor(LAB.t)+' / 30 с';
- if(LAB.t>=30){labComplete();return;}
+ labDraw();labMetrics();
+ const end=labEndCondition();
+ if(Number.isFinite(end)&&LAB.t>=end){labComplete();return;}
+ const state=$('#lab-state');if(state)state.textContent=Number.isFinite(end)?'Выполняется действие':'Ожидание начала движения';
  if(LAB.run)LAB.raf=requestAnimationFrame(labFrame);
 }
-function labRun(){if(LAB.run||LAB.t>=30)return;LAB.run=true;LAB.paused=false;LAB.last=performance.now();const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent='Идёт опыт · '+Math.floor(LAB.t)+' / 30 с';if(hint)hint.textContent='Время идёт только во время запуска. Пауза остановит отсчёт, сброс начнёт заново.';labSetButtons();LAB.raf=requestAnimationFrame(labFrame);}
+function labRun(){if(LAB.run||LAB.completed)return;const end=labEndCondition();if(!Number.isFinite(end)){const h=$('#lab-hint');if(h)h.textContent='Параметры не запускают движение. Увеличь угол или уменьши трение, затем запусти снова.';return;}LAB.run=true;LAB.paused=false;LAB.last=performance.now();const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent='Установка запущена';if(hint)hint.textContent='Наблюдай за процессом: опыт завершится автоматически после выполнения действия.';labSetButtons();LAB.raf=requestAnimationFrame(labFrame);}
 function labComplete(){
+ if(LAB.completed)return;LAB.completed=true;
  const alreadyDone=LAB_DONE.has(LAB.id);
- if(!alreadyDone){
-  LAB_DONE.add(LAB.id);try{localStorage.setItem('f2-lab-done',JSON.stringify([...LAB_DONE]))}catch(e){}
-  addXP(15,'Опыт');toast('Опыт пройден · +15 XP');
- }else toast('Время опыта завершено');
+ if(!alreadyDone){LAB_DONE.add(LAB.id);try{localStorage.setItem('f2-lab-done',JSON.stringify([...LAB_DONE]))}catch(e){}addXP(15,'Опыт');toast('Опыт пройден · +15 XP');}
  LAB.run=false;LAB.paused=false;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;
- const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent=alreadyDone?'Уже засчитан':'Опыт засчитан';
- if(hint)hint.textContent=alreadyDone?'Этот опыт уже был пройден. Повторный запуск не начисляет XP.':'Готово! Опыт автоматически засчитан · +15 XP. Нажми «Сброс», чтобы провести его снова.';
- labSetButtons();
+ const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent=alreadyDone?'Действие завершено':'Опыт завершён';
+ if(hint)hint.textContent=alreadyDone?'Действие выполнено. Повторный зачёт не начисляется.':'Установка выполнила действие. Опыт автоматически засчитан · +15 XP.';
+ labSetButtons();labDraw();labMetrics();
 }
 /* ---------- Профиль ---------- */
 function vProfile() {
@@ -1688,8 +1716,9 @@ document.addEventListener('click', async e => {
     case 'labOpen': labOpen(d.v); break;
     case 'labHome': labStop(); location.hash='lab'; break;
     case 'labStart': labRun(); break;
+    case 'labAdjust': {const x=LABS[LAB.id],k=d.key,step=k==='a'?x.stA:x.stB,min=k==='a'?x.amin:x.bmin,max=k==='a'?x.amax:x.bmax;if(x&&['a','b'].includes(k)){LAB[k]=Math.max(min,Math.min(max,Math.round((LAB[k]+Number(d.delta)*step)/step)*step));if(!LAB.run){LAB.va=LAB.a;LAB.vb=LAB.b;}const el=$('#lab-'+k+'v');if(el)el.textContent=f1(LAB[k],2)+' '+(k==='a'?x.uA:x.uB);labDraw();labMetrics();if($('#lab-state')&&!LAB.run)$('#lab-state').textContent='Параметр изменён';if($('#lab-hint')&&!LAB.run)$('#lab-hint').textContent='Настрой установку и запусти опыт.';}break;}
     case 'labPause': labStop('Пауза',true); if($('#lab-hint'))$('#lab-hint').textContent='Пауза. Нажми «Запустить», чтобы продолжить с того же момента.'; break;
-    case 'labReset': labStop('Готов к запуску'); LAB.t=0;LAB.trace=[];LAB.lastSample=0;LAB.va=LAB.a;LAB.vb=LAB.b;labDraw();if($('#lab-progress-fill'))$('#lab-progress-fill').style.width='0%';if($('#lab-progress-fill')?.parentElement)$('#lab-progress-fill').parentElement.setAttribute('aria-valuenow','0');labMetrics();if($('#lab-hint'))$('#lab-hint').textContent='Отсчёт сброшен. Опыт снова засчитается после 30 секунд активной работы.';labSetButtons(); break;
+    case 'labReset': labStop('Готов к запуску');LAB.t=0;LAB.completed=false;LAB.trace=[];LAB.lastSample=0;LAB.va=LAB.a;LAB.vb=LAB.b;labDraw();labMetrics();if($('#lab-hint'))$('#lab-hint').textContent='Установка сброшена. Можно повторить опыт с новыми параметрами.';labSetButtons();break;
     case 'trainBack': location.hash = 'train'; break;
     case 'warm': { const B = await bank(); startQuiz({ kind: 'warm', title: 'Разминка', items: shuffle(B).slice(0, 10) }); break; }
     case 'exam': { const B = await bank(); startQuiz({ kind: 'exam', title: 'Экзамен', items: shuffle(B).slice(0, 30) }); break; }
@@ -1705,7 +1734,7 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
-document.addEventListener('input', e => { const k=e.target.dataset.lab;if(k){LAB[k]=Number(e.target.value);if(!LAB.run){LAB.va=LAB.a;LAB.vb=LAB.b;}labDraw();if($('#lab-state'))$('#lab-state').textContent=LAB.run?'Параметры плавно меняются':'Параметры изменены';} });
+
 document.addEventListener('change', e => { if (e.target.id === 'pname') { S.name = e.target.value.trim().slice(0, 24); save(); toast(ic('check') + 'Имя сохранено'); } });
 
 /* ---------- обновления Android ---------- */
