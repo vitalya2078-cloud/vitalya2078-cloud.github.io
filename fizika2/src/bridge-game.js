@@ -35,7 +35,7 @@ function vBridgeGame() {
     '<section class="bridge-panel"><div class="bridge-panel-head"><div><span class="bridge-kicker">МАССА ИСПЫТАТЕЛЬНОГО ГРУЗА</span><h3>Выбери грузовик</h3></div><span class="bridge-step">ТЕСТ</span></div><div class="bridge-loads">' +
     [12,20,28].map((n)=>'<button class="bridge-load ' + (g.load===n?'selected':'') + '" data-act="bridgeLoad" data-v="' + n + '"><b>' + n + '<small>т</small></b><span>' + (n===12?'Лёгкий':n===20?'Рабочий':'Тяжёлый') + '</span></button>').join('') +
     '</div><div class="bridge-capacity"><div><span>НЕСУЩАЯ СПОСОБНОСТЬ</span><b>' + cap + ' т</b></div><div class="bridge-capacity-track"><i style="width:' + Math.min(100,cap/30*100) + '%"></i></div></div>' +
-    (g.result ? '<div class="bridge-feedback ' + (g.result==='pass'?'success':'warning') + '">' + bridgeEsc(g.message) + '</div>' : '') +
+    (g.message ? '<div class="bridge-feedback ' + (g.result==='fail' || g.result==='light' || g.repair!=='brace'?'warning':'success') + '">' + bridgeEsc(g.message) + '</div>' : '') +
     (g.stage === 'done' ? '<div class="bridge-complete"><span>✓</span><b>Миссия завершена</b><small>Ты восстановил силовую схему и проверил её запас прочности.</small><button class="btn wide" data-act="bridgeReset">Повторить миссию</button></div>' :
     '<button class="btn wide bridge-test-btn" data-act="bridgeRunTest">▶ Запустить испытание</button>' +
     (g.result==='fail' ? '<button class="btn line bridge-back-step" data-act="bridgePrev">Вернуться к ремонту</button>' : '')) +
@@ -43,7 +43,7 @@ function vBridgeGame() {
   }
   setMain('<div class="bridge-game">' +
     '<div class="bridge-progress">' + ['inspect','repair','test'].map((x,i)=>'<span class="' + (g.stage===x || (g.stage==='done'&&x==='test')?'current':'') + (['repair','test'].indexOf(g.stage)>i || g.stage==='done'?' passed':'') + '"><i>' + (i+1) + '</i><small>' + ['Осмотр','Ремонт','Тест'][i] + '</small></span>').join('') + '</div>' +
-    body + '<div class="bridge-footnote">ФИЗИКА МИССИИ: силы · равновесие · прочность материалов</div></div>');
+    body + '<div class="bridge-footnote">ФИЗИКА МИССИИ: силы · равновесие · прочность материалов · запас несущей способности</div></div>');
   bridgeDraw();
 }
 
@@ -124,7 +124,8 @@ document.addEventListener('click', e => {
   } else if(d.act==='bridgeLoad'){g.load=Number(d.v);g.result=null;g.message='';}
   else if(d.act==='bridgeRunTest'){
     const cap=g.repair==='brace'?26:14;
-    if(g.load<=cap){g.result='pass';g.stage='done';g.message='Испытание пройдено: нагрузка ' + g.load + ' т не превышает расчётную несущую способность ' + cap + ' т. Мост сохраняет равновесие и устойчивость.';toast('Мост выдержал испытание!');}
+    if(g.load<20){g.result='light';g.stage='test';g.message='Нагрузка слишком мала для контрольного испытания. Выбери рабочий грузовик массой 20 т: он проверит запас прочности конструкции.';}
+    else if(g.load<=cap){g.result='pass';g.stage='done';g.message='Испытание пройдено: нагрузка ' + g.load + ' т не превышает расчётную несущую способность ' + cap + ' т. Мост сохраняет равновесие и устойчивость.';toast('Мост выдержал испытание!');}
     else {g.result='fail';g.stage='test';g.message='Опасная перегрузка: ' + g.load + ' т при допустимых ' + cap + ' т. Элементы фермы не выдерживают усилие. Вернись к ремонту и пересмотри решение.';toast('Испытание провалено — конструкция перегружена.');}
   } else if(d.act==='bridgePrev'){g.stage='repair';g.result=null;g.message='Выбери решение, которое восстановит диагональную связь между узлами.';}
   else if(d.act==='bridgeReset'){BRIDGE_GAME=bridgeFresh();}
