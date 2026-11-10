@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 15;
+  var embedded = 16;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -406,6 +406,8 @@ button:disabled{cursor:default}
 .qrow.card{margin:0 0 10px;padding:14px;border-radius:18px}
 .lab-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
 .lab-switch .btn{min-height:46px;padding:8px 10px;font-size:13px}
+.lab-switch .btn small{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 7px;border-radius:8px;background:var(--card2);color:var(--mute);font-size:11px;font-weight:800;line-height:1;white-space:nowrap;flex:none}
+.lab-switch .btn.active small{background:rgba(255,255,255,.2);color:#fff}
 .lab-card{padding:14px}
 #lab-canvas{display:block;width:100%;height:auto;aspect-ratio:12/5;margin:12px 0;border-radius:14px;background:#0E1424}
 .lab-controls{display:grid;gap:18px}
@@ -517,7 +519,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 15;
+const F2_BUILD = 16;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
