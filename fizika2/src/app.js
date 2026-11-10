@@ -558,6 +558,15 @@ document.addEventListener('click', async e => {
   if (e.target.id === 'sheet') return closeSheet();
   const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
   const d = b.dataset, r = route();
+  // Игровые действия принадлежат только bridge-game.js: не допускаем двойную диспетчеризацию.
+  if (d.act.startsWith('bridge')) return;
+  const asyncActions = ['topics', 'topicQuiz', 'warm', 'exam', 'errs', 'chQuiz'];
+  if (asyncActions.includes(d.act)) {
+    if (b.dataset.busy === '1') return;
+    b.dataset.busy = '1';
+    b.disabled = true;
+  }
+  try {
   switch (d.act) {
     case 'closeSheet': closeSheet(); break;
     case 'step': curStep[lessonKey(r.ch, r.li)] = d.v; render(); ui.main.scrollTop = 0; break;
@@ -590,6 +599,12 @@ document.addEventListener('click', async e => {
     case 'ava': sheet(`<b class="h">Выбери аватар</b><div class="avas">${AVATARS.map((_, i) => `<button data-act="setAva" data-v="${i}" class="${i === S.ava ? 'on' : ''}">${avatarSvg(i, 60)}</button>`).join('')}</div>`); break;
     case 'setAva': S.ava = +d.v; save(); closeSheet(); render(); break;
     case 'reset': if (confirm('Сбросить весь прогресс, опыт и значки?')) { S = Object.assign({}, S0); save(); render(); } break;
+  }
+  } catch (err) {
+    console.error('Fizika action failed:', d.act, err);
+    toast('Не удалось выполнить действие. Попробуй ещё раз.', 'bad');
+  } finally {
+    if (b.dataset.busy === '1') { b.disabled = false; delete b.dataset.busy; }
   }
 });
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
