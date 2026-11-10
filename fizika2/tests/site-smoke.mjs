@@ -67,6 +67,7 @@ try {
   await page.locator('[data-sb="run"]').first().click();
   await page.waitForTimeout(180);
   await page.locator('[data-sb="run"]').first().click();
+  await page.locator('[data-sb="properties"]').click();
   await page.locator('[data-sb="duplicate"]').click();
   await page.locator('[data-sb="delete"]').click();
   await page.locator('[data-sb="cat"][data-v="electric"]').click().catch(async () => {
