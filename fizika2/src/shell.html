@@ -572,6 +572,28 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 }
 @media(min-width:900px){.bridge-game{padding-bottom:18px}.bridge-panel{padding:22px}.bridge-options{grid-template-columns:repeat(3,minmax(0,1fr))}.bridge-option{align-items:start;grid-template-columns:28px minmax(0,1fr);min-height:112px}.bridge-option .bridge-radio{display:none}}
 
+
+/* Bridge mission — cinematic scene treatment */
+.bridge-game{--bridge-line:#344a62;background:radial-gradient(ellipse at 50% 0%,rgba(42,117,143,.13),transparent 52%);border-radius:22px}
+.bridge-progress>span{box-shadow:inset 0 1px 0 rgba(255,255,255,.035);transition:background .2s,border-color .2s}
+.bridge-brief{position:relative;overflow:hidden;background:linear-gradient(118deg,#14283d 0%,#172b43 48%,#101c30 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 12px 30px rgba(0,0,0,.12)}
+.bridge-brief:after{content:"";position:absolute;right:-54px;top:-90px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(76,215,190,.12),transparent 68%);pointer-events:none}
+.bridge-kicker{color:#78e4cb;text-shadow:0 0 13px rgba(82,226,194,.22)}
+.bridge-scene-wrap{border-color:rgba(108,180,205,.35);background:#0b1728;box-shadow:0 18px 42px rgba(0,0,0,.28),0 0 0 1px rgba(91,205,198,.06),0 0 26px rgba(55,176,176,.08)}
+#bridge-scene{aspect-ratio:16/7.2;max-height:470px;filter:saturate(1.08) contrast(1.04)}
+.bridge-scene-caption{background:linear-gradient(90deg,#0b1727,#12243a);border-top:1px solid rgba(120,190,207,.12)}
+.bridge-panel{background:linear-gradient(145deg,rgba(25,42,64,.98),rgba(13,25,42,.99));box-shadow:0 12px 32px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.035)}
+.bridge-option{position:relative;overflow:hidden;background:linear-gradient(115deg,#1b2d45,#17263b);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:transform .16s,border-color .16s,box-shadow .16s}
+.bridge-option:active{border-color:#62d8bd;box-shadow:0 0 18px rgba(65,210,180,.12)}
+.bridge-option-num{background:linear-gradient(145deg,#2b435c,#20344b);color:#a8c8d5}
+.bridge-load{background:linear-gradient(150deg,#1d3048,#17263a);transition:border-color .18s,box-shadow .18s,transform .18s}
+.bridge-load.selected{box-shadow:inset 0 0 0 1px rgba(83,187,166,.24),0 0 18px rgba(83,187,166,.12)}
+.bridge-test-btn{background:linear-gradient(105deg,#167d79,#25a98f 58%,#3bc7a4);box-shadow:0 8px 24px rgba(39,185,151,.2),inset 0 1px 0 rgba(255,255,255,.2);font-weight:800;letter-spacing:.02em}
+.bridge-test-btn:active{transform:translateY(1px);filter:brightness(1.12)}
+.bridge-feedback{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+@media(min-width:900px){.bridge-game{max-width:1120px!important}.bridge-scene-wrap{margin-bottom:15px}.bridge-panel{padding:24px}.bridge-options{gap:12px}.bridge-option{min-height:126px;padding:14px}}
+@media(prefers-reduced-motion:reduce){.bridge-progress>span,.bridge-option,.bridge-load{transition:none}}
+
 /* Cinematic game mission card */
 .bridge-lobby-v2{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);overflow:hidden;margin-top:14px;border:1px solid #30445e;border-radius:22px;background:linear-gradient(135deg,#111e31,#172b40 58%,#101b2d);box-shadow:0 18px 46px rgba(0,0,0,.24)}.bridge-lobby-visual{position:relative;min-height:280px;overflow:hidden;background:#0b1a2b}.bridge-visual-top,.bridge-visual-bottom{position:absolute;z-index:2;left:17px;right:17px;display:flex;justify-content:space-between;align-items:center;color:#9db4c8;font:800 9px/1.2 var(--numbers);letter-spacing:1px}.bridge-visual-top{top:16px}.bridge-visual-top b{display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(112,226,198,.35);border-radius:10px;color:#76e2c7;font-size:13px}.bridge-lobby-visual svg{display:block;width:100%;height:100%;min-height:280px;object-fit:cover}.bridge-visual-bottom{bottom:14px}.bridge-visual-bottom span:first-child{display:flex;align-items:center;gap:7px;color:#72e1c3}.bridge-visual-bottom i,.bridge-lobby-meta b i{width:7px;height:7px;border-radius:50%;background:#64e1b8;box-shadow:0 0 12px #64e1b8}.bridge-lobby-copy-v2{padding:22px;display:flex;flex-direction:column;align-items:flex-start;min-width:0}.bridge-lobby-copy-v2 h2{margin:13px 0 7px;font-size:clamp(22px,3vw,30px);line-height:1.1}.bridge-lobby-copy-v2>p{margin:0;color:#a3b3c5;font-size:12px;line-height:1.55}.bridge-lobby-copy-v2 .bridge-lobby-mission{display:grid;gap:5px;width:100%;margin:16px 0 12px;padding:12px 13px;border:1px solid rgba(109,214,190,.18);border-radius:13px;background:rgba(74,168,151,.08)}.bridge-lobby-copy-v2 .bridge-lobby-mission span{color:#70d9be;font-size:9px;font-weight:900;letter-spacing:1px}.bridge-lobby-copy-v2 .bridge-lobby-mission b{font-size:13px}.bridge-lobby-copy-v2 .bridge-lobby-mission small{color:#91a7ba;font-size:10px}.bridge-lobby-foot{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 15px;color:#8298ad;font:700 8px/1.3 var(--numbers)}.bridge-lobby-cta{margin-top:auto;min-height:48px;background:linear-gradient(100deg,#238f83,#37b99a);box-shadow:0 8px 22px rgba(39,164,139,.22)}.bridge-game .bridge-scene-wrap{position:relative}.bridge-option,.bridge-load,.bridge-test-btn{touch-action:manipulation}@media(max-width:680px){.bridge-lobby-v2{grid-template-columns:1fr}.bridge-lobby-visual,.bridge-lobby-visual svg{min-height:205px;max-height:245px}.bridge-lobby-copy-v2{padding:17px}.bridge-lobby-copy-v2 h2{margin-top:9px}}@media(min-width:681px){.bridge-lobby-visual{min-height:350px}.bridge-lobby-visual svg{min-height:350px}}
 </style>
