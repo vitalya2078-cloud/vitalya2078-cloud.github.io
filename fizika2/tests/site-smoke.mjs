@@ -4,6 +4,12 @@ import assert from 'node:assert/strict';
 const browser = await chromium.launch({ headless: true });
 const errors = [];
 try {
+  const html = await (await fetch('http://127.0.0.1:4173/')).text();
+  const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  for (let i = 0; i < scripts.length; i++) {
+    try { new Function(scripts[i][1]); }
+    catch (error) { throw new Error('Inline script #' + (i + 1) + ' syntax error: ' + error.message + '; excerpt=' + scripts[i][1].slice(0, 500)); }
+  }
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
   page.on('pageerror', error => errors.push(error.stack || error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
