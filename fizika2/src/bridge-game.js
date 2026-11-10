@@ -78,6 +78,12 @@ function bridgeRefresh(){
   const main=document.querySelector('#main');if(main)main.scrollTop=y;
   bridgeDraw();
 }
+function bridgeUpdateTelemetry(g,driving,collapsing,failed,stress){
+  const cells=document.querySelectorAll('.b3-telemetry b');if(!cells.length)return;
+  cells[0].textContent=collapsing||failed?'КРИТИЧЕСКИЙ':driving?Math.round(2+stress*32)+' мм':'2 мм';
+  cells[1].textContent=collapsing||failed?'РАЗРУШЕНИЕ':g.repairSteps>=3?'УСИЛЕН':'ТРЕБУЕТ ПРОВЕРКИ';
+  cells[1].classList.toggle('danger',collapsing||failed);
+}
 function bridgeDraw(){
   const c=document.getElementById('bridge-scene');if(!c)return;
   const rect=c.getBoundingClientRect(),cssW=Math.max(320,rect.width||960),cssH=cssW*9/16,dpr=Math.min(2,window.devicePixelRatio||1);
@@ -88,6 +94,7 @@ function bridgeDraw(){
   const cap=bridgeCapacity(g),loadRatio=Math.min(1.8,g.load/cap),driveP=driving?g.animProgress:(collapsing?.56:failed?.56:(g.result==='pass'?1:0));
   const stress=driving?Math.max(0,Math.sin(Math.PI*g.animProgress)*loadRatio):failed?1.2:0;
   const sag=failed?88:stress*34;
+  bridgeUpdateTelemetry(g,driving,collapsing,failed,stress);
   const collapse=collapsing?g.animProgress:failed?1:0;
   const point=(px,py)=>{const influence=Math.max(0,1-Math.abs(px-600)/330);return [px+(collapse?Math.sign(px-600)*collapse*24*influence:0),py+sag*influence+collapse*145*influence];};
   const poly=(pts,fill,stroke,lw)=>{x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.fillStyle=fill;x.fill();if(stroke){x.strokeStyle=stroke;x.lineWidth=lw||1;x.stroke();}};
@@ -108,10 +115,11 @@ function bridgeDraw(){
   [[260,380],[940,380]].forEach((p,i)=>{const xx=p[0],top=p[1];poly([[xx-48,top],[xx+48,top],[xx+75,530],[xx-72,530]],'#738894','#a9bdc3',3);poly([[xx+48,top],[xx+67,top+7],[xx+93,530],[xx+75,530]],'#435e70');poly([[xx-90,530],[xx+94,530],[xx+110,548],[xx-105,548]],'#354c60');x.fillStyle='rgba(255,195,126,.18)';x.fillRect(xx-38,top+28,6,100);});
   // Bridge deck and its layered fascia.
   const deckY=370;
-  poly([[90,deckY],[1110,deckY],[1080,405],[120,405]],'#263c4d','#b3c7ca',3);
-  poly([[90,deckY],[1110,deckY],[1100,382],[100,382]],'#8fa3aa','#d5e1dc',2);
-  poly([[100,deckY+4],[1100,deckY+4],[1090,378],[110,378]],'#394c5b');
-  x.save();x.strokeStyle='#f4ca83';x.lineWidth=4;x.setLineDash([42,34]);x.beginPath();x.moveTo(135,374);x.lineTo(1065,374);x.stroke();x.restore();
+  const deckA=point(90,deckY),deckB=point(1110,deckY),deckC=point(1080,405),deckD=point(120,405);
+  poly([deckA,deckB,deckC,deckD],'#263c4d','#b3c7ca',3);
+  poly([point(90,deckY),point(1110,deckY),point(1100,382),point(100,382)],'#8fa3aa','#d5e1dc',2);
+  poly([point(100,deckY+4),point(1100,deckY+4),point(1090,378),point(110,378)],'#394c5b');
+  x.save();x.strokeStyle='#f4ca83';x.lineWidth=4;x.setLineDash([42,34]);const laneA=point(135,374),laneM=point(600,374),laneB=point(1065,374);x.beginPath();x.moveTo(laneA[0],laneA[1]);x.quadraticCurveTo(laneM[0],laneM[1],laneB[0],laneB[1]);x.stroke();x.restore();
   // Steel truss in perspective: rear layer, structural members, front layer.
   const bottom=[150,330,510,690,870,1050].map((px)=>[px,deckY+8]);
   const top=[240,420,600,780,960].map(px=>[px,215]);
