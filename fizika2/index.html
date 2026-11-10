@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 16;
+  var embedded = 17;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -502,6 +502,76 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 .lab-setup-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:22px!important;row-gap:22px!important;margin:18px 0!important}.lab-setup-grid>div{padding:12px!important;margin:0!important;min-width:0}.lab-setup-grid p{line-height:1.45!important;overflow-wrap:anywhere}@media(max-width:620px){.lab-setup-grid{grid-template-columns:1fr!important;row-gap:16px!important;column-gap:0!important}}
 .lab-stepper{display:grid;gap:7px;padding:12px 0;border-bottom:1px solid var(--line)}.lab-stepper:last-child{border-bottom:0}.lab-stepper>span{font-size:13px;color:var(--mute)}.lab-stepper-row{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;gap:10px}.lab-stepper-row button{height:44px;border:1px solid var(--line);border-radius:13px;background:var(--card2);color:var(--text);font-size:25px;font-weight:600}.lab-stepper-row button:active{background:var(--blue);color:white}.lab-stepper-row b{text-align:center;font:700 17px/1.3 var(--numbers);font-variant-numeric:tabular-nums}.lab-stepper>small{font-size:10px;color:var(--mute)}.lab-controls{gap:8px!important}.lab-actions{margin-top:4px}
 @media(max-width:620px){.lab-setup-grid{grid-template-columns:1fr!important;gap:12px!important}.lab-setup-grid>div{padding:15px!important}.lab-stepper-row{grid-template-columns:52px minmax(0,1fr) 52px}}
+
+/* Инженер катастроф — первая игровая миссия */
+.bridge-game{max-width:980px!important;margin:0 auto;--bridge-line:#34445b;--bridge-panel:#121e31}
+.bridge-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 16px}
+.bridge-progress>span{display:flex;align-items:center;gap:8px;min-width:0;padding:9px 10px;border:1px solid var(--bridge-line);border-radius:12px;background:#111b2c;color:#8291a8}
+.bridge-progress>span i{display:grid;place-items:center;width:23px;height:23px;border-radius:8px;background:#26364b;font-style:normal;font-size:11px;font-weight:800}
+.bridge-progress>span small{font-size:11px;font-weight:700;white-space:nowrap}
+.bridge-progress>span.current{border-color:#4b9d9a;color:#e8f5f3;background:#152d38}
+.bridge-progress>span.current i{background:#2e8d83;color:white}
+.bridge-progress>span.passed{color:#63d5ae}
+.bridge-progress>span.passed i{background:#1d665b;color:#d7fff2}
+.bridge-brief{padding:20px 20px 18px;border:1px solid #2b3c53;border-radius:18px;background:linear-gradient(120deg,#172a40,#142236 65%,#19263a);margin-bottom:12px}
+.bridge-brief.compact{padding:17px 20px}
+.bridge-kicker{display:block;color:#6ed4bd;font-size:10px;font-weight:800;letter-spacing:1.25px}
+.bridge-brief h2{margin:6px 0 7px;font-size:clamp(21px,4vw,30px);line-height:1.15;letter-spacing:-.4px}
+.bridge-brief p{max-width:720px;margin:0;color:#aab9c9;font-size:13px;line-height:1.55}
+.bridge-objective{display:grid;gap:3px;margin-top:14px;padding:10px 13px;border-left:3px solid #e9b85e;background:rgba(232,184,94,.08)}
+.bridge-objective span{font-size:9px;font-weight:800;letter-spacing:1px;color:#e9b85e}
+.bridge-objective b{font-size:12px;line-height:1.4}
+.bridge-scene-wrap{overflow:hidden;border:1px solid #34475b;border-radius:17px;background:#142338;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+#bridge-scene{display:block;width:100%;height:auto;aspect-ratio:16/7;max-height:430px;object-fit:cover}
+.bridge-scene-caption{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;background:#101a2a;color:#8295a9;font-size:9px;font-weight:800;letter-spacing:.6px}
+.bridge-scene-caption span{display:flex;align-items:center;gap:7px}
+.bridge-scene-caption i{width:7px;height:7px;border-radius:50%;background:#58d4b1;box-shadow:0 0 9px #58d4b1}
+.bridge-panel{margin-top:12px;padding:18px;border:1px solid #2b3b51;border-radius:18px;background:linear-gradient(145deg,#172338,#111b2c)}
+.bridge-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bridge-panel-head h3{margin:3px 0 0;font-size:19px}
+.bridge-step{padding:6px 9px;border-radius:8px;background:#23354a;color:#91a8bd;font-size:9px;font-weight:800;letter-spacing:.7px}
+.bridge-muted{margin:7px 0 12px;color:#91a1b6;font-size:12px}
+.bridge-options{display:grid;gap:8px;margin-top:13px}
+.bridge-option{display:grid;grid-template-columns:30px minmax(0,1fr) 18px;align-items:center;gap:11px;width:100%;min-height:66px;padding:11px 12px;border:1px solid #34455c;border-radius:13px;background:#1a2940;text-align:left;transition:border-color .16s,background .16s}
+.bridge-option:active{transform:scale(.993);background:#223752}
+.bridge-option-num{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:#263b54;color:#9eb5c9;font-size:11px;font-weight:800}
+.bridge-option b{display:block;font-size:12px;line-height:1.35}
+.bridge-option small{display:block;margin-top:3px;color:#91a2b6;font-size:10px;line-height:1.4}
+.bridge-radio{width:15px;height:15px;border:1.5px solid #657b91;border-radius:50%}
+.bridge-tag{display:inline-block;margin-top:6px;font-size:8px;font-style:normal;font-weight:800;letter-spacing:.7px}
+.bridge-tag.good{color:#65d8b6}
+.bridge-feedback{margin-top:13px;padding:12px 13px;border:1px solid;border-radius:12px;font-size:12px;line-height:1.5}
+.bridge-feedback.success{border-color:#286d5d;background:rgba(44,166,129,.1);color:#9ce8ce}
+.bridge-feedback.warning{border-color:#80533c;background:rgba(221,135,77,.1);color:#ffd0a5}
+.bridge-back-step{width:100%;margin-top:10px;min-height:43px;font-size:12px}
+.bridge-loads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0}
+.bridge-load{display:grid;justify-items:center;gap:3px;padding:13px 7px;border:1px solid #34455c;border-radius:13px;background:#1a2940}
+.bridge-load b{font-size:23px;line-height:1.1;color:#e7edf5}
+.bridge-load b small{font-size:12px;color:#9aadc0}
+.bridge-load span{font-size:10px;color:#91a2b6}
+.bridge-load.selected{border-color:#53bba6;background:#173b42;box-shadow:inset 0 0 0 1px rgba(83,187,166,.18)}
+.bridge-load.selected b{color:#8be4ca}
+.bridge-capacity{margin:8px 0 15px;padding:12px;border-radius:12px;background:#101a2a}
+.bridge-capacity>div:first-child{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.bridge-capacity span{font-size:9px;font-weight:800;letter-spacing:.7px;color:#91a2b6}
+.bridge-capacity b{font-size:14px;color:#8be4ca}
+.bridge-capacity-track{height:7px;margin-top:9px;border-radius:9px;background:#293a50;overflow:hidden}
+.bridge-capacity-track i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#3c9b94,#7ad8b0)}
+.bridge-test-btn{width:100%;min-height:52px;background:linear-gradient(100deg,#258f84,#36b69a);box-shadow:0 8px 20px rgba(39,164,139,.18)}
+.bridge-complete{display:grid;justify-items:center;gap:7px;padding:16px 8px 4px;text-align:center}
+.bridge-complete>span{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:#1e6c5d;color:#c7ffeb;font-size:27px;font-weight:800}
+.bridge-complete b{font-size:17px}
+.bridge-complete small{max-width:340px;color:#9eafc0;font-size:11px;line-height:1.5}
+.bridge-complete .btn{margin-top:9px}
+.bridge-footnote{padding:13px 4px 4px;text-align:center;color:#6f8298;font-size:9px;font-weight:700;letter-spacing:.7px}
+@media(max-width:520px){
+ .bridge-brief{padding:16px}.bridge-brief.compact{padding:14px 16px}
+ .bridge-panel{padding:14px}.bridge-progress{gap:5px}.bridge-progress>span{justify-content:center;padding:8px 4px;gap:5px}.bridge-progress>span small{font-size:10px}
+ .bridge-scene-caption{font-size:8px;padding:8px}.bridge-option{grid-template-columns:27px minmax(0,1fr) 15px;gap:8px;padding:10px}
+ .bridge-option b{font-size:11px}.bridge-option small{font-size:9px}
+}
+@media(min-width:900px){.bridge-game{padding-bottom:18px}.bridge-panel{padding:22px}.bridge-options{grid-template-columns:repeat(3,minmax(0,1fr))}.bridge-option{align-items:start;grid-template-columns:28px minmax(0,1fr);min-height:112px}.bridge-option .bridge-radio{display:none}}
+
 </style>
 </head>
 <body data-view="home">
@@ -519,7 +589,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 16;
+const F2_BUILD = 17;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1228,6 +1298,7 @@ function route() {
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
   if (h === 'lab') return { name: 'lab', tab: 'lab' };
   if (h === 'lab-games') return { name: 'labGames', tab: 'lab', parent: 'lab' };
+  if (h === 'game-bridge') return { name: 'bridgeGame', tab: 'lab', parent: 'lab-games' };
   if ((m = /^lab-ch-(\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab' };
   if ((m = /^lab-topic-(\d+)-(\d+)$/.exec(h))) return { name: 'labTopic', ch: +m[1], topic: +m[2], tab: 'lab', parent: 'lab-ch-' + m[1] };
   if ((m = /^lab-exp-([a-z0-9-]+)$/.exec(h))) return { name: 'labExp', exp: m[1], tab: 'lab', parent: 'lab-topic-' + ((LABS[m[1]]||{}).ch||1) + '-' + ((LABS[m[1]]||{}).topic||1) };
@@ -1244,7 +1315,7 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
   ui.tabs.hidden = r.name === 'quiz' || r.name === 'lesson';
-  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile })[r.name](r);
+  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame })[r.name](r);
   if (same) ui.main.scrollTop = y; else ui.main.scrollTop = 0;
 }
 function frame(title, { back = false, sub = '' } = {}) {
@@ -1478,12 +1549,12 @@ const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),
 const labChapterCount=ch=>LAB_EXPERIMENTS.filter(x=>x.ch===ch).length;
 const labTopic=(ch,n)=>LAB_TOPIC_GROUPS.find(x=>x.ch===ch&&x.n===n);
 function labOpen(id){const x=LABS[id];if(!x)return;LAB={id:id,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};location.hash='lab-exp-'+id;}
-function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>'+LAB_EXPERIMENTS.length+'</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>скоро</small></button></div>';}
+function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>'+LAB_EXPERIMENTS.length+'</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>1</small></button></div>';}
 function vLab(){
  frame('Лаборатория',{sub:'Опыты и игровые задания'});
  setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · '+LAB_EXPERIMENTS.length+' самостоятельных опытов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из '+LAB_EXPERIMENTS.length+' опытов пройдено</span><i><em style="width:'+(labDoneCount()/LAB_EXPERIMENTS.length*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length,total=labChapterCount(ch.n);return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/total*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/'+total+'</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
 }
-function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="card lab-coming"><div class="lab-coming-icon">'+ic('gamepad-2','big')+'</div><b class="h">Игры лаборатории</b><p class="mute">Здесь будут отдельные игровые режимы по всем семи главам физики. Сначала завершаем интерактивные опыты, затем вернёмся к разработке игр.</p></section>');}
+function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="bridge-lobby"><div class="bridge-lobby-art"><span>ENGINEERING INCIDENTS</span><b>01</b><i></i></div><div class="bridge-lobby-copy"><div class="bridge-lobby-meta"><span>ИНЖЕНЕРНЫЙ КВЕСТ</span><b>ДОСТУПНО</b></div><h2>Инженер катастроф</h2><p>Расследуй аварии, находи слабые места конструкций и проверяй инженерные решения законами физики.</p><div class="bridge-lobby-mission"><span>МИССИЯ 01</span><b>Мост на грани обрушения</b><small>Силы · равновесие · прочность материалов</small></div><button class="btn wide" data-act="bridgeLaunch">Начать миссию <span aria-hidden="true">→</span></button></div></section>');}
 function vLabChapter(r){
  const ch=LAB_CHAPTERS[r.ch-1];if(!ch){location.hash='lab';return;}
  const groups=LAB_TOPIC_GROUPS.filter(x=>x.ch===r.ch);
@@ -1786,6 +1857,141 @@ function boot() {
   if (F2_IN_APP) setTimeout(checkAppUpdates, 1800);
 }
 boot();
+
+/* ---------- Игра лаборатории: Инженер катастроф ---------- */
+let BRIDGE_GAME = null;
+
+function bridgeFresh() {
+  return { stage: 'inspect', inspected: false, repair: null, load: 20, result: null, message: '' };
+}
+function bridgeEsc(s) { return esc(String(s)); }
+
+function vBridgeGame() {
+  if (!BRIDGE_GAME) BRIDGE_GAME = bridgeFresh();
+  const g = BRIDGE_GAME;
+  const stageNames = { inspect: '01 · Осмотр', repair: '02 · Ремонт', test: '03 · Испытание', done: 'Миссия выполнена' };
+  frame('Инженер катастроф', { back: true, sub: 'Миссия 01 · Мост на грани обрушения' });
+  let body = '';
+  if (g.stage === 'inspect') {
+    body = '<section class="bridge-brief"><div class="bridge-kicker">АВАРИЙНЫЙ ВЫЗОВ · СЕКТОР 04</div><h2>Мост на грани обрушения</h2><p>После прохождения тяжёлой техники на мосту обнаружены опасные деформации. Найди слабое место, прежде чем конструкция рухнет.</p><div class="bridge-objective"><span>ЗАДАЧА</span><b>Определи, какой элемент конструкции потерял несущую способность.</b></div></section>' +
+    '<div class="bridge-scene-wrap"><canvas id="bridge-scene" aria-label="Иллюстрация повреждённого стального моста"></canvas><div class="bridge-scene-caption"><span><i></i> ОБЪЕКТ: СТАЛЬНАЯ ФЕРМА</span><span>ВИД СБОКУ · 08:42</span></div></div>' +
+    '<section class="bridge-panel"><div class="bridge-panel-head"><div><span class="bridge-kicker">ЭТАП 1 ИЗ 3</span><h3>Что повреждено?</h3></div><span class="bridge-step">ОСМОТР</span></div><p class="bridge-muted">Осмотри пролёт и выбери наиболее вероятную причину потери устойчивости.</p><div class="bridge-options">' +
+    '<button class="bridge-option" data-act="bridgeInspect" data-v="brace"><span class="bridge-option-num">A</span><span><b>Диагональный раскос в центре пролёта</b><small>На соединении видны трещины и следы вырыва заклёпок</small></span><span class="bridge-radio"></span></button>' +
+    '<button class="bridge-option" data-act="bridgeInspect" data-v="pier"><span class="bridge-option-num">B</span><span><b>Опорная стойка у берега</b><small>На бетоне есть потемнения от влаги</small></span><span class="bridge-radio"></span></button>' +
+    '<button class="bridge-option" data-act="bridgeInspect" data-v="deck"><span class="bridge-option-num">C</span><span><b>Дорожное полотно</b><small>На поверхности заметны следы шин и потёртости</small></span><span class="bridge-radio"></span></button></div></section>';
+  } else if (g.stage === 'repair') {
+    body = '<section class="bridge-brief compact"><div class="bridge-kicker">ЭТАП 2 ИЗ 3 · ВОССТАНОВЛЕНИЕ</div><h2>Укрепи конструкцию</h2><p>Центральный диагональный раскос повреждён. Он передаёт часть нагрузки между узлами фермы. Выбери инженерное решение.</p></section>' +
+    '<div class="bridge-scene-wrap"><canvas id="bridge-scene" aria-label="Мост с выделенным повреждённым раскосом"></canvas><div class="bridge-scene-caption"><span><i></i> ПОВРЕЖДЁННЫЙ УЗЕЛ ВЫДЕЛЕН</span><span>РЕЖИМ: РЕМОНТ</span></div></div>' +
+    '<section class="bridge-panel"><div class="bridge-panel-head"><div><span class="bridge-kicker">ВЫБОР МАТЕРИАЛА И РЕШЕНИЯ</span><h3>Как усилить мост?</h3></div><span class="bridge-step">РЕМОНТ</span></div><div class="bridge-options">' +
+    '<button class="bridge-option" data-act="bridgeRepair" data-v="brace"><span class="bridge-option-num">01</span><span><b>Установить новый стальной раскос</b><small>Замкнуть силовую схему и передать усилие на соседние узлы</small><em class="bridge-tag good">ИНЖЕНЕРНОЕ РЕШЕНИЕ</em></span><span class="bridge-radio"></span></button>' +
+    '<button class="bridge-option" data-act="bridgeRepair" data-v="deck"><span class="bridge-option-num">02</span><span><b>Утолщить дорожное полотно</b><small>Добавить слой металла поверх проезжей части</small></span><span class="bridge-radio"></span></button>' +
+    '<button class="bridge-option" data-act="bridgeRepair" data-v="paint"><span class="bridge-option-num">03</span><span><b>Зачистить и покрасить ферму</b><small>Защитить металл от дальнейшей коррозии</small></span><span class="bridge-radio"></span></button></div>' +
+    (g.message ? '<div class="bridge-feedback ' + (g.repair === 'brace' ? 'success' : 'warning') + '">' + bridgeEsc(g.message) + '</div>' : '') +
+    '<button class="btn line bridge-back-step" data-act="bridgePrev">← Вернуться к осмотру</button></section>';
+  } else {
+    const cap = g.repair === 'brace' ? 26 : 14;
+    body = '<section class="bridge-brief compact"><div class="bridge-kicker">ЭТАП 3 ИЗ 3 · ПРОВЕРКА ПРОЧНОСТИ</div><h2>' + (g.stage === 'done' ? 'Конструкция выдержала!' : 'Испытай мост нагрузкой') + '</h2><p>Расчётная несущая способность после выбранного ремонта: <b>' + cap + ' т</b>. Выбери массу грузовика и запусти проверку.</p></section>' +
+    '<div class="bridge-scene-wrap"><canvas id="bridge-scene" aria-label="Испытание моста грузовиком"></canvas><div class="bridge-scene-caption"><span><i></i> НАГРУЗОЧНОЕ ИСПЫТАНИЕ</span><span>РАСЧЁТНАЯ ПРЕДЕЛЬНАЯ НАГРУЗКА: ' + cap + ' Т</span></div></div>' +
+    '<section class="bridge-panel"><div class="bridge-panel-head"><div><span class="bridge-kicker">МАССА ИСПЫТАТЕЛЬНОГО ГРУЗА</span><h3>Выбери грузовик</h3></div><span class="bridge-step">ТЕСТ</span></div><div class="bridge-loads">' +
+    [12,20,28].map((n)=>'<button class="bridge-load ' + (g.load===n?'selected':'') + '" data-act="bridgeLoad" data-v="' + n + '"><b>' + n + '<small>т</small></b><span>' + (n===12?'Лёгкий':n===20?'Рабочий':'Тяжёлый') + '</span></button>').join('') +
+    '</div><div class="bridge-capacity"><div><span>НЕСУЩАЯ СПОСОБНОСТЬ</span><b>' + cap + ' т</b></div><div class="bridge-capacity-track"><i style="width:' + Math.min(100,cap/30*100) + '%"></i></div></div>' +
+    (g.result ? '<div class="bridge-feedback ' + (g.result==='pass'?'success':'warning') + '">' + bridgeEsc(g.message) + '</div>' : '') +
+    (g.stage === 'done' ? '<div class="bridge-complete"><span>✓</span><b>Миссия завершена</b><small>Ты восстановил силовую схему и проверил её запас прочности.</small><button class="btn wide" data-act="bridgeReset">Повторить миссию</button></div>' :
+    '<button class="btn wide bridge-test-btn" data-act="bridgeRunTest">▶ Запустить испытание</button>' +
+    (g.result==='fail' ? '<button class="btn line bridge-back-step" data-act="bridgePrev">Вернуться к ремонту</button>' : '')) +
+    '</section>';
+  }
+  setMain('<div class="bridge-game">' +
+    '<div class="bridge-progress">' + ['inspect','repair','test'].map((x,i)=>'<span class="' + (g.stage===x || (g.stage==='done'&&x==='test')?'current':'') + (['repair','test'].indexOf(g.stage)>i || g.stage==='done'?' passed':'') + '"><i>' + (i+1) + '</i><small>' + ['Осмотр','Ремонт','Тест'][i] + '</small></span>').join('') + '</div>' +
+    body + '<div class="bridge-footnote">ФИЗИКА МИССИИ: силы · равновесие · прочность материалов</div></div>');
+  bridgeDraw();
+}
+
+function bridgeDraw() {
+  const c = document.getElementById('bridge-scene');
+  if (!c) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = 960, h = 420;
+  c.width = w*dpr; c.height = h*dpr;
+  const x = c.getContext('2d'); x.scale(dpr,dpr);
+  const g = BRIDGE_GAME || bridgeFresh();
+  const grad = x.createLinearGradient(0,0,0,h); grad.addColorStop(0,'#172743'); grad.addColorStop(.58,'#263c55'); grad.addColorStop(1,'#142333');
+  x.fillStyle=grad; x.fillRect(0,0,w,h);
+  x.fillStyle='#31465a'; x.beginPath(); x.moveTo(0,210); x.lineTo(145,150); x.lineTo(280,205); x.lineTo(430,132); x.lineTo(600,205); x.lineTo(760,145); x.lineTo(960,200); x.lineTo(960,300); x.lineTo(0,300); x.fill();
+  x.fillStyle='#3d5667'; x.beginPath(); x.moveTo(0,270); x.lineTo(170,220); x.lineTo(300,265); x.lineTo(510,210); x.lineTo(720,265); x.lineTo(870,220); x.lineTo(960,250); x.lineTo(960,330); x.lineTo(0,330); x.fill();
+  const water=x.createLinearGradient(0,285,0,420);water.addColorStop(0,'#17617a');water.addColorStop(1,'#092d48');x.fillStyle=water;x.fillRect(0,285,w,135);
+  for(let i=0;i<18;i++){x.strokeStyle='rgba(115,220,231,'+(0.08+(i%3)*.035)+')';x.lineWidth=2;x.beginPath();x.moveTo((i*83)%960,315+(i%5)*19);x.lineTo((i*83)%960+45+(i%4)*20,315+(i%5)*19);x.stroke();}
+  // concrete piers and footings
+  x.fillStyle='#8997a2';x.beginPath();x.moveTo(160,238);x.lineTo(220,238);x.lineTo(236,360);x.lineTo(142,360);x.fill();
+  x.fillStyle='#657582';x.fillRect(130,356,120,13);
+  x.fillStyle='#8997a2';x.beginPath();x.moveTo(740,238);x.lineTo(800,238);x.lineTo(818,360);x.lineTo(722,360);x.fill();
+  x.fillStyle='#657582';x.fillRect(710,356,120,13);
+  // deck shadow and road deck
+  x.fillStyle='rgba(0,0,0,.3)';x.fillRect(75,226,810,24);
+  x.fillStyle='#687987';x.fillRect(75,211,810,18);
+  x.fillStyle='#d5d5c7';x.fillRect(75,208,810,4);
+  x.fillStyle='#f2c66d';for(let i=0;i<12;i++)x.fillRect(100+i*66,217,34,2);
+  // truss side members
+  x.lineCap='round';x.lineJoin='round';
+  const pts=[[110,208],[220,92],[330,208],[440,92],[550,208],[660,92],[770,208],[850,120]];
+  function member(a,b,color,width){x.strokeStyle=color;x.lineWidth=width;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();}
+  for(let i=0;i<pts.length-1;i++)member(pts[i],pts[i+1],'#aebbc4',13);
+  for(let i=0;i<pts.length-2;i+=2)member(pts[i],pts[i+2],'#91a2af',10);
+  for(let i=0;i<pts.length;i++)member(pts[i],[pts[i][0],208],'#9aabb6',8);
+  for(let i=0;i<pts.length-1;i++)member([pts[i][0],208],pts[i+1],'#8296a5',7);
+  // rivet joints
+  pts.forEach(p=>{x.fillStyle='#d5e0e4';x.beginPath();x.arc(p[0],p[1],5,0,Math.PI*2);x.fill();});
+  // central damaged diagonal / replacement brace
+  if(g.stage==='repair'||g.stage==='test'||g.stage==='done'){
+    if(g.repair==='brace'||g.stage==='test'||g.stage==='done'){
+      member([440,92],[550,208],'#40d6ad',10);
+      x.strokeStyle='rgba(64,214,173,.3)';x.lineWidth=22;x.beginPath();x.moveTo(440,92);x.lineTo(550,208);x.stroke();
+    } else {
+      x.strokeStyle='#ff786d';x.lineWidth=9;x.setLineDash([12,8]);x.beginPath();x.moveTo(440,92);x.lineTo(550,208);x.stroke();x.setLineDash([]);
+    }
+  } else {
+    x.strokeStyle='#ff786d';x.lineWidth=5;x.beginPath();x.moveTo(440,92);x.lineTo(482,136);x.moveTo(492,147);x.lineTo(550,208);x.stroke();
+    x.fillStyle='#ff786d';x.beginPath();x.arc(486,141,15,0,Math.PI*2);x.fill();
+    x.fillStyle='#fff';x.font='bold 14px sans-serif';x.textAlign='center';x.fillText('!',486,146);
+  }
+  // vehicle during test
+  if(g.stage==='test'||g.stage==='done'){
+    const failed=g.result==='fail';
+    x.save();x.translate(500,failed?190:178);
+    x.fillStyle='#e7a64b';x.fillRect(-60,-28,105,28);x.fillStyle='#d9e5e8';x.fillRect(-34,-49,50,22);
+    x.fillStyle='#f3c66d';x.fillRect(10,-22,25,14);x.fillStyle='#1a2738';
+    [-39,22].forEach(xx=>{x.beginPath();x.arc(xx,2,12,0,Math.PI*2);x.fill();x.fillStyle='#aebbc4';x.beginPath();x.arc(xx,2,5,0,Math.PI*2);x.fill();x.fillStyle='#1a2738';});
+    x.restore();
+    if(failed){x.strokeStyle='#ff655f';x.lineWidth=4;x.beginPath();x.moveTo(480,211);x.lineTo(495,225);x.lineTo(510,211);x.stroke();}
+  }
+  // atmospheric lighting and status label
+  const glow=x.createRadialGradient(480,110,10,480,110,330);glow.addColorStop(0,'rgba(100,178,220,.15)');glow.addColorStop(1,'rgba(100,178,220,0)');x.fillStyle=glow;x.fillRect(0,0,w,h);
+  x.fillStyle='rgba(7,13,25,.58)';x.fillRect(20,18,230,35);
+  x.fillStyle='#c6d5e1';x.font='600 13px sans-serif';x.textAlign='left';x.fillText(g.stage==='inspect'?'BR-04 / STRUCTURAL SCAN':g.stage==='repair'?'BR-04 / REPAIR MODE':'BR-04 / LOAD TEST',34,41);
+  if(g.stage==='inspect'){x.strokeStyle='rgba(255,120,109,.85)';x.lineWidth=2;x.beginPath();x.arc(486,141,28,0,Math.PI*2);x.stroke();}
+}
+
+document.addEventListener('click', e => {
+  const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
+  const d=b.dataset, g=BRIDGE_GAME; if(!g)return;
+  if(d.act==='bridgeLaunch'){BRIDGE_GAME=bridgeFresh();location.hash='game-bridge';return;}
+  if(d.act==='bridgeInspect'){
+    if(d.v==='brace'){g.inspected=true;g.stage='repair';g.message='Верно. Диагональный раскос передаёт усилия между узлами фермы. Его повреждение нарушило силовую схему.';}
+    else {g.message='Осмотр продолжен: этот элемент не объясняет потерю устойчивости пролёта. Ищи повреждение в силовой ферме.';toast('Проверь центральную часть пролёта.');}
+  } else if(d.act==='bridgeRepair'){
+    g.repair=d.v;g.stage='test';
+    g.message=d.v==='brace'?'Стальной раскос восстановил путь передачи усилий. Расчётная несущая способность выросла с 14 до 26 тонн.':'Это не устраняет разрыв силовой схемы. Несущая способность почти не изменилась и остаётся около 14 тонн.';
+    g.result=null;
+  } else if(d.act==='bridgeLoad'){g.load=Number(d.v);g.result=null;g.message='';}
+  else if(d.act==='bridgeRunTest'){
+    const cap=g.repair==='brace'?26:14;
+    if(g.load<=cap){g.result='pass';g.stage='done';g.message='Испытание пройдено: нагрузка ' + g.load + ' т не превышает расчётную несущую способность ' + cap + ' т. Мост сохраняет равновесие и устойчивость.';toast('Мост выдержал испытание!');}
+    else {g.result='fail';g.stage='test';g.message='Опасная перегрузка: ' + g.load + ' т при допустимых ' + cap + ' т. Элементы фермы не выдерживают усилие. Вернись к ремонту и пересмотри решение.';toast('Испытание провалено — конструкция перегружена.');}
+  } else if(d.act==='bridgePrev'){g.stage='repair';g.result=null;g.message='Выбери решение, которое восстановит диагональную связь между узлами.';}
+  else if(d.act==='bridgeReset'){BRIDGE_GAME=bridgeFresh();}
+  vBridgeGame();
+});
+
+window.addEventListener('resize',()=>{if(document.getElementById('bridge-scene'))bridgeDraw();});
 </script>
 </body>
 </html>
