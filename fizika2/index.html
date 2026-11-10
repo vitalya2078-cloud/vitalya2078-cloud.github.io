@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 20;
+  var embedded = 21;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -572,6 +572,8 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 }
 @media(min-width:900px){.bridge-game{padding-bottom:18px}.bridge-panel{padding:22px}.bridge-options{grid-template-columns:repeat(3,minmax(0,1fr))}.bridge-option{align-items:start;grid-template-columns:28px minmax(0,1fr);min-height:112px}.bridge-option .bridge-radio{display:none}}
 
+/* Cinematic game mission card */
+.bridge-lobby-v2{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);overflow:hidden;margin-top:14px;border:1px solid #30445e;border-radius:22px;background:linear-gradient(135deg,#111e31,#172b40 58%,#101b2d);box-shadow:0 18px 46px rgba(0,0,0,.24)}.bridge-lobby-visual{position:relative;min-height:280px;overflow:hidden;background:#0b1a2b}.bridge-visual-top,.bridge-visual-bottom{position:absolute;z-index:2;left:17px;right:17px;display:flex;justify-content:space-between;align-items:center;color:#9db4c8;font:800 9px/1.2 var(--numbers);letter-spacing:1px}.bridge-visual-top{top:16px}.bridge-visual-top b{display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(112,226,198,.35);border-radius:10px;color:#76e2c7;font-size:13px}.bridge-lobby-visual svg{display:block;width:100%;height:100%;min-height:280px;object-fit:cover}.bridge-visual-bottom{bottom:14px}.bridge-visual-bottom span:first-child{display:flex;align-items:center;gap:7px;color:#72e1c3}.bridge-visual-bottom i,.bridge-lobby-meta b i{width:7px;height:7px;border-radius:50%;background:#64e1b8;box-shadow:0 0 12px #64e1b8}.bridge-lobby-copy-v2{padding:22px;display:flex;flex-direction:column;align-items:flex-start;min-width:0}.bridge-lobby-copy-v2 h2{margin:13px 0 7px;font-size:clamp(22px,3vw,30px);line-height:1.1}.bridge-lobby-copy-v2>p{margin:0;color:#a3b3c5;font-size:12px;line-height:1.55}.bridge-lobby-copy-v2 .bridge-lobby-mission{display:grid;gap:5px;width:100%;margin:16px 0 12px;padding:12px 13px;border:1px solid rgba(109,214,190,.18);border-radius:13px;background:rgba(74,168,151,.08)}.bridge-lobby-copy-v2 .bridge-lobby-mission span{color:#70d9be;font-size:9px;font-weight:900;letter-spacing:1px}.bridge-lobby-copy-v2 .bridge-lobby-mission b{font-size:13px}.bridge-lobby-copy-v2 .bridge-lobby-mission small{color:#91a7ba;font-size:10px}.bridge-lobby-foot{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 15px;color:#8298ad;font:700 8px/1.3 var(--numbers)}.bridge-lobby-cta{margin-top:auto;min-height:48px;background:linear-gradient(100deg,#238f83,#37b99a);box-shadow:0 8px 22px rgba(39,164,139,.22)}.bridge-game .bridge-scene-wrap{position:relative}.bridge-option,.bridge-load,.bridge-test-btn{touch-action:manipulation}@media(max-width:680px){.bridge-lobby-v2{grid-template-columns:1fr}.bridge-lobby-visual,.bridge-lobby-visual svg{min-height:205px;max-height:245px}.bridge-lobby-copy-v2{padding:17px}.bridge-lobby-copy-v2 h2{margin-top:9px}}@media(min-width:681px){.bridge-lobby-visual{min-height:350px}.bridge-lobby-visual svg{min-height:350px}}
 </style>
 </head>
 <body data-view="home">
@@ -589,7 +591,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 20;
+const F2_BUILD = 21;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1554,7 +1556,7 @@ function vLab(){
  frame('Лаборатория',{sub:'Опыты и игровые задания'});
  setMain(labTabs()+'<section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · '+LAB_EXPERIMENTS.length+' самостоятельных опытов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из '+LAB_EXPERIMENTS.length+' опытов пройдено</span><i><em style="width:'+(labDoneCount()/LAB_EXPERIMENTS.length*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length,total=labChapterCount(ch.n);return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/total*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/'+total+'</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
 }
-function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="bridge-lobby"><div class="bridge-lobby-art"><span>ENGINEERING INCIDENTS</span><b>01</b><i></i></div><div class="bridge-lobby-copy"><div class="bridge-lobby-meta"><span>ИНЖЕНЕРНЫЙ КВЕСТ</span><b>ДОСТУПНО</b></div><h2>Инженер катастроф</h2><p>Расследуй аварии, находи слабые места конструкций и проверяй инженерные решения законами физики.</p><div class="bridge-lobby-mission"><span>МИССИЯ 01</span><b>Мост на грани обрушения</b><small>Силы · равновесие · прочность материалов</small></div><button class="btn wide" data-act="bridgeLaunch">Начать миссию <span aria-hidden="true">→</span></button></div></section>');}
+function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="bridge-lobby-v2"><div class="bridge-lobby-visual"><div class="bridge-visual-top"><span>PHYSICS LAB / FIELD OPS</span><b>01</b></div><svg viewBox="0 0 760 310" role="img" aria-label="Стальной мост над водой"><defs><linearGradient id="bridgeSky" x2="0" y2="1"><stop stop-color="#142d4b"/><stop offset="1" stop-color="#091522"/></linearGradient><linearGradient id="bridgeSteel"><stop stop-color="#6fe2c6"/><stop offset="1" stop-color="#4b88a7"/></linearGradient></defs><rect width="760" height="310" fill="url(#bridgeSky)"/><circle cx="600" cy="75" r="48" fill="#64d6ca" opacity=".08"/><path d="M0 210 Q180 185 360 215 T760 205 V310 H0Z" fill="#0b4056"/><path d="M0 245 Q180 230 360 248 T760 240" stroke="#4b9db0" opacity=".35" fill="none" stroke-width="3"/><path d="M55 195H705" stroke="#8ca5b8" stroke-width="13"/><path d="M55 184H705" stroke="#d5e7e8" stroke-width="3"/><g stroke="url(#bridgeSteel)" stroke-width="8" stroke-linecap="round" fill="none"><path d="M80 184L160 65 240 184 320 65 400 184 480 65 560 184 660 80"/><path d="M80 184L240 184 400 184 560 184 705 184"/><path d="M160 65V184M320 65V184M480 65V184M660 80V184"/></g><path d="M400 184L480 65" stroke="#ff9b61" stroke-width="10" stroke-linecap="round" stroke-dasharray="13 9"/><path d="M130 205h500" stroke="#e8bb70" stroke-width="2" stroke-dasharray="20 16"/><g transform="translate(345 143)"><rect width="92" height="30" rx="7" fill="#e9a84f"/><rect x="17" y="-16" width="38" height="19" rx="5" fill="#b9d4dd"/><circle cx="20" cy="31" r="10" fill="#101a2b"/><circle cx="72" cy="31" r="10" fill="#101a2b"/></g></svg><div class="bridge-visual-bottom"><span><i></i> LIVE INCIDENT</span><span>SECTOR 04 · BR-01</span></div></div><div class="bridge-lobby-copy-v2"><div class="bridge-lobby-meta"><span>ИНЖЕНЕРНЫЙ КВЕСТ</span><b><i></i> ДОСТУПНО</b></div><h2>Инженер катастроф</h2><p>Расследуй аварии, восстанавливай конструкции и проверяй свои решения в динамических испытаниях.</p><div class="bridge-lobby-mission"><span>ПЕРВАЯ МИССИЯ</span><b>Мост на грани обрушения</b><small>Механика · равновесие · прочность материалов</small></div><div class="bridge-lobby-foot"><span>◈ 3 ЭТАПА</span><span>◈ СЛОЖНОСТЬ: СРЕДНЯЯ</span><span>◈ 5–8 МИН</span></div><button class="btn wide bridge-lobby-cta" data-act="bridgeLaunch">Начать миссию <span aria-hidden="true">→</span></button></div></section>');}
 function vLabChapter(r){
  const ch=LAB_CHAPTERS[r.ch-1];if(!ch){location.hash='lab';return;}
  const groups=LAB_TOPIC_GROUPS.filter(x=>x.ch===r.ch);
@@ -1865,15 +1867,14 @@ let BRIDGE_GAME = null;
 function bridgeLaunch() { BRIDGE_GAME = bridgeFresh(); location.hash = 'game-bridge'; }
 
 function bridgeFresh() {
-  return { stage: 'inspect', inspected: false, repair: null, load: 20, result: null, message: '' };
+  return { stage: 'inspect', inspected: false, repair: null, load: 20, result: null, message: '', anim: '', animProgress: 0, animFrame: 0 };
 }
 function bridgeEsc(s) { return esc(String(s)); }
 
-function vBridgeGame() {
+function bridgeMarkup() {
   if (!BRIDGE_GAME) BRIDGE_GAME = bridgeFresh();
   const g = BRIDGE_GAME;
   const stageNames = { inspect: '01 · Осмотр', repair: '02 · Ремонт', test: '03 · Испытание', done: 'Миссия выполнена' };
-  frame('Инженер катастроф', { back: true, sub: 'Миссия 01 · Мост на грани обрушения' });
   let body = '';
   if (g.stage === 'inspect') {
     body = '<section class="bridge-brief"><div class="bridge-kicker">АВАРИЙНЫЙ ВЫЗОВ · СЕКТОР 04</div><h2>Мост на грани обрушения</h2><p>После прохождения тяжёлой техники на мосту обнаружены опасные деформации. Найди слабое место, прежде чем конструкция рухнет.</p><div class="bridge-objective"><span>ЗАДАЧА</span><b>Определи, какой элемент конструкции потерял несущую способность.</b></div></section>' +
@@ -1904,11 +1905,13 @@ function vBridgeGame() {
     (g.result==='fail' ? '<button class="btn line bridge-back-step" data-act="bridgePrev">Вернуться к ремонту</button>' : '')) +
     '</section>';
   }
-  setMain('<div class="bridge-game">' +
+  return ('<div class="bridge-game">' +
     '<div class="bridge-progress">' + ['inspect','repair','test'].map((x,i)=>'<span class="' + (g.stage===x || (g.stage==='done'&&x==='test')?'current':'') + (['repair','test'].indexOf(g.stage)>i || g.stage==='done'?' passed':'') + '"><i>' + (i+1) + '</i><small>' + ['Осмотр','Ремонт','Тест'][i] + '</small></span>').join('') + '</div>' +
     body + '<div class="bridge-footnote">ФИЗИКА МИССИИ: силы · равновесие · прочность материалов · запас несущей способности</div></div>');
-  bridgeDraw();
 }
+
+function vBridgeGame(){frame('Инженер катастроф',{back:true,sub:'Миссия 01 · Мост на грани обрушения'});setMain(bridgeMarkup());bridgeDraw();}
+function bridgeRefresh(){const old=document.querySelector('.bridge-game');if(!old){vBridgeGame();return;}const y=document.querySelector('#main')?.scrollTop||0;old.outerHTML=bridgeMarkup();const main=document.querySelector('#main');if(main)main.scrollTop=y;bridgeDraw();}
 
 function bridgeDraw() {
   const c = document.getElementById('bridge-scene');
@@ -1917,6 +1920,10 @@ function bridgeDraw() {
   c.width = w*dpr; c.height = h*dpr;
   const x = c.getContext('2d'); x.scale(dpr,dpr);
   const g = BRIDGE_GAME || bridgeFresh();
+  const driving=g.anim==='drive',collapsing=g.anim==='collapse';
+  const ratio=Math.max(0,(g.load-(g.repair==='brace'?14:10))/Math.max(1,(g.repair==='brace'?12:8)));
+  const sag=collapsing?58*g.animProgress:(driving?Math.sin(g.animProgress*Math.PI)*Math.min(24,5+ratio*7):(g.result==='fail'?48:0));
+  const bend=p=>[p[0],p[1]+Math.sin(Math.max(0,1-Math.abs(p[0]-480)/480)*Math.PI/2)*sag];
   const grad = x.createLinearGradient(0,0,0,h); grad.addColorStop(0,'#172743'); grad.addColorStop(.58,'#263c55'); grad.addColorStop(1,'#142333');
   x.fillStyle=grad; x.fillRect(0,0,w,h);
   x.fillStyle='#31465a'; x.beginPath(); x.moveTo(0,210); x.lineTo(145,150); x.lineTo(280,205); x.lineTo(430,132); x.lineTo(600,205); x.lineTo(760,145); x.lineTo(960,200); x.lineTo(960,300); x.lineTo(0,300); x.fill();
@@ -1930,19 +1937,19 @@ function bridgeDraw() {
   x.fillStyle='#657582';x.fillRect(710,356,120,13);
   // deck shadow and road deck
   x.fillStyle='rgba(0,0,0,.3)';x.fillRect(75,226,810,24);
-  x.fillStyle='#687987';x.fillRect(75,211,810,18);
-  x.fillStyle='#d5d5c7';x.fillRect(75,208,810,4);
+  x.fillStyle='#687987';x.beginPath();x.moveTo(75,211);x.quadraticCurveTo(480,211+sag,885,211);x.lineTo(885,229);x.quadraticCurveTo(480,229+sag,75,229);x.closePath();x.fill();
+  x.fillStyle='#d5d5c7';x.beginPath();x.moveTo(75,208);x.quadraticCurveTo(480,208+sag,885,208);x.lineTo(885,212);x.quadraticCurveTo(480,212+sag,75,212);x.closePath();x.fill();
   x.fillStyle='#f2c66d';for(let i=0;i<12;i++)x.fillRect(100+i*66,217,34,2);
   // truss side members
   x.lineCap='round';x.lineJoin='round';
   const pts=[[110,208],[220,92],[330,208],[440,92],[550,208],[660,92],[770,208],[850,120]];
-  function member(a,b,color,width){x.strokeStyle=color;x.lineWidth=width;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();}
+  function member(a,b,color,width){a=bend(a);b=bend(b);x.strokeStyle=color;x.lineWidth=width;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();}
   for(let i=0;i<pts.length-1;i++)member(pts[i],pts[i+1],'#aebbc4',13);
   for(let i=0;i<pts.length-2;i+=2)member(pts[i],pts[i+2],'#91a2af',10);
   for(let i=0;i<pts.length;i++)member(pts[i],[pts[i][0],208],'#9aabb6',8);
   for(let i=0;i<pts.length-1;i++)member([pts[i][0],208],pts[i+1],'#8296a5',7);
   // rivet joints
-  pts.forEach(p=>{x.fillStyle='#d5e0e4';x.beginPath();x.arc(p[0],p[1],5,0,Math.PI*2);x.fill();});
+  pts.forEach(p=>{p=bend(p);x.fillStyle='#d5e0e4';x.beginPath();x.arc(p[0],p[1],5,0,Math.PI*2);x.fill();});
   // central damaged diagonal / replacement brace
   if(g.stage==='repair'||g.stage==='test'||g.stage==='done'){
     if(g.repair==='brace'||g.stage==='test'||g.stage==='done'){
@@ -1958,25 +1965,30 @@ function bridgeDraw() {
   }
   // vehicle during test
   if(g.stage==='test'||g.stage==='done'){
-    const failed=g.result==='fail';
-    x.save();x.translate(500,failed?190:178);
+    const failed=g.result==='fail'||collapsing;
+    const truckX=driving?110+760*g.animProgress:(g.stage==='done'?790:500);
+    const truckY=178+Math.sin(Math.max(0,1-Math.abs(truckX-480)/480)*Math.PI/2)*sag;
+    x.save();x.translate(truckX,truckY);
     x.fillStyle='#e7a64b';x.fillRect(-60,-28,105,28);x.fillStyle='#d9e5e8';x.fillRect(-34,-49,50,22);
     x.fillStyle='#f3c66d';x.fillRect(10,-22,25,14);x.fillStyle='#1a2738';
     [-39,22].forEach(xx=>{x.beginPath();x.arc(xx,2,12,0,Math.PI*2);x.fill();x.fillStyle='#aebbc4';x.beginPath();x.arc(xx,2,5,0,Math.PI*2);x.fill();x.fillStyle='#1a2738';});
     x.restore();
-    if(failed){x.strokeStyle='#ff655f';x.lineWidth=4;x.beginPath();x.moveTo(480,211);x.lineTo(495,225);x.lineTo(510,211);x.stroke();}
+    if(failed){x.strokeStyle='#ff655f';x.lineWidth=4;x.beginPath();x.moveTo(450,211+sag);x.lineTo(480,235+sag);x.lineTo(510,211+sag);x.stroke();}
   }
   // atmospheric lighting and status label
   const glow=x.createRadialGradient(480,110,10,480,110,330);glow.addColorStop(0,'rgba(100,178,220,.15)');glow.addColorStop(1,'rgba(100,178,220,0)');x.fillStyle=glow;x.fillRect(0,0,w,h);
   x.fillStyle='rgba(7,13,25,.58)';x.fillRect(20,18,230,35);
   x.fillStyle='#c6d5e1';x.font='600 13px sans-serif';x.textAlign='left';x.fillText(g.stage==='inspect'?'BR-04 / STRUCTURAL SCAN':g.stage==='repair'?'BR-04 / REPAIR MODE':'BR-04 / LOAD TEST',34,41);
   if(g.stage==='inspect'){x.strokeStyle='rgba(255,120,109,.85)';x.lineWidth=2;x.beginPath();x.arc(486,141,28,0,Math.PI*2);x.stroke();}
+  if(driving||collapsing){x.fillStyle='rgba(5,12,22,.78)';x.fillRect(700,18,240,35);x.fillStyle=collapsing?'#ff8276':'#8be4ca';x.font='bold 12px sans-serif';x.textAlign='right';x.fillText(collapsing?'КРИТИЧЕСКАЯ ДЕФОРМАЦИЯ':'ГРУЗОВИК В ДВИЖЕНИИ',925,40);}
 }
+function bridgeStartAnimation(){const g=BRIDGE_GAME;if(!g)return;g.anim='drive';g.animProgress=0;g.result=null;g.message='Грузовик въезжает на пролёт. Следи за прогибом конструкции.';bridgeRefresh();const start=performance.now();const tick=now=>{if(BRIDGE_GAME!==g)return;g.animProgress=Math.min(1,(now-start)/4200);bridgeDraw();if(g.animProgress<1){g.animFrame=requestAnimationFrame(tick);return;}const cap=g.repair==='brace'?26:14;if(g.load>cap){g.anim='collapse';g.animProgress=0;g.message='Перегрузка! Центральный пролёт теряет устойчивость.';const t0=performance.now();const fall=t=>{if(BRIDGE_GAME!==g)return;g.animProgress=Math.min(1,(t-t0)/1500);bridgeDraw();if(g.animProgress<1){g.animFrame=requestAnimationFrame(fall);return;}g.anim='';g.result='fail';g.stage='test';g.message='Мост не выдержал '+g.load+' т: расчётный предел — '+cap+' т. Пролёт прогнулся и разрушился. Вернись к ремонту.';bridgeRefresh();toast('Испытание провалено — мост разрушен.');};g.animFrame=requestAnimationFrame(fall);}else{g.anim='';g.result='pass';g.stage='done';g.message='Грузовик массой '+g.load+' т пересёк мост. Конструкция выдержала нагрузку '+cap+' т.';bridgeRefresh();toast('Мост выдержал испытание!');}};g.animFrame=requestAnimationFrame(tick);}
 
 document.addEventListener('click', e => {
   const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
   const d=b.dataset;
   if(d.act==='bridgeLaunch') return;
+  if(BRIDGE_GAME&&BRIDGE_GAME.anim&&d.act!=='bridgeReset')return;
   const g=BRIDGE_GAME; if(!g)return;
   if(d.act==='bridgeInspect'){
     if(d.v==='brace'){g.inspected=true;g.stage='repair';g.message='Верно. Диагональный раскос передаёт усилия между узлами фермы. Его повреждение нарушило силовую схему.';}
@@ -1987,13 +1999,12 @@ document.addEventListener('click', e => {
     g.result=null;
   } else if(d.act==='bridgeLoad'){g.load=Number(d.v);g.result=null;g.message='';}
   else if(d.act==='bridgeRunTest'){
-    const cap=g.repair==='brace'?26:14;
-    if(g.load<20){g.result='light';g.stage='test';g.message='Нагрузка слишком мала для контрольного испытания. Выбери рабочий грузовик массой 20 т: он проверит запас прочности конструкции.';}
-    else if(g.load<=cap){g.result='pass';g.stage='done';g.message='Испытание пройдено: нагрузка ' + g.load + ' т не превышает расчётную несущую способность ' + cap + ' т. Мост сохраняет равновесие и устойчивость.';toast('Мост выдержал испытание!');}
-    else {g.result='fail';g.stage='test';g.message='Опасная перегрузка: ' + g.load + ' т при допустимых ' + cap + ' т. Элементы фермы не выдерживают усилие. Вернись к ремонту и пересмотри решение.';toast('Испытание провалено — конструкция перегружена.');}
+    if(g.anim)return;
+    if(g.load<20){g.result='light';g.stage='test';g.message='Нагрузка слишком мала для контрольного испытания. Выбери рабочий грузовик массой 20 т.';}
+    else {bridgeStartAnimation();return;}
   } else if(d.act==='bridgePrev'){g.stage='repair';g.result=null;g.message='Выбери решение, которое восстановит диагональную связь между узлами.';}
-  else if(d.act==='bridgeReset'){BRIDGE_GAME=bridgeFresh();}
-  vBridgeGame();
+  else if(d.act==='bridgeReset'){if(g.animFrame)cancelAnimationFrame(g.animFrame);BRIDGE_GAME=bridgeFresh();}
+  bridgeRefresh();
 });
 
 window.addEventListener('resize',()=>{if(document.getElementById('bridge-scene'))bridgeDraw();});
