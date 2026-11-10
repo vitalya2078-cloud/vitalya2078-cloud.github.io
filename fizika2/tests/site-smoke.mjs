@@ -57,9 +57,14 @@ try {
   await page.locator('.sb-item').filter({ hasText: 'Брусок' }).click();
   await page.locator('[data-sb="properties"]').click();
   await page.waitForSelector('.sb-picked');
-  await page.locator('[data-sb="mode"][data-v="rotate"]').click();
+  await page.locator('[data-sb="mode"][data-v="orbit"]').click();
   const scene = page.locator('#sb-canvas');
   const bounds = await scene.boundingBox();
+  await page.mouse.move(bounds.x + bounds.width * 0.88, bounds.y + bounds.height * 0.15);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width * 0.75, bounds.y + bounds.height * 0.22, { steps: 5 });
+  await page.mouse.up();
+  await page.locator('[data-sb="mode"][data-v="rotate"]').click();
   await page.mouse.move(bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.55);
   await page.mouse.down();
   await page.mouse.move(bounds.x + bounds.width * 0.62, bounds.y + bounds.height * 0.42, { steps: 8 });
@@ -70,6 +75,10 @@ try {
   await page.locator('[data-sb="run"]').first().click();
   await page.locator('[data-sb="duplicate"]').click();
   await page.locator('[data-sb="delete"]').click();
+  for (const [label, item] of [['Силы', 'Балка'], ['Жидкости', 'Резервуар'], ['Колебания', 'Волна'], ['Термодинамика', 'Нагреватель'], ['Электричество', 'Батарея'], ['Оптика', 'Зеркало']]) {
+    await page.locator('#sb-cats button').filter({ hasText: label }).click();
+    await page.locator('.sb-item').filter({ hasText: item }).click();
+  }
   await page.locator('[data-sb="cat"][data-v="electric"]').click().catch(async () => {
     await page.locator('[data-sb="drawer"]').click();
     await page.locator('#sb-cats button').filter({ hasText: 'Электричество' }).click();
