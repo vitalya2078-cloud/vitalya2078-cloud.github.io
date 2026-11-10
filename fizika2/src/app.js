@@ -1,4 +1,5 @@
 'use strict';
+/* Lab visuals refresh: topic-specific experiment scenes and apparatus cards. */
 /* ---------- Физика по учебнику: уроки с роликами, карточки, симуляции, проверки, опыт, уровни, комбо ---------- */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
