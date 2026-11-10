@@ -572,6 +572,7 @@ document.addEventListener('click', async e => {
     case 'topicQuiz': { const B = await bank(), W = B.filter(x => String(x.tid) === String(d.topic)); closeSheet(); startQuiz({ kind: 'topic', title: 'Тема: ' + (W[0] ? W[0].topicTitle : 'физика'), items: shuffle(W).slice(0, 15) }); break; }
     case 'lab': location.hash = 'lab'; break;
     case 'labGames': location.hash = 'lab-games'; break;
+    case 'bridgeLaunch': bridgeLaunch(); break;
     case 'labOpen': labOpen(d.v); break;
     case 'labHome': labStop(); location.hash='lab'; break;
     case 'labStart': labRun(); break;
