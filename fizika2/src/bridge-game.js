@@ -47,7 +47,7 @@ function bridgeMarkup() {
     body + '<div class="bridge-footnote">ФИЗИКА МИССИИ: силы · равновесие · прочность материалов · запас несущей способности</div></div>');
 }
 
-function vBridgeGame(){frame('Инженер катастроф',{back:true,sub:'Миссия 01 · Мост на грани обрушения'});setMain(bridgeMarkup());bridgeDraw();}
+function vBridgeGame(){if(!BRIDGE_GAME)BRIDGE_GAME=bridgeFresh();frame('Инженер катастроф',{back:true,sub:'Миссия 01 · Мост на грани обрушения'});setMain(bridgeMarkup());bridgeDraw();}
 function bridgeRefresh(){const old=document.querySelector('.bridge-game');if(!old){vBridgeGame();return;}const y=document.querySelector('#main')?.scrollTop||0;old.outerHTML=bridgeMarkup();const main=document.querySelector('#main');if(main)main.scrollTop=y;bridgeDraw();}
 
 function bridgeDraw() {
