@@ -1,6 +1,8 @@
 /* ---------- Игра лаборатории: Инженер катастроф ---------- */
 let BRIDGE_GAME = null;
 
+function bridgeLaunch() { BRIDGE_GAME = bridgeFresh(); location.hash = 'game-bridge'; }
+
 function bridgeFresh() {
   return { stage: 'inspect', inspected: false, repair: null, load: 20, result: null, message: '' };
 }
@@ -113,7 +115,7 @@ function bridgeDraw() {
 document.addEventListener('click', e => {
   const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
   const d=b.dataset;
-  if(d.act==='bridgeLaunch'){BRIDGE_GAME=bridgeFresh();location.hash='game-bridge';return;}
+  if(d.act==='bridgeLaunch') return;
   const g=BRIDGE_GAME; if(!g)return;
   if(d.act==='bridgeInspect'){
     if(d.v==='brace'){g.inspected=true;g.stage='repair';g.message='Верно. Диагональный раскос передаёт усилия между узлами фермы. Его повреждение нарушило силовую схему.';}
