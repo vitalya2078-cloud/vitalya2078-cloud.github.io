@@ -19,11 +19,11 @@ try {
   // Урок: переходы между всеми четырьмя этапами и прохождение проверки.
   await page.goto('http://127.0.0.1:4173/#l1-1', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-act="step"][data-v="cards"]');
-  await page.locator('[data-act="step"][data-v="cards"]').click();
+  await page.locator('.steps [data-act="step"][data-v="cards"]').click();
   await page.waitForSelector('[data-act="step"][data-v="sim"]');
-  await page.locator('[data-act="step"][data-v="sim"]').click();
+  await page.locator('.steps [data-act="step"][data-v="sim"]').click();
   await page.waitForSelector('[data-act="step"][data-v="quiz"]');
-  await page.locator('[data-act="step"][data-v="quiz"]').click();
+  await page.locator('.steps [data-act="step"][data-v="quiz"]').click();
   await page.waitForSelector('[data-act="lessonQuiz"]');
   await page.locator('[data-act="lessonQuiz"]').click();
   await page.waitForSelector('.opt');
