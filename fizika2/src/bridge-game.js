@@ -87,6 +87,12 @@ function bridgeDraw() {
   x.fillStyle=grad; x.fillRect(0,0,w,h);
   x.fillStyle='#31465a'; x.beginPath(); x.moveTo(0,210); x.lineTo(145,150); x.lineTo(280,205); x.lineTo(430,132); x.lineTo(600,205); x.lineTo(760,145); x.lineTo(960,200); x.lineTo(960,300); x.lineTo(0,300); x.fill();
   x.fillStyle='#3d5667'; x.beginPath(); x.moveTo(0,270); x.lineTo(170,220); x.lineTo(300,265); x.lineTo(510,210); x.lineTo(720,265); x.lineTo(870,220); x.lineTo(960,250); x.lineTo(960,330); x.lineTo(0,330); x.fill();
+  // distant industrial skyline, softened by atmospheric haze
+  x.save();x.globalAlpha=.68;
+  const buildings=[[18,206,54,76],[78,188,42,94],[126,218,62,64],[208,194,48,88],[266,211,58,71],[330,183,52,99],[395,207,46,75],[548,199,60,83],[620,180,48,102],[682,210,56,72],[756,191,50,91],[824,205,64,77],[900,184,42,98]];
+  buildings.forEach((b,i)=>{x.fillStyle=i%2?'#263d54':'#1d344b';x.fillRect(b[0],b[1],b[2],b[3]);x.fillStyle='rgba(109,190,211,.28)';for(let yy=b[1]+10;yy<b[1]+b[3]-6;yy+=14)for(let xx=b[0]+8;xx<b[0]+b[2]-5;xx+=13)x.fillRect(xx,yy,4,5);});
+  x.restore();
+  const haze=x.createLinearGradient(0,175,0,290);haze.addColorStop(0,'rgba(89,157,190,0)');haze.addColorStop(1,'rgba(20,48,68,.62)');x.fillStyle=haze;x.fillRect(0,175,w,115);
   const water=x.createLinearGradient(0,285,0,420);water.addColorStop(0,'#17617a');water.addColorStop(1,'#092d48');x.fillStyle=water;x.fillRect(0,285,w,135);
   for(let i=0;i<18;i++){x.strokeStyle='rgba(115,220,231,'+(0.08+(i%3)*.035)+')';x.lineWidth=2;x.beginPath();x.moveTo((i*83)%960,315+(i%5)*19);x.lineTo((i*83)%960+45+(i%4)*20,315+(i%5)*19);x.stroke();}
   // concrete piers and footings
@@ -96,9 +102,14 @@ function bridgeDraw() {
   x.fillStyle='#657582';x.fillRect(710,356,120,13);
   // deck shadow and road deck
   x.fillStyle='rgba(0,0,0,.3)';x.fillRect(75,226,810,24);
-  x.fillStyle='#687987';x.beginPath();x.moveTo(75,211);x.quadraticCurveTo(480,211+sag,885,211);x.lineTo(885,229);x.quadraticCurveTo(480,229+sag,75,229);x.closePath();x.fill();
-  x.fillStyle='#d5d5c7';x.beginPath();x.moveTo(75,208);x.quadraticCurveTo(480,208+sag,885,208);x.lineTo(885,212);x.quadraticCurveTo(480,212+sag,75,212);x.closePath();x.fill();
+  x.fillStyle='#687987';x.beginPath();x.moveTo(75,211);x.quadraticCurveTo(480,211+sag*2,885,211);x.lineTo(885,229);x.quadraticCurveTo(480,229+sag*2,75,229);x.closePath();x.fill();
+  x.fillStyle='#d5d5c7';x.beginPath();x.moveTo(75,208);x.quadraticCurveTo(480,208+sag*2,885,208);x.lineTo(885,212);x.quadraticCurveTo(480,212+sag*2,75,212);x.closePath();x.fill();
   x.fillStyle='#f2c66d';for(let i=0;i<12;i++)x.fillRect(100+i*66,217,34,2);
+  // guard rails, reflective studs and edge lighting
+  x.strokeStyle='#9aabb4';x.lineWidth=5;x.beginPath();x.moveTo(75,201);x.lineTo(885,201);x.stroke();
+  x.strokeStyle='rgba(111,223,211,.5)';x.lineWidth=2;x.beginPath();x.moveTo(75,198);x.lineTo(885,198);x.stroke();
+  for(let i=0;i<17;i++){const xx=92+i*48;x.fillStyle=i%2?'#75d9cb':'#f1c36c';x.shadowColor=x.fillStyle;x.shadowBlur=8;x.beginPath();x.arc(xx,205,2.5,0,Math.PI*2);x.fill();}x.shadowBlur=0;
+
   // truss side members
   x.lineCap='round';x.lineJoin='round';
   const pts=[[110,208],[220,92],[330,208],[440,92],[550,208],[660,92],[770,208],[850,120]];
@@ -111,7 +122,7 @@ function bridgeDraw() {
   pts.forEach(p=>{p=bend(p);x.fillStyle='#d5e0e4';x.beginPath();x.arc(p[0],p[1],5,0,Math.PI*2);x.fill();});
   // central damaged diagonal / replacement brace
   if(g.stage==='repair'||g.stage==='test'||g.stage==='done'){
-    if(g.repair==='brace'||g.stage==='test'||g.stage==='done'){
+    if(g.repair==='brace'&&g.diagnosisCorrect){
       member([440,92],[550,208],'#40d6ad',10);
       x.strokeStyle='rgba(64,214,173,.3)';x.lineWidth=22;x.beginPath();x.moveTo(440,92);x.lineTo(550,208);x.stroke();
     } else {
@@ -126,7 +137,7 @@ function bridgeDraw() {
   if(g.stage==='test'||g.stage==='done'){
     const failed=g.result==='fail'||collapsing;
     const truckX=driving?110+760*g.animProgress:(collapsing?110+760*.55:(g.stage==='done'?790:500));
-    const roadSag=Math.sin(Math.max(0,1-Math.abs(truckX-480)/480)*Math.PI/2)*sag;const truckY=208+roadSag-14+(collapsing?g.animProgress*90:0);
+    const roadSag=Math.max(0,1-Math.pow((truckX-480)/405,2))*sag;const truckY=208+roadSag-14+(collapsing?g.animProgress*90:0);
     x.save();x.translate(truckX,truckY);
     x.fillStyle='rgba(0,0,0,.34)';x.beginPath();x.ellipse(-5,13,62,7,0,0,Math.PI*2);x.fill();
     x.fillStyle='#b96b32';x.fillRect(-61,-26,107,27);x.fillStyle='#e7a64b';x.fillRect(-58,-29,101,24);
