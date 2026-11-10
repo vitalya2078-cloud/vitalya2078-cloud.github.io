@@ -55,6 +55,8 @@ try {
   await page.locator('[data-sb="drawer"]').click();
   await page.locator('.sb-cat, #sb-cats button').filter({ hasText: 'Механика' }).first().click();
   await page.locator('.sb-item').filter({ hasText: 'Брусок' }).click();
+  const placeBounds = await page.locator('#sb-canvas').boundingBox();
+  await page.mouse.click(placeBounds.x + placeBounds.width * 0.52, placeBounds.y + placeBounds.height * 0.52);
   await page.locator('[data-sb="properties"]').click();
   await page.waitForSelector('.sb-picked');
   await page.locator('[data-sb="mode"][data-v="orbit"]').click();
@@ -85,6 +87,16 @@ try {
   });
   await page.locator('.sb-item').filter({ hasText: 'Батарея' }).click();
   await page.locator('[data-sb="clear"]').click();
+  // Два свободных блока не должны проходить друг сквозь друга при падении.
+  await page.evaluate(() => {
+    SB.objects = [];
+    sbAdd('block', 460, 360);
+    sbAdd('block', 460, 270);
+    for (let i = 0; i < 180; i++) sbStep(1 / 60);
+  });
+  const separation = await page.evaluate(() => Math.abs(SB.objects[0].y - SB.objects[1].y));
+  assert.ok(separation >= 47, 'Падающие блоки должны иметь физическое столкновение');
+
 
   // Полный успешный сценарий «Инженера катастроф».
   await page.goto('http://127.0.0.1:4173/#lab-games', { waitUntil: 'domcontentloaded' });
