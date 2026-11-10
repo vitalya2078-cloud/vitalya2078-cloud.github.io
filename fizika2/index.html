@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 33;
+  var embedded = 34;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -738,7 +738,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 33;
+const F2_BUILD = 34;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1921,6 +1921,15 @@ document.addEventListener('click', async e => {
   if (e.target.id === 'sheet') return closeSheet();
   const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
   const d = b.dataset, r = route();
+  // Игровые действия принадлежат только bridge-game.js: не допускаем двойную диспетчеризацию.
+  if (d.act.startsWith('bridge')) return;
+  const asyncActions = ['topics', 'topicQuiz', 'warm', 'exam', 'errs', 'chQuiz'];
+  if (asyncActions.includes(d.act)) {
+    if (b.dataset.busy === '1') return;
+    b.dataset.busy = '1';
+    b.disabled = true;
+  }
+  try {
   switch (d.act) {
     case 'closeSheet': closeSheet(); break;
     case 'step': curStep[lessonKey(r.ch, r.li)] = d.v; render(); ui.main.scrollTop = 0; break;
@@ -1953,6 +1962,12 @@ document.addEventListener('click', async e => {
     case 'ava': sheet(`<b class="h">Выбери аватар</b><div class="avas">${AVATARS.map((_, i) => `<button data-act="setAva" data-v="${i}" class="${i === S.ava ? 'on' : ''}">${avatarSvg(i, 60)}</button>`).join('')}</div>`); break;
     case 'setAva': S.ava = +d.v; save(); closeSheet(); render(); break;
     case 'reset': if (confirm('Сбросить весь прогресс, опыт и значки?')) { S = Object.assign({}, S0); save(); render(); } break;
+  }
+  } catch (err) {
+    console.error('Fizika action failed:', d.act, err);
+    toast('Не удалось выполнить действие. Попробуй ещё раз.', 'bad');
+  } finally {
+    if (b.dataset.busy === '1') { b.disabled = false; delete b.dataset.busy; }
   }
 });
 document.addEventListener('pointerdown', e => { if (e.target.closest('#vseek')) vSeek(e); });
