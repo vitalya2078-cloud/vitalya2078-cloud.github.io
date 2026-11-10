@@ -85,13 +85,23 @@ function bridgeDraw() {
   const c = document.getElementById('bridge-scene');
   if (!c) return;
   const dpr = Math.min(2, window.devicePixelRatio || 1), w = 960, h = 420;
-  c.width = w*dpr; c.height = h*dpr;
-  const x = c.getContext('2d'); x.scale(dpr,dpr);
+  // Keep the backing store stable: changing canvas.width/height on every frame
+  // clears the context and causes visible flashes during animation.
+  if (c.width !== w*dpr || c.height !== h*dpr) { c.width = w*dpr; c.height = h*dpr; }
+  const x = c.getContext('2d');
+  x.setTransform(dpr,0,0,dpr,0,0);
+  x.imageSmoothingEnabled = true;
   const g = BRIDGE_GAME || bridgeFresh();
-  const driving=g.anim==='drive',collapsing=g.anim==='collapse';
+  const driving=g.anim==='drive',collapsing=g.anim==='collapse',broken=g.result==='fail';
   const ratio=Math.max(0,(g.load-(g.repair==='brace'?14:10))/Math.max(1,(g.repair==='brace'?12:8)));
-  const sag=collapsing?58*g.animProgress:(driving?Math.sin(g.animProgress*Math.PI)*Math.min(24,5+ratio*7):(g.result==='fail'?48:0));
-  const bend=p=>[p[0],p[1]+Math.sin(Math.max(0,1-Math.abs(p[0]-480)/480)*Math.PI/2)*sag];
+  const collapseT=collapsing?g.animProgress:(broken?1:0);
+  const sag=collapsing?78*g.animProgress:(driving?Math.sin(g.animProgress*Math.PI)*Math.min(24,5+ratio*7):(broken?48:0));
+  const bend=p=>{
+    const influence=Math.max(0,1-Math.abs(p[0]-480)/205);
+    const drop=collapseT?Math.pow(collapseT,1.55)*145*influence:0;
+    const shear=collapseT?Math.pow(collapseT,1.4)*(p[0]<480?-1:1)*17*influence:0;
+    return [p[0]+shear,p[1]+Math.sin(Math.max(0,1-Math.abs(p[0]-480)/480)*Math.PI/2)*sag+drop];
+  };
   const grad = x.createLinearGradient(0,0,0,h); grad.addColorStop(0,'#172743'); grad.addColorStop(.58,'#263c55'); grad.addColorStop(1,'#142333');
   x.fillStyle=grad; x.fillRect(0,0,w,h);
   x.fillStyle='#31465a'; x.beginPath(); x.moveTo(0,210); x.lineTo(145,150); x.lineTo(280,205); x.lineTo(430,132); x.lineTo(600,205); x.lineTo(760,145); x.lineTo(960,200); x.lineTo(960,300); x.lineTo(0,300); x.fill();
@@ -146,7 +156,8 @@ function bridgeDraw() {
   if(g.stage==='test'||g.stage==='done'){
     const failed=g.result==='fail'||collapsing;
     const truckX=driving?110+760*g.animProgress:(collapsing?110+760*.55:(g.stage==='done'?790:500));
-    const roadSag=Math.max(0,1-Math.pow((truckX-480)/405,2))*sag;const truckY=208+roadSag-14+(collapsing?g.animProgress*90:0);
+    const roadSag=Math.max(0,1-Math.pow((truckX-480)/405,2))*sag;
+    const truckY=208+roadSag-14+(collapsing?Math.pow(g.animProgress,1.7)*112:0)+(broken?112:0);
     x.save();x.translate(truckX,truckY);
     x.fillStyle='rgba(0,0,0,.34)';x.beginPath();x.ellipse(-5,13,62,7,0,0,Math.PI*2);x.fill();
     x.fillStyle='#b96b32';x.fillRect(-61,-26,107,27);x.fillStyle='#e7a64b';x.fillRect(-58,-29,101,24);
@@ -155,7 +166,15 @@ function bridgeDraw() {
     x.fillStyle='#36566a';x.beginPath();x.moveTo(-24,-47);x.lineTo(-19,-31);x.lineTo(8,-31);x.lineTo(3,-47);x.closePath();x.fill();
     x.strokeStyle='rgba(255,255,255,.45)';x.lineWidth=2;x.beginPath();x.moveTo(-18,-45);x.lineTo(-14,-34);x.stroke();
     x.fillStyle='#f3c66d';x.fillRect(11,-22,25,14);x.fillStyle='#fff0b2';x.fillRect(40,-19,6,7);
-    x.fillStyle='#1a2738';[-39,22].forEach(xx=>{x.beginPath();x.arc(xx,2,12,0,Math.PI*2);x.fill();x.fillStyle='#aebbc4';x.beginPath();x.arc(xx,2,5,0,Math.PI*2);x.fill();x.fillStyle='#1a2738';});
+    // Rotating wheel hubs make the vehicle feel physically in motion.
+    const wheelAngle=driving?g.animProgress*760/12:(collapsing?g.animProgress*18:0);
+    [-39,22].forEach(xx=>{
+      x.fillStyle='#111d2b';x.beginPath();x.arc(xx,2,12,0,Math.PI*2);x.fill();
+      x.fillStyle='#aebbc4';x.beginPath();x.arc(xx,2,6,0,Math.PI*2);x.fill();
+      x.save();x.translate(xx,2);x.rotate(wheelAngle);x.strokeStyle='#526b7d';x.lineWidth=2;
+      for(let k=0;k<4;k++){x.rotate(Math.PI/2);x.beginPath();x.moveTo(0,-2);x.lineTo(0,-5);x.stroke();}
+      x.restore();
+    });
     x.strokeStyle='#f4c66d';x.lineWidth=2;x.beginPath();x.moveTo(-55,-2);x.lineTo(37,-2);x.stroke();
     x.restore();
     if(failed){x.strokeStyle='#ff655f';x.lineWidth=4;x.beginPath();x.moveTo(450,211+sag);x.lineTo(480,235+sag);x.lineTo(510,211+sag);x.stroke();}
@@ -165,7 +184,30 @@ function bridgeDraw() {
   x.fillStyle='rgba(7,13,25,.58)';x.fillRect(20,18,230,35);
   x.fillStyle='#c6d5e1';x.font='600 13px sans-serif';x.textAlign='left';x.fillText(g.stage==='inspect'?'BR-04 / STRUCTURAL SCAN':g.stage==='repair'?'BR-04 / REPAIR MODE':'BR-04 / LOAD TEST',34,41);
   if(g.stage==='inspect'){x.strokeStyle='rgba(255,120,109,.85)';x.lineWidth=2;x.beginPath();x.arc(486,141,28,0,Math.PI*2);x.stroke();}
-  if(collapsing){x.save();x.translate(480,205+sag*.35);x.rotate(.25+g.animProgress*.65);x.strokeStyle='#ff786d';x.lineWidth=12;x.lineCap='round';x.beginPath();x.moveTo(-58,-20);x.lineTo(-8,12);x.stroke();x.rotate(-.7);x.beginPath();x.moveTo(8,12);x.lineTo(62,-24);x.stroke();x.restore();}
+  if(collapsing||broken){
+    const p=collapseT;
+    // Detached steel members rotate and fall instead of the bridge simply switching state.
+    x.save();x.globalAlpha=collapsing?Math.min(1,p*2.2):.96;
+    const fallY=205+Math.pow(p,1.45)*150;
+    x.translate(480,fallY);x.rotate(.18+p*.82);
+    x.strokeStyle='#ff8276';x.lineCap='round';x.lineWidth=13;
+    x.beginPath();x.moveTo(-82,-28);x.lineTo(-8,24);x.stroke();
+    x.save();x.rotate(-.92);x.beginPath();x.moveTo(4,20);x.lineTo(88,-35);x.stroke();x.restore();
+    x.strokeStyle='#b7c5cd';x.lineWidth=8;x.beginPath();x.moveTo(-48,-56);x.lineTo(38,54);x.stroke();
+    x.restore();
+    // Small fragments and dust are deterministic, so every frame remains stable.
+    for(let i=0;i<13;i++){
+      const seed=i*37.7, t=p;
+      const px=480+Math.sin(seed)*((18+i*7)+t*34);
+      const py=218+((i*29)%83)+t*t*(75+(i%4)*24);
+      x.fillStyle=i%3===0?'rgba(255,132,105,.9)':'rgba(190,205,211,.78)';
+      x.save();x.translate(px,py);x.rotate(seed+t*2);x.fillRect(-3,-2,6,4);x.restore();
+    }
+    if(collapsing){
+      x.strokeStyle='rgba(255,111,98,'+(.25+p*.65)+')';x.lineWidth=3;
+      x.beginPath();x.moveTo(430,210+sag);x.lineTo(462,228+sag);x.lineTo(480,218+sag);x.lineTo(505,239+sag);x.lineTo(535,210+sag);x.stroke();
+    }
+  }
   if(driving||collapsing){x.fillStyle='rgba(5,12,22,.78)';x.fillRect(700,18,240,35);x.fillStyle=collapsing?'#ff8276':'#8be4ca';x.font='bold 12px sans-serif';x.textAlign='right';x.fillText(collapsing?'КРИТИЧЕСКАЯ ДЕФОРМАЦИЯ':'ГРУЗОВИК В ДВИЖЕНИИ',925,40);}
 }
 function bridgeStartAnimation(){
@@ -174,18 +216,23 @@ function bridgeStartAnimation(){
   g.anim='drive';g.animProgress=0;g.result=null;
   g.message='Грузовик въезжает на пролёт. Следи за прогибом конструкции.';
   bridgeRefresh();
-  const start=performance.now(),target=g.load>cap?.55:1;
+  const start=performance.now(),duration=4600,target=g.load>cap?.55:1;
   const tick=now=>{
     if(BRIDGE_GAME!==g)return;
-    g.animProgress=Math.min(target,(now-start)/4200*target);bridgeDraw();
-    if(g.animProgress<target){g.animFrame=requestAnimationFrame(tick);return;}
+    const raw=Math.min(1,(now-start)/duration);
+    // Smooth acceleration and deceleration; progress remains continuous at 60 fps.
+    const eased=raw<.5?4*raw*raw*raw:1-Math.pow(-2*raw+2,3)/2;
+    g.animProgress=eased*target;bridgeDraw();
+    if(raw<1){g.animFrame=requestAnimationFrame(tick);return;}
     if(g.load>cap){
       g.anim='collapse';g.animProgress=0;g.message='Перегрузка! Центральный пролёт теряет устойчивость.';
       const t0=performance.now();
       const fall=t=>{
         if(BRIDGE_GAME!==g)return;
-        g.animProgress=Math.min(1,(t-t0)/1500);bridgeDraw();
-        if(g.animProgress<1){g.animFrame=requestAnimationFrame(fall);return;}
+        const raw=Math.min(1,(t-t0)/2100);
+        // Gravity-like acceleration gives the collapse weight and a readable build-up.
+        g.animProgress=raw*raw;bridgeDraw();
+        if(raw<1){g.animFrame=requestAnimationFrame(fall);return;}
         g.anim='';g.result='fail';g.stage='test';
         g.message='Мост не выдержал '+g.load+' т: расчётный предел — '+cap+' т. Пролёт прогнулся и разрушился. Вернись к ремонту.';
         bridgeRefresh();toast('Испытание провалено — мост разрушен.');
