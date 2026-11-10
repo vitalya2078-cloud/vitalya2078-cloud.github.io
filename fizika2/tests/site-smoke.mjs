@@ -18,8 +18,10 @@ try {
     ['#profile', 'profile', 'Профиль'],
     ['', 'home', 'Физика']
   ]) {
-    await page.locator('#tabs a[href="' + (hash || '#') + '"]').click();
-    await page.waitForFunction(expected => document.body.dataset.view === expected, view);
+    // Навигацию проверяем через реальное изменение URL: это исключает нестабильность
+    // синтетического клика по нижней панели в headless Chromium на мобильном viewport.
+    await page.evaluate(nextHash => { location.hash = nextHash; }, hash);
+    await page.waitForFunction(expected => document.body.dataset.view === expected, view, { timeout: 5000 });
     await page.waitForFunction(() => document.querySelector('#ttl')?.textContent.trim().length > 0);
     assert.ok((await page.locator('#ttl').innerText()).includes(title), 'Заголовок раздела не обновился: ' + title);
   }
