@@ -250,7 +250,12 @@ function bridgeStartAnimation(){
 document.addEventListener('click', e => {
   const b=e.target.closest('[data-act^="bridge"]'); if(!b||b.disabled)return;
   const d=b.dataset;
-  if(d.act==='bridgeLaunch') return;
+  // Единственная точка запуска миссии: обработчик самой игры.
+  if(d.act==='bridgeLaunch'){
+    e.preventDefault();
+    bridgeLaunch();
+    return;
+  }
   if(BRIDGE_GAME&&BRIDGE_GAME.anim&&d.act!=='bridgeReset')return;
   const g=BRIDGE_GAME; if(!g)return;
   if(d.act==='bridgeInspect'){
