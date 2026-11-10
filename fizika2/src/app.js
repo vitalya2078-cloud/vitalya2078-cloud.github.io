@@ -84,6 +84,7 @@ function route() {
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
   if (h === 'lab') return { name: 'lab', tab: 'lab' };
   if (h === 'lab-games') return { name: 'labGames', tab: 'lab', parent: 'lab' };
+  if (h === 'game-bridge') return { name: 'bridgeGame', tab: 'lab', parent: 'lab-games' };
   if ((m = /^lab-ch-(\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab' };
   if ((m = /^lab-topic-(\d+)-(\d+)$/.exec(h))) return { name: 'labTopic', ch: +m[1], topic: +m[2], tab: 'lab', parent: 'lab-ch-' + m[1] };
   if ((m = /^lab-exp-([a-z0-9-]+)$/.exec(h))) return { name: 'labExp', exp: m[1], tab: 'lab', parent: 'lab-topic-' + ((LABS[m[1]]||{}).ch||1) + '-' + ((LABS[m[1]]||{}).topic||1) };
@@ -100,7 +101,7 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
   ui.tabs.hidden = r.name === 'quiz' || r.name === 'lesson';
-  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile })[r.name](r);
+  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame })[r.name](r);
   if (same) ui.main.scrollTop = y; else ui.main.scrollTop = 0;
 }
 function frame(title, { back = false, sub = '' } = {}) {
