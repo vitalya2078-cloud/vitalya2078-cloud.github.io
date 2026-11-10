@@ -11,9 +11,17 @@ try {
   await page.waitForSelector('#main');
 
   // Основная навигация.
-  for (const [hash, title] of [['#book', 'Учебник'], ['#train', 'Тренировка'], ['#lab', 'Лаборатория'], ['#profile', 'Профиль'], ['', 'Физика']]) {
+  for (const [hash, view, title] of [
+    ['#book', 'book', 'Учебник'],
+    ['#train', 'train', 'Тренировка'],
+    ['#lab', 'lab', 'Лаборатория'],
+    ['#profile', 'profile', 'Профиль'],
+    ['', 'home', 'Физика']
+  ]) {
     await page.locator('#tabs a[href="' + (hash || '#') + '"]').click();
-    await page.waitForFunction(expected => document.querySelector('#ttl')?.textContent.includes(expected), title);
+    await page.waitForFunction(expected => document.body.dataset.view === expected, view);
+    await page.waitForFunction(() => document.querySelector('#ttl')?.textContent.trim().length > 0);
+    assert.ok((await page.locator('#ttl').innerText()).includes(title), 'Заголовок раздела не обновился: ' + title);
   }
 
   // Урок: переходы между всеми четырьмя этапами и прохождение проверки.
