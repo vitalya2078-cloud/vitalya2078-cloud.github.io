@@ -1,0 +1,59 @@
+name: Verify and publish Fizika 2 website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fizika2/src/**'
+      - 'fizika2/tests/**'
+      - 'fizika/src/**'
+      - '.github/workflows/site-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build website
+        run: python fizika2/src/build.py
+
+      - name: Install browser test runner
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run real browser interaction tests
+        run: |
+          python -m http.server 4173 --directory fizika2 > /tmp/fizika-site.log 2>&1 &
+          echo $! > /tmp/fizika-site.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node fizika2/tests/site-smoke.mjs
+
+      - name: Publish tested website
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fizika2/index.html fizika2/content.json fizika2/version.json fizika2/sw.js fizika2/manifest.webmanifest fizika2/icon-192.png fizika2/src/meta.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish tested Fizika 2 website"
+            git push
+          fi
