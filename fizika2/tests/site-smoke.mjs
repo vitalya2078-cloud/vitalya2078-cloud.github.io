@@ -97,7 +97,8 @@ try {
   await page.locator('[data-sbr="g"]').evaluate(el => { el.value = '4.9'; el.dispatchEvent(new Event('input', { bubbles: true })); });
   await page.locator('.sb-mobile-main [data-sb="run"]').click();
   await page.waitForTimeout(180);
-  await page.locator('[data-sb="run"]').first().click();
+  await page.locator('.sb-mobile-main [data-sb="run"]').click();
+  await page.locator('.sb-mobile-main [data-sb="properties"]').click();
   await page.locator('[data-sb="duplicate"]').click();
   await page.locator('[data-sb="delete"]').click();
   for (const [label, item] of [['Силы', 'Балка'], ['Жидкости', 'Резервуар'], ['Колебания', 'Волна'], ['Термодинамика', 'Нагреватель'], ['Электричество', 'Батарея'], ['Оптика', 'Зеркало']]) {
