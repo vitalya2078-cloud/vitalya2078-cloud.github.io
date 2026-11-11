@@ -30,6 +30,9 @@ try {
   assert.ok((await page.locator('#ttl').innerText()).includes('Динамика материальной точки'));
   await page.locator('[data-act="readerFont"][data-delta="1"]').click();
   assert.equal(await page.locator('body').getAttribute('data-view'), 'readerChapter');
+  await page.locator('[data-act="readerNext"]').click();
+  await page.waitForFunction(() => location.hash === '#read-3');
+  assert.ok((await page.locator('#ttl').innerText()).includes('Работа и энергия'));
 
   // Основная навигация.
   for (const [hash, view, title] of [
