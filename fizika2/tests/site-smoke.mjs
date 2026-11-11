@@ -79,7 +79,7 @@ try {
   await page.locator('.sb-item').filter({ hasText: 'Брусок' }).click();
   const placeBounds = await page.locator('#sb-canvas').boundingBox();
   await page.mouse.click(placeBounds.x + placeBounds.width * 0.52, placeBounds.y + placeBounds.height * 0.52);
-  await page.locator('[data-sb="properties"]').first().click();
+  await page.locator('.sb-mobile-main [data-sb="properties"]').click();
   await page.waitForSelector('.sb-picked');
   await page.locator('[data-sb="mode"][data-v="orbit"]').click();
   const scene = page.locator('#sb-canvas');
