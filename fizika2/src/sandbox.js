@@ -157,4 +157,20 @@ const SB_STYLE=`.sb{background:#091521;color:#e7f4fa;border:1px solid #29485a;bo
 .sb-mobile-tools button{font-size:10px;padding:7px 9px;min-height:34px}
 .sb-mobile-main button{font-size:11px;min-height:38px}
 .sb-palette #sb-items{grid-template-columns:repeat(2,minmax(0,1fr))}
-}`;
+}
+/* Mobile viewport balance: keep the scene generous and give the object catalog room. */
+@media(max-width:850px){
+.sb{height:calc(100dvh - 150px);min-height:560px;max-height:860px}
+.sb-layout{grid-template-rows:minmax(270px,1.08fr) auto minmax(180px,.92fr)}
+.sb-palette{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.sb-palette #sb-cats,.sb-mobile-tools{scrollbar-width:none}
+.sb-palette #sb-cats::-webkit-scrollbar,.sb-mobile-tools::-webkit-scrollbar{display:none}
+}
+@media(max-width:420px){
+.sb{height:calc(100dvh - 140px);min-height:560px}
+.sb-layout{grid-template-rows:minmax(260px,1.02fr) auto minmax(190px,.98fr)}
+.sb-mobile{gap:6px}
+.sb-mobile-main button{min-height:42px}
+.sb-palette{padding:11px 12px 18px}
+}
+`;
