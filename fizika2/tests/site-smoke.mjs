@@ -16,6 +16,21 @@ try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   await page.waitForSelector('#main');
 
+  // Прямая ссылка на свободную лабораторию должна работать уже при первой загрузке страницы.
+  await page.goto('http://127.0.0.1:4173/#sandbox', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#sb-canvas', { timeout: 10000 });
+  assert.equal(await page.locator('body').getAttribute('data-view'), 'sandbox');
+
+  // Большой читатель открывается с главной, показывает конспект главы 2 и меняет размер текста.
+  await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' });
+  await page.locator('.reader-hero').click();
+  await page.waitForFunction(() => document.body.dataset.view === 'reader');
+  await page.locator('a[href="#read-2"]').click();
+  await page.waitForSelector('.reader-formula');
+  assert.ok((await page.locator('#ttl').innerText()).includes('Динамика материальной точки'));
+  await page.locator('[data-act="readerFont"][data-delta="1"]').click();
+  assert.equal(await page.locator('body').getAttribute('data-view'), 'readerChapter');
+
   // Основная навигация.
   for (const [hash, view, title] of [
     ['#book', 'book', 'Учебник'],
