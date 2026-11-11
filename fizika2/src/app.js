@@ -93,6 +93,7 @@ function route() {
   if (['book', 'train', 'profile'].includes(h)) return { name: h, tab: h };
   return { name: 'home', tab: 'home' };
 }
+let SB = null; // initialized before the first route render; sandbox module assigns its state here.
 const ui = {};
 let lastHash = null, same = false;
 function render() {
