@@ -86,6 +86,12 @@ try {
   await page.locator('[data-act="labPause"]').click();
   await page.locator('[data-act="labReset"]').click();
 
+  // Проверяем именно кнопку входа в свободную лабораторию из раздела «Лаборатория».
+  await page.goto('http://127.0.0.1:4173/#lab', { waitUntil: 'domcontentloaded' });
+  await page.locator('a[href="#sandbox"]').click();
+  await page.waitForSelector('#sb-canvas');
+  assert.equal(await page.locator('body').getAttribute('data-view'), 'sandbox');
+
   // Свободная лаборатория: категории, добавление, перетаскивание, вращение, физические параметры и запуск.
   await page.goto('http://127.0.0.1:4173/#sandbox', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#sb-canvas');
