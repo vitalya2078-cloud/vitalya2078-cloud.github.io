@@ -101,6 +101,7 @@ try {
   await page.locator('.sb-mobile-main [data-sb="properties"]').click();
   await page.locator('[data-sb="duplicate"]').click();
   await page.locator('[data-sb="delete"]').click();
+  await page.locator('.sb-inspector-close').click();
   for (const [label, item] of [['Силы', 'Балка'], ['Жидкости', 'Резервуар'], ['Колебания', 'Волна'], ['Термодинамика', 'Нагреватель'], ['Электричество', 'Батарея'], ['Оптика', 'Зеркало']]) {
     await page.locator('#sb-cats button').filter({ hasText: label }).click();
     await page.locator('.sb-item').filter({ hasText: item }).click();
