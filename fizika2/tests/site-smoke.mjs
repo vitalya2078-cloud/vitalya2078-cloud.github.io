@@ -33,6 +33,13 @@ try {
   await page.locator('[data-act="readerNext"]').click();
   await page.waitForFunction(() => location.hash === '#read-3' && document.body.dataset.view === 'readerChapter' && document.querySelector('#ttl')?.textContent.includes('Работа и энергия'));
   assert.ok((await page.locator('#ttl').innerText()).includes('Работа и энергия'));
+  for (let chapter = 4; chapter <= 33; chapter++) {
+    await page.locator('[data-act="readerNext"]').click();
+    await page.waitForFunction((n) => location.hash === '#read-' + n && document.querySelector('.reader-page-count')?.textContent.trim() === n + ' / 33', chapter);
+    assert.ok(await page.locator('.reader-formula').count() > 0, 'formula missing in chapter ' + chapter);
+    const dock = await page.locator('.reader-bottom').evaluate(el => getComputedStyle(el).position);
+    assert.equal(dock, 'fixed', 'page navigation is not fixed in chapter ' + chapter);
+  }
 
   // Основная навигация.
   for (const [hash, view, title] of [
