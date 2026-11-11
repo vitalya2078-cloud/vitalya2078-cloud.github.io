@@ -5,7 +5,7 @@ const browser = await chromium.launch({ headless: true });
 const errors = [];
 try {
   const html = await (await fetch('http://127.0.0.1:4173/')).text();
-  const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
   for (let i = 0; i < scripts.length; i++) {
     try { new Function(scripts[i][1]); }
     catch (error) { throw new Error('Inline script #' + (i + 1) + ' syntax error: ' + error.message + '; excerpt=' + scripts[i][1].slice(0, 500)); }
