@@ -84,6 +84,8 @@ function route() {
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
   if (h === 'lab') return { name: 'lab', tab: 'lab' };
   if (h === 'sandbox') return { name: 'sandbox', tab: 'lab', parent: 'lab' };
+  if (h === 'reader') return { name: 'reader', tab: 'book', parent: 'home' };
+  if ((m = /^read-(\d+)$/.exec(h))) return { name: 'readerChapter', ch: +m[1], tab: 'book', parent: 'reader' };
   if (h === 'lab-games') return { name: 'labGames', tab: 'lab', parent: 'lab' };
   if (h === 'game-bridge') return { name: 'bridgeGame', tab: 'lab', parent: 'lab-games' };
   if ((m = /^lab-ch-(\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab' };
@@ -103,7 +105,7 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
   ui.tabs.hidden = r.name === 'quiz' || r.name === 'lesson';
-  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame, sandbox: vSandbox })[r.name](r);
+  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame, sandbox: vSandbox, reader: vReader, readerChapter: vReaderChapter })[r.name](r);
   if (same) ui.main.scrollTop = y; else ui.main.scrollTop = 0;
 }
 function frame(title, { back = false, sub = '' } = {}) {
@@ -134,7 +136,8 @@ function vHome() {
     `<section class="card lvcard"><div class="row"><b>${S.xp} XP</b><small>до уровня ${L.l + 1}: ${L.need - L.cur} XP</small></div><div class="bar"><i style="width:${L.cur / L.need * 100}%"></i></div></section>` +
     cont +
     `<section class="duo"><div class="card goal">${ring(gp)}<div><b>Цель дня</b><small>${today} / ${DAY_GOAL} XP</small></div></div><div class="card goal">${ic('flame', 'big fire')}<div><b>${st ? plural(st, 'день', 'дня', 'дней') : 'Нет серии'}</b><small>серия</small></div></div></section>` +
-    `<section class="card qk"><button data-act="warm" class="qrow">${ic('zap')}<span><b>Разминка</b><small>10 вопросов из базы экзамена, комбо умножает опыт</small></span>${ic('chevron-right')}</button>` +
+    `<a class="reader-hero" href="#reader"><span class="reader-hero-icon">${ic('book-open')}</span><span><small>БОЛЬШОЙ ЧИТАТЕЛЬ</small><b>Конспекты по физике</b><em>Формулы, схемы и удобное чтение</em></span>${ic('chevron-right')}</a>`+
+     `<section class="card qk"><button data-act="warm" class="qrow">${ic('zap')}<span><b>Разминка</b><small>10 вопросов из базы экзамена, комбо умножает опыт</small></span>${ic('chevron-right')}</button>` +
     `<a href="#book" class="qrow">${ic('book-open')}<span><b>Учебник</b><small>7 частей, 33 главы · открыта глава 1</small></span>${ic('chevron-right')}</a></section>`);
 }
 function ring(f) { const r = 26, L = 2 * Math.PI * r; return `<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" stroke="var(--line)" stroke-width="7" fill="none"/><circle cx="32" cy="32" r="${r}" stroke="var(--gold)" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L * (1 - f)}" transform="rotate(-90 32 32)"/></svg>`; }
@@ -150,6 +153,65 @@ function vBook() {
         return `<${ready ? `a href="#c${ch.n}"` : 'div'} class="chrow${ready ? '' : ' soon'}"><span class="cthumb">${chapterArt(ch)}</span><span class="cinfo"><small>Глава ${ch.n} · § ${ch.a}–${ch.b}</small><b>${esc(ch.title)}</b>${ready ? `<span class="pbar"><i style="width:${pr * 100}%"></i></span>` : '<span class="tag">скоро</span>'}</span>${ready ? ic('chevron-right') : ic('lock', 'mute')}</${ready ? 'a' : 'div'}>`;
       }).join('') + '</section>';
   }).join(''));
+}
+
+
+/* ---------- Читатель конспектов по учебнику ---------- */
+const READER_NOTES = {
+  2: {
+    lead: 'Как силы изменяют движение тел и почему тело сохраняет скорость, пока равнодействующая сил равна нулю.',
+    sections: [
+      {h:'Первый закон Ньютона. Инерция',p:'Тело сохраняет состояние покоя или равномерного прямолинейного движения, если внешние воздействия не заставляют его изменить это состояние. Это свойство называется инертностью. Закон формулируется для инерциальных систем отсчёта.',formula:'ΣF = 0  ⇒  a = 0',note:'Нулевое ускорение означает постоянную скорость, а не обязательно покой.'},
+      {h:'Инерциальные системы отсчёта',p:'Инерциальной называют систему, в которой свободное тело покоится или движется равномерно и прямолинейно. Система, связанная с Землёй, во многих инженерных задачах считается приближённо инерциальной: небольшими эффектами вращения Земли пренебрегают.'},
+      {h:'Масса и сила',p:'Масса характеризует инертные свойства тела: чем больше масса, тем меньше изменение скорости при одном и том же воздействии. Сила — векторная мера механического воздействия. Она может изменять скорость тела или вызывать деформацию. Силу характеризуют модуль, направление и точка приложения.',formula:'[F] = Н = кг·м/с²'},
+      {h:'Второй закон Ньютона',p:'Ускорение тела прямо пропорционально равнодействующей сил и обратно пропорционально массе. В уравнение входит именно векторная сумма всех сил, приложенных к телу. Закон применяют в инерциальной системе отсчёта.',formula:'ΣF⃗ = m a⃗',note:'Перед подстановкой выбери оси и разложи силы на проекции. Знаки проекций определяются выбранными положительными направлениями.'},
+      {h:'Импульс тела',p:'Импульс — векторная величина, равная произведению массы на скорость. Его направление совпадает с направлением скорости. Общая формулировка второго закона Ньютона связывает силу со скоростью изменения импульса.',formula:'p⃗ = m v⃗     ·     F⃗ = dp⃗/dt',note:'При постоянной массе F⃗ = m a⃗. Единица импульса — кг·м/с.'},
+      {h:'Принцип независимости действия сил',p:'Если на тело одновременно действуют несколько сил, результат определяется их равнодействующей — геометрической суммой. Каждая сила вносит свой вклад в ускорение.',formula:'F⃗рез = F⃗₁ + F⃗₂ + … + F⃗ₙ'},
+      {h:'Третий закон Ньютона',p:'Тела взаимодействуют попарно: силы, с которыми два тела действуют друг на друга, равны по модулю, противоположны по направлению и лежат на одной прямой. Эти силы приложены к разным телам, поэтому не компенсируют друг друга в уравнении движения одного тела.',formula:'F⃗₁₂ = −F⃗₂₁',note:'Не путай пару действия и противодействия с двумя силами, приложенными к одному телу.'},
+      {h:'Силы трения',p:'Трение препятствует относительному скольжению соприкасающихся поверхностей. Различают трение покоя, скольжения и качения; внутреннее трение возникает между слоями жидкости или газа. Для сухого трения скольжения в рассматриваемой модели сила пропорциональна нормальной реакции опоры.',formula:'Fтр = μN',note:'Коэффициент μ зависит от материалов и состояния поверхностей. Сила трения направлена против относительного движения или его возможного начала.'},
+      {h:'Импульс системы и его сохранение',p:'Для системы тел различают внутренние силы взаимодействия между её частями и внешние силы со стороны окружающих тел. Внутренние силы попарно компенсируются в сумме для всей системы. Если равнодействующая внешних сил равна нулю, суммарный импульс системы остаётся постоянным.',formula:'P⃗ = Σ mᵢv⃗ᵢ = const  (ΣF⃗внеш = 0)',note:'Закон сохранения импульса применяют к замкнутой системе. Проекция импульса также сохраняется вдоль направления, в котором равнодействующая внешних сил равна нулю.'},
+      {h:'Центр масс',p:'Центр масс — точка, положение которой отражает распределение массы системы. Для системы материальных точек его радиус-вектор равен взвешенному по массам среднему радиус-вектору.',formula:'r⃗с = (Σ mᵢr⃗ᵢ) / (Σ mᵢ)',note:'Для однородного симметричного тела центр масс совпадает с его геометрическим центром.'}
+    ],
+    summary:'Динамика связывает движение с причинами его изменения. Для решения задач сначала выдели тело, изобрази все действующие на него силы, выбери оси, запиши второй закон Ньютона в проекциях. Для системы тел проверь, можно ли применить закон сохранения импульса.'
+  }
+};
+let readerFontSize = Number(localStorage.getItem('f2-reader-font') || 17);
+function readerStyles(){return `<style>
+.reader-shell{--reader-size:${readerFontSize}px;color:var(--text);max-width:820px;margin:0 auto}
+.reader-top{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin:-4px -4px 14px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.reader-top a,.reader-top button,.reader-bottom button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:9px 12px;font-weight:700;text-decoration:none}
+.reader-progress{height:3px;background:var(--line);border-radius:4px;overflow:hidden;flex:1}.reader-progress i{display:block;height:100%;width:0;background:#64d7d9}
+.reader-cover{padding:22px;border-radius:22px;background:linear-gradient(135deg,#172c45,#26365b 60%,#17434a);color:#f4f8ff;margin-bottom:16px}
+.reader-cover small{letter-spacing:1.7px;color:#9de2e6;font-weight:800}.reader-cover h1{font-size:clamp(25px,6vw,38px);line-height:1.1;margin:12px 0}.reader-cover p{color:#c7d6e4;line-height:1.55;margin:0}
+.reader-chapter{display:flex;align-items:center;gap:14px;padding:15px;margin:9px 0;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);text-decoration:none}
+.reader-chapter .num{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#213c50;color:#a5e6e7;font-weight:850}
+.reader-chapter b{display:block;line-height:1.3}.reader-chapter small{display:block;color:var(--muted);margin-top:5px}
+.reader-page{font-size:var(--reader-size);line-height:1.72;letter-spacing:.005em}
+.reader-page h2{font-size:1.18em;line-height:1.3;margin:26px 0 8px;letter-spacing:-.02em}
+.reader-page p{margin:0 0 12px;color:var(--text)}
+.reader-formula{margin:13px 0 16px;padding:16px 12px;text-align:center;border:1px solid #426477;border-radius:15px;background:linear-gradient(135deg,#12283a,#172d40);color:#b9f1ed;font-size:1.05em;font-weight:750;letter-spacing:.02em;overflow-wrap:anywhere}
+.reader-note{padding:12px 14px;border-left:3px solid #e7b45b;background:rgba(231,180,91,.09);border-radius:0 12px 12px 0;color:var(--muted);font-size:.91em;margin:14px 0}
+.reader-figure{margin:18px 0;padding:14px;border:1px solid var(--line);border-radius:17px;background:var(--card)}
+.reader-figure svg{display:block;width:100%;height:auto;max-height:210px}
+.reader-figure figcaption{text-align:center;color:var(--muted);font-size:.8em;margin-top:8px}
+.reader-summary{margin:22px 0;padding:18px;border-radius:18px;background:linear-gradient(135deg,rgba(76,180,171,.14),rgba(87,116,190,.12));border:1px solid rgba(90,190,180,.25)}
+.reader-bottom{position:sticky;bottom:0;z-index:7;display:flex;gap:8px;justify-content:space-between;padding:10px 0;background:linear-gradient(180deg,transparent,var(--bg) 24%)}
+.reader-bottom button{flex:1}
+@media(max-width:600px){.reader-cover{padding:19px}.reader-top{margin:0 -10px 12px}.reader-bottom{padding-bottom:12px}.reader-page{line-height:1.7}}
+</style>`}
+function vReader(){
+ frame('Читатель',{back:true,sub:'Конспекты по курсу Т. И. Трофимовой'});
+ const chapters=CHAPTERS.filter(c=>c.n>=2);
+ setMain(readerStyles()+`<div class="reader-shell"><section class="reader-cover"><small>ФИЗИКА · БОЛЬШОЙ ЧИТАТЕЛЬ</small><h1>Читай и понимай</h1><p>Удобные конспекты по главам: определения, физический смысл, формулы и схемы. Размер текста адаптируется под экран.</p></section><div class="reader-top"><a href="#book">← Учебник</a><div class="reader-progress"><i style="width:3%"></i></div><button data-act="readerFont" data-delta="-1" aria-label="Уменьшить шрифт">A−</button><button data-act="readerFont" data-delta="1" aria-label="Увеличить шрифт">A+</button></div><h2 class="sec">Содержание</h2>${chapters.map(c=>`<a class="reader-chapter" href="#read-${c.n}"><span class="num">${String(c.n).padStart(2,'0')}</span><span><b>${esc(c.title)}</b><small>Глава ${c.n} · § ${c.a}–${c.b} · ${c.n===2?'Конспект готов':'В очереди на конспект'}</small></span>${ic('chevron-right')}</a>`).join('')}</div>`);
+}
+function vReaderChapter(r){
+ const c=CHAPTERS[r.ch-1], n=READER_NOTES[r.ch];
+ if(!c){location.hash='reader';return}
+ if(!n){frame('Читатель',{back:true,sub:'Глава '+r.ch});setMain(readerStyles()+`<div class="reader-shell"><section class="reader-cover"><small>СЛЕДУЮЩИЙ РАЗДЕЛ</small><h1>${esc(c.title)}</h1><p>Конспект этой главы будет добавлен по материалу соответствующих параграфов учебника.</p></section><a class="reader-chapter" href="#reader">← К содержанию</a></div>`);return}
+ frame(c.title,{back:true,sub:'Глава '+c.n+' · § '+c.a+'–'+c.b});
+ const cards=n.sections.map((x,i)=>`<section><h2>${i+1}. ${esc(x.h)}</h2><p>${esc(x.p)}</p>${x.formula?`<div class="reader-formula">${esc(x.formula)}</div>`:''}${x.note?`<div class="reader-note"><b>Важно:</b> ${esc(x.note)}</div>`:''}</section>`).join('');
+ setMain(readerStyles()+`<article class="reader-shell reader-page" id="reader-article"><div class="reader-top"><a href="#reader">← Содержание</a><div class="reader-progress"><i id="reader-progress-fill"></i></div><button data-act="readerFont" data-delta="-1">A−</button><button data-act="readerFont" data-delta="1">A+</button></div><section class="reader-cover"><small>ЧАСТЬ I · МЕХАНИКА</small><h1>${esc(c.title)}</h1><p>${esc(n.lead)}</p></section><figure class="reader-figure"><svg viewBox="0 0 640 190" role="img" aria-label="Схема действия сил на тело"><defs><marker id="rarr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#6fe0d7"/></marker></defs><rect x="250" y="68" width="110" height="65" rx="12" fill="#24475c" stroke="#8bd9df" stroke-width="3"/><path d="M305 68V22" stroke="#6fe0d7" stroke-width="4" marker-end="url(#rarr)"/><path d="M360 100H470" stroke="#e9b45d" stroke-width="4" marker-end="url(#rarr)"/><path d="M305 133V174" stroke="#9b8df4" stroke-width="4" marker-end="url(#rarr)"/><text x="320" y="105" text-anchor="middle" fill="#f4fbff" font-size="17">m</text><text x="323" y="16" text-anchor="middle" fill="#6fe0d7" font-size="15">N</text><text x="480" y="105" fill="#e9b45d" font-size="15">F</text><text x="323" y="188" text-anchor="middle" fill="#9b8df4" font-size="14">mg</text></svg><figcaption>Схема сил, действующих на тело. В задаче учитывают все силы и их направления.</figcaption></figure>${cards}<section class="reader-summary"><b>Главное в главе</b><p>${esc(n.summary)}</p></section><div class="reader-bottom"><button data-act="readerPrev" data-v="${Math.max(2,r.ch-1)}">← Предыдущая</button><button data-act="readerNext" data-v="${Math.min(33,r.ch+1)}">Следующая →</button></div></article>`);
+ const article=document.getElementById('reader-article'); if(article){const update=()=>{const max=article.scrollHeight-article.clientHeight;const p=max>0?Math.min(100,Math.round(article.scrollTop/max*100)):0;const f=document.getElementById('reader-progress-fill');if(f)f.style.width=p+'%';};article.addEventListener('scroll',update,{passive:true});}
 }
 
 /* ---------- Глава ---------- */
@@ -571,6 +633,9 @@ document.addEventListener('click', async e => {
   try {
   switch (d.act) {
     case 'closeSheet': closeSheet(); break;
+    case 'readerFont': readerFontSize=Math.max(15,Math.min(23,readerFontSize+Number(d.delta)));localStorage.setItem('f2-reader-font',String(readerFontSize));render();break;
+    case 'readerPrev': location.hash='read-'+d.v;break;
+    case 'readerNext': location.hash='read-'+d.v;break;
     case 'step': curStep[lessonKey(r.ch, r.li)] = d.v; render(); ui.main.scrollTop = 0; break;
     case 'vToggle': vToggle(); break;
     case 'vCc': if (V) { V.cc = !V.cc; S.cc = V.cc ? 1 : 0; save(); $('#vsub').hidden = !V.cc; } break;
@@ -659,4 +724,4 @@ function boot() {
   if (!F2_IN_APP && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   if (F2_IN_APP) setTimeout(checkAppUpdates, 1800);
 }
-boot();
+// boot() is called after all feature modules have been loaded (sandbox.js).
