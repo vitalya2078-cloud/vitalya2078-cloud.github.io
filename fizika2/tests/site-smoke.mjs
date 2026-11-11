@@ -111,7 +111,7 @@ try {
     await page.locator('#sb-cats button').filter({ hasText: 'Электричество' }).click();
   });
   await page.locator('.sb-item').filter({ hasText: 'Батарея' }).click();
-  await page.locator('[data-sb="clear"]').click();
+  await page.locator('.sb-mobile-tools [data-sb="clear"]').click();
 
 
   // Полный успешный сценарий «Инженера катастроф».
