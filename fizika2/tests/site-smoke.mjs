@@ -81,6 +81,7 @@ try {
   await page.mouse.click(placeBounds.x + placeBounds.width * 0.52, placeBounds.y + placeBounds.height * 0.52);
   await page.locator('.sb-mobile-main [data-sb="properties"]').click();
   await page.waitForSelector('.sb-picked');
+  await page.locator('.sb-mobile-main [data-sb="properties"]').click(); // закрываем инспектор перед работой со сценой
   await page.locator('.sb-mobile-tools [data-sb="mode"][data-v="orbit"]').click();
   const scene = page.locator('#sb-canvas');
   const bounds = await scene.boundingBox();
