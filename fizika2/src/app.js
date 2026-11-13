@@ -138,7 +138,7 @@ function vHome() {
     `<section class="duo"><div class="card goal">${ring(gp)}<div><b>Цель дня</b><small>${today} / ${DAY_GOAL} XP</small></div></div><div class="card goal">${ic('flame', 'big fire')}<div><b>${st ? plural(st, 'день', 'дня', 'дней') : 'Нет серии'}</b><small>серия</small></div></div></section>` +
     `<a class="reader-hero" href="#reader" style="display:flex;align-items:center;gap:14px;margin:14px 0;padding:16px;border:1px solid #3c7180;border-radius:18px;background:linear-gradient(115deg,#142d40,#1a3b4a 65%,#203457);color:#eefaff;text-decoration:none;box-shadow:0 8px 24px #06101d44"><span style="display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:15px;background:#245363;color:#9ef0e8">${ic('book-open')}</span><span style="display:flex;flex-direction:column;gap:4px;min-width:0"><small style="font-size:9px;letter-spacing:1.5px;color:#91dcd9;font-weight:800">БОЛЬШОЙ ЧИТАТЕЛЬ</small><b style="font-size:16px">Конспекты по физике</b><em style="font-size:12px;color:#b7cdd8;font-style:normal">Формулы, схемы и удобное чтение</em></span><span style="margin-left:auto;color:#a9dfe1">${ic('chevron-right')}</span></a>`+
      `<section class="card qk"><button data-act="warm" class="qrow">${ic('zap')}<span><b>Разминка</b><small>10 вопросов из базы экзамена, комбо умножает опыт</small></span>${ic('chevron-right')}</button>` +
-    `<a href="#book" class="qrow">${ic('book-open')}<span><b>Учебник</b><small>7 частей, 33 главы · открыта глава 1</small></span>${ic('chevron-right')}</a></section>`);
+    `<a href="#book" class="qrow">${ic('book-open')}<span><b>Учебник</b><small>7 частей, 33 главы · уроки: ${plural(Object.keys(CONTENT).length, 'глава', 'главы', 'глав')}, конспекты — все</small></span>${ic('chevron-right')}</a></section>`);
 }
 function ring(f) { const r = 26, L = 2 * Math.PI * r; return `<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" stroke="var(--line)" stroke-width="7" fill="none"/><circle cx="32" cy="32" r="${r}" stroke="var(--gold)" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L * (1 - f)}" transform="rotate(-90 32 32)"/></svg>`; }
 
@@ -149,7 +149,8 @@ function vBook() {
     const chs = CHAPTERS.filter(c => c.part === P.n);
     return `<section class="part" style="--pc:${P.col}"><div class="ph"><span class="pn">Часть ${P.n}</span><h2>${esc(P.title)}</h2></div>` +
       chs.map(ch => {
-        const ready = chReady(ch.n), pr = chapterProgress(ch.n);
+        const ready = chReady(ch.n), pr = chapterProgress(ch.n), notes = !ready && !!READER_NOTES[ch.n];
+        if (notes) return `<a href="#read-${ch.n}" class="chrow notes"><span class="cthumb">${chapterArt(ch)}</span><span class="cinfo"><small>Глава ${ch.n} · § ${ch.a}–${ch.b}</small><b>${esc(ch.title)}</b><span class="tag">конспект · уроки скоро</span></span>${ic('book-open')}</a>`;
         return `<${ready ? `a href="#c${ch.n}"` : 'div'} class="chrow${ready ? '' : ' soon'}"><span class="cthumb">${chapterArt(ch)}</span><span class="cinfo"><small>Глава ${ch.n} · § ${ch.a}–${ch.b}</small><b>${esc(ch.title)}</b>${ready ? `<span class="pbar"><i style="width:${pr * 100}%"></i></span>` : '<span class="tag">скоро</span>'}</span>${ready ? ic('chevron-right') : ic('lock', 'mute')}</${ready ? 'a' : 'div'}>`;
       }).join('') + '</section>';
   }).join(''));
@@ -227,8 +228,9 @@ const READER_EXTRA = {
 };
 for(const [k,v] of Object.entries(READER_EXTRA)){
  const [title,p1,p2,p3,formula]=v;
- READER_NOTES[k]={lead:title+'. Краткий систематический конспект основных положений главы.',sections:[
- {h:'Основные понятия и физическая модель',p:p1},
+ const s0=p1.split(/(?<=[.!?])\s/)[0], rest=p1.slice(s0.length).trim();
+ READER_NOTES[k]={lead:s0,sections:[
+ {h:'Основные понятия и физическая модель',p:rest||p1},
  {h:'Законы и закономерности',p:p2},
  {h:'Применение и важные следствия',p:p3},
  {h:'Основные формулы главы',p:'Используй формулы после определения физических величин, условий применимости и выбранных направлений отсчёта.',formula}
@@ -252,6 +254,7 @@ function readerStyles(){return `<style>
 .reader-note{padding:12px 14px;border-left:3px solid #e7b45b;background:rgba(231,180,91,.09);border-radius:0 12px 12px 0;color:var(--muted);font-size:.91em;margin:14px 0}
 .reader-figure{margin:18px 0;padding:14px;border:1px solid var(--line);border-radius:17px;background:var(--card)}
 .reader-figure svg{display:block;width:100%;height:auto;max-height:210px}
+.reader-art{padding:0;overflow:hidden}.reader-art svg{max-height:none;aspect-ratio:640/220}.reader-art figcaption{padding:10px 14px 12px}
 .reader-figure figcaption{text-align:center;color:var(--muted);font-size:.8em;margin-top:8px}
 .reader-summary{margin:22px 0;padding:18px;border-radius:18px;background:linear-gradient(135deg,rgba(76,180,171,.14),rgba(87,116,190,.12));border:1px solid rgba(90,190,180,.25)}
 .reader-page{padding-bottom:108px}
@@ -264,13 +267,17 @@ function vReader(){
  const chapters=CHAPTERS.filter(c=>c.n>=2);
  setMain(readerStyles()+`<div class="reader-shell"><section class="reader-cover"><small>ФИЗИКА · БОЛЬШОЙ ЧИТАТЕЛЬ</small><h1>Читай и понимай</h1><p>Удобные конспекты по главам: определения, физический смысл, формулы и схемы. Размер текста адаптируется под экран.</p></section><div class="reader-top"><a href="#book">← Учебник</a><div class="reader-progress"><i style="width:3%"></i></div><button data-act="readerFont" data-delta="-1" aria-label="Уменьшить шрифт">A−</button><button data-act="readerFont" data-delta="1" aria-label="Увеличить шрифт">A+</button></div><h2 class="sec">Содержание</h2>${chapters.map(c=>`<a class="reader-chapter" href="#read-${c.n}"><span class="num">${String(c.n).padStart(2,'0')}</span><span><b>${esc(c.title)}</b><small>Глава ${c.n} · § ${c.a}–${c.b} · ${READER_NOTES[c.n]?'Конспект готов':'В очереди на конспект'}</small></span>${ic('chevron-right')}</a>`).join('')}</div>`);
 }
+// рисунок к главе в читателе: схема сил — для динамики, для остальных — иллюстрация главы
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+const READER_FORCE_FIG = `<figure class="reader-figure"><svg viewBox="0 0 640 190" role="img" aria-label="Схема действия сил на тело"><defs><marker id="rarr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#6fe0d7"/></marker></defs><rect x="250" y="68" width="110" height="65" rx="12" fill="#24475c" stroke="#8bd9df" stroke-width="3"/><path d="M305 68V22" stroke="#6fe0d7" stroke-width="4" marker-end="url(#rarr)"/><path d="M360 100H470" stroke="#e9b45d" stroke-width="4" marker-end="url(#rarr)"/><path d="M305 133V174" stroke="#9b8df4" stroke-width="4" marker-end="url(#rarr)"/><text x="320" y="105" text-anchor="middle" fill="#f4fbff" font-size="17">m</text><text x="323" y="16" text-anchor="middle" fill="#6fe0d7" font-size="15">N</text><text x="480" y="105" fill="#e9b45d" font-size="15">F</text><text x="323" y="188" text-anchor="middle" fill="#9b8df4" font-size="14">mg</text></svg><figcaption>Схема сил, действующих на тело. В задаче учитывают все силы и их направления.</figcaption></figure>`;
+const readerFig = c => c.n === 2 ? READER_FORCE_FIG : `<figure class="reader-figure reader-art">${chapterArt(c, 640, 220)}<figcaption>Глава ${c.n} · ${esc(c.title)}</figcaption></figure>`;
 function vReaderChapter(r){
  const c=CHAPTERS[r.ch-1], n=READER_NOTES[r.ch];
  if(!c){location.hash='reader';return}
  if(!n){location.hash='reader';return}
  frame(c.title,{back:true,sub:'Глава '+c.n+' · § '+c.a+'–'+c.b});
  const cards=n.sections.map((x,i)=>`<section><h2>${i+1}. ${esc(x.h)}</h2><p>${esc(x.p)}</p>${x.formula?`<div class="reader-formula">${esc(x.formula)}</div>`:''}${x.note?`<div class="reader-note"><b>Важно:</b> ${esc(x.note)}</div>`:''}</section>`).join('');
- setMain(readerStyles()+`<article class="reader-shell reader-page" id="reader-article"><div class="reader-top"><a href="#reader">← Содержание</a><div class="reader-progress"><i id="reader-progress-fill"></i></div><button data-act="readerFont" data-delta="-1">A−</button><button data-act="readerFont" data-delta="1">A+</button></div><section class="reader-cover"><small>ЧАСТЬ I · МЕХАНИКА</small><h1>${esc(c.title)}</h1><p>${esc(n.lead)}</p></section><figure class="reader-figure"><svg viewBox="0 0 640 190" role="img" aria-label="Схема действия сил на тело"><defs><marker id="rarr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#6fe0d7"/></marker></defs><rect x="250" y="68" width="110" height="65" rx="12" fill="#24475c" stroke="#8bd9df" stroke-width="3"/><path d="M305 68V22" stroke="#6fe0d7" stroke-width="4" marker-end="url(#rarr)"/><path d="M360 100H470" stroke="#e9b45d" stroke-width="4" marker-end="url(#rarr)"/><path d="M305 133V174" stroke="#9b8df4" stroke-width="4" marker-end="url(#rarr)"/><text x="320" y="105" text-anchor="middle" fill="#f4fbff" font-size="17">m</text><text x="323" y="16" text-anchor="middle" fill="#6fe0d7" font-size="15">N</text><text x="480" y="105" fill="#e9b45d" font-size="15">F</text><text x="323" y="188" text-anchor="middle" fill="#9b8df4" font-size="14">mg</text></svg><figcaption>Схема сил, действующих на тело. В задаче учитывают все силы и их направления.</figcaption></figure>${cards}<section class="reader-summary"><b>Главное в главе</b><p>${esc(n.summary)}</p></section><div class="reader-bottom"><button data-act="readerPrev" data-v="${Math.max(2,r.ch-1)}" ${r.ch===2?"disabled":""}>← Назад</button><span class="reader-page-count">${r.ch} / 33</span><button data-act="readerNext" data-v="${Math.min(33,r.ch+1)}" ${r.ch===33?"disabled":""}>Далее →</button></div></article>`);
+ setMain(readerStyles()+`<article class="reader-shell reader-page" id="reader-article"><div class="reader-top"><a href="#reader">← Содержание</a><div class="reader-progress"><i id="reader-progress-fill"></i></div><button data-act="readerFont" data-delta="-1">A−</button><button data-act="readerFont" data-delta="1">A+</button></div><section class="reader-cover"><small>ЧАСТЬ ${ROMAN[c.part]} · ${esc(PARTS[c.part - 1].title.toUpperCase())}</small><h1>${esc(c.title)}</h1><p>${esc(n.lead)}</p></section>${readerFig(c)}${cards}<section class="reader-summary"><b>Главное в главе</b><p>${esc(n.summary)}</p></section><div class="reader-bottom"><button data-act="readerPrev" data-v="${Math.max(2,r.ch-1)}" ${r.ch===2?"disabled":""}>← Назад</button><span class="reader-page-count">${r.ch} / 33</span><button data-act="readerNext" data-v="${Math.min(33,r.ch+1)}" ${r.ch===33?"disabled":""}>Далее →</button></div></article>`);
  const article=document.getElementById('reader-article'),main=document.getElementById('main'); if(article&&main){const update=()=>{const max=Math.max(1,article.offsetTop+article.scrollHeight-main.clientHeight);const p=Math.min(100,Math.max(0,Math.round(main.scrollTop/max*100)));const f=document.getElementById('reader-progress-fill');if(f)f.style.width=p+'%';};main.addEventListener('scroll',update,{passive:true});update();}
 }
 
@@ -287,32 +294,36 @@ function vChapter(r) {
   setMain(`<section class="chead"><div class="cart big">${chapterArt(ch, 360, 170)}</div><div class="chx"><small>Часть ${ch.part} · § ${ch.a}–${ch.b}</small><h1>${esc(ch.title)}</h1><div class="pbar"><i style="width:${chapterProgress(ch.n) * 100}%"></i></div></div></section>` +
     `<section class="path">${nodes}<span class="conn"></span><button class="node boss${bb >= 80 ? ' done' : ''}" data-act="boss" data-ch="${ch.n}"><span class="dot">${ic('swords')}</span><span class="nl"><small>финал главы · ${C1.boss.length} вопросов</small><b>Финальное испытание</b><small>${bb != null ? `лучший результат ${bb}%` : 'порог 80% · +150 XP'}</small></span></button></section>` +
     `<h2 class="sec">Учёные главы</h2><div class="sci">${C1.scientists.map(x => `<div class="scard${S.sci.includes(x.id) ? '' : ' locked'}"><b>${esc(x.name)}</b><small>${esc(x.years)}</small><p>${S.sci.includes(x.id) ? esc(x.fact) : 'Откроется после финального испытания главы'}</p></div>`).join('')}</div>` +
-    `<button class="btn line wide mt" data-act="chQuiz" data-ch="${ch.n}">${ic('dumbbell')}Вопросы экзамена по главе</button>`);
+    (chExam(ch.n).length ? `<button class="btn line wide mt" data-act="chQuiz" data-ch="${ch.n}">${ic('dumbbell')}Вопросы экзамена по главе · ${chExam(ch.n).length}</button>` : '') +
+    (READER_NOTES[ch.n] ? `<a class="btn line wide mt" href="#read-${ch.n}">${ic('book-open')}Конспект главы в читателе</a>` : ''));
 }
 const stars = n => `<span class="stars">${[1, 2, 3].map(i => ic('star', i <= n ? 'on' : '')).join('')}</span>`;
 
 /* ---------- Урок: Ролик · Конспект · Практика · Проверка ---------- */
 const STEPS = [['video', 'Ролик', 'clapperboard'], ['cards', 'Конспект', 'layers'], ['sim', 'Практика', 'sliders-horizontal'], ['quiz', 'Проверка', 'circle-check']];
 const curStep = {};
+// шаги урока: ролик — только если он есть; практика — симуляция или «Найди пару»
+const lessonSteps = L => STEPS.filter(([k]) => k === 'video' ? !!L.video : k === 'sim' ? !!(L.sim || (L.pairs && L.pairs.length >= 4)) : true);
 function vLesson(r) {
   const ch = CHAPTERS[r.ch - 1], C1 = CONTENT[r.ch], L = C1 && C1.lessons[r.li - 1]; if (!L) { location.hash = 'c' + r.ch; return; }
-  const key = lessonKey(r.ch, r.li), st = curStep[key] || 'video', done = S.steps[key] || {};
+  const steps = lessonSteps(L), key = lessonKey(r.ch, r.li), done = S.steps[key] || {};
+  let st = curStep[key] || steps[0][0]; if (!steps.some(s => s[0] === st)) st = steps[0][0];
   frame(esc(L.title), { back: true, sub: `Глава ${ch.n} · ${esc(L.par)}` });
-  const tabs = `<div class="steps">${STEPS.map(([k, t, i]) => `<button data-act="step" data-v="${k}" class="${k === st ? 'on' : ''}${done[k] ? ' ok' : ''}">${ic(done[k] ? 'check' : i)}<span>${t}</span></button>`).join('')}</div>`;
+  const tabs = `<div class="steps" style="grid-template-columns:repeat(${steps.length},1fr)">${steps.map(([k, t, i]) => `<button data-act="step" data-v="${k}" class="${k === st ? 'on' : ''}${done[k] ? ' ok' : ''}">${ic(done[k] ? 'check' : i)}<span>${t}</span></button>`).join('')}</div>`;
   if (st === 'video') { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
-  else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key); }
-  else if (st === 'sim') { setMain(tabs + `<div id="simbox"></div>`); simStart(SIMS[L.sim], key); }
+  else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); }
+  else if (st === 'sim') { setMain(tabs + `<div id="simbox"></div>`); if (L.sim) simStart(SIMS[L.sim], key, L); else pairStart(L, key); }
   else setMain(tabs + `<section class="card center"><div class="qic">${ic('circle-check', 'big')}</div><b class="h">Проверка по уроку</b><p class="mute">${plural(L.quiz.length, 'вопрос', 'вопроса', 'вопросов')} с объяснениями. Верные ответы подряд — комбо и больше опыта.${S.lessons[key] ? ` Лучший результат: ${S.lessons[key].best}%.` : ''}</p><button class="btn wide" data-act="lessonQuiz" data-ch="${r.ch}" data-li="${r.li}">Начать проверку</button></section>`);
 }
 function stepDone(key, k, xp) { const d = S.steps[key] || (S.steps[key] = {}); if (!d[k]) { d[k] = 1; save(); addXP(xp); } }
-const nextStepBtn = (k) => { const i = STEPS.findIndex(s => s[0] === k), n = STEPS[i + 1]; return n ? `<button class="btn wide mt" data-act="step" data-v="${n[0]}">Дальше: ${n[1]} ${ic('chevron-right')}</button>` : ''; };
+const nextStepBtn = (k, L) => { const S2 = lessonSteps(L), i = S2.findIndex(s => s[0] === k), n = S2[i + 1]; return n ? `<button class="btn wide mt" data-act="step" data-v="${n[0]}">Дальше: ${n[1]} ${ic('chevron-right')}</button>` : ''; };
 
 /* ---------- ролик: сцены на холсте + озвучка, синхронно ---------- */
 let V = null;
 function videoBox(ch, L) {
   return `<section class="vid"><div class="vwrap"><canvas id="vc" width="960" height="540"></canvas><button class="vplay" data-act="vToggle" aria-label="Смотреть">${ic('play')}</button></div>` +
     `<div class="vctl"><button class="vb" data-act="vToggle" aria-label="Пауза/смотреть" id="vpp">${ic('play')}</button><div class="vseek" id="vseek"><i></i></div><span id="vtime">0:00</span><button class="vb" data-act="vCc" aria-label="Субтитры" id="vcc">${ic('captions')}</button></div>` +
-    `<p class="vsub" id="vsub">${esc(L.video[0].t)}</p></section>` + nextStepBtn('video');
+    `<p class="vsub" id="vsub">${esc(L.video[0].t)}</p></section>` + nextStepBtn('video', L);
 }
 function videoInit(ch, li, L) {
   const id = `ch${ch}-l${li}`, meta = (typeof VOICE !== 'undefined' && VOICE[id]) || null;
@@ -356,19 +367,20 @@ function cardsBox(L) {
   return `<div class="cards" id="cards">${L.cards.map((k, i) => `<article class="kcard"><span class="kind" style="--kc:${KIND[k.k][1]}">${KIND[k.k][0]}</span><h3>${vx(k.h)}</h3>${k.fig && FIGS[k.fig] ? FIGS[k.fig]() : ''}${k.f ? `<div class="formula">${k.f.split('\n').map(l => `<span>${vx(l)}</span>`).join('')}</div>` : ''}<p>${nlv(k.t)}</p><small class="kn">${i + 1} / ${L.cards.length}</small></article>`).join('')}</div>` +
     `<div class="dots" id="dots">${L.cards.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><div class="cnav"><button class="btn line" data-act="cPrev">${ic('chevron-left')}</button><button class="btn wide" data-act="cNext" id="cnext">Дальше ${ic('chevron-right')}</button></div>`;
 }
-function cardsInit(key) {
+function cardsInit(key, L) {
+  const S2 = lessonSteps(L), nx = S2[S2.findIndex(s => s[0] === 'cards') + 1];
   const box = $('#cards'); if (!box) return;
   box.addEventListener('scroll', () => {
     const i = Math.round(box.scrollLeft / box.clientWidth), n = box.children.length;
     $('#dots').querySelectorAll('i').forEach((d, k) => d.classList.toggle('on', k === i));
-    $('#cnext').innerHTML = i >= n - 1 ? `Дальше: Практика ${ic('chevron-right')}` : `Дальше ${ic('chevron-right')}`;
+    $('#cnext').innerHTML = i >= n - 1 && nx ? `Дальше: ${nx[1]} ${ic('chevron-right')}` : `Дальше ${ic('chevron-right')}`;
     if (i >= n - 1) stepDone(key, 'cards', 15);
   }, { passive: true });
 }
 
 /* ---------- симуляции с кнопками − / + ---------- */
 let G = null;
-function simStart(sim, key) { G = { sim, key, round: 1, tries: 0, v: sim.param.init, res: null }; sim.newRound(G); simDraw(); }
+function simStart(sim, key, L) { G = { sim, key, L, round: 1, tries: 0, v: sim.param.init, res: null }; sim.newRound(G); simDraw(); }
 function simDraw() {
   const { sim } = G, p = sim.param, f = d => (d > 0 ? '+' : '−') + String(Math.abs(d)).replace('.', ',');
   $('#simbox').innerHTML = `<section class="card sim"><div class="row"><b>${esc(sim.title)}</b><small>задание ${G.round} из ${sim.rounds}</small></div><p class="task">${esc(G.task)}</p><canvas id="sc" width="720" height="400"></canvas><p class="smsg ${G.res ? (G.res.ok ? 'ok' : 'bad') : ''}" id="smsg">${G.res ? esc(G.res.msg) : 'Меняй значение кнопками и жми «Проверить».'}</p>` +
@@ -383,9 +395,33 @@ function simGo() {
   G.tries++; const res = G.sim.check(G, G.v); G.res = res; const m = $('#smsg'); m.className = 'smsg ' + (res.ok ? 'ok' : 'bad'); m.textContent = res.msg;
   if (!res.ok) { buzz(25); return; }
   buzz([15, 40, 15]);
-  if (G.round >= G.sim.rounds) { const key = G.key; setTimeout(() => { stepDone(key, 'sim', 20); $('#simbox').innerHTML = `<section class="card center">${ic('trophy', 'big gold')}<b class="h">Практика пройдена!</b><p class="mute">${G.sim.rounds} задания за ${plural(G.tries, 'попытку', 'попытки', 'попыток')}.</p></section>` + nextStepBtn('sim'); }, 700); return; }
+  if (G.round >= G.sim.rounds) { const key = G.key; setTimeout(() => { stepDone(key, 'sim', 20); $('#simbox').innerHTML = `<section class="card center">${ic('trophy', 'big gold')}<b class="h">Практика пройдена!</b><p class="mute">${G.sim.rounds} задания за ${plural(G.tries, 'попытку', 'попытки', 'попыток')}.</p></section>` + nextStepBtn('sim', G.L); }, 700); return; }
   setTimeout(() => { if (!G) return; G.round++; G.res = null; G.sim.newRound(G); simDraw(); }, 1200);
 }
+/* ---------- «Найди пару»: понятие ↔ формула или определение ---------- */
+let PG = null;
+function pairStart(L, key) {
+  const pairs = shuffle(L.pairs).slice(0, 5);
+  PG = { L, key, pairs, left: shuffle(pairs.map((_, i) => i)), right: shuffle(pairs.map((_, i) => i)), sel: null, done: new Set(), miss: 0 };
+  pairDraw();
+}
+function pairDraw() {
+  const b = (side, i) => `<button class="pc${side === 'r' && !/[а-яё]/i.test(PG.pairs[i][1]) ? ' math' : ''}${PG.done.has(i) ? ' done' : ''}${PG.sel && PG.sel.side === side && PG.sel.i === i ? ' sel' : ''}" data-act="pp" data-side="${side}" data-i="${i}"${PG.done.has(i) ? ' disabled' : ''}>${vx(PG.pairs[i][side === 'l' ? 0 : 1])}</button>`;
+  $('#simbox').innerHTML = `<section class="card sim"><div class="row"><b>Найди пару</b><small>пар ${PG.done.size} из ${PG.pairs.length} · ошибок ${PG.miss}</small></div><p class="task">Нажми понятие слева, потом подходящее справа.</p><div class="pairs"><div>${PG.left.map(i => b('l', i)).join('')}</div><div>${PG.right.map(i => b('r', i)).join('')}</div></div></section>`;
+}
+function pairPick(side, i) {
+  if (!PG || PG.done.has(i)) return;
+  if (!PG.sel || PG.sel.side === side) { PG.sel = { side, i }; pairDraw(); return; }
+  const ok = PG.sel.i === i; PG.sel = null;
+  if (ok) { PG.done.add(i); buzz(12); } else { PG.miss++; buzz([30, 40, 30]); }
+  pairDraw();
+  if (!ok) { const el = document.querySelector(`.pc[data-side="${side}"][data-i="${i}"]`); if (el) el.classList.add('shake'); }
+  if (PG.done.size === PG.pairs.length) {
+    const { key, L, miss } = PG, st = miss === 0 ? 3 : miss <= 2 ? 2 : 1;
+    setTimeout(() => { stepDone(key, 'sim', 20); $('#simbox').innerHTML = `<section class="card center">${ic('trophy', 'big gold')}<b class="h">Все пары найдены!</b>${stars(st)}<p class="mute">Ошибок: ${miss}.</p></section>` + nextStepBtn('sim', L); }, 500);
+  }
+}
+
 let stepRep = null; const stepStop = () => { clearTimeout(stepRep); clearInterval(stepRep); stepRep = null; };
 document.addEventListener('pointerdown', e => { const b = e.target.closest('[data-step]'); if (!b) return; e.preventDefault(); stepStop(); const go = () => simStep(+b.dataset.step); go(); stepRep = setTimeout(() => { stepRep = setInterval(go, 70); }, 380); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.addEventListener(t, stepStop));
@@ -438,14 +474,13 @@ let BANK = null;
 async function bank() { if (BANK) return BANK; let c = null; if (F2_IN_APP) { try { c = JSON.parse(localStorage.getItem('f2-content') || 'null'); } catch (e) {} } if (!c) c = await fetch('content.json').then(r => r.json()); BANK = []; c.topics.forEach(t => t.q.forEach((q, j) => { if (q.x && q.x.length) BANK.push({ key: t.id + '-' + (j + 1), tid: t.id, topicTitle: t.title, q: q.t, a: q.a, x: q.x, p: q.p ? 'pics/' + encodeURIComponent(q.p) : '', e: typeof q.e === 'string' ? q.e.replace('⚠', '') : q.e ? [q.e.i, q.e.r].filter(Boolean).join(' ') : '' }); })); return BANK; }
 // привязка вопросов экзамена к главам учебника (пилот: глава 1 — кинематика)
 // вопросы экзамена, отобранные вручную по главам учебника (номер темы-номер вопроса в базе)
-const CH_KEYS = { 1: ['1-5', '1-6', '1-10', '1-19', '1-34', '1-45', '1-47', '1-58', '1-67', '1-68', '1-74', '1-80', '1-81', '1-82'] };
-const CH_FILTER = Object.fromEntries(Object.entries(CH_KEYS).map(([n, ks]) => [n, it => ks.includes(it.key)]));
+const chExam = n => (CONTENT[n] && CONTENT[n].exam) || [];
 function vTrain() {
   frame('Тренировка', { sub: 'Выбирай формат и закрепляй знания' });
   setMain(`<section class="card hero2">${comboChip()}<b class="h">Тренируйся — получай опыт</b><p class="mute">3 верных ответа подряд — ×2, 6 — ×3, 10 — ×4. Ошибка сбрасывает комбо. Твой рекорд: ${S.bestCombo}.</p></section>` +
     `<h2 class="sec">Быстрый старт</h2><div class="tiles"><button class="tile" data-act="warm">${ic('zap', 'big blue')}<b>Разминка</b><small>10 случайных вопросов · 2–3 минуты</small></button><button class="tile" data-act="exam">${ic('graduation-cap', 'big gold')}<b>Пробный экзамен</b><small>30 вопросов · итоговая оценка</small></button>` +
     `<button class="tile" data-act="topics">${ic('layers', 'big mint')}<b>По темам</b><small>Выбери раздел физики и тренируйся точечно</small></button><button class="tile" data-act="errs">${ic('repeat', 'big pink')}<b>Разбор ошибок</b><small>${plural(S.wrong.length, 'вопрос', 'вопроса', 'вопросов')} ждут повторения</small></button></div>` +
-    `<h2 class="sec">Практика по учебнику</h2><button class="qrow card" data-act="chQuiz" data-ch="1">${ic('target')}<span><b>Кинематика · глава 1</b><small>14 вопросов по пройденному материалу</small></span>${ic('chevron-right')}</button>`);
+    `<h2 class="sec">Практика по учебнику</h2><section class="card qk">${CHAPTERS.filter(c => chExam(c.n).length).map(c => `<button class="qrow" data-act="chQuiz" data-ch="${c.n}">${ic('target')}<span><b>Глава ${c.n}. ${esc(c.title)}</b><small>${plural(chExam(c.n).length, 'вопрос', 'вопроса', 'вопросов')} экзамена по главе</small></span>${ic('chevron-right')}</button>`).join('')}</section>`);
 }
 
 
@@ -699,9 +734,10 @@ document.addEventListener('click', async e => {
     case 'step': curStep[lessonKey(r.ch, r.li)] = d.v; render(); ui.main.scrollTop = 0; break;
     case 'vToggle': vToggle(); break;
     case 'vCc': if (V) { V.cc = !V.cc; S.cc = V.cc ? 1 : 0; save(); $('#vsub').hidden = !V.cc; } break;
-    case 'cNext': { const box = $('#cards'), i = Math.round(box.scrollLeft / box.clientWidth); if (i >= box.children.length - 1) { curStep[lessonKey(r.ch, r.li)] = 'sim'; render(); } else box.scrollTo({ left: (i + 1) * box.clientWidth, behavior: 'smooth' }); break; }
+    case 'cNext': { const box = $('#cards'), i = Math.round(box.scrollLeft / box.clientWidth); if (i >= box.children.length - 1) { const L = CONTENT[r.ch].lessons[r.li - 1], S2 = lessonSteps(L), nx = S2[S2.findIndex(s => s[0] === 'cards') + 1]; if (nx) { curStep[lessonKey(r.ch, r.li)] = nx[0]; render(); ui.main.scrollTop = 0; } } else box.scrollTo({ left: (i + 1) * box.clientWidth, behavior: 'smooth' }); break; }
     case 'cPrev': { const box = $('#cards'), i = Math.round(box.scrollLeft / box.clientWidth); box.scrollTo({ left: Math.max(0, i - 1) * box.clientWidth, behavior: 'smooth' }); break; }
     case 'simGo': simGo(); break;
+    case 'pp': pairPick(d.side, +d.i); break;
     case 'lessonQuiz': { const L = CONTENT[d.ch].lessons[d.li - 1]; startQuiz({ kind: 'lesson', key: lessonKey(+d.ch, +d.li), title: 'Проверка: ' + L.title, items: L.quiz, back: '#l' + d.ch + '-' + d.li }); break; }
     case 'boss': { const C1 = CONTENT[d.ch]; startQuiz({ kind: 'boss', ch: +d.ch, title: 'Финал главы ' + d.ch, items: shuffle(C1.boss), back: '#c' + d.ch }); break; }
     case 'topics': { const B = await bank(), topics = [...new Map(B.map(x => [x.tid, x.topicTitle])).entries()]; sheet(`<b class="h">Тренировка по теме</b><p class="mute">Выбери раздел — подберём вопросы из экзаменационной базы.</p><div class="topic-list">${topics.map(([id, title]) => `<button class="qrow" data-act="topicQuiz" data-topic="${id}"><span><b>${esc(title || ('Раздел ' + id))}</b><small>${B.filter(x => x.tid === id).length} вопросов в базе</small></span>${ic('chevron-right')}</button>`).join('')}</div>`); break; }
@@ -718,7 +754,7 @@ document.addEventListener('click', async e => {
     case 'warm': { const B = await bank(); startQuiz({ kind: 'warm', title: 'Разминка', items: shuffle(B).slice(0, 10) }); break; }
     case 'exam': { const B = await bank(); startQuiz({ kind: 'exam', title: 'Экзамен', items: shuffle(B).slice(0, 30) }); break; }
     case 'errs': { const B = await bank(), W = B.filter(x => S.wrong.includes(x.key)); if (!W.length) { toast(ic('check') + 'Ошибок нет — отлично!'); break; } startQuiz({ kind: 'errs', title: 'Мои ошибки', items: shuffle(W).slice(0, 20) }); break; }
-    case 'chQuiz': { const B = await bank(), W = B.filter(CH_FILTER[d.ch] || (() => false)); startQuiz({ kind: 'chq', title: 'Глава ' + d.ch + ': вопросы экзамена', items: shuffle(W).slice(0, 15), back: '#c' + d.ch }); break; }
+    case 'chQuiz': { closeSheet(); const B = await bank(), ks = chExam(+d.ch), W = B.filter(x => ks.includes(x.key)); startQuiz({ kind: 'chq', title: 'Глава ' + d.ch + ': вопросы экзамена', items: shuffle(W).slice(0, 15), back: '#c' + d.ch }); break; }
     case 'pick': qPick(+d.v); break;
     case 'qNext': Q.i++; Q.ans = null; render(); break;
     case 'qAgain': startQuiz(Object.assign({}, Q, { items: Q.items.map(({ opts, ...x }) => x), saved: false })); break;
