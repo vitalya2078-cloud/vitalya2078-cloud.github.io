@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 59;
+  var embedded = 62;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -882,6 +882,14 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 .sb .sb-scene-foot button{font-size:12px;padding:8px 10px}
 .sb .sb-hint{font-size:12.5px}.sb .sb-hud{font-size:11.5px}
 .sb .sb-inspector-close{width:36px;height:36px}
+
+/* ---------- Видео-конспекты ---------- */
+.rv #rvc{display:block;width:100%;aspect-ratio:720/400;height:auto;background:#0E1424}
+.reader-video{margin:0 0 18px}
+.reader-video-h{display:flex;align-items:center;gap:8px;margin:0 2px 8px}
+.reader-video-h .ic{width:18px;height:18px;color:var(--coral)}
+.reader-video-h b{font-size:15px}.reader-video-h small{margin-left:auto;color:var(--mute);font-size:12.5px}
+.rv .vsub{min-height:3em}
 </style>
 </head>
 <body data-view="home">
@@ -899,7 +907,7 @@ h1,h2,h3,.h,.lab-tile b{font-family:var(--display);letter-spacing:-.025em}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 59;
+const F2_BUILD = 62;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -1898,7 +1906,7 @@ const SIMS = {
 };
 
 /* Значки Lucide (lucide.dev, лицензия ISC) */
-const ICONS = {"house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "book-open": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "dumbbell": "<path d=\"M14.4 14.4 9.6 9.6\" /> <path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\" /> <path d=\"m21.5 21.5-1.4-1.4\" /> <path d=\"M3.9 3.9 2.5 2.5\" /> <path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\" />", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "pause": "<rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" /> <rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" />", "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />", "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\" />", "zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />", "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" /> <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "sliders-horizontal": "<line x1=\"21\" x2=\"14\" y1=\"4\" y2=\"4\" /> <line x1=\"10\" x2=\"3\" y1=\"4\" y2=\"4\" /> <line x1=\"21\" x2=\"12\" y1=\"12\" y2=\"12\" /> <line x1=\"8\" x2=\"3\" y1=\"12\" y2=\"12\" /> <line x1=\"21\" x2=\"16\" y1=\"20\" y2=\"20\" /> <line x1=\"12\" x2=\"3\" y1=\"20\" y2=\"20\" /> <line x1=\"14\" x2=\"14\" y1=\"2\" y2=\"6\" /> <line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\" /> <line x1=\"16\" x2=\"16\" y1=\"18\" y2=\"22\" />", "layers": "<path d=\"m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z\" /> <path d=\"m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65\" /> <path d=\"m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" /> <path d=\"m6.2 5.3 3.1 3.9\" /> <path d=\"m12.4 3.4 3.1 4\" /> <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "target": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />", "award": "<path d=\"m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526\" /> <circle cx=\"12\" cy=\"8\" r=\"6\" />", "calendar": "<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "swords": "<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\" /> <line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\" /> <line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\" /> <line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\" /> <polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\" /> <line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\" /> <line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\" /> <line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\" />", "sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "timer": "<line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "repeat": "<path d=\"m17 2 4 4-4 4\" /> <path d=\"M3 11v-1a4 4 0 0 1 4-4h14\" /> <path d=\"m7 22-4-4 4-4\" /> <path d=\"M21 13v1a4 4 0 0 1-4 4H3\" />", "mouse-pointer-2": "<path d=\"M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z\" />", "rotate-cw": "<path d=\"M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8\" /> <path d=\"M21 3v5h-5\" />", "move": "<path d=\"M12 2v20\" /> <path d=\"m15 19-3 3-3-3\" /> <path d=\"m19 9 3 3-3 3\" /> <path d=\"M2 12h20\" /> <path d=\"m5 9-3 3 3 3\" /> <path d=\"m9 5 3-3 3 3\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "settings": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "trash-2": "<path d=\"M3 6h18\" /> <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /> <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /> <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /> <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "undo-2": "<path d=\"M9 14 4 9l5-5\" /> <path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\" />", "eraser": "<path d=\"m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21\" /> <path d=\"M22 21H7\" /> <path d=\"m5 11 9 9\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "snowflake": "<line x1=\"2\" x2=\"22\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"2\" y2=\"22\" /> <path d=\"m20 16-4-4 4-4\" /> <path d=\"m4 8 4 4-4 4\" /> <path d=\"m16 4-4 4-4-4\" /> <path d=\"m8 20 4-4 4 4\" />", "crosshair": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\" /> <line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\" /> <line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\" />", "grid-3x3": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"M3 15h18\" /> <path d=\"M9 3v18\" /> <path d=\"M15 3v18\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "minus": "<path d=\"M5 12h14\" />", "book-open-check": "<path d=\"M12 21V7\" /> <path d=\"m16 12 2 2 4-4\" /> <path d=\"M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3\" />", "gauge": "<path d=\"m12 14 4-4\" /> <path d=\"M3.34 19a10 10 0 1 1 17.32 0\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "magnet": "<path d=\"m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3L6 15\" /> <path d=\"m5 8 4 4\" /> <path d=\"m12 15 4 4\" />", "waves": "<path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" />"};
+const ICONS = {"house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "book-open": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "dumbbell": "<path d=\"M14.4 14.4 9.6 9.6\" /> <path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\" /> <path d=\"m21.5 21.5-1.4-1.4\" /> <path d=\"M3.9 3.9 2.5 2.5\" /> <path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\" />", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "pause": "<rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" /> <rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" />", "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />", "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\" />", "zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />", "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" /> <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "sliders-horizontal": "<line x1=\"21\" x2=\"14\" y1=\"4\" y2=\"4\" /> <line x1=\"10\" x2=\"3\" y1=\"4\" y2=\"4\" /> <line x1=\"21\" x2=\"12\" y1=\"12\" y2=\"12\" /> <line x1=\"8\" x2=\"3\" y1=\"12\" y2=\"12\" /> <line x1=\"21\" x2=\"16\" y1=\"20\" y2=\"20\" /> <line x1=\"12\" x2=\"3\" y1=\"20\" y2=\"20\" /> <line x1=\"14\" x2=\"14\" y1=\"2\" y2=\"6\" /> <line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\" /> <line x1=\"16\" x2=\"16\" y1=\"18\" y2=\"22\" />", "layers": "<path d=\"m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z\" /> <path d=\"m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65\" /> <path d=\"m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" /> <path d=\"m6.2 5.3 3.1 3.9\" /> <path d=\"m12.4 3.4 3.1 4\" /> <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "target": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />", "award": "<path d=\"m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526\" /> <circle cx=\"12\" cy=\"8\" r=\"6\" />", "calendar": "<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "swords": "<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\" /> <line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\" /> <line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\" /> <line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\" /> <polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\" /> <line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\" /> <line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\" /> <line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\" />", "sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "timer": "<line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "repeat": "<path d=\"m17 2 4 4-4 4\" /> <path d=\"M3 11v-1a4 4 0 0 1 4-4h14\" /> <path d=\"m7 22-4-4 4-4\" /> <path d=\"M21 13v1a4 4 0 0 1-4 4H3\" />", "mouse-pointer-2": "<path d=\"M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z\" />", "rotate-cw": "<path d=\"M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8\" /> <path d=\"M21 3v5h-5\" />", "move": "<path d=\"M12 2v20\" /> <path d=\"m15 19-3 3-3-3\" /> <path d=\"m19 9 3 3-3 3\" /> <path d=\"M2 12h20\" /> <path d=\"m5 9-3 3 3 3\" /> <path d=\"m9 5 3-3 3 3\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "settings": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "trash-2": "<path d=\"M3 6h18\" /> <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /> <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /> <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /> <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "undo-2": "<path d=\"M9 14 4 9l5-5\" /> <path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\" />", "eraser": "<path d=\"m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21\" /> <path d=\"M22 21H7\" /> <path d=\"m5 11 9 9\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "snowflake": "<line x1=\"2\" x2=\"22\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"2\" y2=\"22\" /> <path d=\"m20 16-4-4 4-4\" /> <path d=\"m4 8 4 4-4 4\" /> <path d=\"m16 4-4 4-4-4\" /> <path d=\"m8 20 4-4 4 4\" />", "crosshair": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\" /> <line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\" /> <line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\" />", "grid-3x3": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"M3 15h18\" /> <path d=\"M9 3v18\" /> <path d=\"M15 3v18\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "minus": "<path d=\"M5 12h14\" />", "book-open-check": "<path d=\"M12 21V7\" /> <path d=\"m16 12 2 2 4-4\" /> <path d=\"M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3\" />", "gauge": "<path d=\"m12 14 4-4\" /> <path d=\"M3.34 19a10 10 0 1 1 17.32 0\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "magnet": "<path d=\"m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3L6 15\" /> <path d=\"m5 8 4 4\" /> <path d=\"m12 15 4 4\" />", "waves": "<path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "video": "<path d=\"m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5\" /> <rect x=\"2\" y=\"6\" width=\"14\" height=\"12\" rx=\"2\" />"};
 const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 /* Каталог виртуальной лаборатории: 7 глав, 35 тем, 35 самостоятельных опытов */
@@ -2301,7 +2309,8 @@ function vReaderChapter(r){
  if(!n){location.hash='reader';return}
  frame(c.title,{back:true,sub:'Глава '+c.n+' · § '+c.a+'–'+c.b});
  const cards=n.sections.map((x,i)=>`<section><h2>${i+1}. ${esc(x.h)}</h2><p>${esc(x.p)}</p>${x.formula?`<div class="reader-formula">${esc(x.formula)}</div>`:''}${x.note?`<div class="reader-note"><b>Важно:</b> ${esc(x.note)}</div>`:''}</section>`).join('');
- setMain(readerStyles()+`<article class="reader-shell reader-page" id="reader-article"><div class="reader-top"><a href="#reader">← Содержание</a><div class="reader-progress"><i id="reader-progress-fill"></i></div><button data-act="readerFont" data-delta="-1">A−</button><button data-act="readerFont" data-delta="1">A+</button></div><section class="reader-cover"><small>ЧАСТЬ ${ROMAN[c.part]} · ${esc(PARTS[c.part - 1].title.toUpperCase())}</small><h1>${esc(c.title)}</h1><p>${esc(n.lead)}</p></section>${readerFig(c)}${cards}<section class="reader-summary"><b>Главное в главе</b><p>${esc(n.summary)}</p></section><div class="reader-bottom"><button data-act="readerPrev" data-v="${Math.max(1,r.ch-1)}" ${r.ch===1?"disabled":""}>← Назад</button><span class="reader-page-count">${r.ch} / 33</span><button data-act="readerNext" data-v="${Math.min(33,r.ch+1)}" ${r.ch===33?"disabled":""}>Далее →</button></div></article>`);
+ setMain(readerStyles()+`<article class="reader-shell reader-page" id="reader-article"><div class="reader-top"><a href="#reader">← Содержание</a><div class="reader-progress"><i id="reader-progress-fill"></i></div><button data-act="readerFont" data-delta="-1">A−</button><button data-act="readerFont" data-delta="1">A+</button></div><section class="reader-cover"><small>ЧАСТЬ ${ROMAN[c.part]} · ${esc(PARTS[c.part - 1].title.toUpperCase())}</small><h1>${esc(c.title)}</h1><p>${esc(n.lead)}</p></section><div class="reader-video"><div class="reader-video-h">${ic('clapperboard')}<b>Видео-конспект главы</b><small id="rv-len"></small></div>${rvBox('Видео-конспект: ' + c.title)}</div>${readerFig(c)}${cards}<section class="reader-summary"><b>Главное в главе</b><p>${esc(n.summary)}</p></section><div class="reader-bottom"><button data-act="readerPrev" data-v="${Math.max(1,r.ch-1)}" ${r.ch===1?"disabled":""}>← Назад</button><span class="reader-page-count">${r.ch} / 33</span><button data-act="readerNext" data-v="${Math.min(33,r.ch+1)}" ${r.ch===33?"disabled":""}>Далее →</button></div></article>`);
+ { const sc = rvChapterScenes(c.n); rvInit(sc, c.n, null); const len = $('#rv-len'); if (len && RV) len.textContent = '≈ ' + Math.max(1, Math.round(RV.dur / 60)) + ' мин · ' + sc.length + ' сцен'; }
  const article=document.getElementById('reader-article'),main=document.getElementById('main'); if(article&&main){const update=()=>{const max=Math.max(1,article.offsetTop+article.scrollHeight-main.clientHeight);const p=Math.min(100,Math.max(0,Math.round(main.scrollTop/max*100)));const f=document.getElementById('reader-progress-fill');if(f)f.style.width=p+'%';};main.addEventListener('scroll',update,{passive:true});update();}
 }
 
@@ -2326,15 +2335,16 @@ const stars = n => `<span class="stars">${[1, 2, 3].map(i => ic('star', i <= n ?
 /* ---------- Урок: Ролик · Конспект · Практика · Проверка ---------- */
 const STEPS = [['video', 'Ролик', 'clapperboard'], ['cards', 'Конспект', 'layers'], ['sim', 'Практика', 'sliders-horizontal'], ['quiz', 'Проверка', 'circle-check']];
 const curStep = {};
-// шаги урока: ролик — только если он есть; практика — симуляция или «Найди пару»
-const lessonSteps = L => STEPS.filter(([k]) => k === 'video' ? !!L.video : k === 'sim' ? !!(L.sim || (L.pairs && L.pairs.length >= 4)) : true);
+// шаги урока: ролик — свой (L.video) или собранный из карточек; практика — симуляция или «Найди пару»
+const lessonSteps = L => STEPS.filter(([k]) => k === 'video' ? !!(L.video || (L.cards && L.cards.length)) : k === 'sim' ? !!(L.sim || (L.pairs && L.pairs.length >= 4)) : true);
 function vLesson(r) {
   const ch = CHAPTERS[r.ch - 1], C1 = CONTENT[r.ch], L = C1 && C1.lessons[r.li - 1]; if (!L) { location.hash = 'c' + r.ch; return; }
   const steps = lessonSteps(L), key = lessonKey(r.ch, r.li), done = S.steps[key] || {};
   let st = curStep[key] || steps[0][0]; if (!steps.some(s => s[0] === st)) st = steps[0][0];
   frame(esc(L.title), { back: true, sub: `Глава ${ch.n} · ${esc(L.par)}` });
   const tabs = `<div class="steps" style="grid-template-columns:repeat(${steps.length},1fr)">${steps.map(([k, t, i]) => `<button data-act="step" data-v="${k}" class="${k === st ? 'on' : ''}${done[k] ? ' ok' : ''}">${ic(done[k] ? 'check' : i)}<span>${t}</span></button>`).join('')}</div>`;
-  if (st === 'video') { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
+  if (st === 'video' && L.video) { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
+  else if (st === 'video') { setMain(tabs + rvBox(L.title) + nextStepBtn('video', L)); rvInit(rvLessonScenes(r.ch, L), r.ch, () => stepDone(key, 'video', 10)); }
   else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); }
   else if (st === 'sim') { setMain(tabs + `<div id="simbox"></div>`); if (L.sim) simStart(SIMS[L.sim], key, L); else pairStart(L, key); }
   else setMain(tabs + `<section class="card center"><div class="qic">${ic('circle-check', 'big')}</div><b class="h">Проверка по уроку</b><p class="mute">${plural(L.quiz.length, 'вопрос', 'вопроса', 'вопросов')} с объяснениями. Верные ответы подряд — комбо и больше опыта.${S.lessons[key] ? ` Лучший результат: ${S.lessons[key].best}%.` : ''}</p><button class="btn wide" data-act="lessonQuiz" data-ch="${r.ch}" data-li="${r.li}">Начать проверку</button></section>`);
@@ -2383,7 +2393,7 @@ async function vToggle() {
 }
 function vEnd() { if (!V) return; V.playing = false; $('.vplay') && ($('.vplay').hidden = false); $('#vpp') && ($('#vpp').innerHTML = ic('rotate-ccw')); stepDone(V.key, 'video', 10); }
 function vSeek(e) { const b = $('#vseek'); if (!b || !V) return; const r = b.getBoundingClientRect(), f = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); V.t = f * V.dur; if (V.audio) V.audio.currentTime = V.t; vDraw(); }
-function stopLoops() { if (typeof sbStop === 'function') sbStop(); if (V) { V.playing = false; cancelAnimationFrame(V.raf); if (V.audio) V.audio.pause(); V = null; } if (G && G.raf) cancelAnimationFrame(G.raf); if (LAB && LAB.raf) { cancelAnimationFrame(LAB.raf); LAB.raf=0; LAB.run=false; LAB.paused=false; } }
+function stopLoops() { if (typeof sbStop === 'function') sbStop(); if (typeof rvStop === 'function') rvStop(); if (V) { V.playing = false; cancelAnimationFrame(V.raf); if (V.audio) V.audio.pause(); V = null; } if (G && G.raf) cancelAnimationFrame(G.raf); if (LAB && LAB.raf) { cancelAnimationFrame(LAB.raf); LAB.raf=0; LAB.run=false; LAB.paused=false; } }
 
 /* ---------- карточки конспекта: листаются пальцем ---------- */
 const KIND = { idea: ['Главное', 'var(--blue)'], def: ['Определение', 'var(--mint)'], formula: ['Формула', 'var(--gold)'], trap: ['Ловушка', 'var(--pink)'], ex: ['Пример', 'var(--violet)'] };
@@ -2509,6 +2519,7 @@ document.addEventListener('click', async e => {
     case 'readerNext': location.hash='read-'+d.v;break;
     case 'step': curStep[lessonKey(r.ch, r.li)] = d.v; render(); ui.main.scrollTop = 0; break;
     case 'vToggle': vToggle(); break;
+    case 'rvToggle': case 'rvVoice': rvAction(d.act); break;
     case 'vCc': if (V) { V.cc = !V.cc; S.cc = V.cc ? 1 : 0; save(); $('#vsub').hidden = !V.cc; } break;
     case 'cNext': { const box = $('#cards'), i = Math.round(box.scrollLeft / box.clientWidth); if (i >= box.children.length - 1) { const L = CONTENT[r.ch].lessons[r.li - 1], S2 = lessonSteps(L), nx = S2[S2.findIndex(s => s[0] === 'cards') + 1]; if (nx) { curStep[lessonKey(r.ch, r.li)] = nx[0]; render(); ui.main.scrollTop = 0; } } else box.scrollTo({ left: (i + 1) * box.clientWidth, behavior: 'smooth' }); break; }
     case 'cPrev': { const box = $('#cards'), i = Math.round(box.scrollLeft / box.clientWidth); box.scrollTo({ left: Math.max(0, i - 1) * box.clientWidth, behavior: 'smooth' }); break; }
@@ -2659,12 +2670,15 @@ function labPainter(cv) {
     },
     /** Подпись. size — размер на широком экране; на телефоне он увеличивается. */
     text(s, x, y, { col = LC.mute, size = 14, align = 'left', bold = false, base = 'middle' } = {}) {
+      if (d.quiet && x === 22 && y === 56) return; // в ролике подсказка опыта не нужна
+      s = String(s).replace(/\u20D7/g, '');
       c.fillStyle = col; c.textAlign = align; c.textBaseline = base;
       c.font = (bold ? '700 ' : '500 ') + Math.round(size * fs) + 'px Manrope, system-ui, sans-serif';
       c.fillText(s, x, y);
     },
     /** Подпись на тёмной плашке — читается поверх любого рисунка. */
     tag(s, x, y, col = LC.text, size = 13) {
+      s = String(s).replace(/\u20D7/g, '');
       c.font = '700 ' + Math.round(size * fs) + 'px Manrope, system-ui, sans-serif';
       const w = c.measureText(s).width + 10 * fs, h = (size + 8) * fs;
       const X = clamp(x - w / 2, 2, LAB_W - w - 2), Y = clamp(y - h / 2, 2, LAB_H - h - 2);
@@ -2709,7 +2723,7 @@ function labPainter(cv) {
       }
       d.text(unit, x1 + 10, y + 18, { size: 11 });
     },
-    title(s) { d.text(s, 22, 26, { col: LC.gold, size: 14, bold: true }); }
+    title(s) { if (!d.quiet) d.text(s, 22, 26, { col: LC.gold, size: 14, bold: true }); }
   };
   return d;
 }
@@ -3572,6 +3586,219 @@ document.addEventListener('click', e => {
 });
 new MutationObserver(() => { if (document.querySelector('.sb-inspector input[type=range]:not([data-st])')) sbStepperize(); })
   .observe(document.documentElement, { childList: true, subtree: true });
+
+/* =====================================================================
+   Видео-конспекты.
+   Ролик собирается из материала главы (конспект читателя) или урока (карточки):
+   каждая сцена — заголовок, формула и живая модель из лаборатории.
+   Озвучка — голос устройства (Web Speech API), если он есть; иначе — субтитры.
+   ===================================================================== */
+
+/* Какая модель лаборатории иллюстрирует фрагмент текста. Порядок важен: сначала частные случаи. */
+const RV_MODELS = [
+  [/свободн\w* паден/i, 'freefall'], [/под углом к горизонту|брошен\w* под углом/i, 'projectile'],
+  [/окружност|центростремит|углов\w* скорост|вращени/i, 'circular'],
+  [/равноускорен|равнопеременн|ускорени/i, 'accelerated'], [/наклонн\w* плоскост/i, 'incline'],
+  [/трени/i, 'friction'], [/Гук|упруг\w* деформ|жёсткост/i, 'elasticity'], [/момент\w* сил|рычаг|плеч/i, 'torque'],
+  [/второй закон|закон\w* Ньютон|сила и ускорение|F = ma/i, 'newton'],
+  [/Архимед|выталкивающ/i, 'buoyancy'], [/Паскал/i, 'pascal'], [/Бернулли|неразрывност|течени/i, 'bernoulli'],
+  [/гидростат|давлени\w* жидкост|давлени\w* в покоящейся/i, 'pressure'],
+  [/Карно|теплов\w* машин|КПД/i, 'heatengine'], [/первое начало|первый закон термодинам/i, 'firstlaw'],
+  [/теплопровод/i, 'conduction'], [/теплоёмк|количеств\w* теплоты/i, 'calorimetry'],
+  [/Клапейрон|Менделеев|уравнени\w* состояния/i, 'idealgas'], [/идеальн\w* газ|молекул|давлени\w* газа/i, 'gaspressure'],
+  [/Лоренц|движущ\w* заряд/i, 'magnetic'],
+  [/параллельн/i, 'parallel'], [/Джоул\w*.Ленц|мощност\w* тока/i, 'power'], [/закон\w* Ома|сопротивлени\w* проводник|сила тока/i, 'ohm'], [/электромагнитн\w* индукц|Фараде|ЭДС индукц|правил\w* Ленца/i, 'induction'],
+  [/резонанс|вынужденн/i, 'resonance'], [/маятник/i, 'pendulum'], [/пружин|гармоническ|колебани/i, 'spring'],
+  [/звук/i, 'sound'], [/интерференц|Юнг|когерентн/i, 'interference'], [/линз/i, 'lens'], [/зеркал/i, 'mirror'],
+  [/преломлени/i, 'refraction'], [/отражени/i, 'reflection'], [/волн/i, 'wave'],
+  [/скорост|перемещени|путь/i, 'uniform']
+];
+/* В каких главах учебника модель уместна — чтобы «колебания» в оптике не превратились в пружину. */
+const RV_RANGE = { uniform: [1, 5], accelerated: [1, 5], freefall: [1, 5], projectile: [1, 5], circular: [1, 5, 14], newton: [2, 4], friction: [2, 4], incline: [2, 4], elasticity: [2, 4], torque: [4, 4],
+  pressure: [6, 6], buoyancy: [6, 6], pascal: [6, 6], bernoulli: [6, 6], gaspressure: [8, 10], idealgas: [8, 10], firstlaw: [9, 10], heatengine: [9, 10], calorimetry: [9, 10], conduction: [9, 10],
+  ohm: [12, 13], parallel: [12, 13], power: [12, 13], magnetic: [14, 14], induction: [15, 17], spring: [3, 3, 18], pendulum: [18, 18], resonance: [18, 18], wave: [19, 20, 23], sound: [19, 19],
+  reflection: [21, 21, 24], refraction: [21, 21, 24], lens: [21, 21], mirror: [21, 21], interference: [22, 23] };
+function rvModelFor(text, ch) {
+  for (const [re, m] of RV_MODELS) {
+    if (!re.test(text)) continue;
+    const r = RV_RANGE[m]; if (!ch || !r || (ch >= r[0] && ch <= r[1]) || r.slice(2).includes(ch)) return m;
+  }
+  return null;
+}
+const rvFirstSentence = s => (String(s || '').match(/^.+?[.!?](?=\s|$)/) || [String(s || '')])[0];
+
+/** Сцены ролика по конспекту главы. */
+function rvChapterScenes(ch) {
+  const c = CHAPTERS[ch - 1], n = READER_NOTES[ch]; if (!c || !n) return [];
+  const chapterModel = rvModelFor(c.title + ' ' + n.sections.map(x => x.h + ' ' + x.p).join(' '), ch);
+  const out = [{ kind: 'title', h: c.title, sub: 'Глава ' + c.n + ' · § ' + c.a + '–' + c.b, text: 'Глава ' + c.n + '. ' + c.title + '. ' + n.lead }];
+  n.sections.forEach((x, i) => {
+    const model = rvModelFor(x.h + ' ' + x.p + ' ' + (x.formula || ''), ch);
+    const text = x.p + (x.note ? ' Важно: ' + x.note : '');
+    if (model) out.push({ kind: 'model', h: x.h, text, model, formula: x.formula });
+    else if (x.formula) out.push({ kind: 'formula', h: x.h, text, formula: x.formula, model: chapterModel });
+    else out.push({ kind: 'idea', h: x.h, text, key: rvFirstSentence(x.p), num: i + 1 });
+  });
+  out.push({ kind: 'summary', h: 'Главное в главе', text: n.summary });
+  return out;
+}
+/** Сцены ролика по карточкам урока (для уроков без собственного ролика). */
+function rvLessonScenes(ch, L) {
+  const c = CHAPTERS[ch - 1], lessonModel = rvModelFor(L.title + ' ' + L.cards.map(k => k.h + ' ' + (k.f || '') + ' ' + k.t).join(' '), ch);
+  const out = [{ kind: 'title', h: L.title, sub: 'Глава ' + c.n + ' · ' + L.par, text: L.title + '. ' + L.lead }];
+  L.cards.forEach((k, i) => {
+    const model = rvModelFor(k.h + ' ' + (k.f || '') + ' ' + k.t, ch);
+    const say = k.k === 'trap' ? 'Частая ошибка. ' + k.t : k.k === 'ex' ? 'Пример. ' + k.t : k.h + '. ' + k.t;
+    if (k.f) out.push({ kind: model ? 'model' : 'formula', h: k.h, text: say, formula: k.f, model: model || lessonModel });
+    else out.push({ kind: k.k === 'trap' ? 'trap' : 'idea', h: k.h, text: say, key: k.t, num: i + 1 });
+  });
+  out.push({ kind: 'summary', h: 'Итог урока', text: 'Мы разобрали: ' + L.cards.filter(k => k.k !== 'trap' && k.k !== 'ex').map(k => k.h.toLowerCase()).join(', ') + '. Закрепи материал в практике и проверке.' });
+  return out;
+}
+
+/* ---------- Рисование сцен (координаты 720×400, как в лаборатории) ---------- */
+function rvWrap(d, s, maxW, size, bold) {
+  d.c.font = (bold ? '700 ' : '500 ') + Math.round(size * d.fs) + 'px Manrope, system-ui, sans-serif';
+  const lines = []; let line = '';
+  for (const w of String(s).split(/\s+/)) { const t = line ? line + ' ' + w : w; if (d.c.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+  if (line) lines.push(line); return lines;
+}
+function rvLines(d, s, x, y, maxW, size, opts = {}) {
+  const lines = rvWrap(d, s, maxW, size, opts.bold).slice(0, opts.max || 6), lh = size * d.fs * 1.32;
+  lines.forEach((l, i) => d.text(i === (opts.max || 6) - 1 && rvWrap(d, s, maxW, size, opts.bold).length > lines.length ? l + '…' : l, x, y + i * lh, Object.assign({ size }, opts)));
+  return lines.length * lh;
+}
+function rvHeader(d, h, p, col = LC.gold) {
+  d.c.globalAlpha = clamp(p * 6, 0, 1);
+  d.rect(0, 0, LAB_W, 46, 'rgba(11,16,32,.9)', null, 0, 0); d.line(0, 46, LAB_W * clamp(p * 3, 0, 1), 46, col, 2.5);
+  d.text(h, 20, 24, { col: LC.text, size: 15, bold: true }); d.c.globalAlpha = 1;
+}
+const RV_ART = {};
+function rvArt(ch) {
+  if (RV_ART[ch] !== undefined) return RV_ART[ch];
+  const c = CHAPTERS[ch - 1]; RV_ART[ch] = null; if (!c || typeof chapterArt !== 'function') return null;
+  const img = new Image(); img.onload = () => { RV_ART[ch] = img; }; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(chapterArt(c, 640, 360).replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"'));
+  return null;
+}
+function rvDrawModel(d, m, t) {
+  const x = Object.values(LABS).find(e => e.model === m), M = LAB_MODELS[m]; if (!x || !M) return;
+  const dur = M.dur(x.a0, x.b0), T = Number.isFinite(dur) ? dur + 1.5 : 6;
+  d.quiet = true; M.draw(d, x.a0, x.b0, Math.min(t % T, Number.isFinite(dur) ? dur : t)); d.quiet = false;
+}
+function rvDraw(d, sc, p, lt, ch) {
+  d.clear(); const ease2 = q => 1 - (1 - clamp(q, 0, 1)) ** 3;
+  if (sc.kind === 'title') {
+    const art = rvArt(ch); if (art) { d.c.globalAlpha = .22 + .06 * Math.sin(lt); d.c.drawImage(art, 330, 150, 390, 219); d.c.globalAlpha = 1; }
+    const k = ease2(p * 4);
+    d.c.globalAlpha = k; d.tag(sc.sub.toUpperCase(), 120, 90, LC.blue, 13);
+    const hh = rvLines(d, sc.h, 30 + (1 - k) * -30, 150, 560, 30, { col: LC.text, bold: true, max: 3 });
+    const uy = 150 + hh - 6; d.line(30, uy, 30 + 220 * ease2(p * 3), uy, LC.coral, 5); d.c.globalAlpha = 1;
+    d.text('видео-конспект', 30, uy + 30, { col: LC.mute, size: 14 });
+  } else if (sc.kind === 'model') {
+    rvDrawModel(d, sc.model, lt); rvHeader(d, sc.h, p, LC.mint);
+    if (sc.formula) { const f = String(sc.formula).split('\n')[0]; d.c.globalAlpha = ease2((p - .1) * 5); d.tag(f, 560, 76, LC.gold, 16); d.c.globalAlpha = 1; }
+  } else if (sc.kind === 'formula') {
+    if (sc.model) { d.c.globalAlpha = .18; rvDrawModel(d, sc.model, lt); d.c.globalAlpha = 1; d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.55)', null, 0, 0); }
+    rvHeader(d, sc.h, p, LC.gold);
+    const lines = String(sc.formula).split('\n').filter(Boolean), n = lines.length, step = Math.min(70, 280 / n);
+    lines.forEach((l, i) => {
+      const q = ease2((p - .08 - i * .55 / n) * 5); if (q <= 0) return;
+      d.c.globalAlpha = q; const y = 200 - (n - 1) * step / 2 + i * step;
+      const sz = Math.min(26, (step - 8) / (1.8 * d.fs)); d.rect(60, y - sz * d.fs * .9, 600, sz * d.fs * 1.8, 'rgba(255,194,75,.07)', 'rgba(255,194,75,.35)', 1.5, 12);
+      d.text(l, 360 + (1 - q) * 30, y, { col: LC.gold, size: sz, bold: true, align: 'center' }); d.c.globalAlpha = 1;
+    });
+  } else if (sc.kind === 'idea' || sc.kind === 'trap') {
+    rvHeader(d, sc.h, p, sc.kind === 'trap' ? LC.coral : LC.violet);
+    const col = sc.kind === 'trap' ? LC.coral : LC.violet, r = 34 + 4 * Math.sin(lt * 2);
+    d.circle(80, 150, r, sc.kind === 'trap' ? 'rgba(255,122,89,.15)' : 'rgba(180,140,255,.15)', col, 3);
+    d.text(sc.kind === 'trap' ? '!' : String(sc.num || '•'), 80, 151, { col, size: 26, bold: true, align: 'center' });
+    d.c.globalAlpha = ease2((p - .05) * 4); rvLines(d, sc.key, 140, 130, 540, 21, { col: LC.text, bold: true, max: 7 }); d.c.globalAlpha = 1;
+  } else if (sc.kind === 'summary') {
+    rvHeader(d, sc.h, p, LC.mint);
+    d.c.globalAlpha = ease2(p * 4); rvLines(d, rvFirstSentence(sc.text), 40, 110, 640, 22, { col: LC.text, bold: true, max: 6 }); d.c.globalAlpha = 1;
+    d.c.globalAlpha = ease2((p - .5) * 4); d.tag('Дальше — проверь себя в разделе «Тесты»', 360, 350, LC.mint, 14); d.c.globalAlpha = 1;
+  }
+}
+
+/* ---------- Плеер ---------- */
+let RV = null;
+const rvVoiceOK = () => typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined';
+function rvVoiceOn() { try { return localStorage.getItem('f2-rv-voice') !== '0'; } catch (e) { return true; } }
+/** Разметка плеера. */
+function rvBox(title) {
+  return `<section class="vid rv"><div class="vwrap"><canvas id="rvc" aria-label="${esc(title)}"></canvas><button class="vplay" data-act="rvToggle" aria-label="Смотреть">${ic('play')}</button></div>
+    <div class="vctl"><button class="vb" data-act="rvToggle" id="rvpp" aria-label="Пауза/смотреть">${ic('play')}</button><div class="vseek" id="rvseek"><i></i></div><span id="rvtime">0:00</span>
+    ${rvVoiceOK() ? `<button class="vb" data-act="rvVoice" id="rvvoice" aria-label="Озвучка">${ic(rvVoiceOn() ? 'volume-2' : 'volume-x')}</button>` : ''}</div>
+    <p class="vsub" id="rvsub"></p></section>`;
+}
+/** Запуск плеера: scenes — сцены, onEnd — вызов по окончании (например, отметить шаг урока). */
+function rvInit(scenes, ch, onEnd) {
+  rvStop();
+  const lens = scenes.map(s => Math.max(5, s.text.length / 13.5)), starts = []; let t = 0; lens.forEach(l => { starts.push(t); t += l; });
+  RV = { scenes, ch, onEnd, starts, dur: t, t: 0, playing: false, last: 0, raf: 0, seg: -1, speaking: false, utt: null };
+  rvArt(ch); rvFrame();
+  if (!rvDraw.ro && 'ResizeObserver' in window) rvDraw.ro = new ResizeObserver(() => { if (RV && !RV.playing) rvFrame(); });
+  if (rvDraw.ro && $('#rvc')) { rvDraw.ro.disconnect(); rvDraw.ro.observe($('#rvc')); }
+}
+function rvSeg(t) { let i = 0; while (i + 1 < RV.starts.length && t >= RV.starts[i + 1]) i++; const a = RV.starts[i], b = i + 1 < RV.starts.length ? RV.starts[i + 1] : RV.dur; return { i, p: clamp((t - a) / (b - a), 0, 1), lt: t - a, end: b }; }
+function rvFrame() {
+  const cv = $('#rvc'); if (!cv || !RV) return;
+  const { i, p, lt } = rvSeg(RV.t), d = labPainter(cv);
+  try { rvDraw(d, RV.scenes[i], p, lt, RV.ch); } catch (e) { console.error('rv draw', e); }
+  const sub = $('#rvsub'); if (sub && sub.dataset.i !== String(i)) { sub.textContent = RV.scenes[i].text; sub.dataset.i = i; }
+  const bar = $('#rvseek i'); if (bar) bar.style.width = (100 * RV.t / RV.dur) + '%';
+  const tm = $('#rvtime'); if (tm) tm.textContent = mmss(RV.t) + ' / ' + mmss(RV.dur);
+}
+function rvSpeak(i) {
+  if (!rvVoiceOK() || !rvVoiceOn()) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(RV.scenes[i].text.replace(/[⃗]/g, '').replace(/·/g, ' на ').replace(/\//g, ' делить на '));
+  u.lang = 'ru-RU'; u.rate = 1.02;
+  const v = speechSynthesis.getVoices().find(x => /^ru/i.test(x.lang)); if (v) u.voice = v;
+  u.onend = u.onerror = () => { if (RV && RV.utt === u) RV.speaking = false; };
+  RV.utt = u; RV.speaking = true; speechSynthesis.speak(u);
+}
+function rvLoop(now) {
+  if (!RV || !RV.playing) return;
+  const dt = (now - RV.last) / 1000; RV.last = now;
+  const s = rvSeg(RV.t);
+  if (s.i !== RV.seg) { RV.seg = s.i; rvSpeak(s.i); }
+  // пока голос дочитывает фрагмент, сцена ждёт на последнем кадре
+  const next = RV.t + dt;
+  if (RV.speaking && next >= s.end - .05) RV.t = s.end - .05; else RV.t = next;
+  if (RV.t >= RV.dur) { RV.t = RV.dur; rvFrame(); return rvEnd(); }
+  rvFrame(); RV.raf = requestAnimationFrame(rvLoop);
+}
+function rvToggle() {
+  if (!RV) return;
+  RV.playing = !RV.playing;
+  if (RV.playing) {
+    if (RV.t >= RV.dur - .05) RV.t = 0;
+    RV.t = RV.starts[rvSeg(RV.t).i]; RV.seg = -1; RV.last = performance.now(); RV.raf = requestAnimationFrame(rvLoop);
+  } else { cancelAnimationFrame(RV.raf); if (rvVoiceOK()) speechSynthesis.cancel(); RV.speaking = false; }
+  const pl = $('.rv .vplay'); if (pl) pl.hidden = RV.playing; const pp = $('#rvpp'); if (pp) pp.innerHTML = ic(RV.playing ? 'pause' : 'play');
+}
+function rvEnd() {
+  if (!RV) return; RV.playing = false; RV.speaking = false;
+  const pl = $('.rv .vplay'); if (pl) pl.hidden = false; const pp = $('#rvpp'); if (pp) pp.innerHTML = ic('rotate-ccw');
+  if (RV.onEnd) RV.onEnd();
+}
+function rvStop() { if (!RV) return; RV.playing = false; cancelAnimationFrame(RV.raf); if (rvVoiceOK()) speechSynthesis.cancel(); RV = null; }
+function rvSeek(e) {
+  const b = $('#rvseek'); if (!b || !RV) return;
+  const r = b.getBoundingClientRect(); RV.t = clamp((e.clientX - r.left) / r.width, 0, 1) * RV.dur; RV.seg = -1;
+  if (rvVoiceOK()) speechSynthesis.cancel(); RV.speaking = false; rvFrame();
+}
+document.addEventListener('pointerdown', e => { if (e.target.closest('#rvseek')) rvSeek(e); });
+function rvAction(act) {
+  if (act === 'rvToggle') rvToggle();
+  else if (act === 'rvVoice') {
+    const on = !rvVoiceOn(); try { localStorage.setItem('f2-rv-voice', on ? '1' : '0'); } catch (e) {}
+    const b = $('#rvvoice'); if (b) b.innerHTML = ic(on ? 'volume-2' : 'volume-x');
+    if (!on && rvVoiceOK()) { speechSynthesis.cancel(); if (RV) RV.speaking = false; } else if (RV && RV.playing) rvSpeak(rvSeg(RV.t).i);
+    toast(on ? 'Озвучка включена (голос устройства)' : 'Озвучка выключена — остаются субтитры');
+  }
+}
 
 /* ---------- Тесты: 900 вопросов экзамена, проверки уроков и финалы глав ----------
    Режимы: «с пояснениями» (ответ сразу, комбо, опыт) и «как на экзамене» (разбор в конце, оценка 60/75/90).

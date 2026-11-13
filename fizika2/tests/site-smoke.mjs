@@ -36,6 +36,11 @@ try {
   await page.locator('a[href="#read-2"]').click();
   await page.waitForSelector('.reader-formula');
   assert.ok((await page.locator('#ttl').innerText()).includes('Динамика материальной точки'));
+  // Видео-конспект главы: плеер есть, ролик запускается.
+  await page.waitForSelector('#rvc');
+  await page.locator('.rv .vplay').click();
+  await page.waitForFunction(() => window.RV ? RV.playing && RV.t > 0 : typeof RV !== 'undefined' && RV && RV.playing && RV.t > 0);
+  await page.locator('#rvpp').click();
   await page.locator('[data-act="readerFont"][data-delta="1"]').click();
   assert.equal(await page.locator('body').getAttribute('data-view'), 'readerChapter');
   await page.locator('[data-act="readerNext"]').click();

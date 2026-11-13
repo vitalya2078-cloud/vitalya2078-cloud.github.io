@@ -9,7 +9,7 @@ for w in ('400', '600', '700'): html = html.replace('{{F%s}}' % w, base64.b64enc
 icons = json.loads(re.search(r'const ICONS = (\{.*?\});', rd('icons.js')).group(1))
 html = re.sub(r'\{\{I_([\w-]+)\}\}', lambda m: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % icons[m.group(1)], html)
 voice = json.load(open(os.path.join(D, 'voice.json'), encoding='utf-8')) if os.path.exists(os.path.join(D, 'voice.json')) else {}
-js = 'const F2_BUILD = __F2_BUILD__;\nconst F2_IN_APP = /FizikaApp/.test(navigator.userAgent);\nconst VOICE = %s;\n' % json.dumps(voice) + '\n'.join([rd('book.js')] + [rd(os.path.join('content', f)) for f in sorted(os.listdir(os.path.join(D, 'content'))) if f.endswith('.js')] + [rd(f) for f in ('scenes.js', 'icons.js', 'lab-data.js', 'app.js', 'lab.js', 'tests.js', 'bridge-game.js', 'sandbox.js')])
+js = 'const F2_BUILD = __F2_BUILD__;\nconst F2_IN_APP = /FizikaApp/.test(navigator.userAgent);\nconst VOICE = %s;\n' % json.dumps(voice) + '\n'.join([rd('book.js')] + [rd(os.path.join('content', f)) for f in sorted(os.listdir(os.path.join(D, 'content'))) if f.endswith('.js')] + [rd(f) for f in ('scenes.js', 'icons.js', 'lab-data.js', 'app.js', 'lab.js', 'reader-video.js', 'tests.js', 'bridge-game.js', 'sandbox.js')])
 probe = html.replace('{{JS}}', js)
 meta_path = os.path.join(D, 'meta.json')
 meta = json.load(open(meta_path, encoding='utf-8')) if os.path.exists(meta_path) else {'build': 1, 'app_hash': ''}

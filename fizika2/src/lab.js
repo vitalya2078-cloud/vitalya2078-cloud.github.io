@@ -73,12 +73,15 @@ function labPainter(cv) {
     },
     /** Подпись. size — размер на широком экране; на телефоне он увеличивается. */
     text(s, x, y, { col = LC.mute, size = 14, align = 'left', bold = false, base = 'middle' } = {}) {
+      if (d.quiet && x === 22 && y === 56) return; // в ролике подсказка опыта не нужна
+      s = String(s).replace(/\u20D7/g, '');
       c.fillStyle = col; c.textAlign = align; c.textBaseline = base;
       c.font = (bold ? '700 ' : '500 ') + Math.round(size * fs) + 'px Manrope, system-ui, sans-serif';
       c.fillText(s, x, y);
     },
     /** Подпись на тёмной плашке — читается поверх любого рисунка. */
     tag(s, x, y, col = LC.text, size = 13) {
+      s = String(s).replace(/\u20D7/g, '');
       c.font = '700 ' + Math.round(size * fs) + 'px Manrope, system-ui, sans-serif';
       const w = c.measureText(s).width + 10 * fs, h = (size + 8) * fs;
       const X = clamp(x - w / 2, 2, LAB_W - w - 2), Y = clamp(y - h / 2, 2, LAB_H - h - 2);
@@ -123,7 +126,7 @@ function labPainter(cv) {
       }
       d.text(unit, x1 + 10, y + 18, { size: 11 });
     },
-    title(s) { d.text(s, 22, 26, { col: LC.gold, size: 14, bold: true }); }
+    title(s) { if (!d.quiet) d.text(s, 22, 26, { col: LC.gold, size: 14, bold: true }); }
   };
   return d;
 }

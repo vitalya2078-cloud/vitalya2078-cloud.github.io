@@ -294,7 +294,8 @@ function vReaderChapter(r){
  if(!n){location.hash='reader';return}
  frame(c.title,{back:true,sub:'Глава '+c.n+' · § '+c.a+'–'+c.b});
  const cards=n.sections.map((x,i)=>`<section><h2>${i+1}. ${esc(x.h)}</h2><p>${esc(x.p)}</p>${x.formula?`<div class="reader-formula">${esc(x.formula)}</div>`:''}${x.note?`<div class="reader-note"><b>Важно:</b> ${esc(x.note)}</div>`:''}</section>`).join('');
- setMain(readerStyles()+`<article class="reader-shell reader-page" id="reader-article"><div class="reader-top"><a href="#reader">← Содержание</a><div class="reader-progress"><i id="reader-progress-fill"></i></div><button data-act="readerFont" data-delta="-1">A−</button><button data-act="readerFont" data-delta="1">A+</button></div><section class="reader-cover"><small>ЧАСТЬ ${ROMAN[c.part]} · ${esc(PARTS[c.part - 1].title.toUpperCase())}</small><h1>${esc(c.title)}</h1><p>${esc(n.lead)}</p></section>${readerFig(c)}${cards}<section class="reader-summary"><b>Главное в главе</b><p>${esc(n.summary)}</p></section><div class="reader-bottom"><button data-act="readerPrev" data-v="${Math.max(1,r.ch-1)}" ${r.ch===1?"disabled":""}>← Назад</button><span class="reader-page-count">${r.ch} / 33</span><button data-act="readerNext" data-v="${Math.min(33,r.ch+1)}" ${r.ch===33?"disabled":""}>Далее →</button></div></article>`);
+ setMain(readerStyles()+`<article class="reader-shell reader-page" id="reader-article"><div class="reader-top"><a href="#reader">← Содержание</a><div class="reader-progress"><i id="reader-progress-fill"></i></div><button data-act="readerFont" data-delta="-1">A−</button><button data-act="readerFont" data-delta="1">A+</button></div><section class="reader-cover"><small>ЧАСТЬ ${ROMAN[c.part]} · ${esc(PARTS[c.part - 1].title.toUpperCase())}</small><h1>${esc(c.title)}</h1><p>${esc(n.lead)}</p></section><div class="reader-video"><div class="reader-video-h">${ic('clapperboard')}<b>Видео-конспект главы</b><small id="rv-len"></small></div>${rvBox('Видео-конспект: ' + c.title)}</div>${readerFig(c)}${cards}<section class="reader-summary"><b>Главное в главе</b><p>${esc(n.summary)}</p></section><div class="reader-bottom"><button data-act="readerPrev" data-v="${Math.max(1,r.ch-1)}" ${r.ch===1?"disabled":""}>← Назад</button><span class="reader-page-count">${r.ch} / 33</span><button data-act="readerNext" data-v="${Math.min(33,r.ch+1)}" ${r.ch===33?"disabled":""}>Далее →</button></div></article>`);
+ { const sc = rvChapterScenes(c.n); rvInit(sc, c.n, null); const len = $('#rv-len'); if (len && RV) len.textContent = '≈ ' + Math.max(1, Math.round(RV.dur / 60)) + ' мин · ' + sc.length + ' сцен'; }
  const article=document.getElementById('reader-article'),main=document.getElementById('main'); if(article&&main){const update=()=>{const max=Math.max(1,article.offsetTop+article.scrollHeight-main.clientHeight);const p=Math.min(100,Math.max(0,Math.round(main.scrollTop/max*100)));const f=document.getElementById('reader-progress-fill');if(f)f.style.width=p+'%';};main.addEventListener('scroll',update,{passive:true});update();}
 }
 
@@ -319,15 +320,16 @@ const stars = n => `<span class="stars">${[1, 2, 3].map(i => ic('star', i <= n ?
 /* ---------- Урок: Ролик · Конспект · Практика · Проверка ---------- */
 const STEPS = [['video', 'Ролик', 'clapperboard'], ['cards', 'Конспект', 'layers'], ['sim', 'Практика', 'sliders-horizontal'], ['quiz', 'Проверка', 'circle-check']];
 const curStep = {};
-// шаги урока: ролик — только если он есть; практика — симуляция или «Найди пару»
-const lessonSteps = L => STEPS.filter(([k]) => k === 'video' ? !!L.video : k === 'sim' ? !!(L.sim || (L.pairs && L.pairs.length >= 4)) : true);
+// шаги урока: ролик — свой (L.video) или собранный из карточек; практика — симуляция или «Найди пару»
+const lessonSteps = L => STEPS.filter(([k]) => k === 'video' ? !!(L.video || (L.cards && L.cards.length)) : k === 'sim' ? !!(L.sim || (L.pairs && L.pairs.length >= 4)) : true);
 function vLesson(r) {
   const ch = CHAPTERS[r.ch - 1], C1 = CONTENT[r.ch], L = C1 && C1.lessons[r.li - 1]; if (!L) { location.hash = 'c' + r.ch; return; }
   const steps = lessonSteps(L), key = lessonKey(r.ch, r.li), done = S.steps[key] || {};
   let st = curStep[key] || steps[0][0]; if (!steps.some(s => s[0] === st)) st = steps[0][0];
   frame(esc(L.title), { back: true, sub: `Глава ${ch.n} · ${esc(L.par)}` });
   const tabs = `<div class="steps" style="grid-template-columns:repeat(${steps.length},1fr)">${steps.map(([k, t, i]) => `<button data-act="step" data-v="${k}" class="${k === st ? 'on' : ''}${done[k] ? ' ok' : ''}">${ic(done[k] ? 'check' : i)}<span>${t}</span></button>`).join('')}</div>`;
-  if (st === 'video') { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
+  if (st === 'video' && L.video) { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
+  else if (st === 'video') { setMain(tabs + rvBox(L.title) + nextStepBtn('video', L)); rvInit(rvLessonScenes(r.ch, L), r.ch, () => stepDone(key, 'video', 10)); }
   else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); }
   else if (st === 'sim') { setMain(tabs + `<div id="simbox"></div>`); if (L.sim) simStart(SIMS[L.sim], key, L); else pairStart(L, key); }
   else setMain(tabs + `<section class="card center"><div class="qic">${ic('circle-check', 'big')}</div><b class="h">Проверка по уроку</b><p class="mute">${plural(L.quiz.length, 'вопрос', 'вопроса', 'вопросов')} с объяснениями. Верные ответы подряд — комбо и больше опыта.${S.lessons[key] ? ` Лучший результат: ${S.lessons[key].best}%.` : ''}</p><button class="btn wide" data-act="lessonQuiz" data-ch="${r.ch}" data-li="${r.li}">Начать проверку</button></section>`);
@@ -376,7 +378,7 @@ async function vToggle() {
 }
 function vEnd() { if (!V) return; V.playing = false; $('.vplay') && ($('.vplay').hidden = false); $('#vpp') && ($('#vpp').innerHTML = ic('rotate-ccw')); stepDone(V.key, 'video', 10); }
 function vSeek(e) { const b = $('#vseek'); if (!b || !V) return; const r = b.getBoundingClientRect(), f = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); V.t = f * V.dur; if (V.audio) V.audio.currentTime = V.t; vDraw(); }
-function stopLoops() { if (typeof sbStop === 'function') sbStop(); if (V) { V.playing = false; cancelAnimationFrame(V.raf); if (V.audio) V.audio.pause(); V = null; } if (G && G.raf) cancelAnimationFrame(G.raf); if (LAB && LAB.raf) { cancelAnimationFrame(LAB.raf); LAB.raf=0; LAB.run=false; LAB.paused=false; } }
+function stopLoops() { if (typeof sbStop === 'function') sbStop(); if (typeof rvStop === 'function') rvStop(); if (V) { V.playing = false; cancelAnimationFrame(V.raf); if (V.audio) V.audio.pause(); V = null; } if (G && G.raf) cancelAnimationFrame(G.raf); if (LAB && LAB.raf) { cancelAnimationFrame(LAB.raf); LAB.raf=0; LAB.run=false; LAB.paused=false; } }
 
 /* ---------- карточки конспекта: листаются пальцем ---------- */
 const KIND = { idea: ['Главное', 'var(--blue)'], def: ['Определение', 'var(--mint)'], formula: ['Формула', 'var(--gold)'], trap: ['Ловушка', 'var(--pink)'], ex: ['Пример', 'var(--violet)'] };
@@ -502,6 +504,7 @@ document.addEventListener('click', async e => {
     case 'readerNext': location.hash='read-'+d.v;break;
     case 'step': curStep[lessonKey(r.ch, r.li)] = d.v; render(); ui.main.scrollTop = 0; break;
     case 'vToggle': vToggle(); break;
+    case 'rvToggle': case 'rvVoice': rvAction(d.act); break;
     case 'vCc': if (V) { V.cc = !V.cc; S.cc = V.cc ? 1 : 0; save(); $('#vsub').hidden = !V.cc; } break;
     case 'cNext': { const box = $('#cards'), i = Math.round(box.scrollLeft / box.clientWidth); if (i >= box.children.length - 1) { const L = CONTENT[r.ch].lessons[r.li - 1], S2 = lessonSteps(L), nx = S2[S2.findIndex(s => s[0] === 'cards') + 1]; if (nx) { curStep[lessonKey(r.ch, r.li)] = nx[0]; render(); ui.main.scrollTop = 0; } } else box.scrollTo({ left: (i + 1) * box.clientWidth, behavior: 'smooth' }); break; }
     case 'cPrev': { const box = $('#cards'), i = Math.round(box.scrollLeft / box.clientWidth); box.scrollTo({ left: Math.max(0, i - 1) * box.clientWidth, behavior: 'smooth' }); break; }
