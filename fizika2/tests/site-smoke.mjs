@@ -103,8 +103,8 @@ try {
   await page.waitForSelector('[data-act="labAdjust"]');
   await page.locator('[data-act="labAdjust"][data-delta="1"]').first().click();
   await page.locator('[data-act="labAdjust"][data-delta="-1"]').first().click();
-  await page.locator('[data-act="labStart"]').click();
-  await page.locator('[data-act="labPause"]').click();
+  await page.locator('#lab-go[data-act="labStart"]').click();
+  await page.locator('#lab-go[data-act="labPause"]').click();
   await page.locator('[data-act="labReset"]').click();
 
   // Проверяем именно кнопку входа в свободную лабораторию из раздела «Лаборатория».

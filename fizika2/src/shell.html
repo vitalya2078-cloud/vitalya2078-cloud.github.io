@@ -909,6 +909,14 @@ body{font-variant-numeric:tabular-nums lining-nums}
 .opts.picopts{grid-template-columns:repeat(4,1fr)}
 .opt.pn{justify-content:center; align-items:center; min-height:58px; padding:8px}
 .opt.pn b{font:700 24px var(--ui)}
+.lab-mini{display:none; flex:0 0 auto; width:40px; height:40px; border-radius:12px; border:0; background:var(--blue); color:#fff; place-items:center}
+.lab-mini .ic{width:18px; height:18px}
+.lab-mini:disabled{opacity:.4}
+@media(max-width:1079px){
+ .lab-x>.lab-stagebox{position:sticky; top:0; z-index:6; box-shadow:0 10px 24px rgba(0,0,0,.45)}
+ .lab-mini{display:grid}
+ .lab-badge{display:none}
+}
 </style>
 </head>
 <body data-view="home">

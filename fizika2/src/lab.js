@@ -23,6 +23,12 @@ const big = v => Math.round(v).toLocaleString('ru-RU');
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 /* ---------- Рисование ---------- */
+/** Осветлить/затемнить цвет #rrggbb: k > 0 — светлее, k < 0 — темнее. */
+function shade(hex, k) {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex); if (!m) return hex;
+  const v = parseInt(m[1], 16), ch = [v >> 16, (v >> 8) & 255, v & 255].map(x => Math.round(k >= 0 ? x + (255 - x) * k : x * (1 + k)));
+  return 'rgb(' + ch.join(',') + ')';
+}
 function labPainter(cv) {
   const box = cv.getBoundingClientRect();
   const cssW = box.width || LAB_W, dpr = Math.min(2.5, window.devicePixelRatio || 1);
@@ -33,43 +39,68 @@ function labPainter(cv) {
   c.lineCap = 'round'; c.lineJoin = 'round';
   // На узком экране холст уменьшается — подписи увеличиваем, чтобы они оставались читаемыми.
   const fs = clamp(LAB_W / cssW * 0.85, 1.1, 1.85);
+  // и линии тоже: тонкая линия на маленьком холсте теряется
+  const lk = clamp(LAB_W / cssW * 0.6, 1, 1.45);
   const d = {
     c, fs,
     clear() {
-      c.fillStyle = LC.bg; c.fillRect(0, 0, LAB_W, LAB_H);
-      c.strokeStyle = LC.grid; c.lineWidth = 1;
+      const g = c.createLinearGradient(0, 0, 0, LAB_H); g.addColorStop(0, '#121a30'); g.addColorStop(1, '#0a0f1d');
+      c.fillStyle = g; c.fillRect(0, 0, LAB_W, LAB_H);
+      const r = c.createRadialGradient(LAB_W / 2, LAB_H * .35, 20, LAB_W / 2, LAB_H * .35, LAB_W * .7);
+      r.addColorStop(0, 'rgba(108,140,255,.07)'); r.addColorStop(1, 'rgba(108,140,255,0)'); c.fillStyle = r; c.fillRect(0, 0, LAB_W, LAB_H);
+      c.strokeStyle = 'rgba(141,151,181,.06)'; c.lineWidth = 1;
       for (let x = 0; x <= LAB_W; x += 40) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, LAB_H); c.stroke(); }
       for (let y = 0; y <= LAB_H; y += 40) { c.beginPath(); c.moveTo(0, y); c.lineTo(LAB_W, y); c.stroke(); }
     },
     line(x1, y1, x2, y2, col = LC.text, lw = 3, dash) {
-      c.save(); c.strokeStyle = col; c.lineWidth = lw; if (dash) c.setLineDash(dash);
+      c.save(); c.strokeStyle = col; c.lineWidth = lw * lk; if (dash) c.setLineDash(dash);
       c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.restore();
     },
     path(pts, col = LC.text, lw = 3, fill, dash) {
       if (!pts.length) return;
       c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); pts.slice(1).forEach(p => c.lineTo(p[0], p[1]));
       if (fill) { c.closePath(); c.fillStyle = fill; c.fill(); }
-      if (col) { c.strokeStyle = col; c.lineWidth = lw; if (dash) c.setLineDash(dash); c.stroke(); }
+      if (col) { c.strokeStyle = col; c.lineWidth = lw * lk; if (dash) c.setLineDash(dash); c.stroke(); }
       c.restore();
     },
     arrow(x1, y1, x2, y2, col = LC.mint, lw = 3.5, label) {
       const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return;
-      const q = Math.atan2(y2 - y1, x2 - x1), hd = Math.min(14, len * .45);
+      const q = Math.atan2(y2 - y1, x2 - x1), hd = Math.min(14 * lk, len * .45);
       d.line(x1, y1, x2 - Math.cos(q) * hd * .6, y2 - Math.sin(q) * hd * .6, col, lw);
       c.fillStyle = col; c.beginPath(); c.moveTo(x2, y2);
       c.lineTo(x2 - hd * Math.cos(q - .42), y2 - hd * Math.sin(q - .42));
       c.lineTo(x2 - hd * Math.cos(q + .42), y2 - hd * Math.sin(q + .42)); c.closePath(); c.fill();
       if (label) d.tag(label, x2 + Math.cos(q) * 16, y2 + Math.sin(q) * 16, col);
     },
+    /** Прямоугольник. Сплошной цвет (#rrggbb) рисуется объёмным телом: градиент, блик, мягкая тень. */
     rect(x, y, w, h, fill, stroke = LC.text, lw = 2, r = 6) {
-      c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h);
+      const solid = typeof fill === 'string' && /^#[0-9a-f]{6}$/i.test(fill);
+      const shape = () => { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, Math.min(r, w / 2, h / 2)) : c.rect(x, y, w, h); };
+      if (solid && w > 6 && h > 6) {
+        c.save(); c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 14; c.shadowOffsetY = 5;
+        const g = c.createLinearGradient(x, y, x, y + h); g.addColorStop(0, shade(fill, .28)); g.addColorStop(.55, fill); g.addColorStop(1, shade(fill, -.32));
+        shape(); c.fillStyle = g; c.fill(); c.restore();
+        c.save(); shape(); c.clip(); const hl = c.createLinearGradient(x, y, x, y + Math.min(h, 18)); hl.addColorStop(0, 'rgba(255,255,255,.35)'); hl.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = hl; c.fillRect(x, y, w, Math.min(h, 18)); c.restore();
+        if (stroke) { shape(); c.strokeStyle = stroke === LC.text ? shade(fill, -.45) : stroke; c.lineWidth = Math.max(1.5, lw * .8) * lk; c.stroke(); }
+        return;
+      }
+      shape();
       if (fill) { c.fillStyle = fill; c.fill(); }
-      if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw; c.stroke(); }
+      if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw * lk; c.stroke(); }
     },
+    /** Круг. Сплошной цвет — шар с объёмной заливкой. */
     circle(x, y, r, fill, stroke = LC.text, lw = 2) {
+      const solid = typeof fill === 'string' && /^#[0-9a-f]{6}$/i.test(fill);
       c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2);
+      if (solid && r > 5) {
+        c.save(); c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 10; c.shadowOffsetY = 4;
+        const g = c.createRadialGradient(x - r * .35, y - r * .4, r * .1, x, y, r); g.addColorStop(0, shade(fill, .55)); g.addColorStop(.45, fill); g.addColorStop(1, shade(fill, -.45));
+        c.fillStyle = g; c.fill(); c.restore();
+        if (stroke) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.strokeStyle = stroke === LC.text ? shade(fill, -.5) : stroke; c.lineWidth = 1.5 * lk; c.stroke(); }
+        return;
+      }
       if (fill) { c.fillStyle = fill; c.fill(); }
-      if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw; c.stroke(); }
+      if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw * lk; c.stroke(); }
     },
     /** Подпись. size — размер на широком экране; на телефоне он увеличивается. */
     text(s, x, y, { col = LC.mute, size = 14, align = 'left', bold = false, base = 'middle' } = {}) {
@@ -88,16 +119,35 @@ function labPainter(cv) {
       d.rect(X, Y, w, h, 'rgba(11,16,32,.82)', null, 0, 6);
       c.fillStyle = col; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(s, X + w / 2, Y + h / 2 + 1);
     },
+    /** Пол / стол: плита с бликом по верхней кромке. */
     ground(y, x1 = 20, x2 = LAB_W - 20) {
-      d.line(x1, y, x2, y, LC.mute, 3);
-      for (let x = x1 + 6; x < x2; x += 18) d.line(x, y + 2, x - 10, y + 12, LC.line, 2);
+      const g = c.createLinearGradient(0, y, 0, y + 18); g.addColorStop(0, '#2c3a5e'); g.addColorStop(1, '#141c33');
+      c.fillStyle = g; c.fillRect(x1, y, x2 - x1, 18);
+      c.fillStyle = 'rgba(200,215,255,.35)'; c.fillRect(x1, y, x2 - x1, 2);
+      c.save(); c.globalAlpha = .25; for (let x = x1 + 10; x < x2; x += 22) { c.fillStyle = '#0a0f1d'; c.fillRect(x, y + 7, 12, 2); } c.restore();
     },
+    /** Колесо со спицами; rot — угол поворота (для катящихся тележек). */
+    wheel(x, y, r, rot = 0) {
+      d.circle(x, y, r, '#3a4668', null); d.circle(x, y, r * .62, '#8d97b5', null);
+      for (let i = 0; i < 4; i++) { const q = rot + i * Math.PI / 2; d.line(x, y, x + r * .58 * Math.cos(q), y + r * .58 * Math.sin(q), '#2a3658', 1.6); }
+      d.circle(x, y, r * .2, '#e8ecf6', null);
+    },
+    /** Тележка: кузов цвета col, колёса катятся вместе с пройденным путём dist (в пикселях). */
+    cart(x, yBottom, w, h, col = LC.blue, dist = 0, label) {
+      const r = Math.max(8, h * .28);
+      d.rect(x - w / 2, yBottom - r - h, w, h, col, LC.text, 2, 8);
+      d.rect(x - w / 2 + 6, yBottom - r - h + 6, w - 12, 6, 'rgba(255,255,255,.18)', null, 0, 3);
+      d.wheel(x - w * .3, yBottom - r, r, dist / r); d.wheel(x + w * .3, yBottom - r, r, dist / r);
+      if (label) d.text(label, x, yBottom - r - h / 2 + 2, { col: '#fff', size: 12, align: 'center', bold: true });
+    },
+    /** Пружина: витки-дуги с тенью — выглядит как металлическая спираль. */
     spring(x1, y1, x2, y2, coils = 10, w = 16, col = LC.cyan) {
       const len = Math.hypot(x2 - x1, y2 - y1), q = Math.atan2(y2 - y1, x2 - x1);
       const pts = [[0, 0], [len * .08, 0]];
-      for (let i = 0; i <= coils * 2; i++) pts.push([len * .08 + len * .84 * i / (coils * 2), i === 0 || i === coils * 2 ? 0 : (i % 2 ? w : -w)]);
+      for (let i = 0; i <= coils * 4; i++) { const u = i / (coils * 4); pts.push([len * .08 + len * .84 * u, Math.sin(u * coils * 2 * Math.PI) * w]); }
       pts.push([len, 0]);
-      d.path(pts.map(([px, py]) => [x1 + px * Math.cos(q) - py * Math.sin(q), y1 + px * Math.sin(q) + py * Math.cos(q)]), col, 3);
+      const P = pts.map(([px, py]) => [x1 + px * Math.cos(q) - py * Math.sin(q), y1 + px * Math.sin(q) + py * Math.cos(q)]);
+      d.path(P, 'rgba(0,0,0,.45)', 5.5); d.path(P, shade(col, -.25), 3.6); d.path(P, shade(col, .45), 1.4);
     },
     wave(x0, x1, y0, amp, lambdaPx, phase = 0, col = LC.cyan, lw = 3) {
       const pts = []; for (let x = x0; x <= x1; x += 3) pts.push([x, y0 - amp * Math.sin((x - x0) / lambdaPx * 2 * Math.PI - phase)]);
@@ -179,11 +229,11 @@ const LAB_MODELS = {
     dur: (v, T) => T,
     draw(d, v, T, t) {
       d.title('Рельсовая дорожка · постоянная скорость');
-      const S = v * T, x0 = 60, x1 = 650, k = (x1 - x0) / S, y = 300, tt = Math.min(t, T);
+      const S = v * T, x0 = 90, x1 = 640, k = (x1 - x0) / S, y = 300, tt = Math.min(t, T);
       d.ground(y + 14); d.ruler(x0, x1, y + 40, S, 'м', niceStep(S));
       for (let s = 1; s <= Math.floor(tt); s++) { const X = x0 + v * s * k; d.line(X, y - 70, X, y + 10, LC.violet, 2, [4, 5]); d.text(s + ' с', X, y - 80, { size: 11, align: 'center', col: LC.violet }); }
-      const X = x0 + v * tt * k; d.rect(X - 34, y - 42, 68, 38, LC.blue, LC.text); d.circle(X - 18, y + 2, 9, LC.gold); d.circle(X + 18, y + 2, 9, LC.gold);
-      d.arrow(X, y - 60, X + 40 + v * 4, y - 60, LC.mint, 3.5, 'v');
+      const X = x0 + v * tt * k; d.cart(X, y + 14, 112, 46, LC.blue, X - x0);
+      d.arrow(X, y - 72, X + 40 + v * 4, y - 72, LC.mint, 3.5, 'v');
       d.text('Отметки через каждую секунду: отрезки равны', 22, 56, { size: 12 });
     }
   },
@@ -193,13 +243,13 @@ const LAB_MODELS = {
     dur: () => 5,
     draw(d, v0, a, t) {
       d.title('Разгон тележки · отметки через 1 с');
-      const S = 5 * v0 + 12.5 * a, x0 = 60, x1 = 650, k = (x1 - x0) / S, y = 300, tt = Math.min(t, 5);
+      const S = 5 * v0 + 12.5 * a, x0 = 90, x1 = 640, k = (x1 - x0) / S, y = 300, tt = Math.min(t, 5);
       d.ground(y + 14); d.ruler(x0, x1, y + 40, S, 'м', niceStep(S));
       for (let s = 1; s <= Math.floor(tt); s++) { const X = x0 + (v0 * s + a * s * s / 2) * k; d.line(X, y - 70, X, y + 10, LC.violet, 2, [4, 5]); d.text(s + ' с', X, y - 80, { size: 11, align: 'center', col: LC.violet }); }
       const X = x0 + (v0 * tt + a * tt * tt / 2) * k, v = v0 + a * tt;
-      d.rect(X - 34, y - 42, 68, 38, LC.violet, LC.text); d.circle(X - 18, y + 2, 9, LC.gold); d.circle(X + 18, y + 2, 9, LC.gold);
-      d.arrow(X, y - 60, X + 20 + v * 5, y - 60, LC.mint, 3.5, 'v');
-      d.arrow(X, y - 110, X + 20 + a * 12, y - 110, LC.coral, 3, 'a');
+      d.cart(X, y + 14, 112, 46, LC.violet, X - x0);
+      d.arrow(X, y - 72, X + 20 + v * 5, y - 72, LC.mint, 3.5, 'v');
+      d.arrow(X, y - 116, X + 20 + a * 12, y - 116, LC.coral, 3, 'a');
       d.text('Отрезки растут: скорость увеличивается', 22, 56, { size: 12 });
     }
   },
@@ -243,7 +293,7 @@ const LAB_MODELS = {
     dur: (r, T) => T,
     draw(d, r, T, t) {
       d.title('Вращение точки по окружности');
-      const R = 40 + r * 18, cx = 300, cy = 210, q = -2 * Math.PI * Math.min(t, T) / T, X = cx + R * Math.cos(q), Y = cy + R * Math.sin(q);
+      const R = 50 + r * 17, cx = 290, cy = 215, q = -2 * Math.PI * Math.min(t, T) / T, X = cx + R * Math.cos(q), Y = cy + R * Math.sin(q);
       d.circle(cx, cy, R, 'rgba(108,140,255,.08)', LC.blue, 3); d.circle(cx, cy, 5, LC.mute, null);
       d.line(cx, cy, X, Y, LC.line, 2, [5, 5]); d.text('r = ' + u(r, 'м', 1), cx + 10, cy + 22, { size: 12 });
       d.arc(cx, cy, 26, 0, q, LC.violet);
@@ -262,11 +312,10 @@ const LAB_MODELS = {
     dur: () => 3,
     draw(d, m, F, t) {
       d.title('Тележка под действием постоянной силы');
-      const acc = F / m, S = acc * 4.5, x0 = 70, x1 = 560, k = (x1 - x0) / S, y = 300, tt = Math.min(t, 3);
+      const acc = F / m, S = acc * 4.5, x0 = 100, x1 = 560, k = (x1 - x0) / S, y = 300, tt = Math.min(t, 3);
       d.ground(y + 14); d.ruler(x0, x1, y + 40, S, 'м', niceStep(S));
       const X = x0 + acc * tt * tt / 2 * k, s = 26 + Math.cbrt(m) * 12;
-      d.rect(X - s, y - s * 1.2, s * 2, s * 1.1, LC.blue, LC.text); d.text(n(m, 1) + ' кг', X, y - s * .65, { col: LC.text, size: 12, align: 'center', bold: true });
-      d.circle(X - s * .55, y + 2, 9, LC.gold); d.circle(X + s * .55, y + 2, 9, LC.gold);
+      d.cart(X, y + 14, s * 2, s * 1.05, LC.blue, X - x0, n(m, 1) + ' кг');
       d.arrow(X + s, y - s * .65, X + s + 20 + F * 1.2, y - s * .65, LC.mint, 4, 'F');
       d.text('Больше сила — больше ускорение; больше масса — меньше', 22, 56, { size: 12 });
     }
@@ -840,7 +889,7 @@ function vLabExp(r) {
   };
   setMain(`<section class="lab-x">
     <div class="lab-stagebox"><canvas id="lab-canvas" aria-label="Модель опыта: ${esc(x.title)}"></canvas>
-      <div class="lab-strip"><div class="lab-hud" id="lab-hud"></div><span class="lab-badge" id="lab-state">Готов</span></div></div>
+      <div class="lab-strip"><div class="lab-hud" id="lab-hud"></div><span class="lab-badge" id="lab-state">Готов</span><button class="lab-mini" data-act="labStart" id="lab-go2" aria-label="Запустить">${ic('play')}</button></div></div>
     <div class="lab-bar">
       <button class="btn lab-go" data-act="labStart" id="lab-go">${ic('play')}<span>Запустить</span></button>
       <button class="btn line lab-ic" data-act="labReset" aria-label="Сбросить опыт">${ic('rotate-ccw')}</button>
@@ -883,6 +932,8 @@ function labUI() {
     go.innerHTML = ic(running ? 'pause' : LAB.completed ? 'repeat' : 'play') + '<span>' + (running ? 'Пауза' : LAB.completed ? 'Ещё раз' : LAB.paused ? 'Продолжить' : 'Запустить') + '</span>';
     go.disabled = !Number.isFinite(dur) && !running;
   }
+  const g2 = $('#lab-go2');
+  if (g2) { g2.dataset.act = LAB.run ? 'labPause' : 'labStart'; g2.innerHTML = ic(LAB.run ? 'pause' : LAB.completed ? 'repeat' : 'play'); g2.disabled = !Number.isFinite(dur) && !LAB.run; g2.setAttribute('aria-label', LAB.run ? 'Пауза' : 'Запустить'); }
   set('lab-state', LAB.completed ? 'Готово' : LAB.run ? 'Идёт опыт' : LAB.paused ? 'Пауза' : 'Готов');
   const st = $('#lab-state'); if (st) st.className = 'lab-badge' + (LAB.run ? ' on' : LAB.completed ? ' done' : '');
   if (!Number.isFinite(dur)) set('lab-hint', 'С такими параметрами опыт не пойдёт: ' + (r.note || 'измени значения.'));
