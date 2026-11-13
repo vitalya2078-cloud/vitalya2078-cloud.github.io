@@ -330,7 +330,7 @@ function vLesson(r) {
   const tabs = `<div class="steps" style="grid-template-columns:repeat(${steps.length},1fr)">${steps.map(([k, t, i]) => `<button data-act="step" data-v="${k}" class="${k === st ? 'on' : ''}${done[k] ? ' ok' : ''}">${ic(done[k] ? 'check' : i)}<span>${t}</span></button>`).join('')}</div>`;
   if (st === 'video' && L.video) { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
   else if (st === 'video') { setMain(tabs + rvBox(L.title) + nextStepBtn('video', L)); rvInit(rvLessonScenes(r.ch, L), r.ch, () => stepDone(key, 'video', 10)); }
-  else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); }
+  else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); cardFigsDraw(); }
   else if (st === 'sim') { setMain(tabs + `<div id="simbox"></div>`); if (L.sim) simStart(SIMS[L.sim], key, L); else pairStart(L, key); }
   else setMain(tabs + `<section class="card center"><div class="qic">${ic('circle-check', 'big')}</div><b class="h">Проверка по уроку</b><p class="mute">${plural(L.quiz.length, 'вопрос', 'вопроса', 'вопросов')} с объяснениями. Верные ответы подряд — комбо и больше опыта.${S.lessons[key] ? ` Лучший результат: ${S.lessons[key].best}%.` : ''}</p><button class="btn wide" data-act="lessonQuiz" data-ch="${r.ch}" data-li="${r.li}">Начать проверку</button></section>`);
 }
@@ -383,7 +383,7 @@ function stopLoops() { if (typeof sbStop === 'function') sbStop(); if (typeof rv
 /* ---------- карточки конспекта: листаются пальцем ---------- */
 const KIND = { idea: ['Главное', 'var(--blue)'], def: ['Определение', 'var(--mint)'], formula: ['Формула', 'var(--gold)'], trap: ['Ловушка', 'var(--pink)'], ex: ['Пример', 'var(--violet)'] };
 function cardsBox(L) {
-  return `<div class="cards" id="cards">${L.cards.map((k, i) => `<article class="kcard"><span class="kind" style="--kc:${KIND[k.k][1]}">${KIND[k.k][0]}</span><h3>${vx(k.h)}</h3>${k.fig && FIGS[k.fig] ? FIGS[k.fig]() : ''}${k.f ? `<div class="formula">${k.f.split('\n').map(l => `<span>${vx(l)}</span>`).join('')}</div>` : ''}<p>${nlv(k.t)}</p><small class="kn">${i + 1} / ${L.cards.length}</small></article>`).join('')}</div>` +
+  return `<div class="cards" id="cards">${L.cards.map((k, i) => `<article class="kcard"><span class="kind" style="--kc:${KIND[k.k][1]}">${KIND[k.k][0]}</span><h3>${vx(k.h)}</h3>${k.fig && FIGS[k.fig] ? FIGS[k.fig]() : cardFigSlot(L, i)}${k.f ? `<div class="formula">${k.f.split('\n').map(l => `<span>${vx(l)}</span>`).join('')}</div>` : ''}<p>${nlv(k.t)}</p><small class="kn">${i + 1} / ${L.cards.length}</small></article>`).join('')}</div>` +
     `<div class="dots" id="dots">${L.cards.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><div class="cnav"><button class="btn line" data-act="cPrev">${ic('chevron-left')}</button><button class="btn wide" data-act="cNext" id="cnext">Дальше ${ic('chevron-right')}</button></div>`;
 }
 function cardsInit(key, L) {

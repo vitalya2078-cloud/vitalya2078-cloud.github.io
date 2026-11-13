@@ -147,7 +147,7 @@ function rvInit(scenes, ch, onEnd) {
   rvStop();
   const lens = scenes.map(s => Math.max(5, s.text.length / 13.5)), starts = []; let t = 0; lens.forEach(l => { starts.push(t); t += l; });
   RV = { scenes, ch, onEnd, starts, dur: t, t: 0, playing: false, last: 0, raf: 0, seg: -1, speaking: false, utt: null };
-  rvArt(ch); rvFrame();
+  rvArt(ch); rvFrame(); setTimeout(() => { if (RV && !RV.playing) rvFrame(); }, 120); // обложка главы подгружается асинхронно
   if (!rvDraw.ro && 'ResizeObserver' in window) rvDraw.ro = new ResizeObserver(() => { if (RV && !RV.playing) rvFrame(); });
   if (rvDraw.ro && $('#rvc')) { rvDraw.ro.disconnect(); rvDraw.ro.observe($('#rvc')); }
 }
@@ -155,7 +155,9 @@ function rvSeg(t) { let i = 0; while (i + 1 < RV.starts.length && t >= RV.starts
 function rvFrame() {
   const cv = $('#rvc'); if (!cv || !RV) return;
   const { i, p, lt } = rvSeg(RV.t), d = labPainter(cv);
-  try { rvDraw(d, RV.scenes[i], p, lt, RV.ch); } catch (e) { console.error('rv draw', e); }
+  // до запуска показываем обложку — титр полностью проявлен
+  const poster = !RV.playing && RV.t === 0;
+  try { rvDraw(d, RV.scenes[i], poster ? .6 : p, poster ? 1 : lt, RV.ch); } catch (e) { console.error('rv draw', e); }
   const sub = $('#rvsub'); if (sub && sub.dataset.i !== String(i)) { sub.textContent = RV.scenes[i].text; sub.dataset.i = i; }
   const bar = $('#rvseek i'); if (bar) bar.style.width = (100 * RV.t / RV.dur) + '%';
   const tm = $('#rvtime'); if (tm) tm.textContent = mmss(RV.t) + ' / ' + mmss(RV.dur);
@@ -209,4 +211,25 @@ function rvAction(act) {
     if (!on && rvVoiceOK()) { speechSynthesis.cancel(); if (RV) RV.speaking = false; } else if (RV && RV.playing) rvSpeak(rvSeg(RV.t).i);
     toast(on ? 'Озвучка включена (голос устройства)' : 'Озвучка выключена — остаются субтитры');
   }
+}
+
+/* ---------- Иллюстрации к карточкам уроков ----------
+   Если у карточки нет своего рисунка, показываем подходящую модель лаборатории (кадр опыта).
+   Одна модель — не больше одного раза за урок, чтобы картинки не повторялись. */
+function cardFigSlot(L, i) {
+  if (!L._figs) {
+    const used = new Set(), ch = +(Object.keys(CONTENT).find(n => CONTENT[n].lessons.includes(L)) || 0);
+    L._figs = L.cards.map(k => { if (k.fig) return null; const m = rvModelFor(k.h + ' ' + (k.f || '') + ' ' + k.t, ch); if (!m || used.has(m)) return null; used.add(m); return m; });
+  }
+  const m = L._figs[i];
+  return m ? `<canvas class="kfig" data-model="${m}" aria-hidden="true"></canvas>` : '';
+}
+function cardFigsDraw() {
+  document.querySelectorAll('canvas.kfig').forEach(cv => {
+    const m = cv.dataset.model, x = Object.values(LABS).find(e => e.model === m), M = LAB_MODELS[m]; if (!x || !M) return;
+    const d = labPainter(cv), dur = M.dur(x.a0, x.b0);
+    d.clear(); d.quiet = true;
+    try { M.draw(d, x.a0, x.b0, Number.isFinite(dur) ? dur * .65 : 1); } catch (e) { console.error('card fig', e); }
+    d.quiet = false;
+  });
 }

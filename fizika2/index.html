@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 70;
+  var embedded = 73;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -917,6 +917,8 @@ body{font-variant-numeric:tabular-nums lining-nums}
  .lab-mini{display:grid}
  .lab-badge{display:none}
 }
+.kfig{display:block;width:100%;aspect-ratio:720/400;height:auto;border-radius:14px;margin:6px 0 10px;border:1px solid var(--line)}
+.rv .vplay{inset:auto 16px 16px auto; margin:0; width:64px; height:64px}
 </style>
 </head>
 <body data-view="home">
@@ -934,7 +936,7 @@ body{font-variant-numeric:tabular-nums lining-nums}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 70;
+const F2_BUILD = 73;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -2378,7 +2380,7 @@ function vLesson(r) {
   const tabs = `<div class="steps" style="grid-template-columns:repeat(${steps.length},1fr)">${steps.map(([k, t, i]) => `<button data-act="step" data-v="${k}" class="${k === st ? 'on' : ''}${done[k] ? ' ok' : ''}">${ic(done[k] ? 'check' : i)}<span>${t}</span></button>`).join('')}</div>`;
   if (st === 'video' && L.video) { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
   else if (st === 'video') { setMain(tabs + rvBox(L.title) + nextStepBtn('video', L)); rvInit(rvLessonScenes(r.ch, L), r.ch, () => stepDone(key, 'video', 10)); }
-  else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); }
+  else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); cardFigsDraw(); }
   else if (st === 'sim') { setMain(tabs + `<div id="simbox"></div>`); if (L.sim) simStart(SIMS[L.sim], key, L); else pairStart(L, key); }
   else setMain(tabs + `<section class="card center"><div class="qic">${ic('circle-check', 'big')}</div><b class="h">Проверка по уроку</b><p class="mute">${plural(L.quiz.length, 'вопрос', 'вопроса', 'вопросов')} с объяснениями. Верные ответы подряд — комбо и больше опыта.${S.lessons[key] ? ` Лучший результат: ${S.lessons[key].best}%.` : ''}</p><button class="btn wide" data-act="lessonQuiz" data-ch="${r.ch}" data-li="${r.li}">Начать проверку</button></section>`);
 }
@@ -2431,7 +2433,7 @@ function stopLoops() { if (typeof sbStop === 'function') sbStop(); if (typeof rv
 /* ---------- карточки конспекта: листаются пальцем ---------- */
 const KIND = { idea: ['Главное', 'var(--blue)'], def: ['Определение', 'var(--mint)'], formula: ['Формула', 'var(--gold)'], trap: ['Ловушка', 'var(--pink)'], ex: ['Пример', 'var(--violet)'] };
 function cardsBox(L) {
-  return `<div class="cards" id="cards">${L.cards.map((k, i) => `<article class="kcard"><span class="kind" style="--kc:${KIND[k.k][1]}">${KIND[k.k][0]}</span><h3>${vx(k.h)}</h3>${k.fig && FIGS[k.fig] ? FIGS[k.fig]() : ''}${k.f ? `<div class="formula">${k.f.split('\n').map(l => `<span>${vx(l)}</span>`).join('')}</div>` : ''}<p>${nlv(k.t)}</p><small class="kn">${i + 1} / ${L.cards.length}</small></article>`).join('')}</div>` +
+  return `<div class="cards" id="cards">${L.cards.map((k, i) => `<article class="kcard"><span class="kind" style="--kc:${KIND[k.k][1]}">${KIND[k.k][0]}</span><h3>${vx(k.h)}</h3>${k.fig && FIGS[k.fig] ? FIGS[k.fig]() : cardFigSlot(L, i)}${k.f ? `<div class="formula">${k.f.split('\n').map(l => `<span>${vx(l)}</span>`).join('')}</div>` : ''}<p>${nlv(k.t)}</p><small class="kn">${i + 1} / ${L.cards.length}</small></article>`).join('')}</div>` +
     `<div class="dots" id="dots">${L.cards.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><div class="cnav"><button class="btn line" data-act="cPrev">${ic('chevron-left')}</button><button class="btn wide" data-act="cNext" id="cnext">Дальше ${ic('chevron-right')}</button></div>`;
 }
 function cardsInit(key, L) {
@@ -3916,7 +3918,7 @@ function rvInit(scenes, ch, onEnd) {
   rvStop();
   const lens = scenes.map(s => Math.max(5, s.text.length / 13.5)), starts = []; let t = 0; lens.forEach(l => { starts.push(t); t += l; });
   RV = { scenes, ch, onEnd, starts, dur: t, t: 0, playing: false, last: 0, raf: 0, seg: -1, speaking: false, utt: null };
-  rvArt(ch); rvFrame();
+  rvArt(ch); rvFrame(); setTimeout(() => { if (RV && !RV.playing) rvFrame(); }, 120); // обложка главы подгружается асинхронно
   if (!rvDraw.ro && 'ResizeObserver' in window) rvDraw.ro = new ResizeObserver(() => { if (RV && !RV.playing) rvFrame(); });
   if (rvDraw.ro && $('#rvc')) { rvDraw.ro.disconnect(); rvDraw.ro.observe($('#rvc')); }
 }
@@ -3924,7 +3926,9 @@ function rvSeg(t) { let i = 0; while (i + 1 < RV.starts.length && t >= RV.starts
 function rvFrame() {
   const cv = $('#rvc'); if (!cv || !RV) return;
   const { i, p, lt } = rvSeg(RV.t), d = labPainter(cv);
-  try { rvDraw(d, RV.scenes[i], p, lt, RV.ch); } catch (e) { console.error('rv draw', e); }
+  // до запуска показываем обложку — титр полностью проявлен
+  const poster = !RV.playing && RV.t === 0;
+  try { rvDraw(d, RV.scenes[i], poster ? .6 : p, poster ? 1 : lt, RV.ch); } catch (e) { console.error('rv draw', e); }
   const sub = $('#rvsub'); if (sub && sub.dataset.i !== String(i)) { sub.textContent = RV.scenes[i].text; sub.dataset.i = i; }
   const bar = $('#rvseek i'); if (bar) bar.style.width = (100 * RV.t / RV.dur) + '%';
   const tm = $('#rvtime'); if (tm) tm.textContent = mmss(RV.t) + ' / ' + mmss(RV.dur);
@@ -3978,6 +3982,27 @@ function rvAction(act) {
     if (!on && rvVoiceOK()) { speechSynthesis.cancel(); if (RV) RV.speaking = false; } else if (RV && RV.playing) rvSpeak(rvSeg(RV.t).i);
     toast(on ? 'Озвучка включена (голос устройства)' : 'Озвучка выключена — остаются субтитры');
   }
+}
+
+/* ---------- Иллюстрации к карточкам уроков ----------
+   Если у карточки нет своего рисунка, показываем подходящую модель лаборатории (кадр опыта).
+   Одна модель — не больше одного раза за урок, чтобы картинки не повторялись. */
+function cardFigSlot(L, i) {
+  if (!L._figs) {
+    const used = new Set(), ch = +(Object.keys(CONTENT).find(n => CONTENT[n].lessons.includes(L)) || 0);
+    L._figs = L.cards.map(k => { if (k.fig) return null; const m = rvModelFor(k.h + ' ' + (k.f || '') + ' ' + k.t, ch); if (!m || used.has(m)) return null; used.add(m); return m; });
+  }
+  const m = L._figs[i];
+  return m ? `<canvas class="kfig" data-model="${m}" aria-hidden="true"></canvas>` : '';
+}
+function cardFigsDraw() {
+  document.querySelectorAll('canvas.kfig').forEach(cv => {
+    const m = cv.dataset.model, x = Object.values(LABS).find(e => e.model === m), M = LAB_MODELS[m]; if (!x || !M) return;
+    const d = labPainter(cv), dur = M.dur(x.a0, x.b0);
+    d.clear(); d.quiet = true;
+    try { M.draw(d, x.a0, x.b0, Number.isFinite(dur) ? dur * .65 : 1); } catch (e) { console.error('card fig', e); }
+    d.quiet = false;
+  });
 }
 
 /* ---------- Тесты: 900 вопросов экзамена, проверки уроков и финалы глав ----------
