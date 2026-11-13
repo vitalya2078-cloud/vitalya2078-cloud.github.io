@@ -200,7 +200,7 @@ const VS = {
     const x0 = 150, x1 = 570, L = x1 - x0;
     d.line(x0, 60, x0, 360, LC.text, 5); d.line(x1, 60, x1, 360, LC.text, 5);
     [1, 2, 3].forEach((nq, i) => { if (p < i * .25) return; const y = 320 - i * 100; d.line(x0, y, x1, y, LC.line, 1.5, [4, 5]); const pts = []; for (let x = 0; x <= L; x += 3) pts.push([x0 + x, y - 38 * Math.sin(nq * Math.PI * x / L) * Math.cos(t * (nq * nq) * .8)]); d.path(pts, [LC.mint, LC.gold, LC.coral][i], 3); d.text('n = ' + nq, x1 + 14, y, { size: 13, col: [LC.mint, LC.gold, LC.coral][i], bold: true }); });
-    if (p > .7) d.tag('Eₙ = n²h²/(8ml²) — энергия квантуется', 360, 40, LC.gold);
+    if (p > .7) d.tag('Eₙ = n²h²/(8ml²) — энергия квантуется', 360, 72, LC.gold);
   },
   tunnel(d, a, p, t) {
     const bx = 340, bw = 50; d.rect(bx, 90, bw, 230, 'rgba(255,122,89,.18)', LC.coral, 2, 4); d.text('барьер U₀ > E', bx + bw / 2, 76, { size: 12, align: 'center', col: LC.coral });
@@ -216,12 +216,12 @@ const VS = {
     if (p > .5) d.tag('атомы колеблются около узлов решётки', 360, 370, LC.gold);
   },
   bands(d, a, p, t) {
-    [['металл', 0, 140], ['полупроводник', 240, 40], ['диэлектрик', 480, 140]].forEach(([lab, x, gap], i) => {
+    [['металл', 0, -20], ['полупроводник', 240, 40], ['диэлектрик', 480, 110]].forEach(([lab, x, gap], i) => {
       if (p < i * .25) return; const bx = 50 + x, top = 80;
-      d.rect(bx, top, 180, 70, i === 0 ? 'rgba(61,214,160,.35)' : 'rgba(108,140,255,.15)', LC.mute, 1.5, 6); d.rect(bx, top + 70 + (i === 0 ? -20 : gap), 180, 80, 'rgba(255,194,75,.35)', LC.mute, 1.5, 6);
+      d.rect(bx, top, 180, 70, i === 0 ? 'rgba(61,214,160,.35)' : 'rgba(108,140,255,.15)', LC.mute, 1.5, 6); d.rect(bx, top + 70 + gap, 180, 60, 'rgba(255,194,75,.35)', LC.mute, 1.5, 6);
       if (i !== 0) d.tag('ΔE', bx + 90, top + 70 + gap / 2, LC.text); d.text(lab, bx + 90, 360, { size: 13, align: 'center', col: LC.text, bold: true });
     });
-    d.text('зона проводимости', 60, 64, { size: 11 }); d.text('валентная зона', 60, 345 - 40, { size: 11 });
+    d.text('зона проводимости', 60, 64, { size: 11 }); d.text('валентная зона (снизу)', 60, 330, { size: 11 });
   },
   /* ----- ядро и частицы ----- */
   decay(d, a, p, t) {
