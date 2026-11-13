@@ -12,7 +12,7 @@ async function bank() {
   BANK = [];
   c.topics.forEach(t => t.q.forEach((q, j) => {
     // вопросы без вариантов — самопроверка: «Показать ответ», потом «Знал» / «Не знал»
-    BANK.push({ key: t.id + '-' + (j + 1), tid: t.id, num: j + 1, topicTitle: t.title, q: q.t, a: q.a, x: q.x || [], self: !(q.x && q.x.length), p: q.p ? 'pics/' + encodeURIComponent(q.p) : '', e: q.e || '', note: q.n || '' });
+    BANK.push(qfix({ key: t.id + '-' + (j + 1), tid: t.id, num: j + 1, topicTitle: t.title, q: q.t, a: q.a, x: q.x || [], self: !(q.x && q.x.length), p: q.p ? 'pics/' + encodeURIComponent(q.p) : '', e: q.e || '', note: q.n || '' }));
   }));
   return BANK;
 }
@@ -67,7 +67,8 @@ const pickOk = (it, k) => it.self ? k === 1 : k >= 0 && it.opts[k] === it.a;
 function startQuiz(o) {
   stopQTimer();
   Q = Object.assign({ mode: 'practice', timer: 0, i: 0, ok: 0, xp: 0, picks: [], started: Date.now() }, o);
-  Q.items = o.items.map(it => ({ ...it, opts: shuffle([it.a, ...it.x]) }));
+  // варианты с рисунка идут по порядку 1–4, остальные перемешиваются
+  Q.items = o.items.map(it => ({ ...it, opts: it.picOpts ? [1, 2, 3, 4].map(k => 'Вариант ' + k) : shuffle([it.a, ...it.x]) }));
   if (!Q.items.length) { Q = null; toast(ic('circle-check') + 'Подходящих вопросов нет'); return; }
   if (location.hash !== '#quiz') location.hash = 'quiz'; else render();
 }
@@ -86,28 +87,40 @@ function vQuiz() {
   if (it.self) return vSelfQ(it, a, src, star, timer, n);
   const opts = it.opts.map((o, k) => {
     const cls = !shown ? (a === k ? ' picked' : '') : o === it.a ? ' right' : k === a ? ' wrong' : ' dim';
+    if (it.picOpts) return `<button class="opt pn${cls}" data-act="pick" data-v="${k}"${a != null ? ' disabled' : ''} aria-label="${o}"><b>${k + 1}</b></button>`;
     return `<button class="opt${cls}" data-act="pick" data-v="${k}"${a != null ? ' disabled' : ''}><span class="ln">${'АБВГДЕ'[k]}</span><span>${vx(o)}</span></button>`;
   }).join('');
   let after = '';
   if (shown) {
     const ok = a >= 0 && it.opts[a] === it.a;
-    after = `<div class="verdict ${ok ? 'ok' : 'bad'}"><b>${ok ? 'Верно!' : a < 0 ? 'Время вышло' : 'Неверно'}</b>${ok ? '' : `<p>Правильный ответ: <b>${vx(it.a)}</b></p>`}</div>${whyHtml(it.e)}` +
-      `<button class="btn wide mt" data-act="qNext" id="qnext">${Q.i + 1 < n ? 'Следующий вопрос' : 'Результат'} ${ic('chevron-right')}</button>`;
+    after = `<div class="verdict ${ok ? 'ok' : 'bad'}"><b>${ok ? 'Верно!' : a < 0 ? 'Время вышло' : 'Неверно'}</b>${ok ? (it.aText ? `<p>${vx(it.aText)}</p>` : '') : `<p>Правильный ответ: <b>${vx(it.a)}</b>${it.aText ? ' — ' + vx(it.aText) : ''}</p>`}</div>${whyHtml(it.e)}` +
+      `<div class="qnextbar"><button class="btn wide" data-act="qNext" id="qnext">${Q.i + 1 < n ? 'Следующий вопрос' : 'Результат'} ${ic('chevron-right')}</button></div>`;
   }
+  // на экзамене можно отложить вопрос — он вернётся в конце
+  if (Q.mode === 'exam' && a == null && Q.i + 1 < n) after += `<button class="btn line wide mt qskip" data-act="qSkip">${ic('skip-forward')}Пропустить, вернуться позже</button>`;
   setMain(`<div class="qtop"><div class="qprog"><i style="width:${Q.i / n * 100}%"></i></div>${Q.mode === 'practice' ? comboChip() : `<span class="combo">${Q.i + 1}/${n}</span>`}</div>${timer}` +
-    `<article class="qcard"><div class="qhead">${src}${star}</div><p class="qt">${vx(it.q)}</p>${it.p ? `<img class="qpic" src="${it.p}" alt="Рисунок к вопросу" loading="lazy">` : ''}<div class="opts">${opts}</div>${after}</article>`);
+    `<article class="qcard"><div class="qhead">${src}${star}</div><p class="qt">${vx(it.q)}</p>${it.p ? `<img class="qpic" src="${it.p}" alt="Рисунок к вопросу" loading="lazy">` : ''}${it.picOpts ? '<p class="picq">Варианты ответа — на рисунке. Выбери номер:</p>' : ''}<div class="opts${it.picOpts ? ' picopts' : ''}">${opts}</div>${after}</article>`);
   if (Q.timer && a == null) startQTimer();
   const nx = $('#qnext'); if (nx) nx.focus({ preventScroll: true });
+  qRevealScroll();
+}
+/** После ответа плавно показываем вердикт и пояснение — без ручной прокрутки. */
+function qRevealScroll() {
+  if (!Q || !Q.justAnswered) return; Q.justAnswered = false;
+  const v = $('.verdict'); if (!v) return;
+  const m = ui.main, r = v.getBoundingClientRect(), mr = m.getBoundingClientRect();
+  if (r.top > mr.bottom - 160 || r.top < mr.top) m.scrollTo({ top: m.scrollTop + r.top - mr.top - 90, behavior: 'smooth' });
 }
 function vSelfQ(it, a, src, star, timer, n) {
   const open = Q.reveal === Q.i || a != null;
   let body = !open ? `<button class="btn wide reveal" data-act="qReveal">${ic('circle-check')}Показать ответ</button><p class="mute small">Вариантов ответа нет — вспомни ответ, потом проверь себя.</p>`
     : `<div class="ansbox">${vx(it.a)}${it.note ? ` <small>(${esc(it.note)})</small>` : ''}</div>` + (Q.mode === 'practice' || a == null ? whyHtml(a != null || Q.mode === 'practice' ? it.e : '') : '') +
       (a == null ? `<div class="knew"><button class="btn line ok" data-act="pick" data-v="1">${ic('check')}Знал</button><button class="btn line bad" data-act="pick" data-v="0">${ic('x')}Не знал</button></div>`
-        : `<div class="verdict ${a === 1 ? 'ok' : 'bad'}"><b>${a === 1 ? 'Отмечено: знал' : a < 0 ? 'Время вышло' : 'Отмечено: не знал'}</b></div><button class="btn wide mt" data-act="qNext" id="qnext">${Q.i + 1 < n ? 'Следующий вопрос' : 'Результат'} ${ic('chevron-right')}</button>`);
+        : `<div class="verdict ${a === 1 ? 'ok' : 'bad'}"><b>${a === 1 ? 'Отмечено: знал' : a < 0 ? 'Время вышло' : 'Отмечено: не знал'}</b></div><div class="qnextbar"><button class="btn wide" data-act="qNext" id="qnext">${Q.i + 1 < n ? 'Следующий вопрос' : 'Результат'} ${ic('chevron-right')}</button></div>`);
   setMain(`<div class="qtop"><div class="qprog"><i style="width:${Q.i / n * 100}%"></i></div>${comboChip()}</div>${timer}<article class="qcard"><div class="qhead">${src}${star}</div><p class="qt">${vx(it.q)}</p>${it.p ? `<img class="qpic" src="${it.p}" alt="Рисунок к вопросу" loading="lazy">` : ''}${body}</article>`);
   if (Q.timer && a == null && !open) startQTimer();
   const nx = $('#qnext'); if (nx) nx.focus({ preventScroll: true });
+  qRevealScroll();
 }
 function startQTimer() {
   const end = Date.now() + Q.timer * 1000, qi = Q.i;
@@ -127,7 +140,7 @@ function answer(k) {
   record(it.key, ok); markDay();
   if (Q.mode === 'practice' || it.self) {
     const g = comboAnswer(ok); if (ok) { Q.xp += g; addXP(g); buzz(12); } else buzz([30, 40, 30]);
-    save(); render();
+    Q.justAnswered = true; save(); render();
   } else {
     S.tot++; if (ok) S.ok++; save(); buzz(8);
     setTimeout(() => { if (Q && Q.picks[Q.i] === k) { Q.i++; render(); ui.main.scrollTop = 0; } }, 220);
@@ -157,7 +170,7 @@ function quizEnd() {
   const topics = Object.keys(byT).length > 1 ? `<h2 class="sec">По темам</h2><section class="card tbreak">${Object.entries(byT).map(([t, b]) => `<div class="tb"><span>${esc(TOPIC_SHORT[t])}</span><small>${b.ok} из ${b.n}</small><div class="pbar"><i style="width:${b.ok / b.n * 100}%"></i></div></div>`).join('')}</section>` : '';
   const review = wrong.length ? `<h2 class="sec">Разбор ошибок · ${wrong.length}</h2>` + wrong.map(({ it, pick }) =>
     `<article class="card werr"><div class="qhead">${it.tid ? `<span class="qsrc">${esc(TOPIC_SHORT[it.tid])} · №${it.num}</span>` : '<span></span>'}${it.key ? `<button class="qstar${isFav(it.key) ? ' on' : ''}" data-act="qFav" data-k="${it.key}" aria-label="Избранное">${ic('star')}</button>` : ''}</div><p class="qt">${vx(it.q)}</p>${it.p ? `<img class="qpic" src="${it.p}" alt="Рисунок к вопросу" loading="lazy">` : ''}` +
-    `${it.self ? `<p class="mine">${ic('x')}${pick < 0 ? 'Время вышло' : 'Не знал'}</p>` : pick >= 0 ? `<p class="mine">${ic('x')}<s>${vx(it.opts[pick])}</s></p>` : '<p class="mine">' + ic('timer') + 'Нет ответа</p>'}<p class="okans">${ic('check')}${vx(it.a)}</p>${it.e ? `<details class="whyd"><summary>Пояснение</summary>${whyHtml(it.e)}</details>` : ''}</article>`).join('') : `<section class="card center"><b class="h">Ни одной ошибки!</b></section>`;
+    `${it.self ? `<p class="mine">${ic('x')}${pick < 0 ? 'Время вышло' : 'Не знал'}</p>` : pick >= 0 ? `<p class="mine">${ic('x')}<s>${vx(it.opts[pick])}</s></p>` : '<p class="mine">' + ic('timer') + 'Нет ответа</p>'}<p class="okans">${ic('check')}${vx(it.a)}${it.aText ? ' — ' + vx(it.aText) : ''}</p>${it.e ? `<details class="whyd"><summary>Пояснение</summary>${whyHtml(it.e)}</details>` : ''}</article>`).join('') : `<section class="card center"><b class="h">Ни одной ошибки!</b></section>`;
   setMain(`<section class="card center res">${head}<p class="mute">Верно ${Q.ok} из ${n} · ${mmss(Math.round((Date.now() - Q.started) / 1000))} · опыт +${Q.xp}${extra ? ' · ' + extra : ''}</p>${pass}</section>` + topics + review +
     `<div class="cnav two">${wrong.length && Q.items[0].key ? `<button class="btn line" data-act="qRetryWrong">${ic('repeat')}Ошибки заново</button>` : `<button class="btn line" data-act="qAgain">${ic('rotate-ccw')}Ещё раз</button>`}<button class="btn wide" data-act="qDone">Готово</button></div>`);
 }
@@ -210,7 +223,7 @@ function vQSearch() {
   setMain(`<div class="search"><input id="qs" type="search" value="${esc(qsText)}" placeholder="Слова из вопроса или номер, например 3.15" autocomplete="off" enterkeyhint="search"></div>` +
     (!qsText.trim() ? '<p class="mute center-note">Введи слова из вопроса или ответа. Номер вида «3.15» откроет вопрос 15 из темы 3.</p>'
       : res.length ? `<p class="mute">Найдено: ${res.length}${res.length > 60 ? ', показаны первые 60' : ''}</p>` + res.slice(0, 60).map(it =>
-        `<article class="card werr"><div class="qhead"><span class="qsrc">${esc(TOPIC_SHORT[it.tid])} · №${it.num}</span><button class="qstar${isFav(it.key) ? ' on' : ''}" data-act="qFav" data-k="${it.key}" aria-label="Избранное">${ic('star')}</button></div><p class="qt">${vx(it.q)}</p>${it.p ? `<img class="qpic" src="${it.p}" alt="Рисунок" loading="lazy">` : ''}<p class="okans">${ic('check')}${vx(it.a)}</p>${it.e ? `<details class="whyd"><summary>Пояснение</summary>${whyHtml(it.e)}</details>` : ''}</article>`).join('')
+        `<article class="card werr"><div class="qhead"><span class="qsrc">${esc(TOPIC_SHORT[it.tid])} · №${it.num}</span><button class="qstar${isFav(it.key) ? ' on' : ''}" data-act="qFav" data-k="${it.key}" aria-label="Избранное">${ic('star')}</button></div><p class="qt">${vx(it.q)}</p>${it.p ? `<img class="qpic" src="${it.p}" alt="Рисунок" loading="lazy">` : ''}<p class="okans">${ic('check')}${vx(it.a)}${it.aText ? ' — ' + vx(it.aText) : ''}</p>${it.e ? `<details class="whyd"><summary>Пояснение</summary>${whyHtml(it.e)}</details>` : ''}</article>`).join('')
         : '<p class="mute center-note">Ничего не нашлось. Попробуй часть слова.</p>'));
 }
 
@@ -239,6 +252,7 @@ document.addEventListener('click', async e => {
   switch (d.act) {
     case 'pick': answer(+d.v); break;
     case 'qNext': if (Q) { Q.i++; render(); ui.main.scrollTop = 0; } break;
+    case 'qSkip': if (Q && Q.i + 1 < Q.items.length && qCurPick() == null) { stopQTimer(); Q.items.push(Q.items.splice(Q.i, 1)[0]); Q.picks.push(Q.picks.splice(Q.i, 1)[0]); render(); ui.main.scrollTop = 0; toast('Вопрос отложен — он будет в конце'); } break;
     case 'qReveal': if (Q) { Q.reveal = Q.i; stopQTimer(); render(); } break;
     case 'qFav': toggleFav(d.k); b.classList.toggle('on', isFav(d.k)); toast(ic('star') + (isFav(d.k) ? 'Добавлено в избранное' : 'Убрано из избранного')); break;
     case 'qAgain': startQuiz(Object.assign({}, Q, { items: Q.items.map(({ opts, ...x }) => x), saved: false, picks: [], ok: 0, xp: 0, i: 0, started: Date.now() })); break;

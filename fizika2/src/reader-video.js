@@ -69,7 +69,7 @@ function rvLessonScenes(ch, L) {
 
 /* ---------- Рисование сцен (координаты 720×400, как в лаборатории) ---------- */
 function rvWrap(d, s, maxW, size, bold) {
-  d.c.font = (bold ? '700 ' : '500 ') + Math.round(size * d.fs) + 'px Manrope, system-ui, sans-serif';
+  d.c.font = (bold ? '700 ' : '500 ') + Math.round(size * d.fs) + 'px "Golos UI", system-ui, sans-serif';
   const lines = []; let line = '';
   for (const w of String(s).split(/\s+/)) { const t = line ? line + ' ' + w : w; if (d.c.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
   if (line) lines.push(line); return lines;

@@ -133,7 +133,7 @@ function vHome() {
   const hi = S.name ? `Привет, ${esc(S.name)}!` : 'Привет!';
   // экзамен — главное: готовность, ошибки, повторение
   const B = BANK || [], seen = B.filter(x => isSeen(x.key)).length, errs = B.filter(x => isErr(x.key)).length, due = B.filter(x => isDue(x.key)).length, rd = readiness();
-  const ready = `<section class="card exready"><div class="top">${ringBig(rd ? rd.pct : (B.length ? Math.round(seen / B.length * 100) : 0))}<div><small class="mute">${rd ? 'Готовность к экзамену' : 'Подготовка к экзамену'}</small><b class="h">${rd ? `Прогноз — «${rd.mark}»` : 'Пройди пробный экзамен'}</b><small class="mute">${rd ? `средний балл ${rd.pct} · «3» — 60, «4» — 75, «5» — 90` : '30 вопросов — и я покажу прогноз оценки'}</small></div></div>` +
+  const ready = `<section class="card exready"><div class="ext">${ringBig(rd ? rd.pct : (B.length ? Math.round(seen / B.length * 100) : 0))}<div><small class="mute">${rd ? 'Готовность к экзамену' : 'Подготовка к экзамену'}</small><b class="h">${rd ? `Прогноз — «${rd.mark}»` : 'Пройди пробный экзамен'}</b><small class="mute">${rd ? `средний балл ${rd.pct} · «3» — 60, «4» — 75, «5» — 90` : '30 вопросов — и я покажу прогноз оценки'}</small></div></div>` +
     `<button class="cta" data-act="examSetup">${ic('graduation-cap', 'big')}<span><b>Пробный экзамен</b><small>30 вопросов · оценка по шкале 60/75/90</small></span>${ic('chevron-right')}</button>` +
     `<div class="exstats"><a href="#train"><b>${seen}</b><small>из ${B.length || 900} решено</small></a><button data-act="errs"><b class="${errs ? 'pink' : ''}">${errs}</b><small>ошибок</small></button><button data-act="due"><b class="${due ? 'gold' : ''}">${due}</b><small>повторить</small></button></div></section>`;
   let cont = '';
