@@ -21,10 +21,11 @@ try {
   await page.waitForSelector('#sb-canvas', { timeout: 10000 });
   assert.equal(await page.locator('body').getAttribute('data-view'), 'sandbox');
 
-  // Большой читатель открывается с главной, показывает конспект главы 2 и меняет размер текста.
+  // Конспекты открываются с главной (плитка «Конспекты»), показывают конспект главы 2 и меняет размер текста.
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' });
-  await page.locator('.reader-hero').click();
+  await page.locator('.quick4 a[href="#reader"]').click();
   await page.waitForFunction(() => document.body.dataset.view === 'reader');
+  assert.ok(await page.locator('a[href="#read-1"]').count() > 0, 'chapter 1 missing in reader');
   await page.locator('a[href="#read-2"]').click();
   await page.waitForSelector('.reader-formula');
   assert.ok((await page.locator('#ttl').innerText()).includes('Динамика материальной точки'));
@@ -44,7 +45,7 @@ try {
   // Основная навигация.
   for (const [hash, view, title] of [
     ['#book', 'book', 'Учебник'],
-    ['#train', 'train', 'Тренировка'],
+    ['#train', 'train', 'Тесты'],
     ['#lab', 'lab', 'Лаборатория'],
     ['#profile', 'profile', 'Профиль'],
     ['', 'home', 'Физика']

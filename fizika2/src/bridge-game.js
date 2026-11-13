@@ -17,7 +17,7 @@ function bridgeLaunch(){
   if(location.hash==='#game-bridge'){if(typeof render==='function')render();else vBridgeGame();}
   else location.hash='game-bridge';
 }
-function bridgeStageLabel(stage){return ({survey:'ОБСЛЕДОВАНИЕ',diagnose:'АНАЛИЗ ДАННЫХ',repair:'ВОССТАНОВЛЕНИЕ',test:'НАГРУЗОЧНЫЙ ТЕСТ',result:'ОТЧЁТ МИССИИ'})[stage]||'FIELD OPERATIONS';}
+function bridgeStageLabel(stage){return ({survey:'ОБСЛЕДОВАНИЕ',diagnose:'АНАЛИЗ ДАННЫХ',repair:'ВОССТАНОВЛЕНИЕ',test:'НАГРУЗОЧНЫЙ ТЕСТ',result:'ОТЧЁТ МИССИИ'})[stage]||'ВЫЕЗД';}
 function bridgeMarkup(){
   if(!BRIDGE_GAME)BRIDGE_GAME=bridgeFresh();
   const g=BRIDGE_GAME,cap=bridgeCapacity(g),stageIndex=BRIDGE_STAGES.indexOf(g.stage);
@@ -48,13 +48,13 @@ function bridgeMarkup(){
     controls='<div class="b3-result '+(pass?'passed':'failed')+'"><span class="b3-result-mark">'+(pass?'✓':'!')+'</span><span class="b3-eyebrow">'+(pass?'ОБЪЕКТ СДАН':'АВАРИЙНЫЙ СЦЕНАРИЙ')+'</span><h3>'+(pass?'Мост выдержал испытание':'Конструкция разрушена')+'</h3><p>'+bridgeEsc(g.message)+'</p><div class="b3-result-stats"><div><b>'+(g.load)+' т</b><small>Нагрузка</small></div><div><b>'+cap+' т</b><small>Предел</small></div><div><b>'+(pass?(g.diagnosisCorrect&&g.repair==='brace'?'+100':' +55'):'0')+'</b><small>Очки миссии</small></div></div><button class="btn wide b3-primary" data-act="bridgeReset">Повторить миссию</button></div>';
   }
   return '<div class="bridge-game-v3">'+
-    '<div class="b3-mission-head"><div><span class="b3-eyebrow">FIELD OPERATIONS / CASE 001</span><h2>Мост «Северный пролёт»</h2><p>Аварийная инженерная операция · сектор 04</p></div><div class="b3-live"><i></i> LIVE INCIDENT</div></div>'+
+    '<div class="b3-mission-head"><div><span class="b3-eyebrow">ВЫЕЗД · ДЕЛО 001</span><h2>Мост «Северный пролёт»</h2><p>Аварийная инженерная операция · сектор 04</p></div><div class="b3-live"><i></i> ИДЁТ ОБСЛЕДОВАНИЕ</div></div>'+
     '<div class="b3-stagebar">'+BRIDGE_STAGES.map((s,i)=>'<span class="'+(i===stageIndex?'active':i<stageIndex?'done':'')+'"><i>'+(i<stageIndex?'✓':'0'+(i+1))+'</i><small>'+['Осмотр','Диагноз','Ремонт','Тест','Отчёт'][i]+'</small></span>').join('')+'</div>'+
     '<div class="b3-scene-frame"><canvas id="bridge-scene" aria-label="Стилизованная объёмная сцена аварийного моста"></canvas><div class="b3-hotspots">'+(g.stage==='survey'?[
 ['joint','УЗЕЛ','50%','32%'],['deck','ПОЛОТНО','50%','55%'],['pier','ОПОРА','22%','59%']
 ].map(([id,label,left,top])=>'<button type="button" class="b3-hotspot '+(g.findings.includes(id)?'scanned':'')+'" data-act="bridgeScan" data-v="'+id+'" style="left:'+left+';top:'+top+'" aria-label="Осмотреть: '+label+'"><i></i><span>'+label+'</span></button>').join(''):'')+'</div><div class="b3-hud-top"><span><i></i> BR-04 / STRUCTURAL MONITOR</span><b>'+bridgeStageLabel(g.stage)+'</b></div><div class="b3-hud-bottom"><span>ВЕТЕР 4.2 М/С</span><span>ТЕМПЕРАТУРА +08°</span><span>ОБЪЕКТ: МОСТ 04-А</span></div><div class="b3-scan-reticle"></div></div>'+
     '<div class="b3-console"><section class="b3-brief-card"><span class="b3-eyebrow">СВОДКА ОПЕРАЦИИ</span><h3>'+(g.stage==='survey'?'На объекте обнаружена деформация':g.stage==='diagnose'?'Данные обследования готовы':g.stage==='repair'?'Подготовка ремонтной бригады':g.stage==='test'?'Проверка несущей способности':'Операция завершена')+'</h3><p>'+(g.stage==='survey'?'Тяжёлый транспорт вызвал подозрение на повреждение фермы. Проведи инструментальную проверку трёх контрольных точек.':g.stage==='diagnose'?'Сравни результаты ультразвукового сканирования, осмотра полотна и проверки опор.':g.stage==='repair'?'Используй подходящий комплект и выполни монтаж в правильной последовательности.':g.stage==='test'?'Следи за прогибом пролёта и телеметрией во время движения грузовика.':'Оцени результат и попробуй другой инженерный подход.')+'</p><div class="b3-telemetry"><div><small>ПРОГИБ ПРОЛЁТА</small><b>'+(g.anim==='drive'?Math.round(g.animProgress*18)+' мм':g.result==='fail'?'КРИТИЧЕСКИЙ':'2 мм')+'</b></div><div><small>СОСТОЯНИЕ УЗЛОВ</small><b class="'+(g.result==='fail'?'danger':'')+'">'+(g.result==='fail'?'РАЗРУШЕНИЕ':g.repairSteps>=3?'УСИЛЕН':'ТРЕБУЕТ ПРОВЕРКИ')+'</b></div></div></section><section class="b3-control-card">'+controls+'</section></div>'+
-    '<div class="b3-footer"><span>PHYSICS ENGINE / STRUCTURAL SIMULATION</span><span>MISSION 01 · BRIDGE FAILURE</span></div></div>';
+    '<div class="b3-footer"><span>ФИЗИЧЕСКАЯ МОДЕЛЬ · РАСЧЁТ КОНСТРУКЦИИ</span><span>МИССИЯ 01 · АВАРИЯ МОСТА</span></div></div>';
 }
 function vBridgeGame(){if(!BRIDGE_GAME)BRIDGE_GAME=bridgeFresh();frame('Инженер катастроф',{back:true,sub:'Операция 01 · Северный пролёт'});setMain(bridgeMarkup());bridgeDraw();}
 function bridgeMorphNode(oldNode,newNode){
@@ -165,8 +165,8 @@ function bridgeDraw(){
   }
   // Subtle film grain / vignette and scene edge lighting.
   const vignette=x.createRadialGradient(600,330,260,600,330,760);vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(4,9,18,.46)');x.fillStyle=vignette;x.fillRect(0,0,1200,675);
-  x.fillStyle='rgba(8,17,29,.7)';x.fillRect(26,24,280,40);x.fillStyle='#d4e6e5';x.font='700 15px sans-serif';x.textAlign='left';x.fillText('NORTH SPAN  /  BR-04',44,50);
-  if(driving||collapsing){x.fillStyle='rgba(8,17,29,.82)';x.fillRect(890,24,280,40);x.fillStyle=collapsing?'#ff967b':'#77e8c8';x.textAlign='right';x.fillText(collapsing?'STRUCTURAL FAILURE':'LOAD TEST IN PROGRESS',1150,50);}
+  x.fillStyle='rgba(8,17,29,.7)';x.fillRect(26,24,280,40);x.fillStyle='#d4e6e5';x.font='700 15px sans-serif';x.textAlign='left';x.fillText('СЕВЕРНЫЙ ПРОЛЁТ  ·  МОСТ 04',44,50);
+  if(driving||collapsing){x.fillStyle='rgba(8,17,29,.82)';x.fillRect(890,24,280,40);x.fillStyle=collapsing?'#ff967b':'#77e8c8';x.textAlign='right';x.fillText(collapsing?'РАЗРУШЕНИЕ КОНСТРУКЦИИ':'ИДЁТ НАГРУЗОЧНОЕ ИСПЫТАНИЕ',1150,50);}
 }
 function bridgeStartAnimation(){
   const g=BRIDGE_GAME;if(!g||g.anim)return;
