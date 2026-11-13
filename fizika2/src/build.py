@@ -33,11 +33,11 @@ if os.path.exists(os.path.join(OUT, 'pics')): shutil.rmtree(os.path.join(OUT, 'p
 shutil.copytree(os.path.join(OLD, 'pics'), os.path.join(OUT, 'pics'))
 os.makedirs(os.path.join(OUT, 'audio'), exist_ok=True)
 shutil.copy2(os.path.join(OUT, '..', 'fizika-android', 'app', 'src', 'main', 'res', 'mipmap-xxxhdpi', 'ic_launcher.png'), os.path.join(OUT, 'icon-192.png'))
-json.dump({'name': 'Физика: курс по учебнику', 'short_name': 'Физика', 'start_url': './', 'scope': './', 'display': 'standalone', 'background_color': '#0B1020', 'theme_color': '#0E1424', 'lang': 'ru',
+json.dump({'name': 'Физика: курс по учебнику', 'short_name': 'Физика', 'start_url': 'index.html', 'scope': './', 'display': 'standalone', 'background_color': '#0B1020', 'theme_color': '#0E1424', 'lang': 'ru',
            'icons': [{'src': 'icon-192.png', 'sizes': '192x192', 'type': 'image/png'}]}, open(os.path.join(OUT, 'manifest.webmanifest'), 'w', encoding='utf-8'), ensure_ascii=False)
 ver = __import__('hashlib').sha256(app.encode()).hexdigest()[:10]
 open(os.path.join(OUT, 'sw.js'), 'w').write("""const C='f2-%s';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','content.json',%s])).then(()=>self.skipWaiting()))});
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['index.html','content.json',%s])).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;
  if(/\\/(pics|audio)\\//.test(u.pathname)){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res})));return}
