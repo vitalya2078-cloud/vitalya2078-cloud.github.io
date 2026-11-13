@@ -260,7 +260,7 @@ const VS = {
     const inel = a[0] === 'in', y = 300; d.ground(y);
     const tc = 1.6, s = t < tc ? t / tc : 1;
     if (t < tc) { d.cart(120 + 200 * s, y, 100, 40, LC.blue, 200 * s); d.cart(520, y, 100, 40, LC.coral, 0); d.arrow(170 + 200 * s, y - 70, 240 + 200 * s, y - 70, LC.mint, 3, 'υ'); }
-    else { const u = (t - tc); if (inel) { d.cart(320 + 60 * u, y, 100, 40, LC.blue, 60 * u); d.cart(420 + 60 * u, y, 100, 40, LC.coral, 60 * u); d.tag('слиплись: импульс сохранился, часть энергии — в тепло', 360, 60, LC.gold); } else { d.cart(320, y, 100, 40, LC.blue, 0); d.cart(520 + 120 * u, y, 100, 40, LC.coral, 120 * u); d.tag('упругий удар равных масс: обмен скоростями', 360, 60, LC.gold); } }
+    else { const u = Math.min(t - tc, inel ? 2.4 : 1.1); if (inel) { d.cart(320 + 60 * u, y, 100, 40, LC.blue, 60 * u); d.cart(420 + 60 * u, y, 100, 40, LC.coral, 60 * u); d.tag('слиплись: импульс сохранился, часть энергии — в тепло', 360, 60, LC.gold); } else { d.cart(320, y, 100, 40, LC.blue, 0); d.cart(520 + 120 * u, y, 100, 40, LC.coral, 120 * u); d.tag('упругий удар равных масс: обмен скоростями', 360, 60, LC.gold); } }
   },
   clock(d, a, p, t) {
     // световые часы: в движущихся часах путь света длиннее → время идёт медленнее
@@ -319,7 +319,7 @@ function vsDrawExtra(d, sc, p, lt) {
 }
 
 /* Фон для сцен с формулами: блёклая иллюстрация темы главы */
-const VS_BG = { 8: 'gas', 9: 'pv:carnot', 10: 'phase', 11: 'efield:+-', 12: 'lab:ohm', 13: 'lattice', 14: 'bfield', 15: 'lab:induction', 16: 'domain', 17: 'emwave',
+const VS_BG = { 2: 'lab:newton', 3: 'lab:freefall', 4: 'lab:torque', 5: 'orbit', 6: 'lab:bernoulli', 7: 'clock', 8: 'gas', 9: 'pv:carnot', 10: 'phase', 11: 'efield:+-', 12: 'lab:ohm', 13: 'lattice', 14: 'bfield', 15: 'lab:induction', 16: 'domain', 17: 'emwave',
   18: 'lab:spring', 19: 'lab:wave', 20: 'emwave', 21: 'lab:lens', 22: 'lab:interference', 23: 'huygens', 24: 'prism', 25: 'polar', 26: 'photo', 27: 'atom', 28: 'box',
   29: 'atom', 30: 'bands', 31: 'lattice', 32: 'decay', 33: 'quarks' };
 function vsBackground(d, ch, lt) {
