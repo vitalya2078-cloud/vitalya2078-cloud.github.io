@@ -56,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add fizika2/index.html fizika2/content.json fizika2/version.json fizika2/sw.js fizika2/manifest.webmanifest fizika2/icon-192.png fizika2/src/meta.json
+          git add fizika2/index.html fizika2/fonts fizika2/content.json fizika2/version.json fizika2/sw.js fizika2/manifest.webmanifest fizika2/icon-192.png fizika2/src/meta.json
           if ! git diff --cached --quiet; then
             git commit -m "Publish tested Fizika 2 website"
             git push

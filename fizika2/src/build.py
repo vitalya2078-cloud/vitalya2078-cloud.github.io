@@ -5,8 +5,12 @@ import base64, json, os, re, shutil
 D = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(D, '..')); OLD = os.path.normpath(os.path.join(OUT, '..', 'fizika'))
 rd = lambda p, b=False: open(os.path.join(D, p), 'rb' if b else 'r', **({} if b else {'encoding': 'utf-8'})).read()
 html = rd('shell.html')
-for w in ('400', '600', '700'): html = html.replace('{{F%s}}' % w, base64.b64encode(open(os.path.join(OLD, 'src', 'g%s.woff2' % w), 'rb').read()).decode())
-html = re.sub(r'\{\{FONT:([\w-]+)\}\}', lambda m: base64.b64encode(rd(os.path.join('fonts', m.group(1) + '.woff2'), True)).decode(), html)
+# Шрифты — отдельными файлами fonts/*.woff2 (кешируются браузером и офлайн-воркером; index.html остаётся лёгким)
+FONT_OUT = os.path.join(OUT, 'fonts'); os.makedirs(FONT_OUT, exist_ok=True); FONT_FILES = []
+def font_file(src, name):
+    shutil.copy2(src, os.path.join(FONT_OUT, name)); FONT_FILES.append('fonts/' + name); return 'fonts/' + name
+for w in ('400', '600', '700'): html = html.replace('data:font/woff2;base64,{{F%s}}' % w, font_file(os.path.join(OLD, 'src', 'g%s.woff2' % w), 'golos-%s.woff2' % w))
+html = re.sub(r'data:font/woff2;base64,\{\{FONT:([\w-]+)\}\}', lambda m: font_file(os.path.join(D, 'fonts', m.group(1) + '.woff2'), m.group(1) + '.woff2'), html)
 icons = json.loads(re.search(r'const ICONS = (\{.*?\});', rd('icons.js')).group(1))
 html = re.sub(r'\{\{I_([\w-]+)\}\}', lambda m: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % icons[m.group(1)], html)
 voice = json.load(open(os.path.join(D, 'voice.json'), encoding='utf-8')) if os.path.exists(os.path.join(D, 'voice.json')) else {}
@@ -33,12 +37,12 @@ json.dump({'name': 'Физика: курс по учебнику', 'short_name':
            'icons': [{'src': 'icon-192.png', 'sizes': '192x192', 'type': 'image/png'}]}, open(os.path.join(OUT, 'manifest.webmanifest'), 'w', encoding='utf-8'), ensure_ascii=False)
 ver = __import__('hashlib').sha256(app.encode()).hexdigest()[:10]
 open(os.path.join(OUT, 'sw.js'), 'w').write("""const C='f2-%s';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','content.json'])).then(()=>self.skipWaiting()))});
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','content.json',%s])).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;
  if(/\\/(pics|audio)\\//.test(u.pathname)){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res})));return}
  e.respondWith(fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res}).catch(()=>caches.match(e.request).then(r=>r||caches.match('index.html'))))});
-""" % ver)
+""" % (ver, ",".join("'%s'" % f for f in FONT_FILES)))
 data_version = json.load(open(os.path.join(OUT, 'content.json'), encoding='utf-8')).get('v', 0)
 json.dump({'build': meta['build'], 'data': data_version}, open(os.path.join(OUT, 'version.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 json.dump(meta, open(meta_path, 'w', encoding='utf-8'), ensure_ascii=False)
