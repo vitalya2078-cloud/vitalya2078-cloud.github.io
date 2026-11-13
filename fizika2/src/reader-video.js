@@ -91,12 +91,14 @@ function rvArt(ch) {
   const img = new Image(); img.onload = () => { RV_ART[ch] = img; }; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(chapterArt(c, 640, 360).replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"'));
   return null;
 }
-function rvDrawModel(d, m, t) {
+function rvDrawModel(d, m, t, ab) {
   const x = Object.values(LABS).find(e => e.model === m), M = LAB_MODELS[m]; if (!x || !M) return;
-  const dur = M.dur(x.a0, x.b0), T = Number.isFinite(dur) ? dur + 1.5 : 6;
-  d.quiet = true; M.draw(d, x.a0, x.b0, Math.min(t % T, Number.isFinite(dur) ? dur : t)); d.quiet = false;
+  const a = ab ? ab[0] : x.a0, b = ab ? ab[1] : x.b0;
+  const dur = M.dur(a, b), T = Number.isFinite(dur) ? dur + 1.5 : 6;
+  d.quiet = true; M.draw(d, a, b, Math.min(t % T, Number.isFinite(dur) ? dur : t)); d.quiet = false;
 }
 function rvDraw(d, sc, p, lt, ch) {
+  if (typeof vsDrawExtra === 'function' && ['list', 'cmp', 'graph', 'vs'].includes(sc.kind)) { d.clear(); vsDrawExtra(d, sc, p, lt); return; }
   d.clear(); const ease2 = q => 1 - (1 - clamp(q, 0, 1)) ** 3;
   if (sc.kind === 'title') {
     const art = rvArt(ch); if (art) { d.c.globalAlpha = .22 + .06 * Math.sin(lt); d.c.drawImage(art, 330, 150, 390, 219); d.c.globalAlpha = 1; }
@@ -106,7 +108,7 @@ function rvDraw(d, sc, p, lt, ch) {
     const uy = 150 + hh - 6; d.line(30, uy, 30 + 220 * ease2(p * 3), uy, LC.coral, 5); d.c.globalAlpha = 1;
     d.text('видео-конспект', 30, uy + 30, { col: LC.mute, size: 14 });
   } else if (sc.kind === 'model') {
-    rvDrawModel(d, sc.model, lt); rvHeader(d, sc.h, p, LC.mint);
+    rvDrawModel(d, sc.model, lt, sc.ab); rvHeader(d, sc.h, p, LC.mint);
     if (sc.formula) { const f = String(sc.formula).split('\n')[0]; d.c.globalAlpha = ease2((p - .1) * 5); d.tag(f, 560, 76, LC.gold, 16); d.c.globalAlpha = 1; }
   } else if (sc.kind === 'formula') {
     if (sc.model) { d.c.globalAlpha = .18; rvDrawModel(d, sc.model, lt); d.c.globalAlpha = 1; d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.55)', null, 0, 0); }
@@ -233,3 +235,10 @@ function cardFigsDraw() {
     d.quiet = false;
   });
 }
+
+/** Ролик урока по сценарию L.video (для глав 2–33). Глава 1 использует свои сцены SCENES. */
+function rvVideoScenes(ch, L) {
+  const c = CHAPTERS[ch - 1];
+  return L.video.map(it => { const sc = vsParse(it); if (sc.kind === 'title') { sc.h = L.title; sc.sub = 'Глава ' + c.n + ' · ' + L.par; } return sc; });
+}
+const isScriptVideo = L => !!(L.video && L.video.length && !(L.video[0].s in SCENES));

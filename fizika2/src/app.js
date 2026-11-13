@@ -328,8 +328,8 @@ function vLesson(r) {
   let st = curStep[key] || steps[0][0]; if (!steps.some(s => s[0] === st)) st = steps[0][0];
   frame(esc(L.title), { back: true, sub: `Глава ${ch.n} · ${esc(L.par)}` });
   const tabs = `<div class="steps" style="grid-template-columns:repeat(${steps.length},1fr)">${steps.map(([k, t, i]) => `<button data-act="step" data-v="${k}" class="${k === st ? 'on' : ''}${done[k] ? ' ok' : ''}">${ic(done[k] ? 'check' : i)}<span>${t}</span></button>`).join('')}</div>`;
-  if (st === 'video' && L.video) { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
-  else if (st === 'video') { setMain(tabs + rvBox(L.title) + nextStepBtn('video', L)); rvInit(rvLessonScenes(r.ch, L), r.ch, () => stepDone(key, 'video', 10)); }
+  if (st === 'video' && L.video && !isScriptVideo(L)) { setMain(tabs + videoBox(r.ch, L)); videoInit(r.ch, r.li, L); }
+  else if (st === 'video') { setMain(tabs + rvBox(L.title) + nextStepBtn('video', L)); rvInit(L.video ? rvVideoScenes(r.ch, L) : rvLessonScenes(r.ch, L), r.ch, () => stepDone(key, 'video', 10)); }
   else if (st === 'cards') { setMain(tabs + cardsBox(L)); cardsInit(key, L); cardFigsDraw(); }
   else if (st === 'sim') { setMain(tabs + `<div id="simbox"></div>`); if (L.sim) simStart(SIMS[L.sim], key, L); else pairStart(L, key); }
   else setMain(tabs + `<section class="card center"><div class="qic">${ic('circle-check', 'big')}</div><b class="h">Проверка по уроку</b><p class="mute">${plural(L.quiz.length, 'вопрос', 'вопроса', 'вопросов')} с объяснениями. Верные ответы подряд — комбо и больше опыта.${S.lessons[key] ? ` Лучший результат: ${S.lessons[key].best}%.` : ''}</p><button class="btn wide" data-act="lessonQuiz" data-ch="${r.ch}" data-li="${r.li}">Начать проверку</button></section>`);
