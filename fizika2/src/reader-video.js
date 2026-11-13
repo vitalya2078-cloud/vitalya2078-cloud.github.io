@@ -79,16 +79,17 @@ function rvLines(d, s, x, y, maxW, size, opts = {}) {
   lines.forEach((l, i) => d.text(i === (opts.max || 6) - 1 && rvWrap(d, s, maxW, size, opts.bold).length > lines.length ? l + '…' : l, x, y + i * lh, Object.assign({ size }, opts)));
   return lines.length * lh;
 }
-function rvHeader(d, h, p, col = LC.gold) {
+/** Заголовок сцены — небольшая подпись сверху слева, как «ГЛАВА 1» в роликах главы 1 (без полосы). */
+function rvHeader(d, h, p, col = LC.blue) {
+  if (!h) return;
   d.c.globalAlpha = clamp(p * 6, 0, 1);
-  d.rect(0, 0, LAB_W, 46, 'rgba(11,16,32,.9)', null, 0, 0); d.line(0, 46, LAB_W * clamp(p * 3, 0, 1), 46, col, 2.5);
-  d.text(h, 20, 24, { col: LC.text, size: 15, bold: true }); d.c.globalAlpha = 1;
+  d.text(String(h).toUpperCase(), 24, 26, { col, size: 12, bold: true }); d.c.globalAlpha = 1;
 }
 const RV_ART = {};
 function rvArt(ch) {
   if (RV_ART[ch] !== undefined) return RV_ART[ch];
   const c = CHAPTERS[ch - 1]; RV_ART[ch] = null; if (!c || typeof chapterArt !== 'function') return null;
-  const img = new Image(); img.onload = () => { RV_ART[ch] = img; }; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(chapterArt(c, 640, 360).replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"'));
+  const img = new Image(); img.onload = () => { RV_ART[ch] = img; }; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(chapterArt(c, 640, 360, true).replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"').replace(/<rect x="0" y="1[45]0" width="320" height="[34]0" fill="#[0-9A-F]{6}"\/>/gi, ''));
   return null;
 }
 function rvDrawModel(d, m, t, ab) {
@@ -98,39 +99,43 @@ function rvDrawModel(d, m, t, ab) {
   d.quiet = true; M.draw(d, a, b, Math.min(t % T, Number.isFinite(dur) ? dur : t)); d.quiet = false;
 }
 function rvDraw(d, sc, p, lt, ch) {
+  d.video = true;
   if (typeof vsDrawExtra === 'function' && ['list', 'cmp', 'graph', 'vs'].includes(sc.kind)) { d.clear(); vsDrawExtra(d, sc, p, lt); return; }
   d.clear(); const ease2 = q => 1 - (1 - clamp(q, 0, 1)) ** 3;
+  const ground = () => { d.c.fillStyle = '#141C31'; d.c.fillRect(0, 300, LAB_W, LAB_H - 300); d.line(0, 300, LAB_W, 300, '#2A3658', 2); };
   if (sc.kind === 'title') {
-    const art = rvArt(ch); if (art) { d.c.globalAlpha = .22 + .06 * Math.sin(lt); d.c.drawImage(art, 330, 150, 390, 219); d.c.globalAlpha = 1; }
-    const k = ease2(p * 4);
-    d.c.globalAlpha = k; d.tag(sc.sub.toUpperCase(), 120, 90, LC.blue, 13);
-    const hh = rvLines(d, sc.h, 30 + (1 - k) * -30, 150, 560, 30, { col: LC.text, bold: true, max: 3 });
-    const uy = 150 + hh - 6; d.line(30, uy, 30 + 220 * ease2(p * 3), uy, LC.coral, 5); d.c.globalAlpha = 1;
-    d.text('видео-конспект', 30, uy + 30, { col: LC.mute, size: 14 });
+    // как заставка главы 1: «ГЛАВА N», крупное название, подзаголовок, живая иллюстрация темы
+    ground();
+    const art = rvArt(ch); if (art) { d.c.globalAlpha = .9; d.c.drawImage(art, 380, 70 + 4 * Math.sin(lt * 1.2), 320, 180); d.c.globalAlpha = 1; }
+    const k = ease2(p * 4); d.c.globalAlpha = k;
+    d.text(sc.sub.toUpperCase(), 30, 70, { col: LC.blue, size: 13, bold: true });
+    rvLines(d, sc.h, 30, 118, 400, 27, { col: LC.text, bold: true, max: 3 });
+    d.c.globalAlpha = 1;
   } else if (sc.kind === 'model') {
     rvDrawModel(d, sc.model, lt, sc.ab); rvHeader(d, sc.h, p, LC.mint);
-    if (sc.formula) { const f = String(sc.formula).split('\n')[0]; d.c.globalAlpha = ease2((p - .1) * 5); d.tag(f, 560, 76, LC.gold, 16); d.c.globalAlpha = 1; }
+    if (sc.formula) { const f = String(sc.formula).split('\n')[0]; d.c.globalAlpha = ease2((p - .1) * 5); d.math(f, 696, 60, { col: LC.text, size: 20, align: 'right' }); d.c.globalAlpha = 1; }
   } else if (sc.kind === 'formula') {
-    if (sc.model) { d.c.globalAlpha = .18; rvDrawModel(d, sc.model, lt); d.c.globalAlpha = 1; d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.55)', null, 0, 0); }
+    // формулы — крупно, белым курсивом поверх иллюстрации темы (как «a⃗ = dv⃗/dt» в главе 1)
+    if (sc.model) { d.c.save(); d.c.translate(LAB_W * .4, LAB_H * .36); d.c.scale(.6, .6); d.quiet = true; d.bg = true; rvDrawModel(d, sc.model, lt); d.bg = false; d.c.restore(); }
     else if (typeof vsBackground === 'function') vsBackground(d, ch, lt);
     rvHeader(d, sc.h, p, LC.gold);
-    const lines = String(sc.formula).split('\n').filter(Boolean), n = lines.length, step = Math.min(70, 280 / n);
+    const lines = String(sc.formula).split('\n').filter(Boolean), n = lines.length;
+    const size = n > 2 ? 21 : 26, step = size * d.fs * 1.55;
     lines.forEach((l, i) => {
-      const q = ease2((p - .08 - i * .55 / n) * 5); if (q <= 0) return;
-      d.c.globalAlpha = q; const y = 200 - (n - 1) * step / 2 + i * step;
-      const sz = Math.min(26, (step - 8) / (1.8 * d.fs)); d.rect(60, y - sz * d.fs * .9, 600, sz * d.fs * 1.8, 'rgba(255,194,75,.07)', 'rgba(255,194,75,.35)', 1.5, 12);
-      d.text(l, 360 + (1 - q) * 30, y, { col: LC.gold, size: sz, bold: true, align: 'center' }); d.c.globalAlpha = 1;
+      const q = ease2((p - .06 - i * .5 / n) * 5); if (q <= 0) return;
+      d.c.globalAlpha = q; d.math(l, 30 + (1 - q) * 20, 100 + i * step, { col: i ? '#C9D1E6' : LC.text, size: i ? size * .85 : size }); d.c.globalAlpha = 1;
     });
   } else if (sc.kind === 'idea' || sc.kind === 'trap') {
+    // мысль — крупный текст на ровном фоне; у «частой ошибки» — красная метка
+    ground();
     rvHeader(d, sc.h, p, sc.kind === 'trap' ? LC.coral : LC.violet);
-    const col = sc.kind === 'trap' ? LC.coral : LC.violet, r = 34 + 4 * Math.sin(lt * 2);
-    d.circle(80, 150, r, sc.kind === 'trap' ? 'rgba(255,122,89,.15)' : 'rgba(180,140,255,.15)', col, 3);
-    d.text(sc.kind === 'trap' ? '!' : String(sc.num || '•'), 80, 151, { col, size: 26, bold: true, align: 'center' });
-    d.c.globalAlpha = ease2((p - .05) * 4); rvLines(d, sc.key, 140, 130, 540, 21, { col: LC.text, bold: true, max: 7 }); d.c.globalAlpha = 1;
+    d.c.globalAlpha = ease2((p - .05) * 4);
+    d.rect(24, 62, 6, 120, sc.kind === 'trap' ? LC.coral : LC.violet, null, 0, 3);
+    rvLines(d, sc.key, 46, 80, 620, 23, { col: LC.text, bold: true, max: 6 }); d.c.globalAlpha = 1;
   } else if (sc.kind === 'summary') {
-    rvHeader(d, sc.h, p, LC.mint);
-    d.c.globalAlpha = ease2(p * 4); rvLines(d, rvFirstSentence(sc.text), 40, 110, 640, 22, { col: LC.text, bold: true, max: 6 }); d.c.globalAlpha = 1;
-    d.c.globalAlpha = ease2((p - .5) * 4); d.tag('Дальше — проверь себя в разделе «Тесты»', 360, 350, LC.mint, 14); d.c.globalAlpha = 1;
+    ground(); rvHeader(d, sc.h, p, LC.mint);
+    d.c.globalAlpha = ease2(p * 4); rvLines(d, rvFirstSentence(sc.text), 30, 80, 640, 22, { col: LC.text, bold: true, max: 6 }); d.c.globalAlpha = 1;
+    d.c.globalAlpha = ease2((p - .5) * 4); d.text('Дальше — проверь себя в разделе «Тесты»', 30, 350, { col: LC.mint, size: 15, bold: true }); d.c.globalAlpha = 1;
   }
 }
 

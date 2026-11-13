@@ -243,13 +243,13 @@ const FIGS = {
 /* ---------- обложки глав: плоские сцены по мотиву ---------- */
 let artSeq = 0;
 /* Обложка главы. Рисунок всегда строится в координатах 320×180 и масштабируется под нужный размер. */
-function chapterArt(ch, ow = 320, oh = 180) {
+function chapterArt(ch, ow = 320, oh = 180, bare = false) {
   const col = PARTS[ch.part - 1].col, m = ch.art, w = 320, h = 180, id = 'ca' + (++artSeq);
   const base = `<defs><linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#18213b"/><stop offset="1" stop-color="#0d1323"/></linearGradient>` +
     `<radialGradient id="${id}r" cx=".72" cy=".25" r=".7"><stop offset="0" stop-color="${col}" stop-opacity=".28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient>` +
     `<pattern id="${id}p" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#fff" opacity=".06"/></pattern>` +
     `<filter id="${id}g" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>` +
-    `<rect width="${w}" height="${h}" fill="url(#${id}b)"/><rect width="${w}" height="${h}" fill="url(#${id}p)"/><rect width="${w}" height="${h}" fill="url(#${id}r)"/>`;
+    (bare ? '' : `<rect width="${w}" height="${h}" fill="url(#${id}b)"/><rect width="${w}" height="${h}" fill="url(#${id}p)"/><rect width="${w}" height="${h}" fill="url(#${id}r)"/>`);
   const M = {
     kin: `<path d="M20 150 Q120 20 250 150" fill="none" stroke="${col}" stroke-width="4" stroke-dasharray="8 8"/><circle cx="98" cy="72" r="11" fill="${C.coral}"/>${sArrow(98, 72, 150, 52, C.text, 3)}<rect x="0" y="150" width="${w}" height="30" fill="${C.bg}"/>`,
     force: `<rect x="110" y="90" width="70" height="50" rx="8" fill="${col}"/>${sArrow(40, 115, 105, 115, C.coral, 5)}${sArrow(185, 115, 260, 115, C.text, 3)}<rect x="0" y="140" width="${w}" height="40" fill="${C.bg}"/>`,

@@ -293,14 +293,15 @@ function vsDrawExtra(d, sc, p, lt) {
   if (sc.kind === 'list') {
     rvHeader(d, sc.h, p, LC.blue);
     sc.items.forEach((it, i) => { const q = VS_E((p - .05 - i * .7 / sc.items.length) * 5); if (q <= 0) return; d.c.globalAlpha = q; const y = 85 + i * Math.min(100, 290 / sc.items.length);
-      d.circle(60, y + 12, 14, LC.blue); d.text(String(i + 1), 60, y + 13, { col: '#fff', size: 13, bold: true, align: 'center' }); rvLines(d, it, 90 + (1 - q) * 20, y + 12, 590, sc.items.length > 3 ? 16 : 19, { col: LC.text, bold: true, max: 2 }); d.c.globalAlpha = 1; });
+      d.text(String(i + 1), 34, y + 12, { col: LC.blue, size: 20, bold: true, align: 'center' }); rvLines(d, it, 64 + (1 - q) * 20, y + 12, 620, sc.items.length > 3 ? 17 : 20, { col: LC.text, bold: true, max: 2 }); d.c.globalAlpha = 1; });
     return true;
   }
   if (sc.kind === 'cmp') {
     rvHeader(d, sc.h, p, LC.violet);
     sc.cols.forEach(([ttl, txt], i) => { const q = VS_E((p - .05 - i * .25) * 4); if (q <= 0) return; d.c.globalAlpha = q; const x = 30 + i * 345;
-      d.rect(x, 70, 315, 300, i ? 'rgba(255,122,89,.08)' : 'rgba(61,214,160,.08)', i ? LC.coral : LC.mint, 2, 16); d.text(ttl, x + 157, 102, { col: i ? LC.coral : LC.mint, size: ttl.length > 15 ? 14 : 18, bold: true, align: 'center' });
-      rvLines(d, txt || '', x + 20, 145, 275, 15, { col: LC.text, max: 9 }); d.c.globalAlpha = 1; });
+      if (i) d.line(360, 70, 360, 360, '#2A3658', 2);
+      rvLines(d, ttl, x + 10, 80, 300, ttl.length > 18 ? 16 : 20, { col: i ? LC.coral : LC.mint, bold: true, max: 2 });
+      rvLines(d, txt || '', x + 10, 150, 300, 16, { col: LC.text, max: 9 }); d.c.globalAlpha = 1; });
     return true;
   }
   if (sc.kind === 'graph') {
@@ -314,7 +315,7 @@ function vsDrawExtra(d, sc, p, lt) {
     if (sc.lab && p > .6) d.tag(sc.lab, 520, 70, LC.gold);
     return true;
   }
-  if (sc.kind === 'vs' && VS[sc.type]) { VS[sc.type](d, sc.args, p, lt); rvHeader(d, sc.h, p, LC.gold); return true; }
+  if (sc.kind === 'vs' && VS[sc.type]) { VS[sc.type](d, sc.args, p, lt); rvHeader(d, sc.h, p, LC.blue); return true; }
   return false;
 }
 
@@ -324,7 +325,8 @@ const VS_BG = { 2: 'lab:newton', 3: 'lab:freefall', 4: 'lab:torque', 5: 'orbit',
   29: 'atom', 30: 'bands', 31: 'lattice', 32: 'decay', 33: 'quarks' };
 function vsBackground(d, ch, lt) {
   const b = VS_BG[ch]; if (!b) return false;
-  d.c.save(); d.c.globalAlpha = .16; d.quiet = true; d.bg = true;
+  d.c.save(); d.c.globalAlpha = d.video ? .85 : .16; d.quiet = true; d.bg = true;
+  if (d.video) { d.c.translate(LAB_W * .4, LAB_H * .36); d.c.scale(.6, .6); } // в ролике — иллюстрация справа внизу, текст слева сверху
   try { if (b.startsWith('lab:')) rvDrawModel(d, b.slice(4), lt); else { const sc = vsParse({ s: b, t: '' }); VS[sc.type](d, sc.args, 1, lt); } } catch (e) {}
-  d.quiet = false; d.bg = false; d.c.restore(); d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.45)', null, 0, 0); return true;
+  d.quiet = false; d.bg = false; d.c.restore(); if (!d.video) d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.45)', null, 0, 0); return true;
 }

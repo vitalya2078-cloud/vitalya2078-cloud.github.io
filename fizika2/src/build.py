@@ -41,7 +41,7 @@ self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;
  if(/\\/(pics|audio)\\//.test(u.pathname)){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res})));return}
- e.respondWith(fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res}).catch(()=>caches.match(e.request).then(r=>r||caches.match('index.html'))))});
+ e.respondWith(fetch(u.href,{cache:'no-cache'}).then(res=>{if(res.ok){const c=res.clone();caches.open(C).then(k=>k.put(e.request,c))}return res}).catch(()=>caches.match(e.request).then(r=>r||caches.match('index.html'))))});
 """ % (ver, ",".join("'%s'" % f for f in FONT_FILES)))
 data_version = json.load(open(os.path.join(OUT, 'content.json'), encoding='utf-8')).get('v', 0)
 json.dump({'build': meta['build'], 'data': data_version}, open(os.path.join(OUT, 'version.json'), 'w', encoding='utf-8'), ensure_ascii=False)

@@ -44,6 +44,8 @@ function labPainter(cv) {
   const d = {
     c, fs,
     clear() {
+      // в роликах — ровный фон без сетки, как в главе 1
+      if (d.video) { c.fillStyle = LC.bg; c.fillRect(0, 0, LAB_W, LAB_H); return; }
       const g = c.createLinearGradient(0, 0, 0, LAB_H); g.addColorStop(0, '#121a30'); g.addColorStop(1, '#0a0f1d');
       c.fillStyle = g; c.fillRect(0, 0, LAB_W, LAB_H);
       const r = c.createRadialGradient(LAB_W / 2, LAB_H * .35, 20, LAB_W / 2, LAB_H * .35, LAB_W * .7);
@@ -114,6 +116,12 @@ function labPainter(cv) {
     /** Подпись на тёмной плашке — читается поверх любого рисунка. */
     tag(s, x, y, col = LC.text, size = 13) {
       if (d.bg) return;
+      if (d.video) { // в роликах — просто подпись, без плашки (стиль главы 1)
+        c.save(); c.shadowColor = 'rgba(0,0,0,.8)'; c.shadowBlur = 6;
+        c.font = '700 ' + Math.round((size + 1) * fs) + 'px "Golos UI", system-ui, sans-serif';
+        const w = c.measureText(String(s)).width, X = clamp(x - w / 2, 14, LAB_W - 14 - w), Y = Math.max(y, 50); // целиком в кадре и ниже заголовка
+        d.text(s, X, Y, { col, size: size + 1, align: 'left', bold: true }); c.restore(); return;
+      }
       s = String(s).replace(/\u20D7/g, '');
       c.font = '700 ' + Math.round(size * fs) + 'px "Golos UI", system-ui, sans-serif';
       const w = c.measureText(s).width + 10 * fs, h = (size + 8) * fs;
@@ -178,7 +186,19 @@ function labPainter(cv) {
       }
       d.text(unit, x1 + 10, y + 18, { size: 11 });
     },
-    title(s) { if (!d.quiet) d.text(s, 22, 26, { col: LC.gold, size: 14, bold: true }); }
+    title(s) { if (!d.quiet) d.text(s, 22, 26, { col: LC.gold, size: 14, bold: true }); },
+    /** Формула курсивом (как в роликах главы 1); стрелку вектора (U+20D7) рисуем над буквой сами. */
+    math(s, x, y, { col = LC.text, size = 26, align = 'left' } = {}) {
+      if (d.bg) return;
+      const px = Math.round(size * fs); c.font = 'italic 600 ' + px + 'px "F2 Math", "Cambria Math", "Times New Roman", serif';
+      c.fillStyle = col; c.strokeStyle = col; c.textBaseline = 'middle'; c.textAlign = 'left';
+      let out = ''; const marks = []; for (const ch of String(s)) { if (ch === '\u20D7') marks.push(out.length - 1); else out += ch; }
+      const W = c.measureText(out).width, x0 = align === 'center' ? x - W / 2 : align === 'right' ? x - W : x;
+      c.fillText(out, x0, y);
+      marks.forEach(i => { if (i < 0) return; const a = x0 + c.measureText(out.slice(0, i)).width, w = c.measureText(out[i]).width, yy = y - px * .62, x1 = a + w * .12, x2 = a + w * .95;
+        c.lineWidth = Math.max(1.5, px / 16); c.beginPath(); c.moveTo(x1, yy); c.lineTo(x2, yy); c.stroke(); c.beginPath(); c.moveTo(x2, yy); c.lineTo(x2 - px * .16, yy - px * .1); c.lineTo(x2 - px * .16, yy + px * .1); c.closePath(); c.fill(); });
+      return W;
+    }
   };
   return d;
 }
@@ -302,8 +322,8 @@ const LAB_MODELS = {
       d.circle(X, Y, 13, LC.gold);
       d.arrow(X, Y, X + (cx - X) * .45, Y + (cy - Y) * .45, LC.coral, 3.5, 'aₙ');
       d.arrow(X, Y, X + 70 * Math.sin(q), Y - 70 * Math.cos(q), LC.mint, 3.5, 'v');
-      d.text('Скорость — по касательной,', 520, 160, { size: 12, col: LC.mint });
-      d.text('ускорение — к центру', 520, 182, { size: 12, col: LC.coral });
+      d.text('скорость — по касательной', 700, 150, { size: 12, col: LC.mint, align: 'right' });
+      d.text('ускорение — к центру', 700, 176, { size: 12, col: LC.coral, align: 'right' });
     }
   },
 
