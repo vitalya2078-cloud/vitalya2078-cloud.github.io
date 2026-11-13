@@ -136,9 +136,11 @@ const VS = {
   /* ----- колебания и волны ----- */
   standing(d, a, p, t) {
     const x0 = 80, x1 = 640, y = 200, L = x1 - x0, k = 3;
-    for (let s = -1; s <= 1; s += .5) { const pts = []; for (let x = 0; x <= L; x += 4) pts.push([x0 + x, y - 90 * s * Math.sin(k * Math.PI * x / L) * Math.cos(t * 4)]); d.path(pts, s === 1 ? LC.cyan : 'rgba(61,214,195,.15)', s === 1 ? 3.5 : 1.5); }
+    // огибающая (крайние положения струны) и мгновенная форма
+    [-1, 1].forEach(s => { const pts = []; for (let x = 0; x <= L; x += 4) pts.push([x0 + x, y - 90 * s * Math.sin(k * Math.PI * x / L)]); d.path(pts, 'rgba(61,214,195,.22)', 1.5, null, [5, 5]); });
+    { const pts = []; for (let x = 0; x <= L; x += 4) pts.push([x0 + x, y - 90 * Math.sin(k * Math.PI * x / L) * Math.cos(t * 4)]); d.path(pts, LC.cyan, 3.5); }
     for (let i = 0; i <= k; i++) { const x = x0 + i * L / k; d.circle(x, y, 7, LC.gold); if (p > .4) d.text('узел', x, y + 28, { col: LC.gold, size: 11, align: 'center' }); }
-    if (p > .6) d.tag('расстояние между узлами = λ/2', 360, 50, LC.gold);
+    if (p > .6) d.tag('расстояние между узлами = λ/2', 360, 72, LC.gold);
   },
   doppler(d, a, p, t) {
     const v = 1.1, sx = 200 + (t * 40) % 300;
