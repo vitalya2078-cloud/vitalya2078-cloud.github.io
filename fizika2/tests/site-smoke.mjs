@@ -58,7 +58,8 @@ try {
   for (const [hash, view, title] of [
     ['#book', 'book', 'Учебник'],
     ['#train', 'train', 'Тесты'],
-    ['#lab', 'lab', 'Лаборатория'],
+    ['#lab', 'labWorks', 'Практикум'],
+    ['#lab-exps', 'lab', 'Практикум'],
     ['#profile', 'profile', 'Профиль'],
     ['', 'home', 'Физика']
   ]) {
@@ -107,8 +108,17 @@ try {
   await page.locator('#lab-go[data-act="labPause"]').click();
   await page.locator('[data-act="labReset"]').click();
 
-  // Проверяем именно кнопку входа в свободную лабораторию из раздела «Лаборатория».
+  // Лабораторная работа № 1: карточка в «Практикуме», допуск, рабочее поле.
   await page.goto('http://127.0.0.1:4173/#lab', { waitUntil: 'domcontentloaded' });
+  await page.locator('.lw-card').first().click();
+  await page.waitForFunction(() => document.body.dataset.view === 'labWork');
+  await page.evaluate(() => { LW_ADMIT.forEach(([, a], i) => LWS.admit[i] = a); lwSave(); render(); });
+  await page.locator('[data-lw="admitCheck"]').click();
+  await page.locator('[data-lw="next"]').click();
+  await page.waitForSelector('#lw-cv');
+
+  // Свободная лаборатория — из вкладки «Опыты» Практикума.
+  await page.goto('http://127.0.0.1:4173/#lab-exps', { waitUntil: 'domcontentloaded' });
   await page.locator('a[href="#sandbox"]').click();
   await page.waitForSelector('#sb-canvas');
   assert.equal(await page.locator('body').getAttribute('data-view'), 'sandbox');

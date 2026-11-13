@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 93;
+  var embedded = 99;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -919,6 +919,81 @@ body{font-variant-numeric:tabular-nums lining-nums}
 }
 .kfig{display:block;width:100%;aspect-ratio:720/400;height:auto;border-radius:14px;margin:6px 0 10px;border:1px solid var(--line)}
 .rv .vplay{inset:auto 16px 16px auto; margin:0; width:64px; height:64px}
+
+/* ---------- Навигация: на телефоне 4 раздела, профиль — по значку уровня сверху ---------- */
+@media (max-width:760px), (min-width:761px) and (max-height:500px){
+ .tabs{grid-template-columns:repeat(4,minmax(0,1fr)) !important}
+ .tabs a.tab-prof{display:none !important}
+ #lv::after{content:""; width:26px; height:26px; border-radius:50%; background:var(--card2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238D97B5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='5'/%3E%3Cpath d='M20 21a8 8 0 0 0-16 0'/%3E%3C/svg%3E") center/16px no-repeat}
+}
+.lab-switch.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px}
+.lab-switch.three .btn{padding:10px 4px; font-size:13px; min-width:0; justify-content:center; white-space:nowrap; overflow:hidden}
+@media(max-width:420px){.lab-switch.three .btn small{display:none}.lab-switch.three .btn{font-size:12.5px; gap:4px}}
+.lab-switch.three .btn .ic{width:16px; height:16px}
+/* ---------- Лабораторные работы ---------- */
+.lw-card{display:flex; align-items:center; gap:14px; padding:16px; border-radius:18px; background:var(--card); border:1px solid var(--line); color:inherit; text-decoration:none; margin:12px 0}
+.lw-num{flex:0 0 56px; height:56px; border-radius:14px; display:grid; place-items:center; background:linear-gradient(135deg,var(--blue),var(--violet)); color:#fff; font-weight:800; font-size:15px}
+.lw-copy{display:grid; gap:4px; flex:1; min-width:0}.lw-copy b{font-size:16px}.lw-copy small{color:var(--mute); font-size:13px; line-height:1.4}
+.lw-meta{font-size:12.5px; color:var(--mute)} .lw-meta i{font-style:normal; color:var(--gold)} .lw-meta i.mint{color:var(--mint)}
+.lw-more{text-align:center; margin-top:14px}
+.lw{display:grid; gap:12px}
+.lw-steps{display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none}
+.lw-steps button{flex:0 0 auto; display:flex; align-items:center; gap:6px; padding:7px 11px 7px 7px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--mute); font:600 13px var(--ui)}
+.lw-steps button b{width:22px; height:22px; border-radius:7px; display:grid; place-items:center; background:var(--card2); font-size:12px}
+.lw-steps button.on{color:var(--text); border-color:var(--blue)} .lw-steps button.on b{background:var(--blue); color:#fff}
+.lw-steps button.ok b{background:var(--mint); color:#0B1020} .lw-steps button:disabled{opacity:.45}
+.lw .card{margin:0; padding:16px}
+.lw .card p{margin:6px 0; line-height:1.5}
+.lw details{margin-top:8px} .lw summary{cursor:pointer; color:var(--blue); font-weight:600; padding:6px 0}
+.lw-q{display:grid; gap:6px; margin:14px 0}.lw-q>b{font-size:14.5px; line-height:1.4}
+.lw-q button{text-align:left; padding:10px 12px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:500 14px/1.35 var(--ui)}
+.lw-q button.pick{border-color:var(--blue)} .lw-q button.ok{border-color:var(--mint); background:rgba(61,214,160,.1)} .lw-q button.bad{border-color:var(--pink); background:rgba(255,107,139,.1)}
+.lw-pucks{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin:10px 0}
+.lw-pucks button{display:grid; justify-items:center; gap:2px; padding:10px 2px; border-radius:14px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text)}
+.lw-pucks button b{font-size:18px}.lw-pucks button small{color:var(--mute); font-size:12px}.lw-pucks button i{font-style:normal; font-size:10.5px; font-weight:700}
+.lw-pucks button.p1{border-color:#6C8CFF; background:rgba(108,140,255,.15)}.lw-pucks button.p1 i{color:#9DB2FF}
+.lw-pucks button.p2{border-color:#FF7A59; background:rgba(255,122,89,.15)}.lw-pucks button.p2 i{color:#FFB199}
+.lw-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px}.lw-row label{flex:1 1 130px; display:grid; gap:5px; font-size:13px; color:var(--mute)}
+.lwi{width:100%; min-width:0; box-sizing:border-box; padding:9px 10px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:600 15px var(--ui); font-variant-numeric:tabular-nums}
+.lwi:focus{outline:none; border-color:var(--blue)} .lwi.ok{border-color:var(--mint); background:rgba(61,214,160,.08)} .lwi.bad{border-color:var(--pink); background:rgba(255,107,139,.08)}
+.lw-ta{width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:500 14.5px/1.5 var(--ui); resize:vertical}
+.lw-stage{position:sticky; top:0; z-index:5; background:var(--bg); padding-bottom:4px}
+@media(min-width:761px){.lw-stage{position:static}.lw{max-width:900px; margin:0 auto}}
+#lw-cv{display:block; width:min(100%, calc(52vh * 580 / 440)); margin:0 auto; aspect-ratio:580/440; height:auto; border-radius:16px; border:1px solid var(--line); touch-action:none; cursor:crosshair}
+.lw-hint{margin:6px 2px 0; font-size:12.5px; color:var(--mute); display:flex; gap:6px; align-items:center}.lw-hint .ic{width:15px; height:15px; flex:none}
+.lw-screw{display:flex; align-items:center; gap:10px; margin-top:10px}.lw-screw span{flex:1; font-size:14px; color:var(--mute)}.lw-screw b{font:800 22px var(--ui); min-width:24px; text-align:center}
+.lw-screw .lp-btn{width:46px; height:42px; flex:0 0 46px}
+.lw-bar .btn{display:flex; align-items:center; justify-content:center; gap:8px}
+.lw-msg{min-height:1.4em; font-size:13.5px; margin:8px 2px}.lw-msg.bad{color:var(--pink)}.lw-msg.good{color:var(--mint)}
+.lw-scroll{overflow-x:auto}
+.lw-tbl{width:100%; border-collapse:collapse; font-size:13.5px; font-variant-numeric:tabular-nums}
+.lw-tbl th{font:600 12px var(--ui); color:var(--mute); text-align:left; padding:6px 6px; border-bottom:1px solid var(--line)}
+.lw-tbl td{padding:6px; border-bottom:1px solid var(--line); vertical-align:top}
+.lw-tbl tr.now td{background:rgba(108,140,255,.08)} .lw-tbl tr.sum td{font-size:12px; color:var(--mute)}
+.lw-tbl tr.sum .lwi{margin-top:4px; font-size:14px}
+.lw-tbl.wide{min-width:620px}
+.lw-tbl td .lwi{padding:6px 7px; font-size:14px}
+.lwr-tools{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap}
+.lwr{display:grid; gap:16px}
+.lwp{background:#fff; color:#111; font:14px/1.45 "Times New Roman", "STIX Two Text", serif; padding:28px 30px; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.35); max-width:800px; margin:0 auto; width:100%; box-sizing:border-box}
+.lwp .c{text-align:center}.lwp .b{font-weight:700}.lwp .mt2{margin-top:22px}.lwp hr{border:0; border-top:1px solid #000; margin:10px 0}
+.lwp .row{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px; margin:10px 0}
+.lwp .ul{display:inline-block; border-bottom:1px solid #000; padding:0 4px; min-height:1.2em; flex:1 1 40%}
+.lwp .ul.s{flex:0 0 3.2em; text-align:center}.lwp .ul.m{flex:0 0 9em; text-align:center}
+.lwp table{width:100%; border-collapse:collapse; margin:8px 0; font-size:12.5px}
+.lwp th,.lwp td{border:1px solid #000; padding:4px 5px; text-align:center}.lwp td.l{text-align:left}
+.lwp .small{font-size:12.5px}.lwp .fm p{margin:4px 0; font-style:italic}.lwp .concl{min-height:120px; white-space:normal}
+.lwp .sign{margin-top:28px}
+.lwr-svg{display:block; width:100%; height:auto; margin:6px 0}
+@media print{
+ @page{size:A4; margin:12mm}
+ html,body{background:#fff !important; height:auto !important; overflow:visible !important}
+ .top,.tabs,#toasts,#sheet,.lwr-tools{display:none !important}
+ .app{display:block !important; height:auto !important; max-width:none !important; box-shadow:none !important}
+ main,#main{overflow:visible !important; height:auto !important; padding:0 !important; background:#fff !important}
+ .lwr{display:block}.lwp{box-shadow:none; border-radius:0; padding:0; max-width:none; page-break-after:always; break-after:page}
+ .lwp:last-child{page-break-after:auto; break-after:auto}
+}
 </style>
 </head>
 <body data-view="home">
@@ -929,14 +1004,14 @@ body{font-variant-numeric:tabular-nums lining-nums}
     <a href="#" data-tab="home"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span>Главная</a>
     <a href="#book" data-tab="book"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v14" /> <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg></span>Учебник</a>
     <a href="#train" data-tab="train"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /> <path d="M22 10v6" /> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></svg></span>Тесты</a>
-    <a href="#lab" data-tab="lab"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /> <path d="M20 3v4" /> <path d="M22 5h-4" /> <path d="M4 17v2" /> <path d="M5 18H3" /></svg></span>Лаборатория</a>
-    <a href="#profile" data-tab="profile"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /> <circle cx="12" cy="7" r="4" /></svg></span>Профиль</a>
+    <a href="#lab" data-tab="lab"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2" /> <path d="M8.5 2h7" /> <path d="M7 16h10" /></svg></span>Практикум</a>
+    <a href="#profile" data-tab="profile" class="tab-prof"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /> <circle cx="12" cy="7" r="4" /></svg></span>Профиль</a>
   </nav>
 </div>
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 93;
+const F2_BUILD = 99;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -4480,7 +4555,7 @@ const SIMS = {
 };
 
 /* Значки Lucide (lucide.dev, лицензия ISC) */
-const ICONS = {"house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "book-open": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "dumbbell": "<path d=\"M14.4 14.4 9.6 9.6\" /> <path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\" /> <path d=\"m21.5 21.5-1.4-1.4\" /> <path d=\"M3.9 3.9 2.5 2.5\" /> <path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\" />", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "pause": "<rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" /> <rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" />", "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />", "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\" />", "zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />", "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" /> <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "sliders-horizontal": "<line x1=\"21\" x2=\"14\" y1=\"4\" y2=\"4\" /> <line x1=\"10\" x2=\"3\" y1=\"4\" y2=\"4\" /> <line x1=\"21\" x2=\"12\" y1=\"12\" y2=\"12\" /> <line x1=\"8\" x2=\"3\" y1=\"12\" y2=\"12\" /> <line x1=\"21\" x2=\"16\" y1=\"20\" y2=\"20\" /> <line x1=\"12\" x2=\"3\" y1=\"20\" y2=\"20\" /> <line x1=\"14\" x2=\"14\" y1=\"2\" y2=\"6\" /> <line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\" /> <line x1=\"16\" x2=\"16\" y1=\"18\" y2=\"22\" />", "layers": "<path d=\"m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z\" /> <path d=\"m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65\" /> <path d=\"m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" /> <path d=\"m6.2 5.3 3.1 3.9\" /> <path d=\"m12.4 3.4 3.1 4\" /> <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "target": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />", "award": "<path d=\"m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526\" /> <circle cx=\"12\" cy=\"8\" r=\"6\" />", "calendar": "<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "swords": "<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\" /> <line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\" /> <line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\" /> <line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\" /> <polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\" /> <line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\" /> <line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\" /> <line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\" />", "sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "timer": "<line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "repeat": "<path d=\"m17 2 4 4-4 4\" /> <path d=\"M3 11v-1a4 4 0 0 1 4-4h14\" /> <path d=\"m7 22-4-4 4-4\" /> <path d=\"M21 13v1a4 4 0 0 1-4 4H3\" />", "mouse-pointer-2": "<path d=\"M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z\" />", "rotate-cw": "<path d=\"M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8\" /> <path d=\"M21 3v5h-5\" />", "move": "<path d=\"M12 2v20\" /> <path d=\"m15 19-3 3-3-3\" /> <path d=\"m19 9 3 3-3 3\" /> <path d=\"M2 12h20\" /> <path d=\"m5 9-3 3 3 3\" /> <path d=\"m9 5 3-3 3 3\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "settings": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "trash-2": "<path d=\"M3 6h18\" /> <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /> <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /> <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /> <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "undo-2": "<path d=\"M9 14 4 9l5-5\" /> <path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\" />", "eraser": "<path d=\"m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21\" /> <path d=\"M22 21H7\" /> <path d=\"m5 11 9 9\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "snowflake": "<line x1=\"2\" x2=\"22\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"2\" y2=\"22\" /> <path d=\"m20 16-4-4 4-4\" /> <path d=\"m4 8 4 4-4 4\" /> <path d=\"m16 4-4 4-4-4\" /> <path d=\"m8 20 4-4 4 4\" />", "crosshair": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\" /> <line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\" /> <line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\" />", "grid-3x3": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"M3 15h18\" /> <path d=\"M9 3v18\" /> <path d=\"M15 3v18\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "minus": "<path d=\"M5 12h14\" />", "book-open-check": "<path d=\"M12 21V7\" /> <path d=\"m16 12 2 2 4-4\" /> <path d=\"M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3\" />", "gauge": "<path d=\"m12 14 4-4\" /> <path d=\"M3.34 19a10 10 0 1 1 17.32 0\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "magnet": "<path d=\"m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3L6 15\" /> <path d=\"m5 8 4 4\" /> <path d=\"m12 15 4 4\" />", "waves": "<path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "video": "<path d=\"m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5\" /> <rect x=\"2\" y=\"6\" width=\"14\" height=\"12\" rx=\"2\" />", "circle-x": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m15 9-6 6\" /> <path d=\"m9 9 6 6\" />", "skip-forward": "<polygon points=\"5 4 15 12 5 20 5 4\" /> <line x1=\"19\" x2=\"19\" y1=\"5\" y2=\"19\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />"};
+const ICONS = {"house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "book-open": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "dumbbell": "<path d=\"M14.4 14.4 9.6 9.6\" /> <path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\" /> <path d=\"m21.5 21.5-1.4-1.4\" /> <path d=\"M3.9 3.9 2.5 2.5\" /> <path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\" />", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "pause": "<rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" /> <rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" />", "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />", "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\" />", "zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />", "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" /> <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "sliders-horizontal": "<line x1=\"21\" x2=\"14\" y1=\"4\" y2=\"4\" /> <line x1=\"10\" x2=\"3\" y1=\"4\" y2=\"4\" /> <line x1=\"21\" x2=\"12\" y1=\"12\" y2=\"12\" /> <line x1=\"8\" x2=\"3\" y1=\"12\" y2=\"12\" /> <line x1=\"21\" x2=\"16\" y1=\"20\" y2=\"20\" /> <line x1=\"12\" x2=\"3\" y1=\"20\" y2=\"20\" /> <line x1=\"14\" x2=\"14\" y1=\"2\" y2=\"6\" /> <line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\" /> <line x1=\"16\" x2=\"16\" y1=\"18\" y2=\"22\" />", "layers": "<path d=\"m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z\" /> <path d=\"m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65\" /> <path d=\"m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" /> <path d=\"m6.2 5.3 3.1 3.9\" /> <path d=\"m12.4 3.4 3.1 4\" /> <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "target": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />", "award": "<path d=\"m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526\" /> <circle cx=\"12\" cy=\"8\" r=\"6\" />", "calendar": "<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "swords": "<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\" /> <line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\" /> <line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\" /> <line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\" /> <polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\" /> <line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\" /> <line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\" /> <line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\" />", "sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "timer": "<line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "repeat": "<path d=\"m17 2 4 4-4 4\" /> <path d=\"M3 11v-1a4 4 0 0 1 4-4h14\" /> <path d=\"m7 22-4-4 4-4\" /> <path d=\"M21 13v1a4 4 0 0 1-4 4H3\" />", "mouse-pointer-2": "<path d=\"M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z\" />", "rotate-cw": "<path d=\"M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8\" /> <path d=\"M21 3v5h-5\" />", "move": "<path d=\"M12 2v20\" /> <path d=\"m15 19-3 3-3-3\" /> <path d=\"m19 9 3 3-3 3\" /> <path d=\"M2 12h20\" /> <path d=\"m5 9-3 3 3 3\" /> <path d=\"m9 5 3-3 3 3\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "settings": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "trash-2": "<path d=\"M3 6h18\" /> <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /> <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /> <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /> <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "undo-2": "<path d=\"M9 14 4 9l5-5\" /> <path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\" />", "eraser": "<path d=\"m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21\" /> <path d=\"M22 21H7\" /> <path d=\"m5 11 9 9\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "snowflake": "<line x1=\"2\" x2=\"22\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"2\" y2=\"22\" /> <path d=\"m20 16-4-4 4-4\" /> <path d=\"m4 8 4 4-4 4\" /> <path d=\"m16 4-4 4-4-4\" /> <path d=\"m8 20 4-4 4 4\" />", "crosshair": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\" /> <line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\" /> <line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\" /> <line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\" />", "grid-3x3": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"M3 15h18\" /> <path d=\"M9 3v18\" /> <path d=\"M15 3v18\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "minus": "<path d=\"M5 12h14\" />", "book-open-check": "<path d=\"M12 21V7\" /> <path d=\"m16 12 2 2 4-4\" /> <path d=\"M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3\" />", "gauge": "<path d=\"m12 14 4-4\" /> <path d=\"M3.34 19a10 10 0 1 1 17.32 0\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "magnet": "<path d=\"m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3L6 15\" /> <path d=\"m5 8 4 4\" /> <path d=\"m12 15 4 4\" />", "waves": "<path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" /> <path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "video": "<path d=\"m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5\" /> <rect x=\"2\" y=\"6\" width=\"14\" height=\"12\" rx=\"2\" />", "circle-x": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m15 9-6 6\" /> <path d=\"m9 9 6 6\" />", "skip-forward": "<polygon points=\"5 4 15 12 5 20 5 4\" /> <line x1=\"19\" x2=\"19\" y1=\"5\" y2=\"19\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "flask-conical": "<path d=\"M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2\" /> <path d=\"M8.5 2h7\" /> <path d=\"M7 16h10\" />", "clipboard-list": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"M12 11h4\" /> <path d=\"M12 16h4\" /> <path d=\"M8 11h.01\" /> <path d=\"M8 16h.01\" />", "file-text": "<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /> <path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /> <path d=\"M10 9H8\" /> <path d=\"M16 13H8\" /> <path d=\"M16 17H8\" />", "printer": "<path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\" /> <path d=\"M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6\" /> <rect x=\"6\" y=\"14\" width=\"12\" height=\"8\" rx=\"1\" />", "search": "<circle cx=\"11\" cy=\"11\" r=\"8\" /> <path d=\"m21 21-4.3-4.3\" />"};
 const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 /* Каталог виртуальной лаборатории: 7 глав, 35 тем, 35 самостоятельных опытов */
@@ -4671,13 +4746,16 @@ function route() {
   if ((m = /^c(\d+)$/.exec(h))) return { name: 'chapter', ch: +m[1], tab: 'book', parent: 'book' };
   if ((m = /^l(\d+)-(\d+)$/.exec(h))) return { name: 'lesson', ch: +m[1], li: +m[2], tab: 'book', parent: 'c' + m[1] };
   if (h === 'quiz') return { name: 'quiz', tab: '', parent: '' };
-  if (h === 'lab') return { name: 'lab', tab: 'lab' };
-  if (h === 'sandbox') return { name: 'sandbox', tab: 'lab', parent: 'lab' };
+  if (h === 'lab') return { name: 'labWorks', tab: 'lab' };
+  if (h === 'lab-exps') return { name: 'lab', tab: 'lab', parent: 'lab' };
+  if (h === 'lw-1') return { name: 'labWork', tab: 'lab', parent: 'lab' };
+  if (h === 'lw-1-report') return { name: 'labWorkReport', tab: 'lab', parent: 'lw-1' };
+  if (h === 'sandbox') return { name: 'sandbox', tab: 'lab', parent: 'lab-exps' };
   if (h === 'reader') return { name: 'reader', tab: 'book', parent: 'home' };
   if ((m = /^read-(\d+)$/.exec(h))) return { name: 'readerChapter', ch: +m[1], tab: 'book', parent: 'reader' };
   if (h === 'lab-games') return { name: 'labGames', tab: 'lab', parent: 'lab' };
   if (h === 'game-bridge') return { name: 'bridgeGame', tab: 'lab', parent: 'lab-games' };
-  if ((m = /^lab-ch-(\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab' };
+  if ((m = /^lab-ch-(\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab-exps' };
   if ((m = /^lab-topic-(\d+)-(\d+)$/.exec(h))) return { name: 'labTopic', ch: +m[1], topic: +m[2], tab: 'lab', parent: 'lab-ch-' + m[1] };
   if ((m = /^lab-exp-([a-z0-9-]+)$/.exec(h))) return { name: 'labExp', exp: m[1], tab: 'lab', parent: 'lab-ch-' + ((LABS[m[1]]||{}).ch||1) };
   if ((m = /^lab-(spring|pendulum|fall|projectile|incline|wave|ohm|refraction|buoyancy|gas)$/.exec(h))) return { name: 'labExp', exp: LAB_LEGACY_MAP[m[1]] ? LAB_LEGACY_MAP[m[1]] : m[1], tab: 'lab', parent: 'lab' };
@@ -4695,7 +4773,7 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
   ui.tabs.hidden = r.name === 'quiz' || r.name === 'lesson';
-  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame, sandbox: vSandbox, reader: vReader, readerChapter: vReaderChapter, hist: vHist, qsearch: vQSearch })[r.name](r);
+  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labWorks: vLabWorks, labWork: vLabWork, labWorkReport: vLabWorkReport, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame, sandbox: vSandbox, reader: vReader, readerChapter: vReaderChapter, hist: vHist, qsearch: vQSearch })[r.name](r);
   if (same) ui.main.scrollTop = y; else ui.main.scrollTop = 0;
 }
 function frame(title, { back = false, sub = '' } = {}) {
@@ -5047,9 +5125,9 @@ const labDoneCount=()=>LAB_EXPERIMENTS.reduce((n,x)=>n+(LAB_DONE.has(x.id)?1:0),
 const labChapterCount=ch=>LAB_EXPERIMENTS.filter(x=>x.ch===ch).length;
 const labTopic=(ch,n)=>LAB_TOPIC_GROUPS.find(x=>x.ch===ch&&x.n===n);
 function labOpen(id){const x=LABS[id];if(!x)return;LAB={id:id,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,raf:0,last:0,trace:[],lastSample:0};location.hash='lab-exp-'+id;}
-function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>'+LAB_EXPERIMENTS.length+'</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>1</small></button></div>';}
+function labTabs(active='experiments'){const b=(k,act,icon,t,n)=>'<button class="btn '+(active===k?'active':'line')+'" data-act="'+act+'" type="button">'+ic(icon)+' '+t+(n?' <small>'+n+'</small>':'')+'</button>';return '<div class="lab-switch three">'+b('works','lab','clipboard-list','Лабораторные',LW_LIST.length)+b('experiments','labExps','sparkles','Опыты',LAB_EXPERIMENTS.length)+b('games','labGames','swords','Игры',1)+'</div>';}
 function vLab(){
- frame('Лаборатория',{sub:'Опыты и игровые задания'});
+ frame('Практикум',{sub:'Опыты и свободная лаборатория'});
  setMain(labTabs()+'<a class="lab-chapter" href="#sandbox" style="margin:12px 0;border-color:rgba(90,210,220,.35);background:linear-gradient(110deg,#132d3b,#172b3c)"><span class="lab-chapter-num">'+ic('sliders-horizontal')+'</span><span class="lab-chapter-copy"><b>Свободная лаборатория</b><small>Создавай установки, соединяй объекты и запускай физику без готового сценария</small></span><span class="lab-chapter-count">ОТКРЫТЬ</span>'+ic('chevron-right')+'</a><section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">'+LAB_CHAPTERS.length+' разделов · '+LAB_EXPERIMENTS.length+' опытов. Выбирай опыт, меняй параметры кнопками − / + и смотри, как меняется результат.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из '+LAB_EXPERIMENTS.length+' опытов пройдено</span><i><em style="width:'+(labDoneCount()/LAB_EXPERIMENTS.length*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length,total=labChapterCount(ch.n);return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/total*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/'+total+'</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
 }
 function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="bridge-lobby-v2"><div class="bridge-lobby-visual"><div class="bridge-visual-top"><span>ЛАБОРАТОРИЯ · ВЫЕЗД</span><b>01</b></div><svg viewBox="0 0 760 310" role="img" aria-label="Стальной мост над водой"><defs><linearGradient id="bridgeSky" x2="0" y2="1"><stop stop-color="#142d4b"/><stop offset="1" stop-color="#091522"/></linearGradient><linearGradient id="bridgeSteel"><stop stop-color="#6fe2c6"/><stop offset="1" stop-color="#4b88a7"/></linearGradient></defs><rect width="760" height="310" fill="url(#bridgeSky)"/><circle cx="600" cy="75" r="48" fill="#64d6ca" opacity=".08"/><path d="M0 210 Q180 185 360 215 T760 205 V310 H0Z" fill="#0b4056"/><path d="M0 245 Q180 230 360 248 T760 240" stroke="#4b9db0" opacity=".35" fill="none" stroke-width="3"/><path d="M55 195H705" stroke="#8ca5b8" stroke-width="13"/><path d="M55 184H705" stroke="#d5e7e8" stroke-width="3"/><g stroke="url(#bridgeSteel)" stroke-width="8" stroke-linecap="round" fill="none"><path d="M80 184L160 65 240 184 320 65 400 184 480 65 560 184 660 80"/><path d="M80 184L240 184 400 184 560 184 705 184"/><path d="M160 65V184M320 65V184M480 65V184M660 80V184"/></g><path d="M400 184L480 65" stroke="#ff9b61" stroke-width="10" stroke-linecap="round" stroke-dasharray="13 9"/><path d="M130 205h500" stroke="#e8bb70" stroke-width="2" stroke-dasharray="20 16"/><g transform="translate(345 143)"><rect width="92" height="30" rx="7" fill="#e9a84f"/><rect x="17" y="-16" width="38" height="19" rx="5" fill="#b9d4dd"/><circle cx="20" cy="31" r="10" fill="#101a2b"/><circle cx="72" cy="31" r="10" fill="#101a2b"/></g></svg><div class="bridge-visual-bottom"><span><i></i> ИДЁТ ОБСЛЕДОВАНИЕ</span><span>УЧАСТОК 4 · МОСТ 01</span></div></div><div class="bridge-lobby-copy-v2"><div class="bridge-lobby-meta"><span>ИНЖЕНЕРНЫЙ КВЕСТ</span><b><i></i> ДОСТУПНО</b></div><h2>Инженер катастроф</h2><p>Расследуй аварии, восстанавливай конструкции и проверяй свои решения в динамических испытаниях.</p><div class="bridge-lobby-mission"><span>ПЕРВАЯ МИССИЯ</span><b>Мост на грани обрушения</b><small>Механика · равновесие · прочность материалов</small></div><div class="bridge-lobby-foot"><span>◈ 3 ЭТАПА</span><span>◈ СЛОЖНОСТЬ: СРЕДНЯЯ</span><span>◈ 5–8 МИН</span></div><button type="button" class="btn wide bridge-lobby-cta" data-act="bridgeLaunch">Начать миссию <span aria-hidden="true">→</span></button></div></section>');}
@@ -5102,6 +5180,7 @@ document.addEventListener('click', async e => {
     case 'lessonQuiz': { const L = CONTENT[d.ch].lessons[d.li - 1]; startQuiz({ kind: 'lesson', key: lessonKey(+d.ch, +d.li), title: 'Проверка: ' + L.title, items: L.quiz, back: '#l' + d.ch + '-' + d.li }); break; }
     case 'boss': { const C1 = CONTENT[d.ch]; startQuiz({ kind: 'boss', ch: +d.ch, title: 'Финал главы ' + d.ch, items: shuffle(C1.boss), back: '#c' + d.ch }); break; }
     case 'lab': location.hash = 'lab'; break;
+    case 'labExps': location.hash = 'lab-exps'; break;
     case 'labGames': location.hash = 'lab-games'; break;
     case 'labOpen': labOpen(d.v); break;
     case 'labHome': labStop(); location.hash='lab'; break;
@@ -6913,6 +6992,510 @@ function vsBackground(d, ch, lt) {
   try { if (b.startsWith('lab:')) rvDrawModel(d, b.slice(4), lt); else { const sc = vsParse({ s: b, t: '' }); VS[sc.type](d, sc.args, 1, lt); } } catch (e) {}
   d.quiet = false; d.bg = false; d.c.restore(); if (!d.video) d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.45)', null, 0, 0); return true;
 }
+
+/* =====================================================================
+   Практикум: лабораторные работы «как на занятии».
+   ЛР № 1. Изучение закона сохранения импульса (шайбы на горизонтальном поле).
+   Шаги: допуск → подготовка → опыт 1 (свободное движение) → опыт 2 (соударение)
+         → обработка (таблицы 1–4) → выводы и контрольные вопросы → отчёт (PDF).
+   Координаты ученик считывает сам по сетке и лупе; приложение их только проверяет.
+   ===================================================================== */
+
+const LW_LIST = [
+  { id: 1, title: 'Изучение закона сохранения импульса', aim: 'Исследовать соударение тел, проверить выполнение законов сохранения импульса и энергии, оценить погрешность опытов.', topic: 'Механика · гл. 2–3 учебника', ready: true }
+];
+
+const LW1 = {
+  pucks: [{ id: 'А', m: .0186 }, { id: 'Б', m: .0201 }, { id: 'В', m: .0212 }, { id: 'Г', m: .0228 }, { id: 'Д', m: .0247 }],
+  R: 15,                         // радиус шайбы, мм
+  field: { w: 500, h: 400 },     // рабочее поле, мм
+  circles: [[75, 189], [78, 200], [75, 211]], // шайба 2 почти вплотную к шайбе 1 (как на установке) // «закрашенные круги» для тела 2
+  lNom: [150, 185, 220, 255, 290],            // номинальный путь до остановки при положениях винта 1…5, мм
+  N: 7,                          // выстрелов в серии
+  steps: [['admit', 'Допуск'], ['prep', 'Подготовка'], ['free', 'Опыт 1'], ['coll', 'Опыт 2'], ['proc', 'Обработка'], ['concl', 'Выводы'], ['report', 'Отчёт']]
+};
+
+/* ---------- состояние (сохраняется в браузере) ---------- */
+const LW_KEY = 'f2-lw1';
+let LWS = null;
+function lwFresh() {
+  const r = Math.random;
+  return {
+    v: 1, step: 0, max: 0,
+    x01: +(44 + r() * 2).toFixed(2), y01: +(199.2 + r() * 1.6).toFixed(2), mu: +(.105 + r() * .03).toFixed(4),
+    admit: {}, admitOk: false,
+    p1: null, p2: null, m1: '', m2: '', rx01: '', ry01: '', prepOk: false,
+    screw: 3, free: [], cur: null,
+    circle: 2, place: null, rx02: '', ry02: '', placeOk: false, coll: [],
+    proc: {}, procOk: {},
+    concl: '', cq: {}, cqOk: false,
+    fio: '', group: '', date: new Date().toLocaleDateString('ru-RU'), done: false
+  };
+}
+function lwLoad() { if (LWS) return LWS; try { LWS = JSON.parse(localStorage.getItem(LW_KEY) || 'null'); } catch (e) { LWS = null; } if (!LWS || LWS.v !== 1) LWS = lwFresh(); return LWS; }
+function lwSave() { try { localStorage.setItem(LW_KEY, JSON.stringify(LWS)); } catch (e) {} }
+const lwNum = s => { const v = parseFloat(String(s).replace(',', '.').replace(/\s/g, '')); return Number.isFinite(v) ? v : NaN; };
+const lwGauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+const lwF = (v, d = 2) => Number.isFinite(v) ? f1(v, d) : '—';
+const lwPuck = id => LW1.pucks.find(p => p.id === id);
+
+/* ---------- физика выстрела ---------- */
+const LW_G = 9.81;
+function lwShot(kind) {
+  const S = LWS, a = S.mu * (1 + .02 * lwGauss()) * LW_G * 1000;       // замедление, мм/с²
+  const v0 = Math.sqrt(2 * S.mu * LW_G * 1000 * LW1.lNom[S.screw - 1]) * (1 + .022 * lwGauss()); // мм/с
+  const th = .004 * lwGauss(), d = [Math.cos(th), Math.sin(th)], p1 = [S.x01, S.y01];
+  const sAt = (v, t) => { t = Math.max(0, Math.min(t, v / a)); return v * t - a * t * t / 2; }, stopT = v => v / a;
+  if (kind === 'free') {
+    const T = stopT(v0);
+    return { kind, T, at: t => ({ p1: [p1[0] + d[0] * sAt(v0, t), p1[1] + d[1] * sAt(v0, t)] }) };
+  }
+  // тело 2 ставят в круг рукой — небольшой разброс положения
+  const c2 = [S.place[0] + .25 * lwGauss(), S.place[1] + .25 * lwGauss()], R2 = 2 * LW1.R;
+  // путь до касания: |p1 + d·s − c2| = 2R
+  const w = [p1[0] - c2[0], p1[1] - c2[1]], B = 2 * (d[0] * w[0] + d[1] * w[1]), C = w[0] ** 2 + w[1] ** 2 - R2 * R2, D = B * B - 4 * C;
+  const sc = D >= 0 ? (-B - Math.sqrt(D)) / 2 : Infinity;
+  if (!(sc >= 0) || sc >= v0 * v0 / (2 * a)) return lwShotFreeWith(p1, d, v0, a, c2);
+  const tc = (v0 - Math.sqrt(v0 * v0 - 2 * a * sc)) / a, vc = Math.sqrt(v0 * v0 - 2 * a * sc);
+  const q1 = [p1[0] + d[0] * sc, p1[1] + d[1] * sc], nx = (c2[0] - q1[0]) / R2, ny = (c2[1] - q1[1]) / R2;
+  const m1 = lwPuck(S.p1).m, m2 = lwPuck(S.p2).m, e = Math.max(.75, Math.min(.95, .85 + .02 * lwGauss()));
+  const u = [vc * d[0], vc * d[1]], un = u[0] * nx + u[1] * ny;
+  const un1 = (m1 - e * m2) * un / (m1 + m2), un2 = (1 + e) * m1 * un / (m1 + m2);
+  const v1 = [u[0] - nx * un + nx * un1, u[1] - ny * un + ny * un1], v2 = [nx * un2, ny * un2];
+  const s1 = Math.hypot(v1[0], v1[1]), s2 = Math.hypot(v2[0], v2[1]);
+  const e1 = s1 ? [v1[0] / s1, v1[1] / s1] : [1, 0], e2 = [nx, ny];
+  const T = tc + Math.max(stopT(s1), stopT(s2));
+  return {
+    kind, T, c2,
+    at: t => t < tc ? { p1: [p1[0] + d[0] * sAt(v0, t), p1[1] + d[1] * sAt(v0, t)], p2: c2 }
+      : { p1: [q1[0] + e1[0] * sAt(s1, t - tc), q1[1] + e1[1] * sAt(s1, t - tc)], p2: [c2[0] + e2[0] * sAt(s2, t - tc), c2[1] + e2[1] * sAt(s2, t - tc)] }
+  };
+}
+function lwShotFreeWith(p1, d, v0, a, c2) { // промах: тело 1 проехало мимо
+  const sAt = (v, t) => { t = Math.max(0, Math.min(t, v / a)); return v * t - a * t * t / 2; };
+  return { kind: 'coll', miss: true, T: v0 / a, c2, at: t => ({ p1: [p1[0] + d[0] * sAt(v0, t), p1[1] + d[1] * sAt(v0, t)], p2: c2 }) };
+}
+const lwInField = p => p && p[0] > LW1.R && p[0] < LW1.field.w - LW1.R && p[1] > LW1.R && p[1] < LW1.field.h - LW1.R;
+
+/* ---------- рисование поля ---------- */
+let LWV = { anim: null, raf: 0, lens: null, pos: null };
+function lwDraw() {
+  const cv = $('#lw-cv'); if (!cv) return;
+  const box = cv.getBoundingClientRect(), cssW = box.width || 600, dpr = Math.min(2.5, devicePixelRatio || 1);
+  const VW = 580, VH = 440, k = cssW / VW, cssH = VH * k;
+  if (cv.width !== Math.round(cssW * dpr)) { cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); }
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.fillStyle = '#0B1020'; c.fillRect(0, 0, cssW, cssH);
+  const map = (x, y) => [(x + 60) * k, (410 - y) * k];
+  lwScene(c, map, k, false);
+  // лупа: увеличенный фрагмент поля в углу
+  if (LWV.lens) {
+    const L = Math.min(cssW * .42, 230), X0 = cssW - L - 8, Y0 = 8, Z = 9 * Math.max(1, 600 / cssW) * k, [lx, ly] = LWV.lens;
+    c.save(); c.beginPath(); c.roundRect ? c.roundRect(X0, Y0, L, L, 14) : c.rect(X0, Y0, L, L); c.clip();
+    c.fillStyle = '#0B1020'; c.fillRect(X0, Y0, L, L);
+    const mapZ = (x, y) => [X0 + L / 2 + (x - lx) * Z, Y0 + L / 2 - (y - ly) * Z];
+    lwScene(c, mapZ, Z, true);
+    c.strokeStyle = 'rgba(255,194,75,.9)'; c.lineWidth = 1; c.beginPath(); c.moveTo(X0 + L / 2, Y0); c.lineTo(X0 + L / 2, Y0 + L); c.moveTo(X0, Y0 + L / 2); c.lineTo(X0 + L, Y0 + L / 2); c.stroke();
+    c.restore(); c.strokeStyle = '#FFC24B'; c.lineWidth = 2; c.strokeRect(X0, Y0, L, L);
+    c.font = '700 12px "Golos UI", system-ui'; c.fillStyle = '#FFC24B'; c.textAlign = 'left'; c.fillText('ЛУПА · 1 деление = 1 мм', X0 + 8, Y0 + L - 10);
+    const [px, py] = map(lx, ly); c.strokeStyle = '#FFC24B'; c.lineWidth = 1.5; c.strokeRect(px - 9 * k, py - 9 * k, 18 * k, 18 * k);
+  }
+}
+function lwScene(c, map, s, fine) {
+  const F = LW1.field, S = LWS, line = (x1, y1, x2, y2, col, w) => { const [a, b] = map(x1, y1), [p, q] = map(x2, y2); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(a, b); c.lineTo(p, q); c.stroke(); };
+  const [fx, fy] = map(0, F.h), [gx, gy] = map(F.w, 0);
+  c.fillStyle = '#16203A'; c.fillRect(fx, fy, gx - fx, gy - fy);
+  // сетка: 1 мм (только в лупе), 5 мм, 10 мм, 50 мм
+  const step = fine ? 1 : 10;
+  for (let x = 0; x <= F.w; x += step) { const big = x % 50 === 0, mid = x % 10 === 0; if (!fine && !mid) continue; line(x, 0, x, F.h, big ? 'rgba(170,185,220,.55)' : mid ? 'rgba(141,151,181,.32)' : x % 5 === 0 ? 'rgba(141,151,181,.22)' : 'rgba(141,151,181,.12)', big ? 1.4 : 1); }
+  for (let y = 0; y <= F.h; y += step) { const big = y % 50 === 0, mid = y % 10 === 0; if (!fine && !mid) continue; line(0, y, F.w, y, big ? 'rgba(170,185,220,.55)' : mid ? 'rgba(141,151,181,.32)' : y % 5 === 0 ? 'rgba(141,151,181,.22)' : 'rgba(141,151,181,.12)', big ? 1.4 : 1); }
+  // подписи осей
+  c.fillStyle = '#AAB3CD'; c.font = `600 ${Math.max(9, Math.min(13, s * (fine ? 1.6 : 9)))}px "Golos UI", system-ui`;
+  const lab = fine ? 10 : 50;
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let x = 0; x <= F.w; x += lab) { const [a, b] = map(x, 0); if (fine) { const [, yy] = map(0, LWV.lens[1]); c.fillText(x, a, yy + 4); } else c.fillText(x, a, b + 4); }
+  c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let y = 0; y <= F.h; y += lab) { const [a, b] = map(0, y); if (fine) { const [xx] = map(LWV.lens[0], 0); c.fillText(y, xx - 4, b); } else c.fillText(y, a - 4, b); }
+  if (!fine) { c.textAlign = 'left'; const [ax, ay] = map(F.w, 0); c.fillText('x, мм', ax - 30, ay + 22); const [bx, by] = map(0, F.h); c.fillText('y, мм', bx - 52, by - 2); }
+  // закрашенные круги для тела 2
+  LW1.circles.forEach(([x, y], i) => { const [a, b] = map(x, y); c.beginPath(); c.arc(a, b, LW1.R * s, 0, 7); c.fillStyle = 'rgba(255,122,89,' + (i + 1 === S.circle ? .22 : .1) + ')'; c.fill(); c.setLineDash([4, 3]); c.strokeStyle = 'rgba(255,122,89,.6)'; c.lineWidth = 1; c.stroke(); c.setLineDash([]); });
+  // направляющие и ударный механизм
+  const [ra, rb] = map(-55, S.y01 + 19), [rc, rd] = map(S.x01 - LW1.R, S.y01 + 17);
+  c.fillStyle = '#3A4668'; c.fillRect(ra, rb, rc - ra, 3 * s); const [, re] = map(0, S.y01 - 17); c.fillRect(ra, re, rc - ra, 3 * s);
+  const strike = LWV.anim && LWV.anim.t < .05 ? 4 : 0, [sa, sb] = map(-50, S.y01 + 6), [sc2] = map(S.x01 - LW1.R - 2 + strike - 4, 0);
+  c.fillStyle = '#8D97B5'; c.fillRect(sa, sb, sc2 - sa, 12 * s);
+  const [h1, h2] = map(-30, S.y01 + 12); c.fillStyle = '#6C8CFF'; c.fillRect(h1, h2, 10 * s, 24 * s);
+  // шайбы
+  const pos = LWV.pos || lwRestPos();
+  const puck = (p, col, label) => { if (!p) return; const [a, b] = map(p[0], p[1]); const g = c.createRadialGradient(a - 5 * s, b - 6 * s, 2 * s, a, b, LW1.R * s);
+    g.addColorStop(0, col === 1 ? '#9DB2FF' : '#FFB199'); g.addColorStop(1, col === 1 ? '#4A63D8' : '#D9583A');
+    c.save(); c.globalAlpha = fine ? .45 : .85; c.beginPath(); c.arc(a, b, LW1.R * s, 0, 7); c.fillStyle = g; c.fill(); c.restore(); c.beginPath(); c.arc(a, b, LW1.R * s, 0, 7); c.strokeStyle = col === 1 ? '#9DB2FF' : '#FFB199'; c.lineWidth = 1.5; c.stroke();
+    // метка центра — по ней снимают координаты
+    c.strokeStyle = fine ? '#fff' : '#0B1020'; c.lineWidth = fine ? 1.5 : Math.max(1, s * .5); c.beginPath(); c.moveTo(a - 5 * s, b); c.lineTo(a + 5 * s, b); c.moveTo(a, b - 5 * s); c.lineTo(a, b + 5 * s); c.stroke();
+    if (!fine || s < 30) { c.fillStyle = '#fff'; c.font = `800 ${Math.max(8, 7 * s)}px "Golos UI", system-ui`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(label, a + 8 * s, b - 8 * s); } };
+  puck(pos.p2, 2, '2'); puck(pos.p1, 1, '1');
+}
+function lwRestPos() { const S = LWS, st = LW1.steps[S.step][0]; return { p1: [S.x01, S.y01], p2: (st === 'coll' && S.place) ? S.place : null }; }
+
+/* лупа: коснись поля и веди пальцем */
+document.addEventListener('pointerdown', e => {
+  const cv = e.target.closest && e.target.closest('#lw-cv'); if (!cv) return;
+  const move = ev => { const b = cv.getBoundingClientRect(), k = b.width / 580; LWV.lens = [(ev.clientX - b.left) / k - 60, 410 - (ev.clientY - b.top) / k]; lwDraw(); };
+  move(e); cv.setPointerCapture && cv.setPointerCapture(e.pointerId);
+  const mv = ev => move(ev), up = () => { cv.removeEventListener('pointermove', mv); cv.removeEventListener('pointerup', up); cv.removeEventListener('pointercancel', up); };
+  cv.addEventListener('pointermove', mv); cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+});
+
+function lwAnimate(shot, done) {
+  cancelAnimationFrame(LWV.raf); const t0 = performance.now(), slow = .55;
+  LWV.anim = { t: 0 };
+  const tick = now => {
+    const t = (now - t0) / 1000 * slow; LWV.anim.t = t; LWV.pos = shot.at(Math.min(t, shot.T)); lwDraw();
+    if (t < shot.T) LWV.raf = requestAnimationFrame(tick); else { LWV.anim = null; done(); }
+  };
+  LWV.raf = requestAnimationFrame(tick);
+}
+
+/* ---------- экраны ---------- */
+function vLabWorks() {
+  frame('Практикум', { sub: 'Лабораторные работы, опыты и игры' });
+  const S = lwLoad();
+  setMain(labTabs('works') + `<section class="lab-intro"><b class="h">Лабораторные работы</b><p class="mute">Как на занятии: допуск, опыт на установке, таблицы измерений, расчёт погрешностей, выводы и отчёт в PDF.</p></section>` +
+    LW_LIST.map(w => { const pr = w.id === 1 ? (S.done ? 'выполнена' : S.max ? `шаг ${S.max + 1} из ${LW1.steps.length}` : 'не начата') : 'скоро';
+      return `<a class="lw-card" href="#lw-${w.id}"><span class="lw-num">№ ${w.id}</span><span class="lw-copy"><b>${esc(w.title)}</b><small>${esc(w.aim)}</small><span class="lw-meta">${esc(w.topic)} · <i class="${S.done ? 'mint' : ''}">${pr}</i></span></span>${ic('chevron-right')}</a>`; }).join('') +
+    `<p class="mute small lw-more">Остальные работы методички добавим следующими.</p>`);
+}
+
+function vLabWork() {
+  const S = lwLoad(); const st = LW1.steps[S.step][0];
+  frame('ЛР № 1 · Закон сохранения импульса', { back: true, sub: LW1.steps[S.step][1] });
+  const chips = `<div class="lw-steps">${LW1.steps.map(([k, t], i) => `<button data-lw="go" data-v="${i}" class="${i === S.step ? 'on' : ''}${i < S.max || (i === S.max && st === 'report') ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><b>${i + 1}</b><span>${t}</span></button>`).join('')}</div>`;
+  const body = ({ admit: lwAdmit, prep: lwPrep, free: lwFreeStep, coll: lwCollStep, proc: lwProc, concl: lwConcl, report: lwReportStep })[st]();
+  setMain(`<div class="lw">${chips}${body}</div>`);
+  if (['prep', 'free', 'coll'].includes(st)) { LWV.pos = null; lwDraw(); if (!lwDraw.ro && 'ResizeObserver' in window) lwDraw.ro = new ResizeObserver(() => lwDraw()); if (lwDraw.ro) { lwDraw.ro.disconnect(); lwDraw.ro.observe($('#lw-cv')); } }
+}
+const lwField = hint => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas><p class="lw-hint">${ic('search')} ${hint || 'Коснись поля и веди пальцем — в углу появится лупа с миллиметровой сеткой. По ней снимай координаты метки в центре шайбы.'}</p></section>`;
+const lwIn = (k, val, ph = '', cls = '') => `<input class="lwi ${cls}" data-k="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
+const lwNext = (label = 'Дальше') => `<button class="btn wide mt" data-lw="next">${label} ${ic('chevron-right')}</button>`;
+
+/* 1. Допуск */
+const LW_ADMIT = [
+  ['Что называют импульсом тела?', 'Произведение массы тела на его скорость', ['Произведение силы на путь', 'Половину произведения массы на квадрат скорости', 'Отношение силы к массе']],
+  ['При каком условии сохраняется импульс системы тел?', 'Система замкнута: сумма внешних сил равна нулю', ['Только при упругом ударе', 'Только при неупругом ударе', 'Если тела одинаковой массы']],
+  ['Почему в этой работе импульс шайбы пропорционален m√l?', 'Шайба тормозится трением, и её скорость v = √(2μgl)', ['Так записан закон Гука', 'Путь пропорционален квадрату массы', 'Скорость шайбы постоянна']],
+  ['Какие величины в работе измеряют напрямую?', 'Координаты шайб до и после удара', ['Скорости шайб', 'Импульсы шайб', 'Силу удара']],
+  ['Чему равен коэффициент восстановления энергии при абсолютно упругом ударе?', '1', ['0', '0,5', 'Больше 1']],
+  ['Сколько выстрелов нужно в каждой серии измерений?', '7', ['1', '3', '20']],
+  ['Когда можно включать установку под напряжение?', 'После проверки схемы преподавателем и с его разрешения', ['Сразу после сборки', 'Когда все ушли', 'В любой момент']],
+  ['Что делать, если человека поразило током?', 'Немедленно отключить установку от сети и доложить преподавателю', ['Продолжать опыт', 'Взять пострадавшего за руку голыми руками', 'Переключить щит лаборатории']]
+];
+function lwAdmit() {
+  const S = LWS;
+  const qs = LW_ADMIT.map(([q, a, x], i) => { const opts = lwShuf(i, [a, ...x]); const ch = S.admit[i];
+    return `<div class="lw-q"><b>${i + 1}. ${esc(q)}</b>${opts.map(o => `<button data-lw="admit" data-q="${i}" data-v="${esc(o)}" class="${ch === o ? (S.admitChecked ? (o === a ? 'ok' : 'bad') : 'pick') : ''}">${esc(o)}</button>`).join('')}</div>`; }).join('');
+  return `<section class="card lw-intro"><b class="h">Цель работы</b><p>${esc(LW_LIST[0].aim)}</p>
+    <details><summary>Кратко из теории</summary>
+    <p><b>Импульс</b> тела p = m·v. В замкнутой системе (сумма внешних сил равна нулю) суммарный импульс сохраняется: Σmᵢvᵢ = const.</p>
+    <p>Если внешние силы есть, но их сумма в каком-то направлении равна нулю, сохраняется проекция импульса на это направление. Сила трения за короткое время удара мала по сравнению с силой взаимодействия, поэтому во время удара шайбы можно считать замкнутой системой.</p>
+    <p><b>Упругий удар:</b> сохраняются импульс и кинетическая энергия. <b>Неупругий:</b> импульс сохраняется, часть энергии уходит на деформацию и нагрев. Коэффициент восстановления энергии k = E_кон/E_нач.</p>
+    <p><b>Как измерить скорость без секундомера.</b> Шайба тормозится трением: работа силы трения равна изменению кинетической энергии, μmgl = mv²/2, откуда v = √(2μgl). Значит, импульс ∝ m√l, энергия ∝ m·l, а направление движения даёт отношение Δx/l, Δy/l.</p>
+    </details>
+    <details><summary>Оборудование и установка</summary><p>Горизонтальное поле с координатной сеткой, набор шайб с указанной массой, ударный пружинный механизм с винтом для изменения силы удара, направляющие для шайбы 1, закрашенные круги для установки шайбы 2.</p></details>
+    <details><summary>Техника безопасности</summary><p>Установку включают только с разрешения преподавателя. Переключения — одной рукой, не касаясь токоведущих частей. При неисправности или поражении током — немедленно отключить установку от сети и доложить преподавателю.</p></details></section>
+    <section class="card"><b class="h">Допуск к работе</b><p class="mute">Ответь на вопросы. Нужно не меньше 6 верных из 8.</p>${qs}
+    <button class="btn wide mt" data-lw="admitCheck">${ic('circle-check')} Сдать допуск</button>${S.admitOk ? lwNext('К подготовке') : ''}</section>`;
+}
+function lwShuf(seed, arr) { const a = arr.slice(); let s = seed * 9301 + 49297; for (let i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* 2. Подготовка */
+function lwPrep() {
+  const S = LWS;
+  const pk = LW1.pucks.map(p => `<button data-lw="puck" data-v="${p.id}" class="${S.p1 === p.id ? 'p1' : S.p2 === p.id ? 'p2' : ''}"><b>${p.id}</b><small>${f1(p.m * 1000, 1)} г</small>${S.p1 === p.id ? '<i>тело 1</i>' : S.p2 === p.id ? '<i>тело 2</i>' : ''}</button>`).join('');
+  return `<section class="card"><b class="h">1. Выбери два тела примерно одинаковой массы</b><p class="mute small">Масса указана на шайбе. Первое касание — тело 1 (ударяющее), второе — тело 2.</p><div class="lw-pucks">${pk}</div>
+    <div class="lw-row"><label>m₁, кг ${lwIn('m1', S.m1, '0,0000')}</label><label>m₂, кг ${lwIn('m2', S.m2, '0,0000')}</label></div></section>
+    ${lwField()}
+    <section class="card"><b class="h">2. Начальные координаты тела 1</b><p class="mute small">Шайба 1 стоит в направляющих. Наведи лупу на метку в её центре и запиши координаты с точностью до 1 мм.</p>
+    <div class="lw-row"><label>x₀₁, мм ${lwIn('rx01', S.rx01, 'мм')}</label><label>y₀₁, мм ${lwIn('ry01', S.ry01, 'мм')}</label></div>
+    <button class="btn wide mt" data-lw="prepCheck">${ic('circle-check')} Проверить</button><p class="lw-msg" id="lw-msg"></p>${S.prepOk ? lwNext('К опыту 1') : ''}</section>`;
+}
+
+/* 3. Опыт 1 — свободное движение */
+function lwFreeStep() {
+  const S = LWS, rows = S.free, n = rows.length, cur = S.cur && S.cur.kind === 'free';
+  const tbl = `<table class="lw-tbl"><tr><th>№</th><th>x, мм</th></tr>${Array.from({ length: LW1.N }, (_, i) => `<tr class="${i === n && cur ? 'now' : ''}"><td>${i + 1}</td><td>${rows[i] ? f1(rows[i].r, 1) : i === n && cur ? lwIn('cx', S.cur.r ?? '', 'мм') : ''}</td></tr>`).join('')}</table>`;
+  return `<section class="card lw-cond"><b class="h">Опыт 1. Свободное движение тела 1</b><p class="mute small">Тела 2 на поле нет. Сделай ${LW1.N} выстрелов при одном положении винта, после каждого запиши координату x остановки шайбы 1.</p>
+    <div class="lw-screw"><span>Винт ударного механизма</span><button class="lp-btn" data-lw="screw" data-d="-1" ${n ? 'disabled' : ''}>−</button><b>${S.screw}</b><button class="lp-btn" data-lw="screw" data-d="1" ${n ? 'disabled' : ''}>+</button></div>
+    ${n ? '<p class="mute small">Положение винта зафиксировано: все выстрелы — «при тех же условиях».</p>' : ''}</section>
+    ${lwField()}
+    <section class="card"><div class="lw-bar">${cur ? `<button class="btn wide" data-lw="record">${ic('pencil')} Записать x</button>` : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="free">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : ''}</div>
+    <p class="lw-msg" id="lw-msg">${cur ? 'Шайба остановилась. Сними координату x метки её центра по лупе.' : ''}</p>${tbl}${n >= LW1.N ? lwNext('К опыту 2') : ''}</section>`;
+}
+
+/* 4. Опыт 2 — соударение */
+function lwCollStep() {
+  const S = LWS, rows = S.coll, n = rows.length, cur = S.cur && S.cur.kind === 'coll';
+  if (!S.placeOk) {
+    return `<section class="card"><b class="h">Опыт 2. Установка тела 2</b><p class="mute small">Выбери один из закрашенных кругов (смещённый даёт нецентральный удар), поставь в него шайбу 2 и запиши её начальные координаты.</p>
+      <div class="seg">${LW1.circles.map((c, i) => `<button type="button" data-lw="circle" data-v="${i + 1}" aria-pressed="${S.circle === i + 1}">${['Нижний', 'Центр', 'Верхний'][i]}</button>`).join('')}</div></section>
+      ${lwField()}
+      <section class="card"><div class="lw-row"><label>x₀₂, мм ${lwIn('rx02', S.rx02, 'мм')}</label><label>y₀₂, мм ${lwIn('ry02', S.ry02, 'мм')}</label></div>
+      <button class="btn wide mt" data-lw="placeCheck">${ic('circle-check')} Проверить</button><p class="lw-msg" id="lw-msg"></p></section>`;
+  }
+  const cell = (i, k) => rows[i] ? f1(rows[i].r[k], 1) : i === n && cur ? lwIn('c' + k, (S.cur.r || {})[k] ?? '', 'мм') : '';
+  const tbl = `<table class="lw-tbl"><tr><th>№</th><th>x₁</th><th>y₁</th><th>x₂</th><th>y₂</th></tr>${Array.from({ length: LW1.N }, (_, i) => `<tr class="${i === n && cur ? 'now' : ''}"><td>${i + 1}</td>${['x1', 'y1', 'x2', 'y2'].map(k => `<td>${cell(i, k)}</td>`).join('')}</tr>`).join('')}</table>`;
+  return `<section class="card lw-cond"><b class="h">Опыт 2. Соударение тел</b><p class="mute small">Тело 2 — в круге (x₀₂ = ${f1(lwNum(S.rx02), 1)}, y₀₂ = ${f1(lwNum(S.ry02), 1)} мм). Винт — ${S.screw}, как в опыте 1. Сделай ${LW1.N} выстрелов; после каждого запиши координаты обеих шайб (мм).</p></section>
+    ${lwField()}
+    <section class="card"><div class="lw-bar">${cur ? `<button class="btn wide" data-lw="record">${ic('pencil')} Записать координаты</button>` : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="coll">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : ''}</div>
+    <p class="lw-msg" id="lw-msg">${cur ? 'Шайбы остановились. Сними координаты меток обеих шайб.' : ''}</p><div class="lw-scroll">${tbl}</div>${n >= LW1.N ? lwNext('К обработке') : ''}</section>`;
+}
+
+/* ---------- обработка: ожидаемые значения из записей ученика ---------- */
+function lwCalc() {
+  const S = LWS, m1 = lwPuck(S.p1).m, m2 = lwPuck(S.p2).m, x01 = lwNum(S.rx01), y01 = lwNum(S.ry01), x02 = lwNum(S.rx02), y02 = lwNum(S.ry02);
+  const mean = a => a.reduce((s, v) => s + v, 0) / a.length, col = k => S.coll.map(r => r.r[k]);
+  const fx = S.free.map(r => r.r), X = { x: fx, x1: col('x1'), y1: col('y1'), x2: col('x2'), y2: col('y2') };
+  const o = { m1, m2, x01, y01, x02, y02 };
+  o.xm = mean(fx); o.x1m = mean(X.x1); o.y1m = mean(X.y1); o.x2m = mean(X.x2); o.y2m = mean(X.y2);
+  o.dx = o.xm - x01; o.dx1 = o.x1m - x01; o.dy1 = o.y1m - y01; o.dx2 = o.x2m - x02; o.dy2 = o.y2m - y02;
+  o.l0 = o.dx; o.l1 = Math.hypot(o.dx1, o.dy1); o.l2 = Math.hypot(o.dx2, o.dy2);
+  o.px0 = m1 * Math.sqrt(o.l0); o.px1 = m1 * o.dx1 / Math.sqrt(o.l1) + m2 * o.dx2 / Math.sqrt(o.l2); o.py1 = m1 * o.dy1 / Math.sqrt(o.l1) + m2 * o.dy2 / Math.sqrt(o.l2);
+  o.e0 = m1 * o.l0; o.e1 = m1 * o.l1 + m2 * o.l2; o.k = o.e1 / o.e0;
+  o.P = (1 - Math.pow(.5, LW1.N - 1)) * 100;
+  const vals = { x01, y01, x02, y02, x1: o.x1m, y1: o.y1m, x2: o.x2m, y2: o.y2m };
+  ['x1', 'y1', 'x2', 'y2'].forEach(q => { o['r_' + q] = (Math.max(...X[q]) - Math.min(...X[q])) / 2; });
+  Object.keys(vals).forEach(q => { const d = Math.max(1, o['r_' + q] || 0); o['d_' + q] = d; o['rel_' + q] = d / Math.abs(vals[q]) * 100; });
+  o.vals = vals; o.X = X;
+  return o;
+}
+const LW_TABLES = {
+  1: ['xm', 'x1m', 'y1m', 'x2m', 'y2m', 'dx', 'dx1', 'dy1', 'dx2', 'dy2', 'l0', 'l1', 'l2'],
+  2: ['px0', 'px1', 'py1'],
+  3: ['e0', 'e1', 'k'],
+  4: ['r_x1', 'r_y1', 'r_x2', 'r_y2', 'd_x01', 'd_y01', 'd_x02', 'd_y02', 'd_x1', 'd_y1', 'd_x2', 'd_y2', 'rel_x01', 'rel_y01', 'rel_x02', 'rel_y02', 'rel_x1', 'rel_y1', 'rel_x2', 'rel_y2', 'P']
+};
+function lwOk(key, user, o) {
+  const e = o[key]; if (!Number.isFinite(user)) return false;
+  if (key === 'py1') return Math.abs(Math.abs(user) - Math.abs(e)) <= Math.max(.003, Math.abs(e) * .05); // знак Δy — как в методичке или со знаком
+  if (key === 'k') return Math.abs(user - e) <= .015;
+  if (key === 'P') return Math.abs(user - e) <= .3 || Math.abs(user * 100 - e) <= .3;
+  if (key.startsWith('rel_')) return Math.abs(user - e) <= Math.max(.06, e * .04);
+  if (/^(px|py|e0|e1)/.test(key)) return Math.abs(user - e) <= Math.abs(e) * .015 + .0006;
+  return Math.abs(user - e) <= Math.max(.11, Math.abs(e) * .002);
+}
+function lwProc() {
+  const S = LWS, o = lwCalc(), P = S.proc, cls = k => S.procOk[k] === true ? 'ok' : S.procOk[k] === false ? 'bad' : '';
+  const I = k => lwIn('p_' + k, P[k], '', cls(k)), mm = v => f1(v, 1);
+  const t1 = `<section class="card"><b class="h">Таблица 1. Средние значения, приращения, пути</b>
+    <p class="mute small">Тела: m₁ = ${f1(o.m1, 4)} кг, m₂ = ${f1(o.m2, 4)} кг; x₀₁ = ${mm(o.x01)}, y₀₁ = ${mm(o.y01)}, x₀₂ = ${mm(o.x02)}, y₀₂ = ${mm(o.y02)} мм. Ответы — с точностью до 0,1 мм.</p>
+    <div class="lw-scroll"><table class="lw-tbl wide"><tr><th></th><th>своб. движение</th><th>x₁</th><th>y₁</th><th>x₂</th><th>y₂</th></tr>
+    ${Array.from({ length: LW1.N }, (_, i) => `<tr><td>${i + 1}</td><td>${mm(o.X.x[i])}</td><td>${mm(o.X.x1[i])}</td><td>${mm(o.X.y1[i])}</td><td>${mm(o.X.x2[i])}</td><td>${mm(o.X.y2[i])}</td></tr>`).join('')}
+    <tr class="sum"><td>Среднее</td><td>x̄ ${I('xm')}</td><td>x̄₁ ${I('x1m')}</td><td>ȳ₁ ${I('y1m')}</td><td>x̄₂ ${I('x2m')}</td><td>ȳ₂ ${I('y2m')}</td></tr>
+    <tr class="sum"><td>Приращение Δ</td><td>Δx = x̄ − x₀₁ ${I('dx')}</td><td>Δx₁ = x̄₁ − x₀₁ ${I('dx1')}</td><td>Δy₁ = ȳ₁ − y₀₁ ${I('dy1')}</td><td>Δx₂ = x̄₂ − x₀₂ ${I('dx2')}</td><td>Δy₂ = ȳ₂ − y₀₂ ${I('dy2')}</td></tr>
+    <tr class="sum"><td>Расстояние</td><td>l₀ = Δx ${I('l0')}</td><td colspan="2">l₁ = √(Δx₁² + Δy₁²) ${I('l1')}</td><td colspan="2">l₂ = √(Δx₂² + Δy₂²) ${I('l2')}</td></tr></table></div>
+    <button class="btn line wide mt" data-lw="pcheck" data-v="1">${ic('circle-check')} Проверить таблицу 1</button></section>`;
+  const t2 = `<section class="card"><b class="h">Таблица 2. Импульс (кг·мм^½)</b><p class="mute small">Импульс пропорционален m√l, его проекции — mΔx/√l и mΔy/√l. Δy бери со знаком: шайбы разлетаются в разные стороны, и сумма проекций по Y должна быть близка к нулю.</p>
+    <table class="lw-tbl"><tr><th></th><th>До удара</th><th>После удара</th></tr>
+    <tr><td>Вдоль X</td><td>m₁√l₀ ${I('px0')}</td><td>m₁Δx₁/√l₁ + m₂Δx₂/√l₂ ${I('px1')}</td></tr>
+    <tr><td>Вдоль Y</td><td>0</td><td>m₁Δy₁/√l₁ + m₂Δy₂/√l₂ ${I('py1')}</td></tr></table>
+    <button class="btn line wide mt" data-lw="pcheck" data-v="2">${ic('circle-check')} Проверить таблицу 2</button></section>`;
+  const t3 = `<section class="card"><b class="h">Таблица 3. Энергия (кг·мм) и коэффициент восстановления</b><p class="mute small">Кинетическая энергия пропорциональна m·l (E = μmgl).</p>
+    <table class="lw-tbl"><tr><th></th><th>До удара</th><th>После удара</th></tr><tr><td>Энергия</td><td>m₁l₀ ${I('e0')}</td><td>m₁l₁ + m₂l₂ ${I('e1')}</td></tr>
+    <tr><td>k</td><td colspan="2">k = (m₁l₁ + m₂l₂)/(m₁l₀) ${I('k')}</td></tr></table>
+    <button class="btn line wide mt" data-lw="pcheck" data-v="3">${ic('circle-check')} Проверить таблицу 3</button></section>`;
+  const rows4 = ['x01', 'y01', 'x02', 'y02', 'x1', 'y1', 'x2', 'y2'], lab = { x01: 'x₀₁', y01: 'y₀₁', x02: 'x₀₂', y02: 'y₀₂', x1: 'x₁', y1: 'y₁', x2: 'x₂', y2: 'y₂' };
+  const t4 = `<section class="card"><b class="h">Таблица 4. Погрешности</b><p class="mute small">Систематическая Δs — цена деления, 1 мм. Случайная Δ = (x_max − x_min)/2 по серии из ${LW1.N} измерений (для однократных измерений — нет). Наибольшая Δ — бо́льшая из них; относительная δ = Δ/x̄·100 %.</p>
+    <div class="lw-scroll"><table class="lw-tbl wide"><tr><th>Величина</th><th>Значение</th><th>Δs</th><th>Δ случ.</th><th>Δ наиб.</th><th>δ, %</th></tr>
+    ${rows4.map(q => `<tr><td>${lab[q]}, мм</td><td>${mm(o.vals[q])}</td><td>1</td><td>${q.length === 2 ? I('r_' + q) : '—'}</td><td>${I('d_' + q)}</td><td>${I('rel_' + q)}</td></tr>`).join('')}</table></div>
+    <div class="lw-row"><label>Доверительная вероятность P = 1 − (½)^(N−1), % ${I('P')}</label></div>
+    <button class="btn line wide mt" data-lw="pcheck" data-v="4">${ic('circle-check')} Проверить таблицу 4</button></section>`;
+  const all = [1, 2, 3, 4].every(t => LW_TABLES[t].every(k => S.procOk[k] === true));
+  return t1 + t2 + t3 + t4 + `<p class="lw-msg" id="lw-msg"></p>${all ? lwNext('К выводам') : '<p class="mute small center">Когда все таблицы будут верны, откроются выводы.</p>'}`;
+}
+
+/* 6. Выводы и контрольные вопросы */
+const LW_CQ = [
+  ['Как записывают закон сохранения импульса при неупругом центральном ударе двух тел?', 'm₁v₁ + m₂v₂ = (m₁ + m₂)u', ['m₁v₁ + m₂v₂ = m₁u₁ − m₂u₂', 'm₁v₁² = m₂v₂²', 'm₁v₁ = m₂v₂']],
+  ['В каких ударах сохраняется механическая энергия?', 'Только в абсолютно упругих', ['Только в неупругих', 'В любых', 'Ни в каких']],
+  ['В каких ударах сохраняется импульс замкнутой системы?', 'И в упругих, и в неупругих', ['Только в упругих', 'Только в неупругих', 'Ни в каких']],
+  ['Почему соударяющиеся шайбы можно считать замкнутой системой?', 'Сила тяжести уравновешена реакцией стола, а трение за короткое время удара мало по сравнению с силой удара', ['На шайбы не действует сила тяжести', 'Шайбы одинаковой массы', 'Поле горизонтальное и гладкое без трения']],
+  ['Какие прямые измерения нужны для проверки закона сохранения импульса?', 'Масс тел и координат шайб до и после удара', ['Скоростей шайб секундомером', 'Силы удара динамометром', 'Только масс тел']],
+  ['Какой удар называют центральным?', 'Скорости тел направлены вдоль прямой, соединяющей их центры масс', ['Удар в центр поля', 'Удар тел одинаковой массы', 'Удар, после которого тела слипаются']],
+  ['От чего зависит направление движения тел после нецентрального удара?', 'От смещения линии удара относительно центров (прицельного расстояния) и масс тел', ['Только от цвета шайб', 'Только от силы удара', 'Ни от чего — всегда вдоль оси X']]
+];
+function lwAutoConcl(o) {
+  const dP = Math.abs(o.px1 - o.px0) / o.px0 * 100, relMax = Math.max(...['x01', 'y01', 'x02', 'y02', 'x1', 'y1', 'x2', 'y2'].map(q => o['rel_' + q]));
+  // по методичке: погрешность импульса — не выше относительной погрешности наименее точно измеренной величины (табл. 4)
+  const errP = relMax;
+  const okP = dP <= errP * 1.5;
+  return `Цель работы — проверить выполнение законов сохранения импульса и энергии при соударении шайб. ` +
+    `Проекция импульса на ось X до удара m₁√l₀ = ${lwF(o.px0, 3)} кг·мм^½, после удара ${lwF(o.px1, 3)} кг·мм^½; расхождение ${lwF(dP, 1)} %. ` +
+    `Проекция на ось Y после удара ${lwF(o.py1, 3)} кг·мм^½ при нуле до удара. ` +
+    `С учётом погрешности измерений (≈ ${lwF(errP, 1)} %) закон сохранения импульса ${okP ? 'выполняется' : 'выполняется хуже ожидаемого — вероятно, мешает трение во время удара и разброс силы удара'}. ` +
+    `Коэффициент восстановления энергии k = ${lwF(o.k, 2)} < 1: удар не абсолютно упругий, часть кинетической энергии перешла во внутреннюю (деформация, нагрев). ` +
+    `Наибольшая относительная погрешность измерения координат — ${lwF(relMax, 1)} %; точнее всего нужно измерять пути после удара (короткие отрезки l₁, l₂), а точность начальных координат можно не повышать.`;
+}
+function lwConcl() {
+  const S = LWS, o = lwCalc(); if (!S.concl) { S.concl = lwAutoConcl(o); lwSave(); }
+  const qs = LW_CQ.map(([q, a, x], i) => { const opts = lwShuf(i + 20, [a, ...x]); const ch = S.cq[i];
+    return `<div class="lw-q"><b>${i + 1}. ${esc(q)}</b>${opts.map(op => `<button data-lw="cq" data-q="${i}" data-v="${esc(op)}" class="${ch === op ? (S.cqChecked ? (op === a ? 'ok' : 'bad') : 'pick') : ''}">${esc(op)}</button>`).join('')}</div>`; }).join('');
+  return `<section class="card"><b class="h">Выводы</b><p class="mute small">Черновик собран по твоим результатам. Проверь его и допиши своими словами — так выводы и защищают.</p>
+    <textarea class="lw-ta" data-k="concl" rows="9">${esc(S.concl)}</textarea>
+    <button class="btn line wide mt" data-lw="reconcl">${ic('rotate-ccw')} Собрать черновик заново</button></section>
+    <section class="card"><b class="h">Контрольные вопросы (защита)</b>${qs}<button class="btn wide mt" data-lw="cqCheck">${ic('circle-check')} Проверить ответы</button>${S.cqOk ? lwNext('К отчёту') : ''}</section>`;
+}
+
+/* 7. Отчёт */
+function lwReportStep() {
+  const S = LWS;
+  return `<section class="card"><b class="h">Отчёт готов</b><p class="mute">Отчёт оформлен по бланку кафедры (4 листа А4). Заполни шапку и сохрани PDF: в окне печати выбери «Сохранить как PDF».</p>
+    <div class="lw-row"><label>ФИО ${lwIn('fio', S.fio, 'Иванов И. И.', 'txt')}</label><label>Класс ${lwIn('group', S.group, '', 'txt')}</label><label>Дата ${lwIn('date', S.date, '', 'txt')}</label></div>
+    <a class="btn wide mt" href="#lw-1-report">${ic('file-text')} Открыть отчёт</a>
+    <button class="btn line wide mt" data-lw="restart">${ic('rotate-ccw')} Выполнить работу заново</button></section>`;
+}
+function vLabWorkReport() {
+  const S = lwLoad(); if (LW1.steps[S.max][0] !== 'report') { location.hash = 'lw-1'; return; }
+  frame('Отчёт · ЛР № 1', { back: true });
+  const o = lwCalc(), mm = v => f1(v, 1), f3 = v => f1(v, 3), f4 = v => f1(v, 4), lab = { x01: 'x₀₁', y01: 'y₀₁', x02: 'x₀₂', y02: 'y₀₂', x1: 'x₁', y1: 'y₁', x2: 'x₂', y2: 'y₂' };
+  const ln = v => `<span class="ul">${esc(v || '')}</span>`;
+  const [dd, mon, yy] = String(S.date || '').split('.');
+  const MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  const equip = [['Лабораторная установка (горизонтальное поле с координатной сеткой, ударный пружинный механизм)', '0–500 мм', '1 мм (цена деления)'], ['Набор тел (шайб) с указанной массой', `${f1(o.m1 * 1000, 1)} г; ${f1(o.m2 * 1000, 1)} г`, '0,1 г']];
+  // 1 лист — титул и оборудование
+  const p1 = `<section class="lwp"><p class="c b">Лаборатория кафедры физики</p><hr>
+    <p class="row">Оценка ${ln('', '38%')} Подпись преподавателя ${ln('', '30%')}</p>
+    <p class="row">Курсант (студент) ${ln(S.fio)} Класс <span class="ul s">${esc(S.group || '')}</span></p>
+    <p class="row">Дата выполнения «<span class="ul s">${esc(dd || '')}</span>» <span class="ul m">${MON[(+mon || 1) - 1]}</span> 20<span class="ul s">${esc((yy || '').slice(2))}</span> г.</p>
+    <p class="c mt2">ОТЧЕТ<br>по лабораторной работе № <span class="ul s">1</span></p>
+    <p class="row">Наименование ${ln('Изучение закона сохранения импульса', '78%')}</p>
+    <p class="row">Цель ${ln(LW_LIST[0].aim, '88%')}</p>
+    <p class="c b mt2">ОБОРУДОВАНИЕ И ПРИБОРЫ</p>
+    <table><tr><th>№ п.п.</th><th>Наименование</th><th>Предел измерения</th><th>Погрешность измерения</th></tr>
+    ${Array.from({ length: 10 }, (_, i) => `<tr><td>${equip[i] ? i + 1 : ''}</td><td class="l">${equip[i] ? esc(equip[i][0]) : '&nbsp;'}</td><td>${equip[i] ? esc(equip[i][1]) : ''}</td><td>${equip[i] ? esc(equip[i][2]) : ''}</td></tr>`).join('')}</table></section>`;
+  // 2 лист — схема и результаты измерений
+  const p2 = `<section class="lwp"><p class="c b">СХЕМА УСТАНОВКИ</p>${lwSchemeSvg()}
+    <p class="small">1, 2 — шайбы (тела); ударный пружинный механизм с винтом, направляющие; поле с координатной сеткой (цена деления 1 мм). Положение винта — ${S.screw}; тело 2 — в ${['нижнем', 'центральном', 'верхнем'][S.circle - 1]} круге.</p><hr>
+    <p class="c b">РЕЗУЛЬТАТЫ ИЗМЕРЕНИЯ</p>
+    <p class="small">Таблица 1. m₁ = ${f4(o.m1)} кг; m₂ = ${f4(o.m2)} кг; x₀₁ = ${mm(o.x01)} мм; y₀₁ = ${mm(o.y01)} мм; x₀₂ = ${mm(o.x02)} мм; y₀₂ = ${mm(o.y02)} мм</p>
+    <table><tr><th>№ п.п.</th><th>x, мм<br><small>свободное движение</small></th><th>x₁, мм</th><th>y₁, мм</th><th>x₂, мм</th><th>y₂, мм</th></tr>
+      ${Array.from({ length: LW1.N }, (_, i) => `<tr><td>${i + 1}</td><td>${mm(o.X.x[i])}</td><td>${mm(o.X.x1[i])}</td><td>${mm(o.X.y1[i])}</td><td>${mm(o.X.x2[i])}</td><td>${mm(o.X.y2[i])}</td></tr>`).join('')}
+      <tr><td>Среднее</td><td>x̄ = ${mm(o.xm)}</td><td>x̄₁ = ${mm(o.x1m)}</td><td>ȳ₁ = ${mm(o.y1m)}</td><td>x̄₂ = ${mm(o.x2m)}</td><td>ȳ₂ = ${mm(o.y2m)}</td></tr>
+      <tr><td>Приращение</td><td>Δx = ${mm(o.dx)}</td><td>Δx₁ = ${mm(o.dx1)}</td><td>Δy₁ = ${mm(o.dy1)}</td><td>Δx₂ = ${mm(o.dx2)}</td><td>Δy₂ = ${mm(o.dy2)}</td></tr>
+      <tr><td>Расстояние</td><td>l₀ = ${mm(o.l0)}</td><td colspan="2">l₁ = ${mm(o.l1)}</td><td colspan="2">l₂ = ${mm(o.l2)}</td></tr></table>
+    <p class="row sign">Подпись зав. кабинетом ${ln('', '40%')}</p></section>`;
+  // 3 лист — формулы и вычисления
+  const p3 = `<section class="lwp"><p class="c b">РАСЧЕТНЫЕ ФОРМУЛЫ ИСКОМЫХ ВЕЛИЧИН И ПОГРЕШНОСТЕЙ</p>
+    <div class="fm"><p>v = √(2μgl) &nbsp;⇒&nbsp; p ∝ m√l; &nbsp; E = μmgl ∝ m·l</p>
+    <p>l₀ = x̄ − x₀₁; &nbsp; l₁ = √(Δx₁² + Δy₁²); &nbsp; l₂ = √(Δx₂² + Δy₂²)</p>
+    <p>X: m₁√l₀ = m₁Δx₁/√l₁ + m₂Δx₂/√l₂; &nbsp; Y: 0 = m₁Δy₁/√l₁ + m₂Δy₂/√l₂</p>
+    <p>k = (m₁l₁ + m₂l₂) / (m₁l₀)</p>
+    <p>Δ<sub>случ</sub> = (x<sub>max</sub> − x<sub>min</sub>)/2; &nbsp; Δ<sub>сист</sub> = цена деления; &nbsp; δ = Δ/x̄·100 %; &nbsp; P = 1 − (½)<sup>N−1</sup></p></div><hr>
+    <p class="c b">ВЫЧИСЛЕНИЕ РЕЗУЛЬТАТОВ ИЗМЕРЕНИЯ И ПОГРЕШНОСТЕЙ</p>
+    <table><tr><th>Импульс, кг·мм^½</th><th>До удара</th><th>После удара</th></tr><tr><td>Вдоль X</td><td>m₁√l₀ = ${f4(o.m1)}·√${mm(o.l0)} = ${f3(o.px0)}</td><td>${f3(o.px1)}</td></tr><tr><td>Вдоль Y</td><td>0</td><td>${f3(o.py1)}</td></tr></table>
+    <table><tr><th>Энергия, кг·мм</th><th>До удара</th><th>После удара</th></tr><tr><td>m·l</td><td>${f3(o.e0)}</td><td>${f3(o.e1)}</td></tr><tr><td>Коэффициент восстановления</td><td colspan="2">k = ${f3(o.e1)} / ${f3(o.e0)} = ${f1(o.k, 2)}</td></tr></table>
+    <table><tr><th>Величина</th><th>Значение</th><th>Δ сист.</th><th>Δ случ.</th><th>Δ наиб.</th><th>δ, %</th></tr>
+      ${Object.keys(lab).map(q => `<tr><td>${lab[q]}, мм</td><td>${mm(o.vals[q])}</td><td>1</td><td>${q.length === 2 ? mm(o['r_' + q]) : '—'}</td><td>${mm(o['d_' + q])}</td><td>${f1(o['rel_' + q], 2)}</td></tr>`).join('')}</table>
+    <p class="small">Доверительная вероятность при N = ${LW1.N}: P = 1 − (½)^${LW1.N - 1} = ${f1(o.P, 1)} %.</p></section>`;
+  // 4 лист — график и выводы
+  const p4 = `<section class="lwp"><p class="c b">ПОСТРОЕНИЕ ГРАФИКОВ</p>${lwGraphSvg(o)}
+    <p class="small c">Перемещения шайб на поле: до удара — l₀ (тело 1 без тела 2), после удара — l₁, l₂ (средние по ${LW1.N} опытам).</p>
+    <p class="c b mt2">ВЫВОДЫ ПО ПРОДЕЛАННОЙ РАБОТЕ</p><p class="concl">${esc(S.concl).replace(/\n/g, '<br>')}</p>
+    <p class="row sign">Подпись исполнителя ${ln('', '45%')}</p></section>`;
+  setMain(`<div class="lwr-tools"><button class="btn" data-lw="print">${ic('printer')} Сохранить PDF / печать</button><a class="btn line" href="#lw-1">${ic('chevron-left')} К работе</a></div><article class="lwr">${p1}${p2}${p3}${p4}</article>`);
+}
+/* График на миллиметровке бланка: векторы перемещений шайб */
+function lwGraphSvg(o) {
+  const W = 520, H = 300, x0 = 30, y0 = 150, sc = Math.min((W - 50) / Math.max(o.l0, o.dx1, o.dx2, 1), 120 / Math.max(Math.abs(o.dy1), Math.abs(o.dy2), 1));
+  const grid = Array.from({ length: 27 }, (_, i) => `<line x1="${10 + i * 20}" y1="10" x2="${10 + i * 20}" y2="290" stroke="#999" stroke-width=".5"/>`).join('') + Array.from({ length: 15 }, (_, i) => `<line x1="10" y1="${10 + i * 20}" x2="530" y2="${10 + i * 20}" stroke="#999" stroke-width=".5"/>`).join('');
+  const arr = (dx, dy, col, t, dash) => { const X = x0 + dx * sc, Y = y0 - dy * sc; return `<line x1="${x0}" y1="${y0}" x2="${X}" y2="${Y}" stroke="${col}" stroke-width="2.6" ${dash ? 'stroke-dasharray="7 4"' : ''}/><circle cx="${X}" cy="${Y}" r="3.5" fill="${col}"/><text x="${X > 380 ? X - 6 : X + 6}" y="${Y - 7}" font-size="12" fill="${col}" text-anchor="${X > 380 ? 'end' : 'start'}">${t}</text>`; };
+  return `<svg class="lwr-svg" viewBox="0 0 540 300">${grid}<line x1="${x0}" y1="${y0}" x2="530" y2="${y0}" stroke="#666" stroke-width=".8"/><line x1="${x0}" y1="10" x2="${x0}" y2="290" stroke="#000"/><text x="505" y="${y0 + 16}" font-size="12">x</text><text x="${x0 + 6}" y="22" font-size="12">y</text>
+    ${arr(o.l0, 0, '#000', 'l₀ (тело 1, без тела 2)', true)}${arr(o.dx1, o.dy1, '#1f4fd8', 'l₁ (тело 1)')}${arr(o.dx2, o.dy2, '#c0392b', 'l₂ (тело 2)')}</svg>`;
+}
+function lwSchemeSvg() {
+  return `<svg class="lwr-svg" viewBox="0 0 520 220" aria-hidden="true"><rect x="70" y="10" width="440" height="200" fill="none" stroke="#000"/>${Array.from({ length: 21 }, (_, i) => `<line x1="${70 + i * 22}" y1="10" x2="${70 + i * 22}" y2="210" stroke="#bbb" stroke-width=".6"/>`).join('')}${Array.from({ length: 10 }, (_, i) => `<line x1="70" y1="${10 + i * 22}" x2="510" y2="${10 + i * 22}" stroke="#bbb" stroke-width=".6"/>`).join('')}
+  <rect x="8" y="96" width="70" height="4" fill="#555"/><rect x="8" y="120" width="70" height="4" fill="#555"/><rect x="10" y="104" width="50" height="12" fill="#888"/><rect x="22" y="90" width="8" height="40" fill="#444"/>
+  <circle cx="92" cy="110" r="12" fill="#fff" stroke="#000"/><text x="92" y="114" font-size="11" text-anchor="middle">1</text><circle cx="120" cy="104" r="12" fill="#ddd" stroke="#000"/><text x="120" y="108" font-size="11" text-anchor="middle">2</text>
+  <text x="30" y="150" font-size="10">ударный механизм</text><text x="26" y="86" font-size="10">винт</text><text x="440" y="206" font-size="10">x, мм</text><text x="74" y="22" font-size="10">y, мм</text></svg>`;
+}
+
+/* ---------- действия ---------- */
+function lwMsg(t, bad) { const m = $('#lw-msg'); if (m) { m.textContent = t; m.className = 'lw-msg ' + (bad ? 'bad' : 'good'); } }
+function lwGo(i) { LWS.step = Math.max(0, Math.min(i, LWS.max)); lwSave(); render(); ui.main.scrollTop = 0; }
+function lwAdvance() { LWS.max = Math.max(LWS.max, LWS.step + 1); LWS.step = LWS.step + 1; lwSave(); render(); ui.main.scrollTop = 0; }
+document.addEventListener('input', e => {
+  const el = e.target.closest && e.target.closest('.lwi, .lw-ta'); if (!el || !LWS) return;
+  const k = el.dataset.k;
+  if (k.startsWith('p_')) { LWS.proc[k.slice(2)] = el.value; delete LWS.procOk[k.slice(2)]; el.classList.remove('ok', 'bad'); }
+  else if (k === 'cx') LWS.cur.r = el.value;
+  else if (/^c(x1|y1|x2|y2)$/.test(k)) { LWS.cur.r = LWS.cur.r || {}; LWS.cur.r[k.slice(1)] = el.value; }
+  else LWS[k] = el.value;
+  lwSave();
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-lw]'); if (!b) return; const S = lwLoad(), d = b.dataset;
+  switch (d.lw) {
+    case 'go': lwGo(+d.v); break;
+    case 'next': lwAdvance(); break;
+    case 'admit': S.admit[d.q] = d.v; S.admitChecked = false; lwSave(); render(); break;
+    case 'admitCheck': { const n = LW_ADMIT.filter(([, a], i) => S.admit[i] === a).length; S.admitChecked = true; S.admitOk = n >= 6; lwSave(); render();
+      toast(S.admitOk ? `Допуск сдан: ${n} из 8` : `Верно ${n} из 8 — нужно 6. Перечитай теорию и попробуй снова.`, S.admitOk ? '' : 'bad'); break; }
+    case 'puck': if (S.p1 === d.v) S.p1 = null; else if (S.p2 === d.v) S.p2 = null; else if (!S.p1) S.p1 = d.v; else if (!S.p2) S.p2 = d.v; else { S.p1 = d.v; S.p2 = null; } S.prepOk = false; lwSave(); render(); break;
+    case 'prepCheck': {
+      if (!S.p1 || !S.p2) { lwMsg('Выбери два тела.', 1); break; }
+      const m1 = lwPuck(S.p1).m, m2 = lwPuck(S.p2).m;
+      if (Math.abs(m1 - m2) / Math.min(m1, m2) > .12) { lwMsg('Массы тел должны быть примерно одинаковыми — выбери шайбы с близкими массами.', 1); break; }
+      if (Math.abs(lwNum(S.m1) - m1) > .00006 || Math.abs(lwNum(S.m2) - m2) > .00006) { lwMsg('Массы записаны неверно. Переведи граммы в килограммы: 20,1 г = 0,0201 кг.', 1); break; }
+      if (!(Math.abs(lwNum(S.rx01) - S.x01) <= 1.2 && Math.abs(lwNum(S.ry01) - S.y01) <= 1.2)) { S.prepTries = (S.prepTries || 0) + 1; lwSave();
+        lwMsg(S.prepTries >= 3 ? `Не совпадает. Подсказка: x₀₁ ≈ ${Math.round(S.x01)} мм, y₀₁ ≈ ${Math.round(S.y01)} мм — найди это место в лупе.` : 'Координаты не совпадают с установкой. Наведи лупу точно на крестик в центре шайбы 1 и посчитай миллиметровые деления.', 1); break; }
+      S.prepOk = true; lwSave(); render(); toast('Подготовка выполнена'); break;
+    }
+    case 'screw': if (!S.free.length) { S.screw = Math.max(1, Math.min(5, S.screw + +d.d)); lwSave(); render(); } break;
+    case 'circle': S.circle = +d.v; S.place = null; lwSave(); render(); break;
+    case 'placeCheck': {
+      const c = LW1.circles[S.circle - 1];
+      if (!(Math.abs(lwNum(S.rx02) - c[0]) <= 1.2 && Math.abs(lwNum(S.ry02) - c[1]) <= 1.2)) { lwMsg('Координаты шайбы 2 не совпадают. Наведи лупу на крестик в её центре.', 1); break; }
+      S.place = c.slice(); S.placeOk = true; lwSave(); render(); break;
+    }
+    case 'shoot': {
+      if (LWV.anim) break;
+      if (d.v === 'coll' && !S.place) S.place = LW1.circles[S.circle - 1].slice();
+      const shot = lwShot(d.v);
+      b.disabled = true; lwMsg('Выстрел…');
+      lwAnimate(shot, () => {
+        const fin = shot.at(shot.T);
+        if (!lwInField(fin.p1) || (fin.p2 && !lwInField(fin.p2))) { LWV.pos = null; lwDraw(); lwMsg('Шайба ушла за край поля — опыт не засчитан. Повтори выстрел' + (S.free.length ? '.' : ' или уменьши силу удара винтом.'), 1); b.disabled = false; return; }
+        if (shot.miss) { LWV.pos = null; lwDraw(); lwMsg('Шайба 1 прошла мимо шайбы 2 — опыт не засчитан, повтори выстрел.', 1); b.disabled = false; return; }
+        S.cur = d.v === 'free' ? { kind: 'free', t: fin.p1[0], r: '' } : { kind: 'coll', t: { x1: fin.p1[0], y1: fin.p1[1], x2: fin.p2[0], y2: fin.p2[1] }, r: {} };
+        S.curPos = fin; lwSave(); render(); LWV.pos = fin; lwDraw();
+      });
+      break;
+    }
+    case 'record': {
+      const cur = S.cur; if (!cur) break;
+      if (cur.kind === 'free') {
+        const v = lwNum(cur.r); if (!(Math.abs(v - cur.t) <= 1.2)) { cur.tries = (cur.tries || 0) + 1; lwSave(); lwMsg(cur.tries >= 3 ? `Подсказка: x ≈ ${Math.round(cur.t)} мм.` : 'Отсчёт не совпадает. Наведи лупу на крестик в центре шайбы 1.', 1); break; }
+        S.free.push({ r: v, t: cur.t });
+      } else {
+        const ks = ['x1', 'y1', 'x2', 'y2'], bad = ks.filter(k => !(Math.abs(lwNum(cur.r[k]) - cur.t[k]) <= 1.2));
+        if (bad.length) { cur.tries = (cur.tries || 0) + 1; lwSave(); lwMsg(cur.tries >= 3 ? 'Подсказка: ' + bad.map(k => `${k} ≈ ${Math.round(cur.t[k])}`).join(', ') + ' мм.' : 'Не совпадает: ' + bad.join(', ') + '. Снимай по крестику в центре шайбы (1 — синяя, 2 — оранжевая).', 1); break; }
+        S.coll.push({ r: Object.fromEntries(ks.map(k => [k, lwNum(cur.r[k])])), t: cur.t });
+      }
+      S.cur = null; S.curPos = null; lwSave(); render(); toast('Записано'); break;
+    }
+    case 'pcheck': {
+      const o = lwCalc(), keys = LW_TABLES[d.v]; let bad = 0;
+      keys.forEach(k => { const ok = lwOk(k, lwNum(S.proc[k]), o); S.procOk[k] = ok; if (!ok) bad++; });
+      lwSave(); render();
+      toast(bad ? `Таблица ${d.v}: ошибок — ${bad}. Красные ячейки пересчитай.` : `Таблица ${d.v} заполнена верно`, bad ? 'bad' : ''); break;
+    }
+    case 'reconcl': S.concl = lwAutoConcl(lwCalc()); lwSave(); render(); break;
+    case 'cq': S.cq[d.q] = d.v; S.cqChecked = false; lwSave(); render(); break;
+    case 'cqCheck': { const n = LW_CQ.filter(([, a], i) => S.cq[i] === a).length; S.cqChecked = true; S.cqOk = n >= 6; lwSave(); render();
+      toast(S.cqOk ? `Защита: ${n} из ${LW_CQ.length}` : `Верно ${n} из ${LW_CQ.length} — нужно 6.`, S.cqOk ? '' : 'bad');
+      if (S.cqOk && !S.done) { S.done = true; lwSave(); addXP(100, 'Лабораторная работа'); } break; }
+    case 'print': window.print(); break;
+    case 'restart': if (confirm('Начать лабораторную работу заново? Записи и таблицы будут очищены.')) { LWS = lwFresh(); lwSave(); location.hash = 'lw-1'; render(); } break;
+  }
+});
 
 /* ---------- Тесты: 900 вопросов экзамена, проверки уроков и финалы глав ----------
    Режимы: «с пояснениями» (ответ сразу, комбо, опыт) и «как на экзамене» (разбор в конце, оценка 60/75/90).
