@@ -90,7 +90,7 @@ function route() {
   if (h === 'game-bridge') return { name: 'bridgeGame', tab: 'lab', parent: 'lab-games' };
   if ((m = /^lab-ch-(\d+)$/.exec(h))) return { name: 'labChapter', ch: +m[1], tab: 'lab', parent: 'lab' };
   if ((m = /^lab-topic-(\d+)-(\d+)$/.exec(h))) return { name: 'labTopic', ch: +m[1], topic: +m[2], tab: 'lab', parent: 'lab-ch-' + m[1] };
-  if ((m = /^lab-exp-([a-z0-9-]+)$/.exec(h))) return { name: 'labExp', exp: m[1], tab: 'lab', parent: 'lab-topic-' + ((LABS[m[1]]||{}).ch||1) + '-' + ((LABS[m[1]]||{}).topic||1) };
+  if ((m = /^lab-exp-([a-z0-9-]+)$/.exec(h))) return { name: 'labExp', exp: m[1], tab: 'lab', parent: 'lab-ch-' + ((LABS[m[1]]||{}).ch||1) };
   if ((m = /^lab-(spring|pendulum|fall|projectile|incline|wave|ohm|refraction|buoyancy|gas)$/.exec(h))) return { name: 'labExp', exp: LAB_LEGACY_MAP[m[1]] ? LAB_LEGACY_MAP[m[1]] : m[1], tab: 'lab', parent: 'lab' };
   if (h === 'hist' || h === 'qsearch') return { name: h, tab: 'train', parent: 'train' };
   if (['book', 'train', 'profile'].includes(h)) return { name: h, tab: h };
@@ -459,210 +459,17 @@ function labOpen(id){const x=LABS[id];if(!x)return;LAB={id:id,a:x.a0,b:x.b0,va:x
 function labTabs(active='experiments'){return '<div class="lab-switch"><button class="btn '+(active==='experiments'?'active':'line')+'" data-act="lab" type="button">'+ic('sparkles')+' Опыты <small>'+LAB_EXPERIMENTS.length+'</small></button><button class="btn '+(active==='games'?'active':'line')+'" data-act="labGames" type="button">'+ic('swords')+' Игры <small>1</small></button></div>';}
 function vLab(){
  frame('Лаборатория',{sub:'Опыты и игровые задания'});
- setMain(labTabs()+'<a class="lab-chapter" href="#sandbox" style="margin:12px 0;border-color:rgba(90,210,220,.35);background:linear-gradient(110deg,#132d3b,#172b3c)"><span class="lab-chapter-num">✦</span><span class="lab-chapter-copy"><b>Свободная лаборатория</b><small>Создавай установки, соединяй объекты и запускай физику без готового сценария</small></span><span class="lab-chapter-count">ОТКРЫТЬ</span>'+ic('chevron-right')+'</a><section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">7 глав · 35 тем · '+LAB_EXPERIMENTS.length+' самостоятельных опытов. Выбирай тему, меняй параметры и проверяй физические законы.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из '+LAB_EXPERIMENTS.length+' опытов пройдено</span><i><em style="width:'+(labDoneCount()/LAB_EXPERIMENTS.length*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length,total=labChapterCount(ch.n);return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/total*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/'+total+'</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
+ setMain(labTabs()+'<a class="lab-chapter" href="#sandbox" style="margin:12px 0;border-color:rgba(90,210,220,.35);background:linear-gradient(110deg,#132d3b,#172b3c)"><span class="lab-chapter-num">'+ic('sliders-horizontal')+'</span><span class="lab-chapter-copy"><b>Свободная лаборатория</b><small>Создавай установки, соединяй объекты и запускай физику без готового сценария</small></span><span class="lab-chapter-count">ОТКРЫТЬ</span>'+ic('chevron-right')+'</a><section class="lab-intro"><b class="h">Виртуальные опыты</b><p class="mute">'+LAB_CHAPTERS.length+' разделов · '+LAB_EXPERIMENTS.length+' опытов. Выбирай опыт, меняй параметры кнопками − / + и смотри, как меняется результат.</p><div class="lab-total"><b>'+labDoneCount()+'</b><span>из '+LAB_EXPERIMENTS.length+' опытов пройдено</span><i><em style="width:'+(labDoneCount()/LAB_EXPERIMENTS.length*100)+'%"></em></i></div></section><div class="lab-chapters">'+LAB_CHAPTERS.map(ch=>{const n=LAB_EXPERIMENTS.filter(x=>x.ch===ch.n&&LAB_DONE.has(x.id)).length,total=labChapterCount(ch.n);return '<a class="lab-chapter" href="#lab-ch-'+ch.n+'"><span class="lab-chapter-num">'+String(ch.n).padStart(2,'0')+'</span><span class="lab-chapter-copy"><b>'+esc(ch.title)+'</b><small>'+esc(ch.desc)+'</small><i><em style="width:'+(n/total*100)+'%"></em></i></span><span class="lab-chapter-count">'+n+'/'+total+'</span>'+ic('chevron-right')+'</a>'}).join('')+'</div>');
 }
 function vLabGames(){frame('Лаборатория',{back:true,sub:'Игры'});setMain(labTabs('games')+'<section class="bridge-lobby-v2"><div class="bridge-lobby-visual"><div class="bridge-visual-top"><span>ЛАБОРАТОРИЯ · ВЫЕЗД</span><b>01</b></div><svg viewBox="0 0 760 310" role="img" aria-label="Стальной мост над водой"><defs><linearGradient id="bridgeSky" x2="0" y2="1"><stop stop-color="#142d4b"/><stop offset="1" stop-color="#091522"/></linearGradient><linearGradient id="bridgeSteel"><stop stop-color="#6fe2c6"/><stop offset="1" stop-color="#4b88a7"/></linearGradient></defs><rect width="760" height="310" fill="url(#bridgeSky)"/><circle cx="600" cy="75" r="48" fill="#64d6ca" opacity=".08"/><path d="M0 210 Q180 185 360 215 T760 205 V310 H0Z" fill="#0b4056"/><path d="M0 245 Q180 230 360 248 T760 240" stroke="#4b9db0" opacity=".35" fill="none" stroke-width="3"/><path d="M55 195H705" stroke="#8ca5b8" stroke-width="13"/><path d="M55 184H705" stroke="#d5e7e8" stroke-width="3"/><g stroke="url(#bridgeSteel)" stroke-width="8" stroke-linecap="round" fill="none"><path d="M80 184L160 65 240 184 320 65 400 184 480 65 560 184 660 80"/><path d="M80 184L240 184 400 184 560 184 705 184"/><path d="M160 65V184M320 65V184M480 65V184M660 80V184"/></g><path d="M400 184L480 65" stroke="#ff9b61" stroke-width="10" stroke-linecap="round" stroke-dasharray="13 9"/><path d="M130 205h500" stroke="#e8bb70" stroke-width="2" stroke-dasharray="20 16"/><g transform="translate(345 143)"><rect width="92" height="30" rx="7" fill="#e9a84f"/><rect x="17" y="-16" width="38" height="19" rx="5" fill="#b9d4dd"/><circle cx="20" cy="31" r="10" fill="#101a2b"/><circle cx="72" cy="31" r="10" fill="#101a2b"/></g></svg><div class="bridge-visual-bottom"><span><i></i> ИДЁТ ОБСЛЕДОВАНИЕ</span><span>УЧАСТОК 4 · МОСТ 01</span></div></div><div class="bridge-lobby-copy-v2"><div class="bridge-lobby-meta"><span>ИНЖЕНЕРНЫЙ КВЕСТ</span><b><i></i> ДОСТУПНО</b></div><h2>Инженер катастроф</h2><p>Расследуй аварии, восстанавливай конструкции и проверяй свои решения в динамических испытаниях.</p><div class="bridge-lobby-mission"><span>ПЕРВАЯ МИССИЯ</span><b>Мост на грани обрушения</b><small>Механика · равновесие · прочность материалов</small></div><div class="bridge-lobby-foot"><span>◈ 3 ЭТАПА</span><span>◈ СЛОЖНОСТЬ: СРЕДНЯЯ</span><span>◈ 5–8 МИН</span></div><button type="button" class="btn wide bridge-lobby-cta" data-act="bridgeLaunch">Начать миссию <span aria-hidden="true">→</span></button></div></section>');}
 function vLabChapter(r){
  const ch=LAB_CHAPTERS[r.ch-1];if(!ch){location.hash='lab';return;}
- const groups=LAB_TOPIC_GROUPS.filter(x=>x.ch===r.ch);
- frame('Глава '+ch.n,{back:true,sub:ch.title});
- setMain('<section class="lab-intro"><b class="h">'+esc(ch.title)+'</b><p class="mute">'+esc(ch.desc)+'</p><p class="mute">5 тем · '+labChapterCount(ch.n)+' самостоятельных опытов</p></section><div class="lab-topic-list">'+groups.map(g=>{const n=g.experiments.filter(x=>LAB_DONE.has(x.id)).length,total=g.experiments.length;return '<a class="lab-topic-card" href="#lab-topic-'+g.ch+'-'+g.n+'"><span class="lab-topic-index">ТЕМА '+g.n+'</span><b>'+esc(g.title)+'</b><small>'+esc(g.desc)+'</small><span class="lab-topic-foot"><i><em style="width:'+(n/total*100)+'%"></em></i><small>'+n+'/'+total+' пройдено</small>'+ic('chevron-right')+'</span></a>'}).join('')+'</div>');
+ const list=LAB_EXPERIMENTS.filter(x=>x.ch===r.ch),done=list.filter(x=>LAB_DONE.has(x.id)).length;
+ frame('Раздел '+ch.n,{back:true,sub:ch.title});
+ setMain('<section class="lab-intro"><b class="h">'+esc(ch.title)+'</b><p class="mute">'+esc(ch.desc)+'</p><div class="lab-total"><b>'+done+'</b><span>из '+list.length+' опытов раздела выполнено</span><i><em style="width:'+(done/list.length*100)+'%"></em></i></div></section><div class="lab-experiment-list">'+list.map(x=>{const ok=LAB_DONE.has(x.id);return '<a class="lab-experiment-card'+(ok?' done':'')+'" href="#lab-exp-'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(ok?'circle-check':'sparkles')+'</span><span class="lab-experiment-badge">'+esc(x.topicTitle)+'</span><span class="lab-experiment-status">'+(ok?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title)+'</b><small>'+esc(x.task)+'</small><span class="lab-formula-chip">'+esc(x.formula)+'</span></a>'}).join('')+'</div>');
 }
-function vLabTopic(r){
- const g=labTopic(r.ch,r.topic);if(!g){location.hash='lab-ch-'+r.ch;return;}
- frame(g.title,{back:true,sub:'Глава '+r.ch+' · Тема '+r.topic});
- setMain('<section class="lab-intro"><b class="h">'+esc(g.title)+'</b><p class="mute">'+esc(g.desc)+'</p><p class="mute">Самостоятельный эксперимент</p></section><div class="lab-experiment-list">'+g.experiments.map((x,i)=>'<button class="lab-experiment-card '+(LAB_DONE.has(x.id)?'done':'')+'" data-act="labOpen" data-v="'+x.id+'"><span class="lab-experiment-top"><span class="lab-experiment-icon">'+ic(['zap','target','sliders-horizontal','trophy','star'][i])+'</span><span class="lab-experiment-badge">Опыт '+(i+1)+'</span><span class="lab-experiment-status">'+(LAB_DONE.has(x.id)?ic('check'):ic('chevron-right'))+'</span></span><b>'+esc(x.title)+'</b><small>'+esc(x.task)+'</small></button>').join('')+'</div>');
-}
-function vLabExp(r){
- const x=LABS[r.exp];if(!x){location.hash='lab';return;}
- if(LAB.id!==r.exp)LAB={id:r.exp,a:x.a0,b:x.b0,va:x.a0,vb:x.b0,t:0,run:false,paused:false,completed:false,raf:0,last:0,trace:[],lastSample:0};
- const g=labTopic(x.ch,x.topic);
- frame(x.title,{back:true,sub:'Глава '+x.ch+' · '+(g?g.title:'Эксперимент')});
- const control=(key,label,value,unit,step,min,max)=>'<div class="lab-stepper"><span>'+esc(label)+'</span><div class="lab-stepper-row"><button type="button" data-act="labAdjust" data-key="'+key+'" data-delta="-1" aria-label="Уменьшить '+esc(label)+'">−</button><b id="lab-'+key+'v">'+f1(value,2)+' '+esc(unit)+'</b><button type="button" data-act="labAdjust" data-key="'+key+'" data-delta="1" aria-label="Увеличить '+esc(label)+'">+</button></div><small>Шаг '+f1(step,3)+' · '+f1(min,2)+'–'+f1(max,2)+' '+esc(unit)+'</small></div>';
- setMain('<section class="card lab-stage"><div class="lab-stage-head"><b>Модель эксперимента</b><span id="lab-state">Готов к запуску</span></div><canvas id="lab-canvas" width="720" height="300" aria-label="Анимация физического эксперимента"></canvas><div class="lab-actions"><button class="btn" data-act="labStart" id="lab-start">▶ Запустить</button><button class="btn line" data-act="labPause" id="lab-pause" disabled>Ⅱ Пауза</button><button class="btn line" data-act="labReset">↺ Сброс</button></div><p class="lab-hint" id="lab-hint">Запусти установку. Опыт завершится, когда будет выполнено исследовательское действие.</p></section>'+
- '<section class="card lab-controls"><div class="lab-section-title"><b>Настройка установки</b><small>Меняй значения кнопками − / +</small></div>'+control('a',x.a,LAB.a,x.uA,x.stA,x.amin,x.amax)+control('b',x.b,LAB.b,x.uB,x.stB,x.bmin,x.bmax)+'</section>'+
- '<section class="lab-metrics"><div class="card"><small id="lab-ml">Измеряемая величина</small><b id="lab-mv">—</b></div><div class="card"><small>Состояние установки</small><b id="lab-time">Готова</b></div></section>'+
- '<section class="card lab-meaning"><b>Задача исследования</b><p class="mute">'+esc(x.task)+'</p><div class="lab-setup-grid"><div><small>Оборудование</small><p>'+esc(x.apparatus)+'</p></div><div><small>Порядок опыта</small><p>'+esc(x.procedure)+'</p></div><div><small>На что обратить внимание</small><p>'+esc(x.observe)+'</p></div></div><b>Физическая модель</b><p class="mute">'+esc(x.desc)+'</p><div class="formula">'+esc(x.formula)+'</div></section>');
- labSetButtons();labDraw();labMetrics();
-}
-function labSetButtons(){const s=$('#lab-start'),p=$('#lab-pause');if(s){s.disabled=LAB.run||!!LAB.completed;s.classList.toggle('active',!LAB.run&&LAB.paused)}if(p){p.disabled=!LAB.run;p.classList.toggle('active',LAB.run)}}
-function labStop(msg,paused=false){LAB.run=false;LAB.paused=paused;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;if(msg&&$('#lab-state'))$('#lab-state').textContent=msg;labSetButtons();}
-function labResult(){
- const x=LABS[LAB.id],a=LAB.a,b=LAB.b,g=9.81;if(!x)return {label:'Результат',value:0,unit:''};
- let value=0,label='Результат',unit='';
- switch(x.model){
- case 'uniform':value=a*b;label='Пройденный путь';unit='м';break;
- case 'accelerated':value=a+5*b;label='Скорость через 5 с';unit='м/с';break;
- case 'freefall':value=(-b+Math.sqrt(b*b+2*g*a))/g;label='Время падения';unit='с';break;
- case 'projectile':value=a*a*Math.sin(2*b*Math.PI/180)/g;label='Дальность полёта';unit='м';break;
- case 'circular':value=4*Math.PI*Math.PI*a/(b*b);label='Центростремительное ускорение';unit='м/с²';break;
- case 'newton':value=b/a;label='Ускорение';unit='м/с²';break;
- case 'friction':value=a*b*g;label='Сила трения';unit='Н';break;
- case 'incline':value=Math.max(0,g*(Math.sin(a*Math.PI/180)-b*Math.cos(a*Math.PI/180)));label='Ускорение вдоль плоскости';unit='м/с²';break;
- case 'elasticity':value=a*b;label='Сила упругости';unit='Н';break;
- case 'torque':value=a*b;label='Момент силы';unit='Н·м';break;
- case 'pressure':value=b*g*a/1000;label='Гидростатическое давление';unit='кПа';break;
- case 'buoyancy':value=b*g*a;label='Сила Архимеда';unit='Н';break;
- case 'pascal':value=100*(b/a);label='Сила на большом поршне';unit='Н';break;
- case 'bernoulli':value=a*b;label='Скорость в узком сечении';unit='м/с';break;
- case 'gaspressure':value=8.314*a/(b/1000);label='Давление (n = 1 моль)';unit='кПа';value/=1000;break;
- case 'spring':value=2*Math.PI*Math.sqrt(a/b);label='Период колебаний';unit='с';break;
- case 'pendulum':value=2*Math.PI*Math.sqrt(a/g);label='Период малых колебаний';unit='с';break;
- case 'wave':value=a*b;label='Скорость волны';unit='м/с';break;
- case 'sound':value=b/a;label='Длина звуковой волны';unit='м';break;
- case 'resonance':{const q=b/a,z=.08;value=1/Math.sqrt((1-q*q)**2+(2*z*q)**2);label='Относительная амплитуда';unit='условн. ед.';break;}
- case 'calorimetry':value=4200*a*b;label='Количество теплоты';unit='Дж';break;
- case 'conduction':value=a*.01*b/.02;label='Тепловая мощность';unit='Вт';break;
- case 'idealgas':value=a*b/(8.314);label='Температура (ν = 1 моль)';unit='К';break;
- case 'firstlaw':value=a-b;label='Изменение внутренней энергии';unit='Дж';break;
- case 'heatengine':value=Math.max(0,(a-b)/a*100);label='Предельный КПД Карно';unit='%';break;
- case 'ohm':value=a/b;label='Сила тока';unit='А';break;
- case 'parallel':value=a*b/(a+b);label='Общее сопротивление';unit='Ом';break;
- case 'power':value=a*b;label='Электрическая мощность';unit='Вт';break;
- case 'magnetic':value=(a*1e-6)*(b*1000)*.5;label='Магнитная сила';unit='Н';break;
- case 'induction':value=100*.5*a*b;label='Средняя ЭДС (100 витков)';unit='В';break;
- case 'reflection':value=Math.abs(2*b-a);label='Направление отражённого луча';unit='°';break;
- case 'refraction':value=Math.asin(Math.min(1,Math.sin(a*Math.PI/180)/b))*180/Math.PI;label='Угол преломления';unit='°';break;
- case 'lens':case 'mirror':value=Math.abs(b-a)<.001?Infinity:a*b/(b-a);label=Math.abs(b-a)<.001?'Изображение на бесконечности':'Расстояние до изображения';unit=Math.abs(b-a)<.001?'':'см';break;
- case 'interference':value=(a*1e-9)/(b*1e-3)*1*1000;label='Расстояние между полосами';unit='мм';break;
- }
- return {label:label,value:value,unit:unit};
-}
-function labObservable(){
- const x=LABS[LAB.id],t=LAB.t,a=LAB.a,b=LAB.b,g=9.81;if(!x)return 0;
- switch(x.model){
- case 'uniform':return a*t;
- case 'accelerated':return a*t+.5*b*t*t;
- case 'freefall':return Math.min(a,b*t+.5*g*t*t);
- case 'projectile':{const ang=b*Math.PI/180,flight=2*a*Math.sin(ang)/g,tt=Math.min(t,flight);return a*Math.cos(ang)*tt;}
- case 'circular':return a*Math.sin(2*Math.PI*t/b);
- case 'newton':return .5*(b/a)*t*t;
- case 'friction':return labResult().value;
- case 'incline':return .5*labResult().value*t*t;
- case 'elasticity':return b*Math.cos(t*Math.sqrt(a/1));
- case 'torque':return labResult().value;
- case 'pressure':return labResult().value;
- case 'buoyancy':return labResult().value;
- case 'pascal':return labResult().value;
- case 'bernoulli':return b*a;
- case 'gaspressure':return labResult().value;
- case 'spring':return Math.cos(t*2*Math.PI/Math.max(.1,labResult().value));
- case 'pendulum':return Math.sin(t*Math.sqrt(g/a));
- case 'wave':return b*Math.sin(2*Math.PI*a*t);
- case 'sound':return Math.sin(2*Math.PI*a*t);
- case 'resonance':return labResult().value*Math.sin(2*Math.PI*b*t);
- case 'calorimetry':return 4200*a*Math.min(b,t*b/5);
- case 'conduction':return labResult().value*t;
- case 'idealgas':return labResult().value;
- case 'firstlaw':return labResult().value;
- case 'heatengine':return labResult().value;
- case 'ohm':return labResult().value;
- case 'parallel':return labResult().value;
- case 'power':return labResult().value;
- case 'magnetic':return labResult().value;
- case 'induction':return labResult().value*Math.sin(2*Math.PI*t);
- case 'reflection':return labResult().value;
- case 'refraction':return labResult().value;
- case 'lens':case 'mirror':return labResult().value;
- case 'interference':return labResult().value;
- default:return 0;
- }
-}
-function labMetrics(){
- const x=LABS[LAB.id];if(!x)return;const r=labResult();
- const av=$('#lab-av'),bv=$('#lab-bv'),mv=$('#lab-mv'),ml=$('#lab-ml'),state=$('#lab-time');
- if(x.model==='pressure'){const depth=LAB.t>0?LAB.a*Math.min(1,LAB.t/2.6):0;r.value=LAB.b*9.81*depth/1000;}
- if(mv)mv.textContent=f1(r.value,2)+' '+r.unit;if(ml)ml.textContent=r.label;
- if(av)av.textContent=f1(LAB.a,2)+' '+x.uA;if(bv)bv.textContent=f1(LAB.b,2)+' '+x.uB;
- if(state)state.textContent=LAB.completed?'Завершено':LAB.run?'Выполняется':'Готова';
-}
-function labArrow(c,x1,y1,x2,y2,color){const ang=Math.atan2(y2-y1,x2-x1);c.strokeStyle=color;c.fillStyle=color;c.lineWidth=3;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-10*Math.cos(ang-.45),y2-10*Math.sin(ang-.45));c.lineTo(x2-10*Math.cos(ang+.45),y2-10*Math.sin(ang+.45));c.closePath();c.fill();}
-function labDraw(){
- const cv=$('#lab-canvas');if(!cv)return;const c=cv.getContext('2d'),w=cv.width,h=cv.height,x=LABS[LAB.id],t=LAB.t,a=LAB.va??LAB.a,b=LAB.vb??LAB.b;
- const bg='#0E1424',white='#E8ECF6',muted='#AAB3CD',blue='#6C8CFF',cyan='#3DD6C3',green='#3DD6A0',gold='#FFC24B',violet='#B48CFF',red='#FF7A59';
- c.fillStyle=bg;c.fillRect(0,0,w,h);c.save();c.strokeStyle='rgba(141,151,181,.12)';c.lineWidth=1;for(let i=0;i<=w;i+=36){c.beginPath();c.moveTo(i,0);c.lineTo(i,h);c.stroke()}for(let i=0;i<=h;i+=36){c.beginPath();c.moveTo(0,i);c.lineTo(w,i);c.stroke()}c.restore();c.lineCap='round';c.lineJoin='round';
- const txt=(s,X=25,Y=28,col=muted,size=15)=>{c.fillStyle=col;c.font=size+'px sans-serif';c.fillText(s,X,Y)},ln=(x1,y1,x2,y2,col=white,lw=3)=>{c.strokeStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke()},box=(X,Y,W,H,col=blue)=>{c.fillStyle=col;c.fillRect(X,Y,W,H);c.strokeStyle=white;c.lineWidth=2;c.strokeRect(X,Y,W,H)},dot=(X,Y,r=10,col=gold)=>{c.fillStyle=col;c.beginPath();c.arc(X,Y,r,0,Math.PI*2);c.fill();c.strokeStyle=white;c.lineWidth=2;c.stroke()},arr=(x1,y1,x2,y2,col=green)=>{const q=Math.atan2(y2-y1,x2-x1);ln(x1,y1,x2,y2,col,3);ln(x2,y2,x2-10*Math.cos(q-.45),y2-10*Math.sin(q-.45),col,3);ln(x2,y2,x2-10*Math.cos(q+.45),y2-10*Math.sin(q+.45),col,3)},wave=(x0,x1,y0,amp,cycles,phase=0,col=cyan)=>{c.strokeStyle=col;c.lineWidth=3;c.beginPath();for(let px=x0;px<=x1;px+=2){const py=y0-amp*Math.sin((px-x0)/(x1-x0)*cycles*2*Math.PI+phase);px===x0?c.moveTo(px,py):c.lineTo(px,py)}c.stroke()},spr=(X,Y1,Y2)=>{c.strokeStyle=cyan;c.lineWidth=3;c.beginPath();c.moveTo(X,Y1);for(let i=1;i<=20;i++)c.lineTo(X+(i%2?23:-23),Y1+(Y2-Y1)*i/20);c.lineTo(X,Y2);c.stroke()};
- const head=s=>txt(s,25,27,gold,17);
- switch(x.model){
- case 'uniform':head('Рельсовая дорожка · постоянная скорость');ln(60,240,660,240,white,5);for(let i=0;i<10;i++)ln(80+i*58,240,80+i*58,252,muted,2);{const X=80+Math.min(520,t*65);box(X,185,65,42,blue);dot(X+15,235,8,gold);dot(X+50,235,8,gold);arr(X+25,165,X+100,165);txt('s = v · t',510,80,white,18)}break;
- case 'accelerated':head('Наклонная дорожка · тележка и датчик скорости');{const X0=85,Y0=242,L=540,q=.16;ln(X0,Y0,X0+L*Math.cos(q),Y0-L*Math.sin(q),white,9);ln(X0,Y0+12,X0+L*Math.cos(q),Y0-L*Math.sin(q)+12,muted,3);for(let i=0;i<12;i++){const xx=X0+i*45,yy=Y0-i*45*Math.tan(q);ln(xx,yy+10,xx+8,yy+20,muted,2)}const dist=Math.min(500,(a*t+.5*b*t*t)*62.5),tx=X0+dist*Math.cos(q),ty=Y0-dist*Math.sin(q);c.save();c.translate(tx,ty-18);c.rotate(-q);box(-30,-18,60,34,violet);dot(-17,18,7,gold);dot(18,18,7,gold);c.restore();const sx=X0+L*.72*Math.cos(q),sy=Y0-L*.72*Math.sin(q);box(sx-9,sy-48,18,40,red);ln(sx,sy-48,sx,sy-5,gold,3);txt('ДАТЧИК',sx-38,sy-58,gold,12);arr(tx+25,ty-60,tx+95,ty-60,green);txt('v = '+f1(a+b*t,2)+' м/с',430,55,white,16);txt('a = '+f1(b,2)+' м/с²',90,75,cyan,15)}break;
- case 'freefall':head('Свободное падение · высотная шкала');ln(540,55,540,255,white,3);for(let i=0;i<=8;i++){ln(530,55+i*24,550,55+i*24,muted,2);txt((80-i*10)+' м',555,60+i*24,muted,11)}{const Y=55+Math.min(1,(b*t+4.905*t*t)/a)*190;dot(280,Y,13,gold);arr(320,Y-25,320,Y+35,green)}txt('g = 9,81 м/с²',65,90,white,17);break;
- case 'projectile':head('Пусковая установка · параболическая траектория');ln(55,250,670,250,white,4);{const q=b*Math.PI/180,T=2*a*Math.sin(q)/9.81,X0=90,scale=7;c.strokeStyle=green;c.lineWidth=3;c.beginPath();for(let i=0;i<=100;i++){const z=T*i/100,xx=X0+a*Math.cos(q)*z*scale,yy=248-(a*Math.sin(q)*z-4.905*z*z)*scale;i?c.lineTo(xx,yy):c.moveTo(xx,yy)}c.stroke();box(50,205,45,42,blue);ln(80,220,120,220,white,8);const z=Math.min(t,T);dot(X0+a*Math.cos(q)*z*scale,248-(a*Math.sin(q)*z-4.905*z*z)*scale,10,gold);txt('α = '+f1(b,0)+'°',60,65,white,17)}break;
- case 'circular':head('Вращающийся диск · центростремительное ускорение');c.strokeStyle=blue;c.lineWidth=4;c.beginPath();c.arc(360,150,94,0,Math.PI*2);c.stroke();{const q=2*Math.PI*t/Math.max(.5,b),X=360+94*Math.cos(q),Y=150+94*Math.sin(q);dot(360,150,7,muted);dot(X,Y,13,gold);arr(X,Y,360,150,green);arr(X,Y,X-45*Math.sin(q),Y+45*Math.cos(q),violet)}break;
- case 'newton':head('Тележка и динамометр · второй закон Ньютона');ln(70,235,650,235,white,5);box(285,175,115,55,blue);dot(310,237,9,gold);dot(375,237,9,gold);ln(400,195,485,195,gold,5);box(485,180,85,30,red);arr(295,145,470,145,green);txt('F = '+f1(b,1)+' Н',490,125,white,16);txt('m = '+f1(a,1)+' кг',90,90,white,16);break;
- case 'friction':head('Брусок · силы трения и тяги');ln(75,230,645,230,white,7);for(let i=0;i<28;i++)ln(80+i*20,235,90+i*20,245,muted,2);box(275,170,140,58,violet);arr(345,115,345,165,gold);arr(275,200,185,200,red);arr(415,200,505,200,green);txt('Fтр',175,185,red,15);txt('F тяги',510,185,green,15);break;
- case 'incline':head('Наклонная плоскость · брусок и угол наклона');{const q=a*Math.PI/180,X=95,Y=252,L=520,bx=X+Math.min(430,Math.max(0,.5*labResult().value*t*t*18))*Math.cos(q),by=Y-Math.min(430,Math.max(0,.5*labResult().value*t*t*18))*Math.sin(q);ln(X,Y,X+L*Math.cos(q),Y-L*Math.sin(q),white,9);ln(X,Y,X+L*Math.cos(q),Y,muted,2);c.save();c.translate(bx,by-22);c.rotate(-q);box(-32,-25,64,44,violet);c.restore();arr(bx,by-38,bx-20*Math.sin(q),by-38-20*Math.cos(q),green);txt('α = '+f1(a,0)+'°',110,205,gold,16);txt('Fтр = '+f1(b,2)+' · N',475,55,white,14)}break;
- case 'elasticity':head('Пружина и груз · закон Гука');ln(160,55,560,55,white,6);spr(360,62,205);box(326,205,68,48,violet);arr(445,95,445,190,gold);txt('x = '+f1(b,2)+' м',470,140,white,16);txt('Fупр = kx',70,90,green,17);break;
- case 'torque':head('Рычаг на опоре · моменты сил');ln(105,190,615,190,white,7);c.fillStyle=violet;c.beginPath();c.moveTo(340,190);c.lineTo(390,260);c.lineTo(290,260);c.closePath();c.fill();box(180,145,52,42,blue);box(520,145,52,42,red);arr(205,90,205,140,gold);arr(545,90,545,140,green);txt('M = F · l',300,70,gold,17);break;
- case 'pressure':head('Гидростатика · погружение датчика давления');{const tankX=190,tankY=66,tankW=310,tankH=194,waterY=112;box(tankX,tankY,tankW,tankH,'rgba(61,140,255,.12)');c.fillStyle='rgba(42,126,226,.28)';c.fillRect(tankX+5,waterY,tankW-10,tankY+tankH-waterY-5);ln(tankX+5,waterY,tankX+tankW-5,waterY,cyan,3);for(let i=0;i<5;i++)wave(tankX+18,tankX+tankW-18,waterY+18+i*25,2,6,t*.8+i,cyan);for(let i=0;i<=5;i++){const yy=waterY+i*25;ln(tankX-12,yy,tankX,yy,muted,2);txt(f1(i*a/5,1)+' м',tankX-58,yy+4,muted,10)}const p=Math.min(1,t/2.6),Y=waterY+Math.min(1,a/10)*125*p;ln(345,58,345,Y,gold,4);box(331,Y-8,28,18,red);dot(345,Y,7,gold);ln(345,Y+8,345,Y+20,white,2);c.strokeStyle=gold;c.lineWidth=3;c.beginPath();c.arc(590,158,48,Math.PI*.75,Math.PI*2.25);c.stroke();const actualDepth=a*p,pressure=b*9.81*actualDepth/1000,angle=Math.PI*.75+Math.min(1,pressure/130)*Math.PI*1.5;arr(590,158,590+35*Math.cos(angle),158+35*Math.sin(angle),red);dot(590,158,5,gold);txt('МАНОМЕТР',548,92,gold,12);txt('p = '+f1(pressure,2)+' кПа',530,235,white,14);txt('ρ = '+f1(b,0)+' кг/м³',525,265,muted,12);txt('Глубина '+f1(actualDepth,2)+' м',220,290,muted,12)}break;
- case 'buoyancy':head('Погружённое тело · сила Архимеда');box(190,90,340,165,'rgba(61,140,255,.18)');ln(195,135,525,135,cyan,3);box(310,150,100,75,violet);arr(360,225,360,95,green);arr(430,155,430,70,gold);txt('FА вверх',440,80,green,15);txt('P вниз',440,170,gold,15);break;
- case 'pascal':head('Гидравлический пресс · передача давления');box(130,170,180,60,'rgba(61,140,255,.18)');box(410,110,180,120,'rgba(61,140,255,.18)');ln(215,170,215,115,white,6);ln(500,110,500,55,white,8);box(185,100,60,15,gold);box(460,40,80,15,red);ln(215,230,215,260,cyan,8);ln(500,230,500,260,cyan,8);ln(215,260,500,260,cyan,8);arr(215,65,215,100,gold);arr(500,10,500,40,green);txt('S₁',175,290,white,15);txt('S₂',475,290,white,15);break;
- case 'bernoulli':head('Труба Вентури · скорость и давление');c.strokeStyle=blue;c.lineWidth=5;c.beginPath();c.moveTo(65,95);c.lineTo(225,95);c.lineTo(310,145);c.lineTo(415,145);c.lineTo(500,95);c.lineTo(655,95);c.lineTo(655,205);c.lineTo(500,205);c.lineTo(415,155);c.lineTo(310,155);c.lineTo(225,205);c.lineTo(65,205);c.closePath();c.stroke();arr(85,150,205,150,gold);arr(320,150,405,150,green);arr(505,150,625,150,gold);txt('v ↑',335,55,green,16);txt('p ↓',400,80,gold,16);break;
- case 'gaspressure':head('Газ в цилиндре · давление и температура');box(245,75,230,180,'rgba(61,140,255,.12)');box(245,75,230,20,gold);ln(360,25,360,75,white,6);for(let i=0;i<24;i++)dot(265+(i*47%190),110+(i*31%125),4,i%2?cyan:gold);arr(530,55,530,110,green);txt('T = '+f1(a,0)+' K',70,85,white,16);break;
- case 'spring':head('Пружинный маятник · колебания груза');ln(360,40,360,60,white,5);{const P=2*Math.PI*Math.sqrt(a/b),Y=145+48*Math.sin(2*Math.PI*t/P);spr(360,60,Y-20);box(330,Y-20,60,42,violet);arr(430,85,430,190,green)}txt('T = 2π√(m/k)',65,90,white,16);break;
- case 'pendulum':head('Математический маятник · период колебаний');{const q=(b*Math.PI/180)*Math.sin(t/Math.max(.3,Math.sqrt(a/9.81))),X=360+a*95*Math.sin(q),Y=65+a*95*Math.cos(q);ln(360,45,360,65,white,5);ln(360,65,X,Y,white,3);dot(X,Y,17,gold);ln(360,65,360,255,muted,1);txt('l = '+f1(a,2)+' м',75,90,white,16)}break;
- case 'wave':head('Волновая машина · распространение волны');ln(35,155,685,155,muted,2);wave(35,685,155,Math.min(65,30+b*9),Math.max(1,8/b),t*2,cyan);for(let i=0;i<14;i++)dot(45+i*48,155-Math.min(65,30+b*9)*Math.sin((45+i*48-35)/650*Math.max(1,8/b)*2*Math.PI+t*2),4,gold);txt('λ = '+f1(b,2)+' м',510,80,white,16);break;
- case 'sound':head('Звуковой генератор · волны в среде');box(75,105,75,90,violet);for(let i=1;i<=5;i++){c.strokeStyle='rgba(61,214,195,'+(0.9-i*.13)+')';c.lineWidth=3;c.beginPath();c.arc(150,150,35+i*38,-.9,.9);c.stroke()}wave(365,660,150,32,Math.max(1,a/100),t*4,gold);txt('f = '+f1(a,0)+' Гц',75,75,white,16);break;
- case 'resonance':head('Вынужденные колебания · резонанс');ln(70,240,650,240,white,4);ln(360,55,360,90,white,4);spr(360,90,190);box(330,190,60,48,violet);{const r=b/a,A=1/Math.sqrt((1-r*r)**2+(.16*r)**2);wave(75,645,110,Math.min(75,A*10),2,t*4,gold)}txt('f₀ = '+f1(a,1)+' Гц',70,70,white,15);txt('f = '+f1(b,1)+' Гц',500,70,white,15);break;
- case 'calorimetry':head('Калориметр · нагрев воды');box(255,75,170,170,'rgba(61,140,255,.2)');box(260,125,160,115,'rgba(61,140,255,.32)');ln(340,30,340,125,white,5);dot(340,125,8,red);for(let i=0;i<6;i++)wave(275,405,145+i*15,3,5,t+i,cyan);box(305,250,70,8,gold);txt('m = '+f1(a,2)+' кг',70,85,white,16);txt('ΔT = '+f1(b,1)+' °C',465,85,white,16);break;
- case 'conduction':head('Теплопроводность · поток через стержни');box(85,125,250,42,red);box(335,125,250,42,blue);for(let i=0;i<8;i++)arr(100+i*27,105,170+i*27,105,i<4?gold:cyan);for(let i=0;i<6;i++)dot(105+i*35,146,4,gold);for(let i=0;i<6;i++)dot(365+i*35,146,4,cyan);txt('горячий конец',90,205,red,15);txt('холодный конец',430,205,blue,15);break;
- case 'idealgas':head('Газовый цилиндр · уравнение состояния');box(250,80,220,175,'rgba(61,140,255,.12)');box(250,80,220,18,gold);ln(360,35,360,80,white,6);for(let i=0;i<30;i++)dot(265+(i*43%190),110+(i*29%125),4,i%3?cyan:gold);arr(520,50,520,100,green);txt('pV = νRT',75,85,white,17);break;
- case 'firstlaw':head('Газ получает тепло и совершает работу');box(240,90,220,150,'rgba(61,140,255,.12)');box(240,90,220,18,gold);ln(350,40,350,90,white,6);arr(180,190,240,190,red);arr(350,75,350,30,gold);arr(460,160,560,160,green);txt('Q →',95,170,gold,16);txt('A →',570,165,green,16);txt('ΔU = Q − A',280,275,white,18);break;
- case 'heatengine':head('Тепловая машина · два резервуара');box(75,55,170,60,red);box(475,190,170,60,blue);box(300,125,120,85,violet);arr(245,95,300,145,gold);arr(420,165,475,210,cyan);arr(360,125,360,65,green);txt('Нагреватель',95,85,white,15);txt('Холодильник',500,220,white,15);break;
- case 'ohm':head('Электрическая цепь · закон Ома');ln(155,95,560,95,cyan,4);ln(560,95,560,225,cyan,4);ln(560,225,155,225,cyan,4);ln(155,225,155,95,cyan,4);ln(155,145,155,180,gold,5);ln(140,155,170,155,gold,3);box(330,75,90,40,violet);txt('R',365,101,white,18);dot(230,95,18,blue);txt('A',224,101,white,16);arr(200,65,280,65,green);txt('U = '+f1(a,1)+' В',75,270,white,15);txt('R = '+f1(b,1)+' Ом',490,270,white,15);break;
- case 'parallel':head('Две параллельные ветви · распределение тока');ln(110,75,610,75,cyan,4);ln(110,235,610,235,cyan,4);ln(110,75,110,235,cyan,4);ln(610,75,610,235,cyan,4);ln(110,115,250,115,cyan,4);box(250,95,100,40,violet);ln(350,115,610,115,cyan,4);ln(110,195,250,195,cyan,4);box(250,175,100,40,blue);ln(350,195,610,195,cyan,4);arr(165,95,225,95,gold);arr(165,175,225,175,green);txt('R₁',285,121,white,15);txt('R₂',285,201,white,15);txt('I = I₁ + I₂',430,155,white,17);break;
- case 'power':head('Электрическая лампа · мощность потребителя');ln(150,85,570,85,cyan,4);ln(570,85,570,220,cyan,4);ln(570,220,150,220,cyan,4);ln(150,220,150,85,cyan,4);c.strokeStyle=gold;c.lineWidth=5;c.beginPath();c.arc(360,150,38,0,Math.PI*2);c.stroke();for(let i=0;i<12;i++){const q=i*Math.PI/6;ln(360+48*Math.cos(q),150+48*Math.sin(q),360+68*Math.cos(q),150+68*Math.sin(q),gold,3)}txt('P = UI',320,155,white,18);break;
- case 'magnetic':head('Магнитное поле · сила Лоренца');for(let i=0;i<9;i++)for(let j=0;j<4;j++){const X=130+i*58,Y=85+j*45;c.strokeStyle=blue;c.beginPath();c.arc(X,Y,7,0,Math.PI*2);c.stroke();ln(X-4,Y,X+4,Y,blue,2);ln(X,Y-4,X,Y+4,blue,2)}c.strokeStyle=gold;c.lineWidth=4;c.beginPath();for(let q=0;q<=100;q++){const z=q/100,X=100+z*500,Y=165-70*Math.sin(z*Math.PI*2);q?c.lineTo(X,Y):c.moveTo(X,Y)}c.stroke();arr(110,165,185,165,green);txt('F = qvB sin α',475,260,white,16);break;
- case 'induction':head('Катушка и магнит · электромагнитная индукция');for(let i=0;i<9;i++){c.strokeStyle=cyan;c.lineWidth=3;c.beginPath();c.ellipse(400+i*3,155,16,48,0,0,Math.PI*2);c.stroke()}box(90+(Math.sin(t*2)+1)*85,125,95,60,red);arr(235,155,315,155,green);dot(580,150,38,blue);ln(580,150,605,125,gold,3);txt('ε индуцируется',485,220,white,15);break;
- case 'reflection':head('Плоское зеркало · равенство углов');ln(360,65,360,250,white,6);ln(360,155,360,260,muted,2);arr(180,65,360,155,gold);arr(360,155,540,65,green);txt('α',300,115,gold,18);txt('β',420,115,green,18);break;
- case 'refraction':head('Граница сред · преломление светового луча');box(0,155,720,145,'rgba(61,140,255,.18)');ln(0,155,720,155,cyan,3);ln(360,40,360,280,muted,2);{const q=a*Math.PI/180,r=Math.asin(Math.min(1,Math.sin(q)/b));arr(360-150*Math.sin(q),155-150*Math.cos(q),360,155,gold);arr(360,155,360+150*Math.sin(r),155+150*Math.cos(r),green);txt('n₂ = '+f1(b,2),500,230,white,16)}break;
- case 'lens':head('Собирающая линза · построение изображения');c.strokeStyle=cyan;c.lineWidth=7;c.beginPath();c.moveTo(360,55);c.quadraticCurveTo(320,155,360,255);c.quadraticCurveTo(400,155,360,55);c.stroke();ln(45,235,670,235,muted,2);arr(160,235,160,125,gold);{const X=360+Math.max(35,Math.min(250,a*b/Math.max(1,b-a)));arr(X,235,X,130,green);ln(160,125,360,155,gold,2);ln(360,155,X,130,green,2);txt('изображение',X-35,110,green,13)}break;
- case 'mirror':head('Вогнутое зеркало · действительное изображение');c.strokeStyle=cyan;c.lineWidth=7;c.beginPath();c.arc(620,155,170,-1.1,1.1,true);c.stroke();ln(40,235,680,235,muted,2);arr(175,235,175,120,gold);{const X=360+Math.max(30,Math.min(190,a*b/Math.max(1,b-a)));arr(X,235,X,130,green);ln(175,120,620,155,gold,2);ln(X,130,620,155,green,2);txt('изображение',X-40,110,green,13)}break;
- case 'interference':head('Опыт Юнга · интерференционные полосы');box(145,95,12,110,blue);box(145,118,12,8,bg);box(145,170,12,8,bg);ln(158,122,480,80,gold,2);ln(158,174,480,220,green,2);ln(480,55,480,250,white,3);for(let i=0;i<11;i++)box(490,65+i*18,130,5,i%2?blue:gold);txt('двойная щель',65,75,white,14);txt('экран',500,270,white,14);break;
- default:head('Физическая установка');txt(x.desc,70,150,white,16)
- }
- const r=labResult();txt(r.label+': '+f1(r.value,2)+' '+r.unit,25,286,white,13);labMetrics();
-}
-function labEndCondition(){
- const x=LABS[LAB.id],a=LAB.a,b=LAB.b,g=9.81;if(!x)return 3;
- switch(x.model){
-  case 'uniform':return Math.max(1,Math.min(12,8/Math.max(.2,a)));
-  case 'accelerated':return Math.max(1,Math.min(12,(-a+Math.sqrt(a*a+16*b))/b));
-  case 'freefall':return Math.sqrt(2*a/g);
-  case 'projectile':return 2*a*Math.sin(b*Math.PI/180)/g;
-  case 'circular':return Math.max(2,3*b);
-  case 'incline':{const acc=g*(Math.sin(a*Math.PI/180)-b*Math.cos(a*Math.PI/180));return acc>0.05?Math.sqrt(8/acc):Infinity;}
-  case 'spring':return 4*2*Math.PI*Math.sqrt(a/b);
-  case 'pendulum':return 4*2*Math.PI*Math.sqrt(a/g);
-  case 'wave':return 3/Math.max(.1,a);
-  case 'sound':return 3/Math.max(.1,a);
-  case 'resonance':return 3/Math.max(.1,b);
-  case 'pressure':return 3.8;
-  case 'buoyancy':case 'pascal':case 'bernoulli':case 'gaspressure':return 3.4;
-  case 'calorimetry':return Math.max(2,Math.min(8,b*1.4));
-  case 'induction':return 3.2;
-  default:return 2.8;
- }
-}
-function labFrame(now){
- if(!LAB.run)return;const dt=Math.min(.04,(now-LAB.last)/1000||0);LAB.last=now;LAB.t+=dt;
- LAB.va+=(LAB.a-LAB.va)*Math.min(1,dt*7);LAB.vb+=(LAB.b-LAB.vb)*Math.min(1,dt*7);
- labDraw();labMetrics();
- const end=labEndCondition();
- if(Number.isFinite(end)&&LAB.t>=end){labComplete();return;}
- const state=$('#lab-state');if(state)state.textContent=Number.isFinite(end)?'Выполняется действие':'Ожидание начала движения';
- if(LAB.run)LAB.raf=requestAnimationFrame(labFrame);
-}
-function labRun(){if(LAB.run||LAB.completed)return;const end=labEndCondition();if(!Number.isFinite(end)){const h=$('#lab-hint');if(h)h.textContent='Параметры не запускают движение. Увеличь угол или уменьши трение, затем запусти снова.';return;}LAB.run=true;LAB.paused=false;LAB.last=performance.now();const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent='Установка запущена';if(hint)hint.textContent='Наблюдай за процессом: опыт завершится автоматически после выполнения действия.';labSetButtons();LAB.raf=requestAnimationFrame(labFrame);}
-function labComplete(){
- if(LAB.completed)return;LAB.completed=true;
- const alreadyDone=LAB_DONE.has(LAB.id);
- if(!alreadyDone){LAB_DONE.add(LAB.id);try{localStorage.setItem('f2-lab-done',JSON.stringify([...LAB_DONE]))}catch(e){}addXP(15,'Опыт');toast('Опыт пройден · +15 XP');}
- LAB.run=false;LAB.paused=false;if(LAB.raf)cancelAnimationFrame(LAB.raf);LAB.raf=0;
- const st=$('#lab-state'),hint=$('#lab-hint');if(st)st.textContent=alreadyDone?'Действие завершено':'Опыт завершён';
- if(hint)hint.textContent=alreadyDone?'Действие выполнено. Повторный зачёт не начисляется.':'Установка выполнила действие. Опыт автоматически засчитан · +15 XP.';
- labSetButtons();labDraw();labMetrics();
-}
+/* Старые ссылки на темы ведут сразу к опыту: в каждой теме ровно один опыт. */
+function vLabTopic(r){const g=labTopic(r.ch,r.topic);location.replace('#'+(g&&g.experiments[0]?'lab-exp-'+g.experiments[0].id:'lab-ch-'+r.ch));}
 /* ---------- Профиль ---------- */
 function vProfile() {
   frame('Профиль');
@@ -706,10 +513,7 @@ document.addEventListener('click', async e => {
     case 'labGames': location.hash = 'lab-games'; break;
     case 'labOpen': labOpen(d.v); break;
     case 'labHome': labStop(); location.hash='lab'; break;
-    case 'labStart': labRun(); break;
-    case 'labAdjust': {const x=LABS[LAB.id],k=d.key,step=k==='a'?x.stA:x.stB,min=k==='a'?x.amin:x.bmin,max=k==='a'?x.amax:x.bmax;if(x&&['a','b'].includes(k)){LAB[k]=Math.max(min,Math.min(max,Math.round((LAB[k]+Number(d.delta)*step)/step)*step));if(!LAB.run){LAB.va=LAB.a;LAB.vb=LAB.b;}const el=$('#lab-'+k+'v');if(el)el.textContent=f1(LAB[k],2)+' '+(k==='a'?x.uA:x.uB);labDraw();labMetrics();if($('#lab-state')&&!LAB.run)$('#lab-state').textContent='Параметр изменён';if($('#lab-hint')&&!LAB.run)$('#lab-hint').textContent='Настрой установку и запусти опыт.';}break;}
-    case 'labPause': labStop('Пауза',true); if($('#lab-hint'))$('#lab-hint').textContent='Пауза. Нажми «Запустить», чтобы продолжить с того же момента.'; break;
-    case 'labReset': labStop('Готов к запуску');LAB.t=0;LAB.completed=false;LAB.trace=[];LAB.lastSample=0;LAB.va=LAB.a;LAB.vb=LAB.b;labDraw();labMetrics();if($('#lab-hint'))$('#lab-hint').textContent='Установка сброшена. Можно повторить опыт с новыми параметрами.';labSetButtons();break;
+    case 'labStart': case 'labPause': case 'labReset': case 'labAdjust': case 'labSpeed': labAction(d.act, d); break;
     case 'trainBack': location.hash = 'train'; break;
     case 'ava': sheet(`<b class="h">Выбери аватар</b><div class="avas">${AVATARS.map((_, i) => `<button data-act="setAva" data-v="${i}" class="${i === S.ava ? 'on' : ''}">${avatarSvg(i, 60)}</button>`).join('')}</div>`); break;
     case 'setAva': S.ava = +d.v; save(); closeSheet(); render(); break;

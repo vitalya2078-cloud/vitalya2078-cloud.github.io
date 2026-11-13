@@ -17,6 +17,13 @@ try {
   await page.waitForSelector('#main');
 
   // Прямая ссылка на свободную лабораторию должна работать уже при первой загрузке страницы.
+  // Отдельная вкладка: настоящая первая загрузка сразу по ссылке #sandbox.
+  const fresh = await browser.newPage();
+  const freshErrors = []; fresh.on('pageerror', e => freshErrors.push(e.message));
+  await fresh.goto('http://127.0.0.1:4173/#sandbox', { waitUntil: 'domcontentloaded' });
+  await fresh.waitForSelector('#sb-canvas', { timeout: 10000 });
+  assert.deepEqual(freshErrors, [], 'sandbox first load: ' + freshErrors.join('; '));
+  await fresh.close();
   await page.goto('http://127.0.0.1:4173/#sandbox', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#sb-canvas', { timeout: 10000 });
   assert.equal(await page.locator('body').getAttribute('data-view'), 'sandbox');
@@ -86,8 +93,6 @@ try {
 
   // Лаборатория: выбор опыта, изменение параметров, запуск, пауза и сброс.
   await page.goto('http://127.0.0.1:4173/#lab-ch-1', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('.lab-topic-card');
-  await page.locator('.lab-topic-card').first().click();
   await page.waitForSelector('.lab-experiment-card');
   await page.locator('.lab-experiment-card').first().click();
   await page.waitForSelector('[data-act="labAdjust"]');
