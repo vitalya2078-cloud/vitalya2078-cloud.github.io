@@ -169,7 +169,7 @@ const VS = {
     d.text('естественный', 110, 250, { size: 12, align: 'center' });
     pol(250, 0, 'поляризатор'); d.line(330, 165, 330, 235, LC.gold, 3.5); pol(450, ang, 'анализатор');
     const I = Math.cos(ang) ** 2; d.line(560, 200 - 35 * Math.sqrt(I), 560, 200 + 35 * Math.sqrt(I), LC.gold, 3.5); d.c.globalAlpha = .2 + .8 * I; d.circle(640, 200, 30, LC.gold, null); d.c.globalAlpha = 1;
-    d.tag('I = I₀cos²α, α = ' + n_(ang / RAD) + '°', 520, 360, LC.gold);
+    d.tag('I = I₀cos²α, α = ' + n_(Math.abs(ang / RAD)) + '°', 520, 360, LC.gold);
   },
   prism(d, a, p, t) {
     d.path([[300, 300], [380, 90], [460, 300]], LC.text, 2.5, 'rgba(180,200,255,.1)'); d.line(60, 220, 340, 200, '#fff', 3.5);
@@ -324,7 +324,7 @@ const VS_BG = { 8: 'gas', 9: 'pv:carnot', 10: 'phase', 11: 'efield:+-', 12: 'lab
   29: 'atom', 30: 'bands', 31: 'lattice', 32: 'decay', 33: 'quarks' };
 function vsBackground(d, ch, lt) {
   const b = VS_BG[ch]; if (!b) return false;
-  d.c.save(); d.c.globalAlpha = .16; d.quiet = true;
-  try { if (b.startsWith('lab:')) rvDrawModel(d, b.slice(4), lt); else { const sc = vsParse({ s: b, t: '' }); VS[sc.type](d, sc.args, .55, lt); } } catch (e) {}
-  d.quiet = false; d.c.restore(); d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.45)', null, 0, 0); return true;
+  d.c.save(); d.c.globalAlpha = .16; d.quiet = true; d.bg = true;
+  try { if (b.startsWith('lab:')) rvDrawModel(d, b.slice(4), lt); else { const sc = vsParse({ s: b, t: '' }); VS[sc.type](d, sc.args, 1, lt); } } catch (e) {}
+  d.quiet = false; d.bg = false; d.c.restore(); d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.45)', null, 0, 0); return true;
 }
