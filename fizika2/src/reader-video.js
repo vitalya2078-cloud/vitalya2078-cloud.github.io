@@ -112,6 +112,7 @@ function rvDraw(d, sc, p, lt, ch) {
     if (sc.formula) { const f = String(sc.formula).split('\n')[0]; d.c.globalAlpha = ease2((p - .1) * 5); d.tag(f, 560, 76, LC.gold, 16); d.c.globalAlpha = 1; }
   } else if (sc.kind === 'formula') {
     if (sc.model) { d.c.globalAlpha = .18; rvDrawModel(d, sc.model, lt); d.c.globalAlpha = 1; d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.55)', null, 0, 0); }
+    else if (typeof vsBackground === 'function') vsBackground(d, ch, lt);
     rvHeader(d, sc.h, p, LC.gold);
     const lines = String(sc.formula).split('\n').filter(Boolean), n = lines.length, step = Math.min(70, 280 / n);
     lines.forEach((l, i) => {

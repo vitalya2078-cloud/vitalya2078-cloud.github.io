@@ -88,13 +88,13 @@ const VS = {
     const q = VS_E(p * 1.6), x1 = 270, x2 = 450;
     d.rect(x1 - 14, 90, 14, 220, LC.coral, null, 0, 3); d.rect(x2, 90, 14, 220, LC.blue, null, 0, 3);
     for (let i = 0; i < 8; i++) { const y = 105 + i * 27; d.text('+', x1 - 26, y, { col: LC.coral, size: 16, bold: true, align: 'center' }); d.text('−', x2 + 28, y, { col: LC.blue, size: 16, bold: true, align: 'center' }); if (q > i / 8) d.arrow(x1 + 6, y, x1 + 6 + (x2 - x1 - 12) * Math.min(1, q * 1.2), y, LC.gold, 2.5); }
-    if (p > .6) { d.tag('E = σ/(εε₀) — поле однородно', 360, 50, LC.gold); d.tag('C = εε₀S/d', 360, 350, LC.mint); }
+    if (p > .6) { d.tag('E = σ/(εε₀) — поле однородно', 360, 70, LC.gold); d.tag('C = εε₀S/d', 360, 350, LC.mint); }
   },
   bfield(d, a, p, t) {
     const cx = 360, cy = 200;
     for (let r = 40; r <= 170; r += 32) { const q = VS_E((p - r / 400) * 2); if (q <= 0) continue; d.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * q, 'rgba(108,140,255,.8)', 2.5); const ang = t * 1.2 + r; d.arrow(cx + r * Math.cos(ang), cy + r * Math.sin(ang), cx + r * Math.cos(ang + .15), cy + r * Math.sin(ang + .15), LC.blue, 2.5); }
     d.circle(cx, cy, 18, LC.gold); d.circle(cx, cy, 5, '#1b2542', null);
-    if (p > .5) { d.tag('ток к нам — линии B против часовой стрелки', 360, 30, LC.gold); d.tag('B = μ₀I/(2πr)', 600, 360, LC.mint); }
+    if (p > .5) { d.tag('ток к нам — линии B против часовой стрелки', 360, 70, LC.gold); d.tag('B = μ₀I/(2πr)', 600, 360, LC.mint); }
   },
   ac(d, a, p, t) {
     const gx = 70, gy = 200, gw = 590, A = 110, ph = (a[0] ? +a[0] : 90) * RAD, n = VS_E(p * 1.4);
@@ -114,6 +114,24 @@ const VS = {
     }
     d.rect(mid - 22, y0, 44, h, 'rgba(255,194,75,.12)', null, 0, 0); if (p > .4) d.tag('запирающий слой', mid, y0 + h + 24, LC.gold);
     if (p > .65) d.tag('○ дырки   ● электроны', 360, 360, LC.text);
+  },
+  domain(d, a, p, t) {
+    // ферромагнетик: домены с хаотичными моментами выстраиваются по внешнему полю
+    const H = VS_E((p - .25) * 2);
+    for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) {
+      const x = 100 + i * 90, y = 80 + j * 72, r0 = Math.sin(i * 12.9 + j * 7.3) * Math.PI, ang = r0 * (1 - H);
+      d.rect(x, y, 84, 66, 'rgba(180,140,255,.08)', LC.line, 1.5, 6);
+      d.arrow(x + 42 - 26 * Math.cos(ang), y + 33 - 26 * Math.sin(ang), x + 42 + 26 * Math.cos(ang), y + 33 + 26 * Math.sin(ang), LC.violet, 3);
+    }
+    if (H > 0) { d.arrow(120, 375, 120 + 480 * H, 375, LC.gold, 3.5, 'H'); }
+    if (p > .7) d.tag('во внешнем поле домены выстраиваются', 360, 52, LC.gold);
+  },
+  hyst(d, a, p, t) {
+    const gx = 360, gy = 210, sx = 230, sy = 140; d.line(gx - sx - 20, gy, gx + sx + 20, gy, LC.mute, 2); d.line(gx, gy - sy - 20, gx, gy + sy + 20, LC.mute, 2);
+    d.text('H', gx + sx + 26, gy, { size: 14 }); d.text('B', gx + 10, gy - sy - 22, { size: 14 });
+    const up = [], dn = []; for (let i = 0; i <= 80; i++) { const h = -1 + 2 * i / 80; up.push([gx + h * sx, gy - Math.tanh(4 * (h - .25)) * sy]); dn.push([gx - h * sx, gy - Math.tanh(4 * (-h + .25)) * sy]); }
+    const loop = up.concat(dn), n = Math.floor(loop.length * VS_E(p * 1.3)); d.path(loop.slice(0, Math.max(2, n)), LC.violet, 3.5);
+    if (p > .7) { d.circle(gx, gy - Math.tanh(4 * .25) * sy, 6, LC.gold); d.tag('Bᵣ — остаточная индукция', gx + 140, gy - Math.tanh(1) * sy - 26, LC.gold); d.circle(gx + .25 * sx, gy, 6, LC.coral); d.tag('H_c', gx + .25 * sx + 30, gy + 22, LC.coral); }
   },
   /* ----- колебания и волны ----- */
   standing(d, a, p, t) {
@@ -279,7 +297,7 @@ function vsDrawExtra(d, sc, p, lt) {
   if (sc.kind === 'cmp') {
     rvHeader(d, sc.h, p, LC.violet);
     sc.cols.forEach(([ttl, txt], i) => { const q = VS_E((p - .05 - i * .25) * 4); if (q <= 0) return; d.c.globalAlpha = q; const x = 30 + i * 345;
-      d.rect(x, 70, 315, 300, i ? 'rgba(255,122,89,.08)' : 'rgba(61,214,160,.08)', i ? LC.coral : LC.mint, 2, 16); d.text(ttl, x + 157, 102, { col: i ? LC.coral : LC.mint, size: 18, bold: true, align: 'center' });
+      d.rect(x, 70, 315, 300, i ? 'rgba(255,122,89,.08)' : 'rgba(61,214,160,.08)', i ? LC.coral : LC.mint, 2, 16); d.text(ttl, x + 157, 102, { col: i ? LC.coral : LC.mint, size: ttl.length > 15 ? 14 : 18, bold: true, align: 'center' });
       rvLines(d, txt || '', x + 20, 145, 275, 15, { col: LC.text, max: 9 }); d.c.globalAlpha = 1; });
     return true;
   }
@@ -296,4 +314,15 @@ function vsDrawExtra(d, sc, p, lt) {
   }
   if (sc.kind === 'vs' && VS[sc.type]) { VS[sc.type](d, sc.args, p, lt); rvHeader(d, sc.h, p, LC.gold); return true; }
   return false;
+}
+
+/* Фон для сцен с формулами: блёклая иллюстрация темы главы */
+const VS_BG = { 8: 'gas', 9: 'pv:carnot', 10: 'phase', 11: 'efield:+-', 12: 'lab:ohm', 13: 'lattice', 14: 'bfield', 15: 'lab:induction', 16: 'domain', 17: 'emwave',
+  18: 'lab:spring', 19: 'lab:wave', 20: 'emwave', 21: 'lab:lens', 22: 'lab:interference', 23: 'huygens', 24: 'prism', 25: 'polar', 26: 'photo', 27: 'atom', 28: 'box',
+  29: 'atom', 30: 'bands', 31: 'lattice', 32: 'decay', 33: 'quarks' };
+function vsBackground(d, ch, lt) {
+  const b = VS_BG[ch]; if (!b) return false;
+  d.c.save(); d.c.globalAlpha = .16; d.quiet = true;
+  try { if (b.startsWith('lab:')) rvDrawModel(d, b.slice(4), lt); else { const sc = vsParse({ s: b, t: '' }); VS[sc.type](d, sc.args, .55, lt); } } catch (e) {}
+  d.quiet = false; d.c.restore(); d.rect(0, 0, LAB_W, LAB_H, 'rgba(14,20,36,.45)', null, 0, 0); return true;
 }
