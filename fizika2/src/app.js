@@ -86,6 +86,8 @@ function route() {
   if (h === 'lab-exps') return { name: 'lab', tab: 'lab', parent: 'lab' };
   if (h === 'lw-1') return { name: 'labWork', tab: 'lab', parent: 'lab' };
   if (h === 'lw-1-report') return { name: 'labWorkReport', tab: 'lab', parent: 'lw-1' };
+  if (h === 'lw-2') return { name: 'labWork2', tab: 'lab', parent: 'lab' };
+  if (h === 'lw-2-report') return { name: 'labWork2Report', tab: 'lab', parent: 'lw-2' };
   if (h === 'sandbox') return { name: 'sandbox', tab: 'lab', parent: 'lab-exps' };
   if (h === 'reader') return { name: 'reader', tab: 'book', parent: 'home' };
   if ((m = /^read-(\d+)$/.exec(h))) return { name: 'readerChapter', ch: +m[1], tab: 'book', parent: 'reader' };
@@ -109,7 +111,7 @@ function render() {
   document.body.dataset.view = r.name;
   ui.tabs.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.tab === r.tab));
   ui.tabs.hidden = r.name === 'quiz' || r.name === 'lesson';
-  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labWorks: vLabWorks, labWork: vLabWork, labWorkReport: vLabWorkReport, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame, sandbox: vSandbox, reader: vReader, readerChapter: vReaderChapter, hist: vHist, qsearch: vQSearch })[r.name](r);
+  ({ home: vHome, book: vBook, chapter: vChapter, lesson: vLesson, quiz: vQuiz, train: vTrain, lab: vLab, labGames: vLabGames, labWorks: vLabWorks, labWork: vLabWork, labWorkReport: vLabWorkReport, labWork2: vLabWork2, labWork2Report: vLabWork2Report, labChapter: vLabChapter, labTopic: vLabTopic, labExp: vLabExp, profile: vProfile, bridgeGame: vBridgeGame, sandbox: vSandbox, reader: vReader, readerChapter: vReaderChapter, hist: vHist, qsearch: vQSearch })[r.name](r);
   if (same) ui.main.scrollTop = y; else ui.main.scrollTop = 0;
 }
 function frame(title, { back = false, sub = '' } = {}) {

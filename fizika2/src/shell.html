@@ -1207,6 +1207,13 @@ body{background:var(--bg)}
   .lw-stage{margin:0 -4px; padding:4px 4px 8px; border-bottom:1px solid var(--line); box-shadow:0 10px 18px -12px rgba(0,0,0,.6)}
   .lw-aim{margin-top:6px} .lw-aim button{min-height:40px}
 }
+
+/* ЛР2: маятник Обербека */
+#l2-cv{display:block; width:min(100%, calc(52vh * 580 / 452)); margin:0 auto; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid var(--line)}
+.l2-cal{display:block; width:100%; aspect-ratio:580/200; height:auto; margin:10px 0 4px; border-radius:12px; border:1px solid var(--line)}
+.lw-res{margin:10px 0 0; padding:10px 12px; border-radius:10px; background:rgba(90,211,160,.1); border:1px solid rgba(90,211,160,.4); font:700 16px var(--ui); color:var(--mint)}
+@media (min-width:1100px) and (min-height:501px){.lw:has(.lw-stage) #l2-cv{width:min(100%, calc((100vh - 230px) * 580 / 452))}}
+@media print{.fxp,#toasts,#sheet{display:none !important}}
 </style>
 </head>
 <body data-view="home">
