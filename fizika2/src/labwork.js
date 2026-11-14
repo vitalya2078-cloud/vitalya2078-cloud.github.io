@@ -26,7 +26,7 @@ let LWS = null;
 function lwFresh() {
   const r = Math.random;
   return {
-    v: 1, step: 0, max: 0,
+    v: 2, step: 0, max: 0,
     x01: +(44 + r() * 2).toFixed(2), y01: +(199.2 + r() * 1.6).toFixed(2), mu: +(.105 + r() * .03).toFixed(4),
     admit: {}, admitOk: false,
     p1: null, p2: null, m1: '', m2: '', rx01: '', ry01: '', prepOk: false,
@@ -37,7 +37,7 @@ function lwFresh() {
     fio: '', group: '', date: new Date().toLocaleDateString('ru-RU'), done: false
   };
 }
-function lwLoad() { if (LWS) return LWS; try { LWS = JSON.parse(localStorage.getItem(LW_KEY) || 'null'); } catch (e) { LWS = null; } if (!LWS || LWS.v !== 1) LWS = lwFresh(); return LWS; }
+function lwLoad() { if (LWS) return LWS; try { LWS = JSON.parse(localStorage.getItem(LW_KEY) || 'null'); } catch (e) { LWS = null; } if (!LWS || LWS.v !== 2) LWS = lwFresh(); return LWS; }
 function lwSave() { try { localStorage.setItem(LW_KEY, JSON.stringify(LWS)); } catch (e) {} }
 const lwNum = s => { const v = parseFloat(String(s).replace(',', '.').replace(/\s/g, '')); return Number.isFinite(v) ? v : NaN; };
 const lwGauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
@@ -87,11 +87,11 @@ let LWV = { anim: null, raf: 0, lens: null, pos: null };
 function lwDraw() {
   const cv = $('#lw-cv'); if (!cv) return;
   const box = cv.getBoundingClientRect(), cssW = box.width || 600, dpr = Math.min(2.5, devicePixelRatio || 1);
-  const VW = 580, VH = 440, k = cssW / VW, cssH = VH * k;
+  const VW = 580, VH = 452, k = cssW / VW, cssH = VH * k;
   if (cv.width !== Math.round(cssW * dpr)) { cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); }
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
   c.fillStyle = '#0B1020'; c.fillRect(0, 0, cssW, cssH);
-  const map = (x, y) => [(x + 60) * k, (410 - y) * k];
+  const map = (x, y) => [(x + 60) * k, (422 - y) * k];
   lwScene(c, map, k, false);
   // лупа: увеличенный фрагмент поля в углу
   if (LWV.lens) {
@@ -102,50 +102,85 @@ function lwDraw() {
     lwScene(c, mapZ, Z, true);
     c.strokeStyle = 'rgba(255,194,75,.9)'; c.lineWidth = 1; c.beginPath(); c.moveTo(X0 + L / 2, Y0); c.lineTo(X0 + L / 2, Y0 + L); c.moveTo(X0, Y0 + L / 2); c.lineTo(X0 + L, Y0 + L / 2); c.stroke();
     c.restore(); c.strokeStyle = '#FFC24B'; c.lineWidth = 2; c.strokeRect(X0, Y0, L, L);
-    c.font = '700 12px "Golos UI", system-ui'; c.fillStyle = '#FFC24B'; c.textAlign = 'left'; c.fillText('ЛУПА · 1 деление = 1 мм', X0 + 8, Y0 + L - 10);
+    c.font = '700 11px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillStyle = 'rgba(11,21,36,.82)'; c.fillRect(X0 + 1, Y0 + L - 24, L - 2, 23); c.fillStyle = '#F2B544'; c.fillText('ЛУПА · 1 деление = 1 мм', X0 + 8, Y0 + L - 8);
     const [px, py] = map(lx, ly); c.strokeStyle = '#FFC24B'; c.lineWidth = 1.5; c.strokeRect(px - 9 * k, py - 9 * k, 18 * k, 18 * k);
   }
 }
+/* Векторные «текстуры» установки: миллиметровка в алюминиевой раме, ударный механизм с пружиной и винтом,
+   металлические шайбы с накаткой и меткой крайней точки. */
 function lwScene(c, map, s, fine) {
-  const F = LW1.field, S = LWS, line = (x1, y1, x2, y2, col, w) => { const [a, b] = map(x1, y1), [p, q] = map(x2, y2); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(a, b); c.lineTo(p, q); c.stroke(); };
-  const [fx, fy] = map(0, F.h), [gx, gy] = map(F.w, 0);
-  c.fillStyle = '#16203A'; c.fillRect(fx, fy, gx - fx, gy - fy);
-  // сетка: 1 мм (только в лупе), 5 мм, 10 мм, 50 мм
-  const step = fine ? 1 : 10;
-  for (let x = 0; x <= F.w; x += step) { const big = x % 50 === 0, mid = x % 10 === 0; if (!fine && !mid) continue; line(x, 0, x, F.h, big ? 'rgba(170,185,220,.55)' : mid ? 'rgba(141,151,181,.32)' : x % 5 === 0 ? 'rgba(141,151,181,.22)' : 'rgba(141,151,181,.12)', big ? 1.4 : 1); }
-  for (let y = 0; y <= F.h; y += step) { const big = y % 50 === 0, mid = y % 10 === 0; if (!fine && !mid) continue; line(0, y, F.w, y, big ? 'rgba(170,185,220,.55)' : mid ? 'rgba(141,151,181,.32)' : y % 5 === 0 ? 'rgba(141,151,181,.22)' : 'rgba(141,151,181,.12)', big ? 1.4 : 1); }
-  // подписи осей
-  c.fillStyle = '#AAB3CD'; c.font = `600 ${Math.max(9, Math.min(13, s * (fine ? 1.6 : 9)))}px "Golos UI", system-ui`;
-  const lab = fine ? 10 : 50;
-  c.textAlign = 'center'; c.textBaseline = 'top';
-  for (let x = 0; x <= F.w; x += lab) { const [a, b] = map(x, 0); if (fine) { const [, yy] = map(0, LWV.lens[1]); c.fillText(x, a, yy + 4); } else c.fillText(x, a, b + 4); }
-  c.textAlign = 'right'; c.textBaseline = 'middle';
-  for (let y = 0; y <= F.h; y += lab) { const [a, b] = map(0, y); if (fine) { const [xx] = map(LWV.lens[0], 0); c.fillText(y, xx - 4, b); } else c.fillText(y, a - 4, b); }
-  if (!fine) { c.textAlign = 'left'; const [ax, ay] = map(F.w, 0); c.fillText('x, мм', ax - 30, ay + 22); const [bx, by] = map(0, F.h); c.fillText('y, мм', bx - 52, by - 2); }
-  // закрашенные круги для тела 2
-  LW1.circles.forEach(([x, y], i) => { const [a, b] = map(x, y); c.beginPath(); c.arc(a, b, LW1.R * s, 0, 7); c.fillStyle = 'rgba(255,122,89,' + (i + 1 === S.circle ? .22 : .1) + ')'; c.fill(); c.setLineDash([4, 3]); c.strokeStyle = 'rgba(255,122,89,.6)'; c.lineWidth = 1; c.stroke(); c.setLineDash([]); });
-  // направляющие и ударный механизм
-  const [ra, rb] = map(-55, S.y01 + 19), [rc, rd] = map(S.x01 - LW1.R, S.y01 + 17);
-  c.fillStyle = '#3A4668'; c.fillRect(ra, rb, rc - ra, 3 * s); const [, re] = map(0, S.y01 - 17); c.fillRect(ra, re, rc - ra, 3 * s);
-  const strike = LWV.anim && LWV.anim.t < .05 ? 4 : 0, [sa, sb] = map(-50, S.y01 + 6), [sc2] = map(S.x01 - LW1.R - 2 + strike - 4, 0);
-  c.fillStyle = '#8D97B5'; c.fillRect(sa, sb, sc2 - sa, 12 * s);
-  const [h1, h2] = map(-30, S.y01 + 12); c.fillStyle = '#6C8CFF'; c.fillRect(h1, h2, 10 * s, 24 * s);
+  const F = LW1.field, S = LWS, R = LW1.R;
+  const P = (x, y) => map(x, y), rect = (x1, y1, x2, y2) => { const [a, b] = P(x1, y2), [p, q] = P(x2, y1); return [a, b, p - a, q - b]; };
+  const line = (x1, y1, x2, y2, col, w) => { const [a, b] = P(x1, y1), [p, q] = P(x2, y2); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(a, b); c.lineTo(p, q); c.stroke(); };
+  // рама стола (анодированный алюминий) с винтами по углам
+  { const [x, y, w, h] = rect(-10, -10, F.w + 10, F.h + 10), g = c.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, '#56677E'); g.addColorStop(.5, '#3A4A60'); g.addColorStop(1, '#2A3647'); c.fillStyle = g; c.fillRect(x, y, w, h);
+    c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 1; c.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    [[-5, -5], [F.w + 5, -5], [-5, F.h + 5], [F.w + 5, F.h + 5]].forEach(([bx, by]) => { const [a, b] = P(bx, by), r = 2.4 * s, gb = c.createRadialGradient(a - r * .3, b - r * .3, r * .1, a, b, r);
+      gb.addColorStop(0, '#E4EAF2'); gb.addColorStop(1, '#6B7A8F'); c.fillStyle = gb; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); c.strokeStyle = '#2A3647'; c.lineWidth = Math.max(1, s * .4); c.beginPath(); c.moveTo(a - r * .7, b); c.lineTo(a + r * .7, b); c.stroke(); }); }
+  // миллиметровая бумага
+  { const [x, y, w, h] = rect(0, 0, F.w, F.h); c.fillStyle = '#E9EFF1'; c.fillRect(x, y, w, h);
+    const g = c.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(120,140,160,.12)'); c.fillStyle = g; c.fillRect(x, y, w, h); }
+  const lw = fine ? Math.max(.6, s * .06) : 1, lx0 = fine ? Math.max(0, Math.floor(LWV.lens[0] - 40)) : 0, lx1 = fine ? Math.min(F.w, Math.ceil(LWV.lens[0] + 40)) : F.w;
+  const ly0 = fine ? Math.max(0, Math.floor(LWV.lens[1] - 40)) : 0, ly1 = fine ? Math.min(F.h, Math.ceil(LWV.lens[1] + 40)) : F.h;
+  const gcol = v => v % 50 === 0 ? ['rgba(30,96,120,.85)', 1.6] : v % 10 === 0 ? ['rgba(40,110,135,.55)', 1.1] : v % 5 === 0 ? ['rgba(60,130,155,.38)', .8] : ['rgba(80,150,175,.24)', .6];
+  const stp = fine ? 1 : (s > 1.6 ? 5 : 10);
+  for (let x = Math.ceil(lx0 / stp) * stp; x <= lx1; x += stp) { const [col, k] = gcol(x); line(x, ly0, x, ly1, col, k * lw); }
+  for (let y = Math.ceil(ly0 / stp) * stp; y <= ly1; y += stp) { const [col, k] = gcol(y); line(lx0, y, lx1, y, col, k * lw); }
+  // подписи шкал
+  c.font = `600 ${fine ? 12 : Math.max(9, Math.min(12.5, s * 9))}px "Golos UI", system-ui`;
+  if (fine) { c.fillStyle = 'rgba(20,70,90,.9)'; c.textBaseline = 'top'; c.textAlign = 'left';
+    for (let x = Math.ceil(lx0 / 10) * 10; x <= lx1; x += 10) for (let y = Math.ceil(ly0 / 10) * 10; y <= ly1; y += 10) { const [a, b] = P(x, y); c.fillText(x + '; ' + y, a + 3, b + 2); } }
+  else { c.fillStyle = '#C9D4E3'; c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let x = 0; x < F.w; x += 50) { const [a, b] = P(x, -10); c.fillText(x, a, b + 4); }
+    { const [a, b] = P(F.w, -10); c.fillStyle = '#F2B544'; c.fillText('x, мм', a - 6, b + 4); c.fillStyle = '#C9D4E3'; }
+    c.textAlign = 'right'; c.textBaseline = 'middle'; for (let y = 0; y < F.h; y += 50) { const [a, b] = P(-10, y); c.fillText(y, a - 4, b); }
+    { const [a, b] = P(-10, F.h); c.fillStyle = '#F2B544'; c.fillText('y, мм', a - 3, b); } }
+  // закрашенные (заштрихованные) круги для тела 2
+  LW1.circles.forEach(([x, y], i) => { const [a, b] = P(x, y), r = R * s, on = i + 1 === S.circle;
+    c.save(); c.beginPath(); c.arc(a, b, r, 0, 7); c.clip(); c.fillStyle = on ? 'rgba(210,90,60,.18)' : 'rgba(60,80,100,.12)'; c.fillRect(a - r, b - r, 2 * r, 2 * r);
+    c.strokeStyle = on ? 'rgba(190,80,50,.55)' : 'rgba(60,80,100,.35)'; c.lineWidth = Math.max(.7, s * .25);
+    for (let k = -2 * r; k < 2 * r; k += Math.max(3, 2.2 * s)) { c.beginPath(); c.moveTo(a + k, b + r); c.lineTo(a + k + 2 * r, b - r); c.stroke(); } c.restore();
+    c.beginPath(); c.arc(a, b, r, 0, 7); c.strokeStyle = on ? 'rgba(190,80,50,.8)' : 'rgba(60,80,100,.5)'; c.lineWidth = Math.max(1, s * .3); c.stroke(); });
+  // ударный механизм: основание, направляющие, корпус с пружиной, боёк, винт
+  const pos = LWV.pos || lwRestPos(), y0 = S.y01, back = S.x01 - R;
+  const steel = (x1, y1, x2, y2, vertical) => { const [x, y, w, h] = rect(x1, y1, x2, y2), g = vertical ? c.createLinearGradient(x, y, x + w, y) : c.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, '#C9D3DF'); g.addColorStop(.45, '#8C99AA'); g.addColorStop(1, '#4E5B6D'); c.fillStyle = g; c.fillRect(x, y, w, h); c.strokeStyle = 'rgba(20,28,40,.6)'; c.lineWidth = Math.max(.6, s * .2); c.strokeRect(x, y, w, h); };
+  steel(-58, y0 - 26, -14, y0 + 26);                                   // основание механизма
+  steel(-58, y0 + R + 1, back + 6, y0 + R + 4); steel(-58, y0 - R - 4, back + 6, y0 - R - 1); // направляющие
+  { const [x, y, w, h] = rect(-43, y0 - 9, -18, y0 + 9), g = c.createLinearGradient(x, y, x, y + h);             // корпус
+    g.addColorStop(0, '#2B3445'); g.addColorStop(.5, '#46536A'); g.addColorStop(1, '#232B39'); c.fillStyle = g; c.fillRect(x, y, w, h);
+    c.strokeStyle = 'rgba(220,230,240,.55)'; c.lineWidth = Math.max(.8, s * .35); c.beginPath();                    // витки пружины в прорези
+    const sp = LWV.anim && LWV.anim.t < .06 ? 1.25 : 1; for (let k = 0; k <= 12; k++) { const [a] = P(-41 + k * 1.8 * sp, 0); const [, t] = P(0, y0 + 5), [, bt] = P(0, y0 - 5); c.moveTo(a, t); c.lineTo(a + 1.3 * s, bt); } c.stroke(); }
+  const strike = LWV.anim && LWV.anim.t < .06 ? 3 : 0;
+  steel(-18, y0 - 2.5, back - 1 + strike, y0 + 2.5);                   // боёк
+  { const [a, b] = P(-50, y0), r = 6 * s, g = c.createRadialGradient(a - r * .3, b - r * .3, r * .2, a, b, r);       // винт с накаткой
+    g.addColorStop(0, '#F3D17A'); g.addColorStop(1, '#8E6A1E'); c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(60,40,10,.6)'; c.lineWidth = Math.max(.6, s * .25); for (let k = 0; k < 18; k++) { const q = k / 18 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .78 * Math.cos(q), b + r * .78 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
+    if (!fine) { c.fillStyle = '#C9D4E3'; c.font = `700 ${Math.max(9, 4.6 * s)}px "Golos UI", system-ui`; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('винт ' + S.screw, P(-58, 0)[0], P(0, y0 - 26)[1] + 3); } }
   // шайбы
-  const pos = LWV.pos || lwRestPos();
-  const puck = (p, col, label) => { if (!p) return; const [a, b] = map(p[0], p[1]); const g = c.createRadialGradient(a - 5 * s, b - 6 * s, 2 * s, a, b, LW1.R * s);
-    g.addColorStop(0, col === 1 ? '#9DB2FF' : '#FFB199'); g.addColorStop(1, col === 1 ? '#4A63D8' : '#D9583A');
-    c.save(); c.globalAlpha = fine ? .45 : .85; c.beginPath(); c.arc(a, b, LW1.R * s, 0, 7); c.fillStyle = g; c.fill(); c.restore(); c.beginPath(); c.arc(a, b, LW1.R * s, 0, 7); c.strokeStyle = col === 1 ? '#9DB2FF' : '#FFB199'; c.lineWidth = 1.5; c.stroke();
-    // метка центра — по ней снимают координаты
-    c.strokeStyle = fine ? '#fff' : '#0B1020'; c.lineWidth = fine ? 1.5 : Math.max(1, s * .5); c.beginPath(); c.moveTo(a - 5 * s, b); c.lineTo(a + 5 * s, b); c.moveTo(a, b - 5 * s); c.lineTo(a, b + 5 * s); c.stroke();
-    if (!fine || s < 30) { c.fillStyle = '#fff'; c.font = `800 ${Math.max(8, 7 * s)}px "Golos UI", system-ui`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(label, a + 8 * s, b - 8 * s); } };
-  puck(pos.p2, 2, '2'); puck(pos.p1, 1, '1');
+  const puck = (p, kind) => { if (!p) return; const [a, b] = P(p[0], p[1]), r = R * s, m = lwPuck(kind === 1 ? S.p1 : S.p2);
+    c.save(); c.shadowColor = 'rgba(10,20,30,.45)'; c.shadowBlur = 4 * s; c.shadowOffsetX = 1.2 * s; c.shadowOffsetY = 1.6 * s;
+    const g = c.createRadialGradient(a - r * .35, b - r * .4, r * .1, a, b, r);
+    if (kind === 1) { g.addColorStop(0, '#F4F7FB'); g.addColorStop(.55, '#AEB9C8'); g.addColorStop(1, '#5D6A7D'); } else { g.addColorStop(0, '#FFF0C2'); g.addColorStop(.55, '#D6A54A'); g.addColorStop(1, '#7E5A1A'); }
+    c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); c.restore();
+    c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.55)' : 'rgba(90,60,15,.6)'; c.lineWidth = Math.max(.5, s * .2);             // накатка по ободу
+    for (let k = 0; k < 48; k++) { const q = k / 48 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .9 * Math.cos(q), b + r * .9 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
+    c.beginPath(); c.arc(a, b, r * .62, 0, 7); c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.35)' : 'rgba(90,60,15,.35)'; c.lineWidth = Math.max(.6, s * .3); c.stroke();
+    c.fillStyle = kind === 1 ? '#2D3848' : '#4E3608'; c.textAlign = 'center'; c.textBaseline = 'middle';                    // гравировка
+    c.font = `800 ${r * .55}px "Golos UI", system-ui`; c.fillText(kind, a, b - r * .12);
+    if (m) { c.font = `600 ${r * .24}px "Golos UI", system-ui`; c.fillText(f1(m.m * 1000, 1) + ' г', a, b + r * .38); }
+    // метка крайней точки (передняя по оси X) — по ней снимают координаты
+    const [ma, mb] = P(p[0] + R, p[1]), mr = fine ? 3 : Math.max(1.6, 1.1 * s); c.fillStyle = '#D7262E'; c.beginPath(); c.arc(ma, mb, mr, 0, 7); c.fill();
+    if (fine) { c.strokeStyle = '#D7262E'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(ma - 12, mb); c.lineTo(ma + 12, mb); c.moveTo(ma, mb - 12); c.lineTo(ma, mb + 12); c.stroke(); } };
+  puck(pos.p2, 2); puck(pos.p1, 1);
 }
 function lwRestPos() { const S = LWS, st = LW1.steps[S.step][0]; return { p1: [S.x01, S.y01], p2: (st === 'coll' && S.place) ? S.place : null }; }
 
 /* лупа: коснись поля и веди пальцем */
 document.addEventListener('pointerdown', e => {
   const cv = e.target.closest && e.target.closest('#lw-cv'); if (!cv) return;
-  const move = ev => { const b = cv.getBoundingClientRect(), k = b.width / 580; LWV.lens = [(ev.clientX - b.left) / k - 60, 410 - (ev.clientY - b.top) / k]; lwDraw(); };
+  const move = ev => { const b = cv.getBoundingClientRect(), k = b.width / 580; LWV.lens = [(ev.clientX - b.left) / k - 60, 422 - (ev.clientY - b.top) / k]; lwDraw(); };
   move(e); cv.setPointerCapture && cv.setPointerCapture(e.pointerId);
   const mv = ev => move(ev), up = () => { cv.removeEventListener('pointermove', mv); cv.removeEventListener('pointerup', up); cv.removeEventListener('pointercancel', up); };
   cv.addEventListener('pointermove', mv); cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
@@ -179,7 +214,7 @@ function vLabWork() {
   setMain(`<div class="lw">${chips}${body}</div>`);
   if (['prep', 'free', 'coll'].includes(st)) { LWV.pos = null; lwDraw(); if (!lwDraw.ro && 'ResizeObserver' in window) lwDraw.ro = new ResizeObserver(() => lwDraw()); if (lwDraw.ro) { lwDraw.ro.disconnect(); lwDraw.ro.observe($('#lw-cv')); } }
 }
-const lwField = hint => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas><p class="lw-hint">${ic('search')} ${hint || 'Коснись поля и веди пальцем — в углу появится лупа с миллиметровой сеткой. По ней снимай координаты метки в центре шайбы.'}</p></section>`;
+const lwField = hint => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas><p class="lw-hint">${ic('search')} ${hint || 'Коснись поля и веди пальцем — в углу появится лупа с миллиметровой сеткой. По ней снимай координаты красной метки — крайней (передней) точки шайбы.'}</p></section>`;
 const lwIn = (k, val, ph = '', cls = '') => `<input class="lwi ${cls}" data-k="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
 const lwNext = (label = 'Дальше') => `<button class="btn wide mt" data-lw="next">${label} ${ic('chevron-right')}</button>`;
 
@@ -219,7 +254,7 @@ function lwPrep() {
   return `<section class="card"><b class="h">1. Выбери два тела примерно одинаковой массы</b><p class="mute small">Масса указана на шайбе. Первое касание — тело 1 (ударяющее), второе — тело 2.</p><div class="lw-pucks">${pk}</div>
     <div class="lw-row"><label>m₁, кг ${lwIn('m1', S.m1, '0,0000')}</label><label>m₂, кг ${lwIn('m2', S.m2, '0,0000')}</label></div></section>
     ${lwField()}
-    <section class="card"><b class="h">2. Начальные координаты тела 1</b><p class="mute small">Шайба 1 стоит в направляющих. Наведи лупу на метку в её центре и запиши координаты с точностью до 1 мм.</p>
+    <section class="card"><b class="h">2. Начальные координаты тела 1</b><p class="mute small">Шайба 1 стоит в направляющих. Наведи лупу на красную метку её крайней точки (справа, по ходу движения) и запиши координаты с точностью до 1 мм.</p>
     <div class="lw-row"><label>x₀₁, мм ${lwIn('rx01', S.rx01, 'мм')}</label><label>y₀₁, мм ${lwIn('ry01', S.ry01, 'мм')}</label></div>
     <button class="btn wide mt" data-lw="prepCheck">${ic('circle-check')} Проверить</button><p class="lw-msg" id="lw-msg"></p>${S.prepOk ? lwNext('К опыту 1') : ''}</section>`;
 }
@@ -233,7 +268,7 @@ function lwFreeStep() {
     ${n ? '<p class="mute small">Положение винта зафиксировано: все выстрелы — «при тех же условиях».</p>' : ''}</section>
     ${lwField()}
     <section class="card"><div class="lw-bar">${cur ? `<button class="btn wide" data-lw="record">${ic('pencil')} Записать x</button>` : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="free">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : ''}</div>
-    <p class="lw-msg" id="lw-msg">${cur ? 'Шайба остановилась. Сними координату x метки её центра по лупе.' : ''}</p>${tbl}${n >= LW1.N ? lwNext('К опыту 2') : ''}</section>`;
+    <p class="lw-msg" id="lw-msg">${cur ? 'Шайба остановилась. Сними координату x её крайней точки (красная метка) по лупе.' : ''}</p>${tbl}${n >= LW1.N ? lwNext('К опыту 2') : ''}</section>`;
 }
 
 /* 4. Опыт 2 — соударение */
@@ -449,15 +484,15 @@ document.addEventListener('click', e => {
       const m1 = lwPuck(S.p1).m, m2 = lwPuck(S.p2).m;
       if (Math.abs(m1 - m2) / Math.min(m1, m2) > .12) { lwMsg('Массы тел должны быть примерно одинаковыми — выбери шайбы с близкими массами.', 1); break; }
       if (Math.abs(lwNum(S.m1) - m1) > .00006 || Math.abs(lwNum(S.m2) - m2) > .00006) { lwMsg('Массы записаны неверно. Переведи граммы в килограммы: 20,1 г = 0,0201 кг.', 1); break; }
-      if (!(Math.abs(lwNum(S.rx01) - S.x01) <= 1.2 && Math.abs(lwNum(S.ry01) - S.y01) <= 1.2)) { S.prepTries = (S.prepTries || 0) + 1; lwSave();
-        lwMsg(S.prepTries >= 3 ? `Не совпадает. Подсказка: x₀₁ ≈ ${Math.round(S.x01)} мм, y₀₁ ≈ ${Math.round(S.y01)} мм — найди это место в лупе.` : 'Координаты не совпадают с установкой. Наведи лупу точно на крестик в центре шайбы 1 и посчитай миллиметровые деления.', 1); break; }
+      if (!(Math.abs(lwNum(S.rx01) - (S.x01 + LW1.R)) <= 1.2 && Math.abs(lwNum(S.ry01) - S.y01) <= 1.2)) { S.prepTries = (S.prepTries || 0) + 1; lwSave();
+        lwMsg(S.prepTries >= 3 ? `Не совпадает. Подсказка: x₀₁ ≈ ${Math.round(S.x01 + LW1.R)} мм, y₀₁ ≈ ${Math.round(S.y01)} мм — найди это место в лупе.` : 'Координаты не совпадают с установкой. Наведи лупу на красную метку крайней точки шайбы 1 и посчитай миллиметровые деления.', 1); break; }
       S.prepOk = true; lwSave(); render(); toast('Подготовка выполнена'); break;
     }
     case 'screw': if (!S.free.length) { S.screw = Math.max(1, Math.min(5, S.screw + +d.d)); lwSave(); render(); } break;
     case 'circle': S.circle = +d.v; S.place = null; lwSave(); render(); break;
     case 'placeCheck': {
       const c = LW1.circles[S.circle - 1];
-      if (!(Math.abs(lwNum(S.rx02) - c[0]) <= 1.2 && Math.abs(lwNum(S.ry02) - c[1]) <= 1.2)) { lwMsg('Координаты шайбы 2 не совпадают. Наведи лупу на крестик в её центре.', 1); break; }
+      if (!(Math.abs(lwNum(S.rx02) - (c[0] + LW1.R)) <= 1.2 && Math.abs(lwNum(S.ry02) - c[1]) <= 1.2)) { lwMsg('Координаты шайбы 2 не совпадают. Наведи лупу на красную метку её крайней точки.', 1); break; }
       S.place = c.slice(); S.placeOk = true; lwSave(); render(); break;
     }
     case 'shoot': {
@@ -469,7 +504,7 @@ document.addEventListener('click', e => {
         const fin = shot.at(shot.T);
         if (!lwInField(fin.p1) || (fin.p2 && !lwInField(fin.p2))) { LWV.pos = null; lwDraw(); lwMsg('Шайба ушла за край поля — опыт не засчитан. Повтори выстрел' + (S.free.length ? '.' : ' или уменьши силу удара винтом.'), 1); b.disabled = false; return; }
         if (shot.miss) { LWV.pos = null; lwDraw(); lwMsg('Шайба 1 прошла мимо шайбы 2 — опыт не засчитан, повтори выстрел.', 1); b.disabled = false; return; }
-        S.cur = d.v === 'free' ? { kind: 'free', t: fin.p1[0], r: '' } : { kind: 'coll', t: { x1: fin.p1[0], y1: fin.p1[1], x2: fin.p2[0], y2: fin.p2[1] }, r: {} };
+        S.cur = d.v === 'free' ? { kind: 'free', t: fin.p1[0] + LW1.R, r: '' } : { kind: 'coll', t: { x1: fin.p1[0] + LW1.R, y1: fin.p1[1], x2: fin.p2[0] + LW1.R, y2: fin.p2[1] }, r: {} };
         S.curPos = fin; lwSave(); render(); LWV.pos = fin; lwDraw();
       });
       break;
@@ -477,11 +512,11 @@ document.addEventListener('click', e => {
     case 'record': {
       const cur = S.cur; if (!cur) break;
       if (cur.kind === 'free') {
-        const v = lwNum(cur.r); if (!(Math.abs(v - cur.t) <= 1.2)) { cur.tries = (cur.tries || 0) + 1; lwSave(); lwMsg(cur.tries >= 3 ? `Подсказка: x ≈ ${Math.round(cur.t)} мм.` : 'Отсчёт не совпадает. Наведи лупу на крестик в центре шайбы 1.', 1); break; }
+        const v = lwNum(cur.r); if (!(Math.abs(v - cur.t) <= 1.2)) { cur.tries = (cur.tries || 0) + 1; lwSave(); lwMsg(cur.tries >= 3 ? `Подсказка: x ≈ ${Math.round(cur.t)} мм.` : 'Отсчёт не совпадает. Наведи лупу на красную метку крайней точки шайбы 1.', 1); break; }
         S.free.push({ r: v, t: cur.t });
       } else {
         const ks = ['x1', 'y1', 'x2', 'y2'], bad = ks.filter(k => !(Math.abs(lwNum(cur.r[k]) - cur.t[k]) <= 1.2));
-        if (bad.length) { cur.tries = (cur.tries || 0) + 1; lwSave(); lwMsg(cur.tries >= 3 ? 'Подсказка: ' + bad.map(k => `${k} ≈ ${Math.round(cur.t[k])}`).join(', ') + ' мм.' : 'Не совпадает: ' + bad.join(', ') + '. Снимай по крестику в центре шайбы (1 — синяя, 2 — оранжевая).', 1); break; }
+        if (bad.length) { cur.tries = (cur.tries || 0) + 1; lwSave(); lwMsg(cur.tries >= 3 ? 'Подсказка: ' + bad.map(k => `${k} ≈ ${Math.round(cur.t[k])}`).join(', ') + ' мм.' : 'Не совпадает: ' + bad.join(', ') + '. Снимай по красной метке крайней точки (1 — стальная шайба, 2 — латунная).', 1); break; }
         S.coll.push({ r: Object.fromEntries(ks.map(k => [k, lwNum(cur.r[k])])), t: cur.t });
       }
       S.cur = null; S.curPos = null; lwSave(); render(); toast('Записано'); break;

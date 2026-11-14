@@ -142,10 +142,18 @@ function vHome() {
   let cont = '';
   if (nx && !nx.boss) cont = `<a class="cont" href="#l${nx.ch.n}-${nx.li}"><span class="cart">${chapterArt(nx.ch)}</span><span class="ctx"><small>Курс · глава ${nx.ch.n} · ${esc(nx.L.par)}</small><b>${esc(nx.L.title)}</b><span class="cbtn">${ic('play')}Продолжить урок</span></span></a>`;
   else if (nx) cont = `<button class="cont" data-act="boss" data-ch="${nx.ch.n}"><span class="cart">${chapterArt(nx.ch)}</span><span class="ctx"><small>Курс · глава ${nx.ch.n}</small><b>Финальное испытание</b><span class="cbtn">${ic('swords')}В бой</span></span></button>`;
-  setMain(`<section class="hhead"><a href="#profile" class="hava" aria-label="Профиль">${avatarSvg(S.ava, 52)}</a><div><h1>${hi}</h1><div class="hlv"><span>${esc(L.title)} · ур. ${L.l}</span><span class="bar"><i style="width:${L.cur / L.need * 100}%"></i></span><span>${S.xp} XP</span></div></div></section>` +
-    ready + cont +
-    `<div class="quick4"><button data-act="quick">${ic('zap', 'blue')}Быстрый тест</button><a href="#lab">${ic('sparkles', 'mint')}Лаборатория</a><a href="#reader">${ic('book-open', 'violet')}Конспекты</a><a href="#book">${ic('layers', 'gold')}Учебник</a></div>` +
-    `<section class="duo"><div class="card goal">${ring(gp)}<div><b>Цель дня</b><small>${today} / ${DAY_GOAL} XP</small></div></div><div class="card goal">${ic('flame', 'big fire')}<div><b>${st ? plural(st, 'день', 'дня', 'дней') : 'Нет серии'}</b><small>серия занятий</small></div></div></section>`);
+  const name = S.name ? esc(S.name) : '';
+  const cta2 = nx && !nx.boss ? `<a class="btn line" href="#l${nx.ch.n}-${nx.li}">${ic('play')}Продолжить</a>` : `<a class="btn line" href="#book">${ic('book-open')}Открыть учебник</a>`;
+  const hero = `<section class="hero"><div class="hero-txt"><small class="eyebrow">Курс физики · Т. И. Трофимова</small>` +
+    `<h1>${name ? `${name}, продолжим подготовку` : 'Физика к экзамену — шаг за шагом'}</h1>` +
+    `<p class="lead">33 главы учебника с видеоуроками, 900 экзаменационных вопросов с разбором, виртуальная лаборатория и лабораторные работы с отчётом.</p>` +
+    `<div class="hero-cta"><button class="btn" data-act="examSetup">${ic('graduation-cap')}Пробный экзамен</button>${cta2}</div>` +
+    `<a href="#profile" class="hero-lv">${avatarSvg(S.ava, 34)}<span><b>${esc(L.title)} · ур. ${L.l}</b><span class="bar"><i style="width:${L.cur / L.need * 100}%"></i></span></span><small>${S.xp} XP</small></a></div>${ready}</section>`;
+  const sections = [['#book', 'layers', 'gold', 'Учебник', `${CHAPTERS.length} глав · уроки, карточки, видео`], ['#train', 'graduation-cap', 'blue', 'Тесты', '900 вопросов · экзамен и тренировка'],
+    ['#lab', 'flask-conical', 'mint', 'Практикум', 'лабораторные работы и опыты'], ['#reader', 'book-open', 'violet', 'Конспекты', 'краткое изложение всех глав']];
+  setMain(hero + (cont ? `<h2 class="sec">Продолжить</h2>` + cont : '') +
+    `<h2 class="sec">Разделы</h2><div class="quick4 sections">${sections.map(([h, i, c, t, d]) => `<a href="${h}">${ic(i, c)}<span><b>${t}</b><small>${d}</small></span></a>`).join('')}<button data-act="quick">${ic('zap', 'coral')}<span><b>Быстрый тест</b><small>10 случайных вопросов</small></span></button></div>` +
+    `<h2 class="sec">Сегодня</h2><section class="duo"><div class="card goal">${ring(gp)}<div><b>Цель дня</b><small>${today} / ${DAY_GOAL} XP</small></div></div><div class="card goal">${ic('flame', 'big fire')}<div><b>${st ? plural(st, 'день', 'дня', 'дней') : 'Нет серии'}</b><small>серия занятий</small></div></div></section>`);
 }
 function ring(f) { const r = 26, L = 2 * Math.PI * r; return `<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" stroke="var(--line)" stroke-width="7" fill="none"/><circle cx="32" cy="32" r="${r}" stroke="var(--gold)" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L * (1 - f)}" transform="rotate(-90 32 32)"/></svg>`; }
 

@@ -42,6 +42,9 @@
 @font-face{font-family:"F2 Math"; font-style:italic; font-weight:400 700; font-display:swap; src:url(data:font/woff2;base64,{{FONT:stix-greek-600i}}) format("woff2"); unicode-range:U+0370-03FF}
 @font-face{font-family:"F2 Math"; font-style:italic; font-weight:400 700; font-display:swap; src:url(data:font/woff2;base64,{{FONT:stix-cyrillic-600i}}) format("woff2"); unicode-range:U+0400-045F,U+0490-0491}
 @font-face{font-family:"F2 Math"; font-style:normal; font-weight:400 700; font-display:swap; src:url(data:font/woff2;base64,{{FONT:stix-latin-600}}) format("woff2"); unicode-range:U+0000-00FF,U+2000-206F,U+2212,U+2215}
+/* Заголовки: STIX Two Text, прямой 600 — «академичный» характер учебника */
+@font-face{font-family:"F2 Serif"; font-weight:500 700; font-display:swap; src:url(data:font/woff2;base64,{{FONT:stix-latin-600}}) format("woff2"); unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"F2 Serif"; font-weight:500 700; font-display:swap; src:url(data:font/woff2;base64,{{FONT:stix-cyrillic-600}}) format("woff2"); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 @font-face{font-family:"F2 Math"; font-style:normal; font-weight:400 700; font-display:swap; src:url(data:font/woff2;base64,{{FONT:stix-greek-600}}) format("woff2"); unicode-range:U+0370-03FF}
 :root{
   --bg:#0B1020; --bg2:#0E1424; --card:#151D33; --card2:#1B2542; --line:#26324F; --text:#E8ECF6; --mute:#8D97B5;
@@ -959,7 +962,7 @@ body{font-variant-numeric:tabular-nums lining-nums}
 .lw-ta{width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:500 14.5px/1.5 var(--ui); resize:vertical}
 .lw-stage{position:sticky; top:0; z-index:5; background:var(--bg); padding-bottom:4px}
 @media(min-width:761px){.lw-stage{position:static}.lw{max-width:900px; margin:0 auto}}
-#lw-cv{display:block; width:min(100%, calc(52vh * 580 / 440)); margin:0 auto; aspect-ratio:580/440; height:auto; border-radius:16px; border:1px solid var(--line); touch-action:none; cursor:crosshair}
+#lw-cv{display:block; width:min(100%, calc(52vh * 580 / 440)); margin:0 auto; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid var(--line); touch-action:none; cursor:crosshair}
 .lw-hint{margin:6px 2px 0; font-size:12.5px; color:var(--mute); display:flex; gap:6px; align-items:center}.lw-hint .ic{width:15px; height:15px; flex:none}
 .lw-screw{display:flex; align-items:center; gap:10px; margin-top:10px}.lw-screw span{flex:1; font-size:14px; color:var(--mute)}.lw-screw b{font:800 22px var(--ui); min-width:24px; text-align:center}
 .lw-screw .lp-btn{width:46px; height:42px; flex:0 0 46px}
@@ -994,11 +997,185 @@ body{font-variant-numeric:tabular-nums lining-nums}
  .lwr{display:block}.lwp{box-shadow:none; border-radius:0; padding:0; max-width:none; page-break-after:always; break-after:page}
  .lwp:last-child{page-break-after:auto; break-after:auto}
 }
+
+/* =====================================================================
+   ДИЗАЙН-СЛОЙ «Тетрадь лаборанта»: глубокий синий, янтарный акцент,
+   засечковые заголовки, тонкие линии вместо тяжёлых градиентов.
+   На широком экране — сайт: шапка с навигацией, заголовок страницы, контент по центру.
+   ===================================================================== */
+:root{
+  --bg:#0A1322; --bg2:#0C1729; --card:#111E32; --card2:#18294A; --line:#22365A; --text:#E8EEF7; --mute:#90A0BB;
+  --blue:#6FB0EA; --gold:#F2B544; --mint:#5AD3A0; --coral:#F28A5B; --pink:#F2727E; --violet:#A99BF0; --cyan:#4FD1C5;
+  --serif:"F2 Serif", "STIX Two Text", Georgia, "Times New Roman", serif;
+  --accent:var(--gold); --on-accent:#1B1406; --r:14px;
+}
+body{background:var(--bg)}
+::selection{background:rgba(242,181,68,.35)}
+:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+/* карточки и кнопки */
+.card{border-radius:var(--r); border:1px solid var(--line); box-shadow:none}
+.btn{border-radius:12px; background:var(--accent); color:var(--on-accent); font-weight:700; letter-spacing:.005em; transition:filter .15s, transform .15s}
+.btn:hover{filter:brightness(1.06)} .btn:active{transform:translateY(1px)}
+.btn.line{background:transparent; color:var(--text); border:1px solid var(--line)}
+.btn.line:hover{background:var(--card2)}
+.btn .ic{width:19px; height:19px}
+.cbtn{background:var(--accent); color:var(--on-accent); border-radius:10px}
+.cta{background:var(--accent); color:var(--on-accent); box-shadow:none; border-radius:var(--r)}
+.cta small{opacity:.78}
+.bar i,.pbar i{background:var(--blue)}
+.lvb{background:var(--gold); color:var(--on-accent); border-radius:9px}
+.lvbar i{background:var(--blue)}
+.cont{border-radius:var(--r); border:1px solid var(--line)}
+.quick4 a,.quick4 button{border:1px solid var(--line); border-radius:var(--r)}
+/* типографика */
+.sec{font:600 21px/1.2 var(--serif); text-transform:none; letter-spacing:0; color:var(--text); margin:30px 2px 12px}
+.sec a{font-family:var(--ui)}
+#ttl{font-family:var(--serif); font-weight:600; letter-spacing:.002em}
+#ttl small{font-family:var(--ui)}
+.part .ph h2,.chx h1,.hhead h1,.reader-cover h1{font-family:var(--serif); font-weight:600}
+/* шапка (телефон) */
+.top{border-bottom:1px solid transparent}
+.brand{display:none; align-items:center; gap:10px; color:var(--text)}
+.logo{width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:var(--gold); color:var(--on-accent); font:700 22px/1 var(--serif)}
+.bname{display:grid; font:600 19px/1.05 var(--serif)} .bname small{font:400 11.5px/1.3 var(--ui); color:var(--mute)}
+/* нижняя навигация (телефон) */
+.tabs{background:rgba(12,23,41,.96); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+.tabs a{font-weight:600}
+.tabs a.on{color:var(--text)} .tabs a.on span{background:rgba(242,181,68,.14); color:var(--gold)}
+/* главная: витрина */
+.hero{display:grid; gap:16px; margin:2px 0 4px; position:relative; isolation:isolate}
+.hero .eyebrow{display:block; color:var(--gold); font-weight:600; font-size:13px; letter-spacing:.03em}
+.hero h1{font:600 30px/1.12 var(--serif); margin:6px 0 10px; letter-spacing:-.003em; text-wrap:balance}
+.hero .lead{color:var(--mute); font-size:15.5px; line-height:1.55; margin:0 0 16px; max-width:58ch}
+.hero-cta{display:flex; gap:10px; flex-wrap:wrap}
+.hero-cta .btn{flex:1 1 170px; text-decoration:none}
+.hero-lv{display:flex; align-items:center; gap:12px; margin-top:16px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; color:var(--text); background:var(--bg2)}
+.hero-lv svg{flex:none; border-radius:50%}
+.hero-lv > span{flex:1; display:grid; gap:6px; min-width:0} .hero-lv b{font-size:13.5px} .hero-lv .bar{margin:0; height:5px} .hero-lv small{color:var(--mute); font-size:12.5px}
+.hero .exready{margin:0}
+.hero .exready .cta{display:none}
+.quick4.sections{grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+.quick4.sections > *{display:flex; align-items:flex-start; justify-items:start; gap:12px; padding:15px; text-align:left; background:var(--card); font:inherit; color:var(--text); transition:border-color .15s, background .15s}
+.quick4.sections > *:hover{border-color:#35507E; background:#13223A}
+.quick4.sections svg{flex:none; width:24px; height:24px; margin-top:1px}
+.quick4.sections b{display:block; font-size:15.5px; font-weight:700}
+.quick4.sections small{display:block; margin-top:2px; color:var(--mute); font-size:12.5px; line-height:1.35; font-weight:400}
+.quick4.sections > button:last-child{grid-column:1 / -1}
+.duo .goal{margin:0}
+@media (max-width:380px){.quick4.sections{grid-template-columns:1fr} .hero h1{font-size:26px}}
+
+/* ---------- широкий экран: полноценный сайт ---------- */
+@media (min-width:761px) and (min-height:501px){
+  body::before{content:""; position:fixed; left:0; right:0; top:0; height:64px; background:rgba(10,19,34,.94); border-bottom:1px solid var(--line); z-index:0; pointer-events:none}
+  .app, body[data-view] .app{display:grid !important; grid-template-columns:minmax(24px,1fr) minmax(0,1120px) minmax(24px,1fr) !important; grid-template-rows:64px auto minmax(0,1fr) !important; max-width:none !important; width:100%; box-shadow:none !important}
+  .top{display:contents !important}
+  .brand{display:flex; grid-column:2; grid-row:1; align-self:center; justify-self:start; z-index:2}
+  .tabs, .tabs[hidden]{display:flex !important; grid-column:2 !important; grid-row:1 !important; justify-self:center; flex-direction:row !important; justify-content:center; align-items:stretch; gap:2px !important; padding:0 !important; border:0 !important; background:none !important; backdrop-filter:none; z-index:2; height:64px}
+  .tabs a{display:flex !important; flex-direction:row; align-items:center; gap:8px !important; min-height:0 !important; height:64px; padding:0 14px !important; border-radius:0 !important; font-size:15px !important; font-weight:600; color:var(--mute); position:relative; transition:color .15s}
+  .tabs a:hover{color:var(--text)}
+  .tabs a span{flex:none !important; width:auto !important; height:auto !important; background:none !important; border-radius:0 !important; color:inherit !important}
+  .tabs a span svg{width:18px; height:18px}
+  .tabs a.on{color:var(--text)}
+  .tabs a.on::after{content:""; position:absolute; left:14px; right:14px; bottom:0; height:2px; border-radius:2px 2px 0 0; background:var(--gold)}
+  .tabs a.tab-prof{display:none !important}
+  #lv{grid-column:2; grid-row:1; align-self:center; justify-self:end; z-index:2; padding:6px 8px 6px 6px; border:1px solid var(--line); border-radius:12px}
+  #lv::after{content:"Профиль"; font-size:13.5px; font-weight:600; color:var(--mute)}
+  #back{grid-column:2; grid-row:2; align-self:start; justify-self:start; margin-top:26px; z-index:2; border:1px solid var(--line); background:transparent}
+  #ttl{grid-column:2; grid-row:2; align-self:end; padding:26px 0 4px; font-size:32px !important; line-height:1.15; white-space:normal; z-index:1}
+  #back:not([hidden]) + #ttl{padding-left:56px}
+  #ttl small{font-size:14.5px; margin-top:4px}
+  body[data-view=home] #ttl, body[data-view=home] #back{display:none}
+  main, body[data-view] main{grid-column:1 / -1 !important; grid-row:3 !important; width:100%; padding:20px 24px 64px !important}
+  main > *, body[data-view] #main > *{max-width:1120px !important; margin-left:auto !important; margin-right:auto !important}
+  body[data-view=lesson] #main > *, body[data-view=quiz] #main > *{max-width:800px !important}
+  .duo, .tiles, .sci, .badges{max-width:1120px}
+  /* главная */
+  .hero{grid-template-columns:minmax(0,1.3fr) minmax(320px,.9fr); align-items:center; gap:48px; padding:44px 0 22px}
+  .hero::before{content:""; position:absolute; inset:0 0 -10px; z-index:-1; pointer-events:none;
+    background-image:linear-gradient(rgba(111,176,234,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(111,176,234,.07) 1px, transparent 1px);
+    background-size:28px 28px; -webkit-mask-image:radial-gradient(ellipse 70% 80% at 30% 40%, #000 30%, transparent 75%); mask-image:radial-gradient(ellipse 70% 80% at 30% 40%, #000 30%, transparent 75%)}
+  .hero h1{font-size:50px; line-height:1.06; margin:10px 0 16px}
+  .hero .lead{font-size:17.5px}
+  .hero-cta .btn{flex:0 0 auto; padding:0 22px}
+  .hero-lv{max-width:440px}
+  .hero .exready{padding:22px}
+  .quick4.sections{grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px}
+  .quick4.sections > *{flex-direction:column; gap:12px; padding:18px; min-height:150px}
+  .quick4.sections > button:last-child{grid-column:auto}
+  .quick4.sections svg{width:28px; height:28px}
+  .duo{grid-template-columns:1fr 1fr}
+  .cont{max-width:1120px}
+  .sec{font-size:24px; margin-top:38px}
+}
+@media (min-width:761px) and (max-width:1023px) and (min-height:501px){
+  .bname small{display:none}
+  .tabs a{padding:0 10px !important}
+  .tabs a span{display:none !important}
+  #lv::after{content:none}
+  .hero{grid-template-columns:1fr; gap:24px; padding-top:24px}
+  .hero h1{font-size:40px}
+  .quick4.sections{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* общие формы: единый радиус и тонкая обводка */
+.chrow,.nl,.tile,.scard,.bdg,.kcard,.opt{border-radius:var(--r)}
+.chrow,.nl,.tile,.scard{border:1px solid var(--line)}
+.chrow:hover,.tile:hover,.nl:hover{border-color:#35507E}
+.chead{border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+@media (min-width:761px) and (min-height:501px){
+  .chead{display:grid; grid-template-columns:minmax(0,440px) minmax(0,1fr); align-items:stretch}
+  .chead .cart.big{aspect-ratio:auto; height:100%; min-height:210px}
+  .chead .chx{display:flex; flex-direction:column; justify-content:center; padding:28px 32px}
+  .chx h1{font-size:34px; line-height:1.12; margin:6px 0 16px}
+  .part{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:12px; margin-bottom:30px}
+  .part .ph{grid-column:1 / -1; margin-bottom:14px}
+  .part .ph h2{font-size:24px}
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .path{max-width:820px}
+  .sci{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
+}
+@media (min-width:761px) and (max-width:1023px) and (min-height:501px){
+  .chead{grid-template-columns:minmax(0,320px) minmax(0,1fr)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sci{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+/* телефон: кнопки витрины в одну строку */
+@media (max-width:760px){
+  .hero-cta .btn{flex:1 1 0; min-width:0; white-space:nowrap; padding:0 12px; font-size:15px}
+  .hero-cta .btn .ic{display:none}
+}
+
+/* акценты в новой палитре */
+.steps button{border:1px solid var(--line); border-radius:12px}
+.steps button.on{background:rgba(242,181,68,.14); color:var(--gold); border-color:rgba(242,181,68,.55)}
+.lw-card{border-radius:var(--r)} .lw-card:hover{border-color:#35507E}
+.lw-num{background:rgba(242,181,68,.14); color:var(--gold); border:1px solid rgba(242,181,68,.45); font-family:var(--serif); font-size:17px}
+.cont{height:auto}
+@media (min-width:761px) and (min-height:501px){.cont .cart{width:40%; min-height:0; max-height:230px} .cont .ctx{padding:22px 26px} .cont .ctx b{font:600 26px/1.15 var(--serif)}}
+/* телефон: больше места заголовку страницы */
+@media (max-width:760px){
+  .lvbar{display:none}
+  #ttl{font-size:20px}
+  body[data-view=lesson] #ttl, body[data-view=quiz] #ttl{font-size:16.5px}
+}
+
+@media print{.top,.tabs,.tabs[hidden],.brand,#lv,#back,#ttl{display:none !important} body::before{content:none !important; display:none !important}
+  .app, body[data-view] .app{display:block !important} main, body[data-view] main{padding:0 !important}}
+
+/* ЛР на широком экране: установка слева (закреплена), задания и таблицы справа */
+@media (min-width:1100px) and (min-height:501px){
+  .lw:has(.lw-stage){display:grid; grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr); grid-auto-flow:row dense; row-gap:0; column-gap:20px; align-items:start; max-width:1120px !important}
+  .lw:has(.lw-stage) > *{grid-column:2; margin-bottom:12px}
+  .lw:has(.lw-stage) > .lw-steps{grid-column:1 / -1}
+  .lw:has(.lw-stage) > .lw-stage{grid-column:1; grid-row:2 / span 8; position:sticky; top:0}
+  .lw:has(.lw-stage) #lw-cv{width:min(100%, calc((100vh - 230px) * 580 / 452))}
+}
+.lw-steps button.on{border-color:rgba(242,181,68,.6) !important; color:var(--text)} .lw-steps button.on b{background:var(--gold) !important; color:var(--on-accent) !important}
 </style>
 </head>
 <body data-view="home">
 <div class="app">
-  <header class="top"><button id="back" aria-label="Назад" hidden><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1 id="ttl">Физика</h1><a href="#profile" id="lv" aria-label="Уровень и профиль"></a></header>
+  <header class="top"><a class="brand" href="#" aria-label="На главную"><span class="logo">Ф</span><span class="bname">Физика<small>по курсу Т. И. Трофимовой</small></span></a><button id="back" aria-label="Назад" hidden><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1 id="ttl">Физика</h1><a href="#profile" id="lv" aria-label="Уровень и профиль"></a></header>
   <main id="main"></main>
   <nav class="tabs" id="tabs" aria-label="Разделы">
     <a href="#" data-tab="home"><span>{{I_house}}</span>Главная</a>
