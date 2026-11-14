@@ -9,7 +9,8 @@
 
 const LW_LIST = [
   { id: 1, title: 'Изучение закона сохранения импульса', aim: 'Исследовать соударение тел, проверить выполнение законов сохранения импульса и энергии, оценить погрешность опытов.', topic: 'Механика · гл. 2–3 учебника', ready: true },
-  { id: 2, title: 'Определение момента инерции абсолютно твёрдого тела', aim: 'Изучить законы динамики вращательного движения; получить экспериментальную зависимость углового ускорения от момента силы и определить момент инерции маятника динамическим методом.', topic: 'Механика · гл. 4 учебника (маятник Обербека)', ready: true }
+  { id: 2, title: 'Определение момента инерции абсолютно твёрдого тела', aim: 'Изучить законы динамики вращательного движения; получить экспериментальную зависимость углового ускорения от момента силы и определить момент инерции маятника динамическим методом.', topic: 'Механика · гл. 4 учебника (маятник Обербека)', ready: true },
+  { id: 3, title: 'Определение показателя адиабаты', aim: 'Изучить основные положения термодинамики, экспериментально определить показатель адиабаты для воздуха и сравнить полученные значения с теоретическими.', topic: 'Термодинамика · гл. 9 учебника (метод Клемана — Дезорма)', ready: true }
 ];
 
 const LW1 = {
@@ -226,7 +227,7 @@ function vLabWorks() {
   frame('Практикум', { sub: 'Лабораторные работы, опыты и игры' });
   const S = lwLoad();
   setMain(labTabs('works') + `<section class="lab-intro"><b class="h">Лабораторные работы</b><p class="mute">Как на занятии: допуск, опыт на установке, таблицы измерений, расчёт погрешностей, выводы и отчёт в PDF.</p></section>` +
-    LW_LIST.map(w => { const T = w.id === 1 ? S : l2Load(), n = w.id === 1 ? LW1.steps.length : L2.steps.length, pr = T.done ? 'выполнена' : T.max ? `шаг ${T.max + 1} из ${n}` : 'не начата';
+    LW_LIST.map(w => { const T = w.id === 1 ? S : w.id === 2 ? l2Load() : l3Load(), n = (w.id === 1 ? LW1 : w.id === 2 ? L2 : L3).steps.length, pr = T.done ? 'выполнена' : T.max ? `шаг ${T.max + 1} из ${n}` : 'не начата';
       return `<a class="lw-card" href="#lw-${w.id}"><span class="lw-num">№ ${w.id}</span><span class="lw-copy"><b>${esc(w.title)}</b><small>${esc(w.aim)}</small><span class="lw-meta">${esc(w.topic)} · <i class="${T.done ? 'mint' : ''}">${pr}</i></span></span>${ic('chevron-right')}</a>`; }).join('') +
     `<p class="mute small lw-more">Остальные работы методички добавим следующими.</p>`);
 }
@@ -514,7 +515,7 @@ function lwMsg(t, bad) { const m = $('#lw-msg'); if (m) { m.textContent = t; m.c
 function lwGo(i) { LWS.step = Math.max(0, Math.min(i, LWS.max)); lwSave(); render(); ui.main.scrollTop = 0; }
 function lwAdvance() { LWS.max = Math.max(LWS.max, LWS.step + 1); LWS.step = LWS.step + 1; lwSave(); render(); ui.main.scrollTop = 0; }
 document.addEventListener('input', e => {
-  const el = e.target.closest && e.target.closest('.lwi:not(.l2i), .lw-ta:not(.l2i)'); if (!el || !LWS) return;
+  const el = e.target.closest && e.target.closest('.lwi:not(.l2i):not(.l3i), .lw-ta:not(.l2i):not(.l3i)'); if (!el || !LWS) return;
   const k = el.dataset.k;
   if (k.startsWith('p_')) { LWS.proc[k.slice(2)] = el.value; delete LWS.procOk[k.slice(2)]; el.classList.remove('ok', 'bad'); }
   else if (/^r[xy]0[23]$/.test(k)) LWS.ex[k[3]][k[1] === 'x' ? 'rx' : 'ry'] = el.value;
