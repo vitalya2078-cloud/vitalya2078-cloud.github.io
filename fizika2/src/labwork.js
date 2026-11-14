@@ -279,7 +279,7 @@ function lwPrep() {
   const S = LWS, role = id => S.p1 === id ? 1 : S.p2 === id ? 2 : S.p3 === id ? 3 : 0;
   const pk = LW1.pucks.map(p => { const r = role(p.id); return `<button data-lw="puck" data-v="${p.id}" class="${r ? 'p' + r : ''}"><b>${p.id}</b><small>${f1(p.m * 1000, 1)} г</small>${r ? `<i>тело ${r}</i>` : ''}</button>`; }).join('');
   return `<section class="card"><b class="h">1. Выбери три шайбы</b><p class="mute small">Первое касание — основная шайба (тело 1, ударяющее). Второе и третье — шайбы-мишени разной массы (тела 2 и 3): с ними проведёшь опыты 2 и 3. Масса указана на шайбе. Чтобы разница была заметнее, бери мишени с непохожими массами.</p><div class="lw-pucks">${pk}</div>
-    <div class="lw-row three"><label>m₁, кг ${lwIn('m1', S.m1, '0,0000')}</label><label>m₂, кг ${lwIn('m2', S.m2, '0,0000')}</label><label>m₃, кг ${lwIn('m3', S.m3, '0,0000')}</label></div></section>
+    <div class="lw-row three">${[1, 2, 3].map(j => { const pk = lwPuck(S['p' + j]); return `<label>m${LW_SUB[j]}, кг <small class="lw-who">${pk ? `тело ${j} — шайба ${pk.id}, ${f1(pk.m * 1000, 1)} г` : `тело ${j} — не выбрано`}</small>${lwIn('m' + j, S['m' + j], '0,0000')}</label>`; }).join('')}</div></section>
     ${lwField()}
     <section class="card"><b class="h">2. Начальные координаты тела 1</b><p class="mute small">Шайба 1 стоит в направляющих. Наведи лупу на красную метку её крайней точки (справа, по ходу движения) и запиши координаты с точностью до 1 мм.</p>
     <div class="lw-row"><label>x₀₁, мм ${lwIn('rx01', S.rx01, 'мм')}</label><label>y₀₁, мм ${lwIn('ry01', S.ry01, 'мм')}</label></div>
@@ -539,7 +539,7 @@ document.addEventListener('click', e => {
       const ms = [1, 2, 3].map(j => lwPuck(S['p' + j]).m);
       if (Math.abs(ms[1] - ms[2]) < .0009) { lwMsg('Шайбы-мишени должны быть разной массы.', 1); break; }
       const badM = [1, 2, 3].filter(j => Math.abs(lwNum(S['m' + j]) - ms[j - 1]) > .00006);
-      if (badM.length) { lwMsg(`Неверно записано: ${badM.map(j => 'm' + LW_SUB[j]).join(', ')}. Переведи граммы в килограммы: 20,1 г = 0,0201 кг.`, 1); break; }
+      if (badM.length) { lwMsg('Неверно записано: ' + badM.map(j => { const pk = lwPuck(S['p' + j]); return `m${LW_SUB[j]} (тело ${j} — шайба ${pk.id}, ${f1(pk.m * 1000, 1)} г)`; }).join('; ') + '. Масса в килограммах: граммы ÷ 1000, например 20,1 г = 0,0201 кг.', 1); break; }
       if (!(Math.abs(lwNum(S.rx01) - (S.x01 + LW1.R)) <= 1.2 && Math.abs(lwNum(S.ry01) - S.y01) <= 1.2)) { S.prepTries = (S.prepTries || 0) + 1; lwSave();
         lwMsg(S.prepTries >= 3 ? `Не совпадает. Подсказка: x₀₁ ≈ ${Math.round(S.x01 + LW1.R)} мм, y₀₁ ≈ ${Math.round(S.y01)} мм — найди это место в лупе.` : 'Координаты не совпадают с установкой. Наведи лупу на красную метку крайней точки шайбы 1 и посчитай миллиметровые деления.', 1); break; }
       S.prepOk = true; lwSave(); render(); toast('Подготовка выполнена'); break;
