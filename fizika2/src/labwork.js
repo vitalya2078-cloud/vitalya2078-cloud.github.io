@@ -95,7 +95,7 @@ function lwDraw() {
   lwScene(c, map, k, false);
   // лупа: увеличенный фрагмент поля в углу
   if (LWV.lens) {
-    const L = Math.min(cssW * .42, 230), X0 = cssW - L - 8, Y0 = 8, Z = 9 * Math.max(1, 600 / cssW) * k, [lx, ly] = LWV.lens;
+    const L = Math.min(cssW * (cssW < 500 ? .52 : .42), 240), [qx] = map(LWV.lens[0], LWV.lens[1]), X0 = qx > cssW * .55 ? 8 : cssW - L - 8, Y0 = 8, Z = 9 * Math.max(1, 600 / cssW) * k, [lx, ly] = LWV.lens;
     c.save(); c.beginPath(); c.roundRect ? c.roundRect(X0, Y0, L, L, 14) : c.rect(X0, Y0, L, L); c.clip();
     c.fillStyle = '#0B1020'; c.fillRect(X0, Y0, L, L);
     const mapZ = (x, y) => [X0 + L / 2 + (x - lx) * Z, Y0 + L / 2 - (y - ly) * Z];
@@ -177,13 +177,31 @@ function lwScene(c, map, s, fine) {
 }
 function lwRestPos() { const S = LWS, st = LW1.steps[S.step][0]; return { p1: [S.x01, S.y01], p2: (st === 'coll' && S.place) ? S.place : null }; }
 
-/* лупа: коснись поля и веди пальцем */
+/* лупа: касание ставит перекрестье, протяжка пальцем двигает его в 4 раза медленнее пальца (точная наводка);
+   мышью перекрестье просто следует за курсором; кнопки под полем — наведение на метку шайбы и шаг 0,5 мм */
+const lwClampLens = () => { const F = LW1.field; LWV.lens = [Math.max(-20, Math.min(F.w + 5, LWV.lens[0])), Math.max(-5, Math.min(F.h + 5, LWV.lens[1]))]; };
 document.addEventListener('pointerdown', e => {
   const cv = e.target.closest && e.target.closest('#lw-cv'); if (!cv) return;
-  const move = ev => { const b = cv.getBoundingClientRect(), k = b.width / 580; LWV.lens = [(ev.clientX - b.left) / k - 60, 422 - (ev.clientY - b.top) / k]; lwDraw(); };
-  move(e); cv.setPointerCapture && cv.setPointerCapture(e.pointerId);
-  const mv = ev => move(ev), up = () => { cv.removeEventListener('pointermove', mv); cv.removeEventListener('pointerup', up); cv.removeEventListener('pointercancel', up); };
+  const touch = e.pointerType !== 'mouse', b0 = cv.getBoundingClientRect(), k0 = b0.width / 580;
+  const at = ev => [(ev.clientX - b0.left) / k0 - 60, 422 - (ev.clientY - b0.top) / k0];
+  const x0 = e.clientX, y0 = e.clientY, start = LWV.lens ? LWV.lens.slice() : null; let drag = false;
+  if (!touch || !start) { LWV.lens = at(e); lwClampLens(); lwDraw(); }
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  const mv = ev => {
+    if (!touch) { LWV.lens = at(ev); lwClampLens(); lwDraw(); return; }
+    const dx = ev.clientX - x0, dy = ev.clientY - y0; if (!drag && Math.hypot(dx, dy) < 6) return; drag = true;
+    const base = start || at(e), f = .25 / k0; LWV.lens = [base[0] + dx * f, base[1] - dy * f]; lwClampLens(); lwDraw();
+  };
+  const up = () => { if (touch && start && !drag) { LWV.lens = at(e); lwClampLens(); lwDraw(); }
+    cv.removeEventListener('pointermove', mv); cv.removeEventListener('pointerup', up); cv.removeEventListener('pointercancel', up); };
   cv.addEventListener('pointermove', mv); cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+});
+document.addEventListener('click', e => {
+  const btn = e.target.closest && e.target.closest('[data-aim]'); if (!btn || !$('#lw-cv')) return;
+  const v = btn.dataset.aim, pos = LWV.pos || lwRestPos();
+  if (v === 'p1' || v === 'p2') { const p = pos[v]; if (!p) { toast('Шайбы 2 на поле пока нет'); return; } LWV.lens = [p[0] + LW1.R, p[1]]; }
+  else { if (!LWV.lens) { const p = pos.p1; LWV.lens = [p[0] + LW1.R, p[1]]; } const d = { l: [-.5, 0], r: [.5, 0], u: [0, .5], dn: [0, -.5] }[v]; LWV.lens = [LWV.lens[0] + d[0], LWV.lens[1] + d[1]]; lwClampLens(); }
+  lwDraw();
 });
 
 function lwAnimate(shot, done) {
@@ -214,7 +232,10 @@ function vLabWork() {
   setMain(`<div class="lw">${chips}${body}</div>`);
   if (['prep', 'free', 'coll'].includes(st)) { LWV.pos = null; lwDraw(); if (!lwDraw.ro && 'ResizeObserver' in window) lwDraw.ro = new ResizeObserver(() => lwDraw()); if (lwDraw.ro) { lwDraw.ro.disconnect(); lwDraw.ro.observe($('#lw-cv')); } }
 }
-const lwField = hint => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas><p class="lw-hint">${ic('search')} ${hint || 'Коснись поля и веди пальцем — в углу появится лупа с миллиметровой сеткой. По ней снимай координаты красной метки — крайней (передней) точки шайбы.'}</p></section>`;
+const lwField = hint => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas>
+  <div class="lw-aim" role="group" aria-label="Наведение лупы"><button data-aim="p1">${ic('crosshair')}Шайба 1</button><button data-aim="p2">${ic('crosshair')}Шайба 2</button>
+  <span class="lw-arrows"><button data-aim="l" aria-label="Влево на 0,5 мм">${ic('chevron-left')}</button><button data-aim="u" aria-label="Вверх на 0,5 мм">${ic('chevron-up')}</button><button data-aim="dn" aria-label="Вниз на 0,5 мм">${ic('chevron-down')}</button><button data-aim="r" aria-label="Вправо на 0,5 мм">${ic('chevron-right')}</button></span></div>
+  <p class="lw-hint">${ic('search')} ${hint || '«Шайба 1/2» наводит лупу на красную метку крайней точки, стрелки сдвигают перекрестье на 0,5 мм. Пальцем: коснись поля и веди — перекрестье идёт в 4 раза медленнее пальца.'}</p></section>`;
 const lwIn = (k, val, ph = '', cls = '') => `<input class="lwi ${cls}" data-k="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
 const lwNext = (label = 'Дальше') => `<button class="btn wide mt" data-lw="next">${label} ${ic('chevron-right')}</button>`;
 

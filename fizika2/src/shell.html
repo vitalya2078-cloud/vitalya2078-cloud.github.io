@@ -1171,6 +1171,18 @@ body{background:var(--bg)}
   .lw:has(.lw-stage) #lw-cv{width:min(100%, calc((100vh - 230px) * 580 / 452))}
 }
 .lw-steps button.on{border-color:rgba(242,181,68,.6) !important; color:var(--text)} .lw-steps button.on b{background:var(--gold) !important; color:var(--on-accent) !important}
+
+/* ЛР: наведение лупы — кнопки под полем */
+.lw-aim{display:flex; gap:6px; margin-top:8px; align-items:stretch}
+.lw-aim button{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:0 12px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--text); font:600 14px var(--ui); touch-action:manipulation}
+.lw-aim > button{flex:1 1 0; min-width:0; white-space:nowrap}
+.lw-aim > button .ic{width:17px; height:17px; color:#E5484D}
+.lw-aim button:active{background:var(--card2)}
+.lw-arrows{display:grid; grid-template-columns:repeat(4,44px); gap:4px}
+.lw-arrows button{padding:0}
+.lw-arrows .ic{width:20px; height:20px}
+@media (max-width:520px){.lw-aim{gap:5px} .lw-arrows{grid-template-columns:repeat(4,minmax(34px,40px)); gap:4px} .lw-aim > button{padding:0 6px; font-size:13.5px; gap:4px} .lw-aim > button .ic{width:15px; height:15px}}
+@media (max-width:370px){.lw-aim > button .ic{display:none}}
 </style>
 </head>
 <body data-view="home">
