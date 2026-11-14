@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 118;
+  var embedded = 119;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1191,6 +1191,22 @@ body{background:var(--bg)}
 .lwp p.small{margin:4px 0}
 .lwp .lwr-svg.scheme{width:62%; margin:2px auto}
 .lw-who{display:block; font-size:11.5px; color:var(--gold); line-height:1.3}
+
+/* ЛР: ввод координат прямо под установкой (панель закреплена вместе с полем) */
+.lw-ctl{margin-top:8px; display:grid; gap:6px}
+.lw-ctl-row{display:flex; gap:6px; align-items:flex-end}
+.lw-ctl-row label{flex:1 1 0; min-width:0; display:grid; gap:3px; font-size:12px; font-weight:600; color:var(--mute)}
+.lw-ctl-row .lwi{min-height:44px; padding:6px 10px; font-size:16px}
+.lw-ctl-row .btn{flex:0 0 auto; min-height:44px; padding:0 14px; font-size:14.5px}
+.lw-ctl-row.four label{flex:1 1 0}
+.lw-ctl .btn.wide{min-height:46px; margin:0}
+.lw-ctl .lw-msg{margin:0; font-size:13px; min-height:0}
+.lw-ctl .lw-msg:empty{display:none}
+.lw-stage + .lw-hint{margin-top:0}
+@media (max-width:760px){
+  .lw-stage{margin:0 -4px; padding:4px 4px 8px; border-bottom:1px solid var(--line); box-shadow:0 10px 18px -12px rgba(0,0,0,.6)}
+  .lw-aim{margin-top:6px} .lw-aim button{min-height:40px}
+}
 </style>
 </head>
 <body data-view="home">
@@ -1208,7 +1224,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 118;
+const F2_BUILD = 119;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -7300,7 +7316,7 @@ function lwDraw() {
   lwScene(c, map, k, false);
   // лупа: увеличенный фрагмент поля в углу
   if (LWV.lens) {
-    const L = Math.min(cssW * (cssW < 500 ? .52 : .42), 240), [qx] = map(LWV.lens[0], LWV.lens[1]), X0 = qx > cssW * .55 ? 8 : cssW - L - 8, Y0 = 8, Z = 9 * Math.max(1, 600 / cssW) * k, [lx, ly] = LWV.lens;
+    const L = Math.min(cssW * (cssW < 500 ? .4 : .36), 200), [qx] = map(LWV.lens[0], LWV.lens[1]), X0 = qx > cssW * .55 ? 8 : cssW - L - 8, Y0 = 8, Z = 9 * Math.max(1, 600 / cssW) * k, [lx, ly] = LWV.lens;
     c.save(); c.beginPath(); c.roundRect ? c.roundRect(X0, Y0, L, L, 14) : c.rect(X0, Y0, L, L); c.clip();
     c.fillStyle = '#0B1020'; c.fillRect(X0, Y0, L, L);
     const mapZ = (x, y) => [X0 + L / 2 + (x - lx) * Z, Y0 + L / 2 - (y - ly) * Z];
@@ -7438,10 +7454,13 @@ function vLabWork() {
   setMain(`<div class="lw">${chips}${body}</div>`);
   if (['prep', 'free', 'coll2', 'coll3'].includes(st)) { LWV.pos = null; lwDraw(); if (!lwDraw.ro && 'ResizeObserver' in window) lwDraw.ro = new ResizeObserver(() => lwDraw()); if (lwDraw.ro) { lwDraw.ro.disconnect(); lwDraw.ro.observe($('#lw-cv')); } }
 }
-const lwField = hint => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas>
+const lwField = (hint, ctl = '') => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas>
   <div class="lw-aim" role="group" aria-label="Наведение лупы"><button data-aim="p1">${ic('crosshair')}Шайба 1</button>${lwTargetJ() ? `<button data-aim="p2">${ic('crosshair')}Шайба ${lwTargetJ()}</button>` : ''}
   <span class="lw-arrows"><button data-aim="l" aria-label="Влево на 0,5 мм">${ic('chevron-left')}</button><button data-aim="u" aria-label="Вверх на 0,5 мм">${ic('chevron-up')}</button><button data-aim="dn" aria-label="Вниз на 0,5 мм">${ic('chevron-down')}</button><button data-aim="r" aria-label="Вправо на 0,5 мм">${ic('chevron-right')}</button></span></div>
-  <p class="lw-hint">${ic('search')} ${hint || 'Кнопка «Шайба» наводит лупу на красную метку крайней точки, стрелки сдвигают перекрестье на 0,5 мм. Пальцем: коснись поля и веди — перекрестье идёт в 4 раза медленнее пальца.'}</p></section>`;
+  ${ctl ? `<div class="lw-ctl">${ctl}</div>` : ''}</section>
+  <p class="lw-hint">${ic('search')} ${hint || 'Кнопка «Шайба» наводит лупу на красную метку крайней точки, стрелки сдвигают перекрестье на 0,5 мм. Пальцем: коснись поля и веди — перекрестье идёт в 4 раза медленнее пальца.'}</p>`;
+/* компактное поле ввода в панели под установкой */
+const lwCtlIn = (k, lab, val) => `<label>${lab}${lwIn(k, val, 'мм')}</label>`;
 const lwIn = (k, val, ph = '', cls = '') => `<input class="lwi ${cls}" data-k="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
 const lwNext = (label = 'Дальше') => `<button class="btn wide mt" data-lw="next">${label} ${ic('chevron-right')}</button>`;
 
@@ -7480,22 +7499,21 @@ function lwPrep() {
   const pk = LW1.pucks.map(p => { const r = role(p.id); return `<button data-lw="puck" data-v="${p.id}" class="${r ? 'p' + r : ''}"><b>${p.id}</b><small>${f1(p.m * 1000, 1)} г</small>${r ? `<i>тело ${r}</i>` : ''}</button>`; }).join('');
   return `<section class="card"><b class="h">1. Выбери три шайбы</b><p class="mute small">Первое касание — основная шайба (тело 1, ударяющее). Второе и третье — шайбы-мишени разной массы (тела 2 и 3): с ними проведёшь опыты 2 и 3. Масса указана на шайбе. Чтобы разница была заметнее, бери мишени с непохожими массами.</p><div class="lw-pucks">${pk}</div>
     <div class="lw-row three">${[1, 2, 3].map(j => { const pk = lwPuck(S['p' + j]); return `<label>m${LW_SUB[j]}, кг <small class="lw-who">${pk ? `тело ${j} — шайба ${pk.id}, ${f1(pk.m * 1000, 1)} г` : `тело ${j} — не выбрано`}</small>${lwIn('m' + j, S['m' + j], '0,0000')}</label>`; }).join('')}</div></section>
-    ${lwField()}
-    <section class="card"><b class="h">2. Начальные координаты тела 1</b><p class="mute small">Шайба 1 стоит в направляющих. Наведи лупу на красную метку её крайней точки (справа, по ходу движения) и запиши координаты с точностью до 1 мм.</p>
-    <div class="lw-row"><label>x₀₁, мм ${lwIn('rx01', S.rx01, 'мм')}</label><label>y₀₁, мм ${lwIn('ry01', S.ry01, 'мм')}</label></div>
-    <button class="btn wide mt" data-lw="prepCheck">${ic('circle-check')} Проверить</button><p class="lw-msg" id="lw-msg"></p>${S.prepOk ? lwNext('К опыту 1') : ''}</section>`;
+    <section class="card"><b class="h">2. Начальные координаты тела 1</b><p class="mute small">Шайба 1 стоит в направляющих. Нажми «Шайба 1» под полем — лупа наведётся на красную метку её крайней точки (справа, по ходу движения). Запиши координаты с точностью до 1 мм в поля под установкой и нажми «Проверить».</p></section>
+    ${lwField('', `<div class="lw-ctl-row">${lwCtlIn('rx01', 'x₀₁', S.rx01)}${lwCtlIn('ry01', 'y₀₁', S.ry01)}<button class="btn" data-lw="prepCheck">${ic('circle-check')} Проверить</button></div><p class="lw-msg" id="lw-msg"></p>${S.prepOk ? lwNext('К опыту 1') : ''}`)}`;
 }
 
 /* 3. Опыт 1 — свободное движение */
 function lwFreeStep() {
   const S = LWS, rows = S.free, n = rows.length, cur = S.cur && S.cur.kind === 'free';
-  const tbl = `<table class="lw-tbl"><tr><th>№</th><th>x, мм</th></tr>${Array.from({ length: LW1.N }, (_, i) => `<tr class="${i === n && cur ? 'now' : ''}"><td>${i + 1}</td><td>${rows[i] ? f1(rows[i].r, 1) : i === n && cur ? lwIn('cx', S.cur.r ?? '', 'мм') : ''}</td></tr>`).join('')}</table>`;
+  const tbl = `<table class="lw-tbl"><tr><th>№</th><th>x, мм</th></tr>${Array.from({ length: LW1.N }, (_, i) => `<tr class="${i === n && cur ? 'now' : ''}"><td>${i + 1}</td><td>${rows[i] ? f1(rows[i].r, 1) : i === n && cur ? '…' : ''}</td></tr>`).join('')}</table>`;
   return `<section class="card lw-cond"><b class="h">Опыт 1. Свободное движение тела 1</b><p class="mute small">Тела 2 на поле нет. Сделай ${LW1.N} выстрелов при одном положении винта, после каждого запиши координату x остановки шайбы 1.</p>
     <div class="lw-screw"><span>Винт ударного механизма</span><button class="lp-btn" data-lw="screw" data-d="-1" ${n ? 'disabled' : ''}>−</button><b>${S.screw}</b><button class="lp-btn" data-lw="screw" data-d="1" ${n ? 'disabled' : ''}>+</button></div>
     ${n ? '<p class="mute small">Положение винта зафиксировано: все выстрелы — «при тех же условиях».</p>' : ''}</section>
-    ${lwField()}
-    <section class="card"><div class="lw-bar">${cur ? `<button class="btn wide" data-lw="record">${ic('pencil')} Записать x</button>` : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="free">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : ''}</div>
-    <p class="lw-msg" id="lw-msg">${cur ? 'Шайба остановилась. Сними координату x её крайней точки (красная метка) по лупе.' : ''}</p>${tbl}${n >= LW1.N ? lwNext('К опыту 2') : ''}</section>`;
+    ${lwField('', (cur ? `<div class="lw-ctl-row">${lwCtlIn('cx', `x (выстрел ${n + 1})`, S.cur.r ?? '')}<button class="btn" data-lw="record">${ic('pencil')} Записать</button></div>`
+      : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="free">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : lwNext('К опыту 2')) +
+      `<p class="lw-msg" id="lw-msg">${cur ? 'Шайба остановилась. Нажми «Шайба 1» и сними x красной метки.' : ''}</p>`)}
+    <section class="card"><b class="h">Записи опыта 1</b>${tbl}</section>`;
 }
 
 /* 4–5. Опыты 2 и 3 — соударение тела 1 с телом-мишенью j (2 или 3) */
@@ -7505,16 +7523,15 @@ function lwCollStep(j) {
   if (!E.placeOk) {
     return `<section class="card"><b class="h">${head}: установка тела ${j}</b><p class="mute small">Шайба ${j} (${mj ? f1(mj.m * 1000, 1) + ' г' : ''}). Выбери один из закрашенных кругов (смещённый даёт нецентральный удар), поставь в него шайбу ${j} и запиши координаты её крайней точки.</p>
       <div class="seg">${LW1.circles.map((c, i) => `<button type="button" data-lw="circle" data-j="${j}" data-v="${i + 1}" aria-pressed="${E.circle === i + 1}">${['Нижний', 'Центр', 'Верхний'][i]}</button>`).join('')}</div></section>
-      ${lwField()}
-      <section class="card"><div class="lw-row"><label>x₀${sj}, мм ${lwIn('rx0' + j, E.rx, 'мм')}</label><label>y₀${sj}, мм ${lwIn('ry0' + j, E.ry, 'мм')}</label></div>
-      <button class="btn wide mt" data-lw="placeCheck" data-j="${j}">${ic('circle-check')} Проверить</button><p class="lw-msg" id="lw-msg"></p></section>`;
+      ${lwField('', `<div class="lw-ctl-row">${lwCtlIn('rx0' + j, 'x₀' + sj, E.rx)}${lwCtlIn('ry0' + j, 'y₀' + sj, E.ry)}<button class="btn" data-lw="placeCheck" data-j="${j}">${ic('circle-check')} Проверить</button></div><p class="lw-msg" id="lw-msg"></p>`)}`;
   }
-  const cell = (i, k) => rows[i] ? f1(rows[i].r[k], 1) : i === n && cur ? lwIn('c' + k, (S.cur.r || {})[k] ?? '', 'мм') : '';
+  const cell = (i, k) => rows[i] ? f1(rows[i].r[k], 1) : i === n && cur ? '…' : '';
   const tbl = `<table class="lw-tbl"><tr><th>№</th><th>x₁</th><th>y₁</th><th>x${sj}</th><th>y${sj}</th></tr>${Array.from({ length: LW1.N }, (_, i) => `<tr class="${i === n && cur ? 'now' : ''}"><td>${i + 1}</td>${['x1', 'y1', 'x2', 'y2'].map(k => `<td>${cell(i, k)}</td>`).join('')}</tr>`).join('')}</table>`;
   return `<section class="card lw-cond"><b class="h">${head}</b><p class="mute small">Тело ${j} — в круге (x₀${sj} = ${f1(lwNum(E.rx), 1)}, y₀${sj} = ${f1(lwNum(E.ry), 1)} мм), m${sj} = ${f1(mj.m, 4)} кг. Тело 1 и винт (${S.screw}) — те же, что в опыте 1. Сделай ${LW1.N} выстрелов; после каждого запиши координаты обеих шайб (мм).</p></section>
-    ${lwField()}
-    <section class="card"><div class="lw-bar">${cur ? `<button class="btn wide" data-lw="record">${ic('pencil')} Записать координаты</button>` : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="coll" data-j="${j}">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : ''}</div>
-    <p class="lw-msg" id="lw-msg">${cur ? 'Шайбы остановились. Сними координаты меток обеих шайб.' : ''}</p><div class="lw-scroll">${tbl}</div>${n >= LW1.N ? lwNext(j === 2 ? 'К опыту 3' : 'К обработке') : ''}</section>`;
+    ${lwField('', (cur ? `<div class="lw-ctl-row four">${['x1', 'y1', 'x2', 'y2'].map(k => lwCtlIn('c' + k, k[0] + (k[1] === '1' ? '₁' : sj), (S.cur.r || {})[k] ?? '')).join('')}</div><button class="btn wide" data-lw="record">${ic('pencil')} Записать выстрел ${n + 1}</button>`
+      : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="coll" data-j="${j}">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : lwNext(j === 2 ? 'К опыту 3' : 'К обработке')) +
+      `<p class="lw-msg" id="lw-msg">${cur ? `Шайбы остановились. Кнопками «Шайба 1» и «Шайба ${j}» наведи лупу и сними координаты меток.` : ''}</p>`)}
+    <section class="card"><b class="h">Записи опыта ${j}</b><div class="lw-scroll">${tbl}</div></section>`;
 }
 
 /* ---------- обработка: ожидаемые значения из записей ученика ---------- */
