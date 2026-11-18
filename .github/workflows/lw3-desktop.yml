@@ -4,6 +4,7 @@ name: ЛР 3 — программа для Windows
 # установщик NSIS (без прав администратора) и переносной .exe. Тег lw3-v* — ещё и релиз на GitHub.
 on:
   push:
+    branches: ['**']        # без этого фильтр tags отключает запуск по пушу в ветки
     paths:
       - 'lw3-desktop/**'
       - 'fizika2/src/lw3-core.js'
