@@ -20,6 +20,7 @@ const store = {
 function toast(html, kind = '') { const box = $('#toasts'); while (box.children.length >= 3) box.firstChild.remove(); const t = document.createElement('div'); t.className = 'toast ' + kind; t.innerHTML = html; $('#toasts').appendChild(t); setTimeout(() => t.classList.add('out'), 3200); setTimeout(() => t.remove(), 3700); }
 function addXP() { toast(`${ic('award')} Работа защищена. Сохрани файл результата для преподавателя на шаге «Отчёт».`); }
 function render() {
+  document.body.classList.remove('full');
   if (SCREEN === 'lock') return vLock();
   if (SCREEN === 'teacher') return vTeacher();
   if (SCREEN === 'home' || !PROFILE) return vHome();
@@ -112,8 +113,13 @@ function vWork() {
   document.body.classList.remove('noside');
   const S = l3Load(); ensureMeta(S);
   const st = L3.steps[S.step][0];
-  vSide(S);
-  ui.main.innerHTML = ({ admit: wAdmit, prep: wPrep, exp: wExp, proc: wProc, concl: wConcl, report: wReport })[st](S);
+  if (newLayout(st)) {        // новая раскладка: без боковой панели, во весь экран
+    document.body.classList.add('noside', 'full'); ui.side.innerHTML = '';
+    ui.main.innerHTML = st === 'admit' ? vAdmitStep(S) : vTrainer(S, st);
+  } else {
+    document.body.classList.remove('full'); vSide(S);
+    ui.main.innerHTML = ({ admit: wAdmit, prep: wPrep, exp: wExp, proc: wProc, concl: wConcl, report: wReport })[st](S);
+  }
   $('#printroot').innerHTML = st === 'report' ? l3ReportHtml() : '';
   if (st === 'prep' || st === 'exp') { l3Draw(); l3Run(); liveTick(true); }
 }

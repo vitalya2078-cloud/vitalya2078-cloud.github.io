@@ -1,0 +1,117 @@
+/* =====================================================================
+   Новая раскладка (прототип): «тренажёр» для подготовки и опытов,
+   «пошагово» для допуска. Включается флагом lw3d-layout = 'new'.
+   Работа та же: кнопки и поля с теми же data-l3 / data-k3 и id, что ждёт ядро.
+   ===================================================================== */
+let LAYOUT = store.get('lw3d-layout', 'classic');
+let DRAWER = false;           // выдвижная панель «Таблица и график»
+let AQ = 0;                   // текущий вопрос допуска в пошаговом виде
+const newLayout = st => LAYOUT === 'new' && ['admit', 'prep', 'exp'].includes(st);
+
+function topbar(S) {
+  const fin = L3.steps[S.max][0] === 'report';
+  return `<header class="tb">
+    <div class="tb-brand">${LOGO}<b>Показатель адиабаты</b></div>
+    <nav class="tb-steps">${L3.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
+      return `<button data-l3="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i><span>${t}</span></button>`; }).join('<s></s>')}</nav>
+    <div class="tb-act">
+      <span class="tb-who">${ava(S.fio || PROFILE.fio)}<span>${esc(S.fio || PROFILE.fio)}</span></span>
+      <button class="tb-ic" data-d="save" title="Сохранить файл работы (Ctrl+S)">${ic('file-text')}</button>
+      <button class="tb-ic" data-d="help" title="Подсказка (F1)">${ic('book-open')}</button>
+      <button class="tb-ic" data-d="theme" title="Тема">${ic('sparkles')}</button>
+      <button class="tb-ic" data-d="sound" title="Звук">${ic(SND.on ? 'volume-2' : 'volume-x')}</button>
+      <button class="tb-ic" data-d="home" title="Выйти">${ic('chevron-left')}</button>
+    </div></header>`;
+}
+
+/* ---------- тренажёр: подготовка и опыты ---------- */
+function trainerTable(S) {
+  const n = S.runs.length;
+  return `<table class="t"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th><th>γ</th></tr>${Array.from({ length: L3.N }, (_, i) => { const r = S.runs[i];
+    return `<tr class="${i === n && n < L3.N ? 'now' : ''}"><td>${i + 1}</td><td>${r ? r.h1 : i === n && L3V.cur.h1 != null ? L3V.cur.h1 : '—'}</td><td>${r ? r.h2 : '—'}</td><td class="mute">${r ? l3Fix(r.h1 / (r.h1 - r.h2), 3) : ''}</td></tr>`; }).join('')}</table>`;
+}
+function vTrainer(S, st) {
+  const n = S.runs.length, done = st === 'exp' && n >= L3.N;
+  let title, dock;
+  if (st === 'prep') {
+    const ok = S.power && S.kOpen && !S.k0Open;
+    title = `<b>Подготовка установки</b><span>Подай питание, открой кран K, закрой кран K₀</span>`;
+    dock = `<p class="say">${ok ? 'Установка готова к опыту.' : 'Зелёная ручка — кран открыт, красная — закрыт.'}</p><div class="ctl">
+      <button class="btn ${S.power ? 'on' : 'line'}" data-l3="power" data-key="P">${ic('zap')} Питание ${kbd('P')}</button>
+      <button class="btn ${S.kOpen ? 'on' : 'off'}" data-l3="kv" data-key="K">Кран K: ${S.kOpen ? 'открыт' : 'закрыт'} ${kbd('K')}</button>
+      <button class="btn ${!S.k0Open ? 'on' : 'off'}" data-l3="k0" data-key="O">Кран K₀: ${S.k0Open ? 'открыт' : 'закрыт'} ${kbd('O')}</button>
+      ${ok ? `<button class="btn" data-l3="next" data-primary>К опытам ${kbd('Enter')}</button>` : ''}</div>`;
+  } else if (done) {
+    title = `<b>Опыты завершены</b><span>Три измерения записаны</span>`;
+    dock = `<p class="say">Переходи к обработке результатов.</p><div class="ctl"><button class="btn" data-l3="next" data-primary>К обработке ${kbd('Enter')}</button></div>`;
+  } else {
+    const ctl = expControls(S), at = PLAN_AT[L3V.phase] ?? 0;
+    title = `<b>Опыт ${n + 1} из ${L3.N}</b><span>${PLAN[at]}</span><div class="segs">${PLAN.map((_, i) => `<i class="${i < at ? 'done' : i === at ? 'cur' : ''}"></i>`).join('')}</div>`;
+    dock = ctl;
+  }
+  return topbar(S) + `<div class="tr">
+    <div class="tr-info"><div class="tr-title">${title}</div>
+      <div class="tr-meters"><div class="meter"><small>Δh, мм</small><b id="d-h">0</b></div><div class="meter"><small>Секундомер</small><b id="d-sw">—</b></div><div class="meter proc"><small>Процесс в баллоне</small><b id="d-proc">—</b></div></div></div>
+    <div class="tr-stage"><canvas id="l3-cv" aria-label="Установка Клемана — Дезорма"></canvas></div>
+    <div class="tr-dock">${dock}<p class="lw-msg" id="lw-msg"></p>
+      <button class="btn line tr-drw" data-d="drawer">${ic('grid-3x3')} Таблица и график ${kbd('T')}</button></div>
+    <aside class="drawer ${DRAWER ? 'open' : ''}"><header><b>Измерения</b><button class="tb-ic" data-d="drawer">${ic('x')}</button></header>
+      ${trainerTable(S)}
+      <div class="chart"><div class="chart-h"><b>Давление h(t)</b><span><i style="background:var(--cold)"></i>h</span><span><i style="background:var(--acc)"></i>темп.</span></div><canvas id="d-chart"></canvas></div>
+      <p class="mute small">Раньше закроешь K₀ — h₂ больше, γ завышен; позже — h₂ меньше, γ занижен.</p></aside>
+  </div>`;
+}
+
+/* ---------- пошагово: допуск ---------- */
+function vAdmitStep(S) {
+  const N = L3_ADMIT.length, answered = Object.keys(S.admit).length;
+  AQ = Math.max(0, Math.min(N, AQ));
+  const dots = `<div class="qs-dots">${L3_ADMIT.map(([, a], i) => { const ch = S.admit[i]; const cls = i === AQ ? 'on' : ch ? (S.admitChecked ? (ch === a ? 'ok' : 'bad') : 'ans') : '';
+    return `<button data-d="aq" data-v="${i}" class="${cls}">${i + 1}</button>`; }).join('')}<button data-d="aq" data-v="${N}" class="fin ${AQ === N ? 'on' : ''}">${ic('flag')}</button></div>`;
+  let body;
+  if (AQ < N) {
+    const [q, a, x] = L3_ADMIT[AQ], opts = lwShuf(AQ + 80, [a, ...x]), ch = S.admit[AQ];
+    body = `<div class="qs-n">Вопрос ${AQ + 1} из ${N}</div><h2 class="qs-q">${esc(q)}</h2>
+      <div class="qs-opts">${opts.map((o, j) => `<button data-l3="admit" data-q="${AQ}" data-v="${esc(o)}" class="${ch === o ? (S.admitChecked ? (o === a ? 'ok' : 'bad') : 'pick') : ''}"><span class="lt">${j + 1}</span><span>${esc(o)}</span></button>`).join('')}</div>
+      <div class="qs-nav"><button class="btn ghost" data-d="aq" data-v="${AQ - 1}" ${AQ ? '' : 'disabled'}>${ic('chevron-left')} Назад</button><span class="mute small">Клавиши 1–4 — выбрать ответ</span>
+      <button class="btn ${ch ? '' : 'line'}" data-d="aq" data-v="${AQ + 1}" data-primary>${AQ === N - 1 ? 'К сдаче' : 'Дальше'} ${kbd('Enter')}</button></div>`;
+  } else {
+    body = `<div class="qs-n">Сдача допуска</div><h2 class="qs-q">${S.admitOk ? 'Допуск сдан' : `Отвечено ${answered} из ${N}`}</h2>
+      <p class="mute">${S.admitOk ? 'Можно переходить к подготовке установки.' : 'Нужно не меньше 6 верных ответов из 8. Вернуться к любому вопросу — кнопки с номерами вверху.'}</p>
+      <div class="qs-nav"><button class="btn ghost" data-d="aq" data-v="${N - 1}">${ic('chevron-left')} Назад</button><span></span>
+      ${S.admitOk ? `<button class="btn" data-l3="next" data-primary>К подготовке ${kbd('Enter')}</button>` : `<button class="btn" data-l3="admitCheck" data-primary ${answered ? '' : 'disabled'}>${ic('circle-check')} Сдать допуск ${kbd('Enter')}</button>`}</div>`;
+  }
+  return topbar(S) + `<div class="qs">
+    <div class="qs-top"><div><span class="kicker">Допуск к работе</span><p class="qs-aim">${esc(L3_AIM())}</p></div>
+      <button class="btn line" data-d="theory">${ic('book-open')} Теория и установка</button></div>
+    ${dots}<section class="qs-card">${body}</section></div>`;
+}
+function showTheory() {
+  modal('Теория и установка', `<div class="tabs">${[['theory', 'Теория'], ['equip', 'Установка'], ['safety', 'Безопасность']].map(([k, t]) => `<button data-d="ttab" data-v="${k}" class="${TAB === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <div class="read">${TAB === 'equip' ? `<div class="paper-mini">${l3SchemeSvg()}</div>` : ''}${L3_TEXT[TAB]}</div>`);
+}
+
+/* ---------- события новой раскладки ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-d]'); if (!b) return; const d = b.dataset;
+  if (d.d === 'drawer') { DRAWER = !DRAWER; const el = $('.drawer'); if (el) el.classList.toggle('open', DRAWER); }
+  if (d.d === 'aq') { AQ = +d.v; render(); }
+  if (d.d === 'theory') showTheory();
+  if (d.d === 'ttab') { TAB = d.v; showTheory(); }
+});
+// после выбора ответа — короткая пауза и следующий вопрос (если ответ ещё не проверялся)
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-l3="admit"]'); if (!b || LAYOUT !== 'new') return;
+  if (L3S && !L3S.admitChecked) setTimeout(() => { if (SCREEN === 'work' && l3St() === 'admit' && +b.dataset.q === AQ && AQ < L3_ADMIT.length) { AQ++; render(); } }, 260);
+});
+document.addEventListener('keydown', e => {
+  if (LAYOUT !== 'new' || SCREEN !== 'work' || !$('#modal').hidden || e.ctrlKey || e.altKey) return;
+  const tag = e.target.tagName || ''; if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  const st = l3St();
+  if (e.code === 'KeyT' && (st === 'prep' || st === 'exp')) { e.preventDefault(); $('[data-d="drawer"]').click(); }
+  if (st === 'admit') {
+    const k = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Numpad1: 0, Numpad2: 1, Numpad3: 2, Numpad4: 3 }[e.code];
+    const opts = document.querySelectorAll('.qs-opts button'); if (k != null && opts[k]) { e.preventDefault(); opts[k].click(); }
+    if (e.key === 'ArrowRight' && AQ < L3_ADMIT.length) { AQ++; render(); } if (e.key === 'ArrowLeft' && AQ > 0) { AQ--; render(); }
+  }
+});
