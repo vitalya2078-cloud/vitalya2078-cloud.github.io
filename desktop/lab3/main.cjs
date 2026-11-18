@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('node:path');
+const fs = require('node:fs');
 
 const APP_TITLE = 'PHYSICS — Лабораторная работа № 3';
 
@@ -24,6 +25,15 @@ function createWindow() {
 
   // Лабораторная открывается сразу, без необходимости искать её в меню сайта.
   win.loadFile(path.join(__dirname, 'app', 'index.html'), { hash: 'lw-3' });
+
+  win.webContents.on('did-finish-load', async () => {
+    try {
+      const css = fs.readFileSync(path.join(__dirname, 'app', 'desktop.css'), 'utf8');
+      await win.webContents.insertCSS(css);
+    } catch (error) {
+      console.error('Не удалось применить оформление рабочего стола:', error);
+    }
+  });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//i.test(url)) shell.openExternal(url);
