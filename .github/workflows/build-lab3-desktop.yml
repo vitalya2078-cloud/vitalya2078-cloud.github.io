@@ -1,0 +1,73 @@
+name: Build PHYSICS Lab 3 for Windows
+
+on:
+  push:
+    branches: [desktop-lab3]
+    paths:
+      - "fizika2/**"
+      - "desktop/lab3/**"
+      - ".github/workflows/build-lab3-desktop.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: desktop/lab3/package.json
+
+      - name: Build the original PHYSICS web application
+        run: python fizika2/src/build.py
+
+      - name: Prepare the desktop application files
+        shell: pwsh
+        run: |
+          $app = "desktop/lab3/app"
+          New-Item -ItemType Directory -Force -Path $app | Out-Null
+          Copy-Item "fizika2/index.html" "$app/index.html"
+          Copy-Item "fizika2/content.json" "$app/content.json"
+          Copy-Item "fizika2/manifest.webmanifest" "$app/manifest.webmanifest"
+          Copy-Item "fizika2/icon-192.png" "$app/icon-192.png"
+          Copy-Item "fizika2/pics" "$app/pics" -Recurse -Force
+          Copy-Item "fizika2/audio" "$app/audio" -Recurse -Force
+          Copy-Item "fizika2/fonts" "$app/fonts" -Recurse -Force
+          python -m pip install --disable-pip-version-check pillow
+          @'
+          from PIL import Image
+          Image.open("fizika2/icon-192.png").convert("RGBA").save(
+              "desktop/lab3/icon.ico",
+              format="ICO",
+              sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)]
+          )
+          '@ | python -
+
+      - name: Install desktop dependencies
+        working-directory: desktop/lab3
+        run: npm install --no-audit --no-fund
+
+      - name: Package Windows executables
+        working-directory: desktop/lab3
+        run: npm run dist
+
+      - name: Upload EXE files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PHYSICS-Lab3-Windows-x64
+          path: desktop/lab3/release/*.exe
+          if-no-files-found: error
+          retention-days: 30
