@@ -22,6 +22,16 @@ try {
   await page.click('[data-d="new"]'); must(await page.evaluate(() => SCREEN === 'home'), 'профиль создан без ФИО');
   await page.fill('#np-fio', 'Сидорова Анна Викторовна'); await page.fill('#np-group', '11 Б'); await page.press('#np-group', 'Enter');
   must(await page.evaluate(() => SCREEN === 'work' && L3S.fio === 'Сидорова Анна Викторовна' && L3S.group === '11 Б'), 'профиль не открылся');
+  // знакомство: 4 слайда, листается Enter, закрывается на последнем
+  must(await page.locator('#modal [data-intro]').isVisible(), 'нет знакомства после входа');
+  await shot(page, 'intro-1');
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Enter');
+  must(await page.locator('#modal').isHidden(), 'знакомство не закрылось');
+  await page.keyboard.press('F1'); must(await page.locator('#modal [data-intro]').isVisible(), 'F1 не открывает знакомство');
+  await page.click('[data-d="intro-skip"]'); must(await page.locator('#modal').isHidden(), '«Пропустить» не закрывает');
+  // светлая тема переключается и запоминается
+  await page.click('#side [data-d="theme"]'); must(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lw3d-theme') === 'light'), 'светлая тема не включилась');
+  await shot(page, 'light'); await page.click('#side [data-d="theme"]');
 
   const o = await runLw3(page, {
     log: t => console.log('  ' + t),
@@ -58,6 +68,14 @@ try {
 
   // режим преподавателя: подлинный и подделанный файлы
   await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]');
+  // пароль преподавателя: задать, выйти, войти с неверным и верным
+  await page.fill('#tp1', '4321'); await page.fill('#tp2', '1234'); await page.click('[data-t="setpass"]');
+  must(await page.evaluate(() => SCREEN === 'lock'), 'принят пароль, не совпавший с повтором');
+  await page.fill('#tp1', '4321'); await page.fill('#tp2', '4321'); await page.press('#tp2', 'Enter');
+  must(await page.evaluate(() => SCREEN === 'teacher'), 'пароль не сохранился');
+  await page.click('[data-t="back"]'); await page.click('[data-d="teacher"]');
+  await page.fill('#tp', '0000'); await page.click('[data-t="unlock"]'); must(await page.evaluate(() => SCREEN === 'lock'), 'вход с неверным паролем');
+  await page.fill('#tp', '4321'); await page.press('#tp', 'Enter'); must(await page.evaluate(() => SCREEN === 'teacher'), 'вход с верным паролем не сработал');
   await page.setInputFiles('#file-in', [file]);
   await page.waitForFunction(() => TROWS.length === 1);
   const t1 = await page.locator('table.tt').innerText();
@@ -87,5 +105,5 @@ try {
   await ctx2.close();
 
   if (errors.length) throw new Error('ошибки в браузере: ' + errors.join(' | '));
-  console.log('PASS: программа ЛР № 3 — профиль, клавиши, полное прохождение, отчёт, файл результата, режим преподавателя, продолжение из файла.');
+  console.log('PASS: программа — вход, знакомство, тема, клавиши, полное прохождение, отчёт, файл работы, пароль и режим преподавателя, продолжение из файла.');
 } finally { await browser.close(); }

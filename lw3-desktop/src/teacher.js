@@ -1,5 +1,5 @@
 /* =====================================================================
-   Режим преподавателя: открыть файлы результатов (.lw3) группы, сводная таблица,
+   Режим преподавателя (под паролем): открыть файлы работ (.lw3) группы, сводная таблица,
    проверка подлинности, отчёт любого студента, выгрузка в Excel (CSV).
    ===================================================================== */
 const TKEY = 'lw3d-teacher';
@@ -33,8 +33,8 @@ function vTeacher() {
   document.body.classList.add('noside'); ui.side.innerHTML = '';
   const rows = TROWS.map(tRow), fin = rows.filter(r => r.o), gms = fin.map(r => r.o.gm);
   const mean = gms.length ? gms.reduce((s, x) => s + x, 0) / gms.length : NaN, fake = rows.filter(r => !r.auth).length;
-  ui.main.innerHTML = `<div class="head"><div><div class="kick">Режим преподавателя</div><h1>Результаты группы · ЛР № 3</h1></div><div class="sp"></div>
-      <button class="btn line" data-t="back">${ic('chevron-left')} На главную</button>
+  ui.main.innerHTML = `<div class="head"><h1>Результаты группы</h1><div class="sp"></div>${themeBtn()}
+      <button class="btn line" data-t="back">${ic('chevron-left')} Выйти</button>
       <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
       <button class="btn line" data-t="clear" ${rows.length ? '' : 'disabled'}>${ic('trash-2')} Очистить</button>
       <button class="btn" data-t="add">${ic('plus')} Добавить файлы</button></div>
@@ -81,6 +81,36 @@ function tCsv() {
     r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.auth ? 'подлинный' : 'ИЗМЕНЁН'].map(q).join(';'));
   return '﻿' + [head.map(q).join(';'), ...lines].join('\r\n');
 }
+/* ---------- пароль ---------- */
+const PASS_KEY = 'lw3d-tpass';
+const passHash = (salt, pwd) => sha256(salt + '|' + pwd);
+function vLock() {
+  document.body.classList.add('noside'); ui.side.innerHTML = '';
+  const has = !!store.get(PASS_KEY, null);
+  ui.main.innerHTML = `<div class="lock"><div class="login-brand">${LOGO}<h1 style="font-size:24px">Режим преподавателя</h1>
+      <p>${has ? 'Введите пароль' : 'Придумайте пароль — он понадобится при каждом входе'}</p></div>
+    <div class="card">${has ? `<label class="field">Пароль<input type="password" id="tp" autocomplete="off"></label>
+        <button class="btn wide big mt" data-t="unlock">Войти ${kbd('Enter')}</button>`
+      : `<label class="field">Пароль<input type="password" id="tp1" autocomplete="off"></label><label class="field" style="margin-top:12px">Ещё раз<input type="password" id="tp2" autocomplete="off"></label>
+        <button class="btn wide big mt" data-t="setpass">Сохранить пароль ${kbd('Enter')}</button>`}
+      <p class="lw-msg bad" id="tp-msg"></p></div>
+    <div class="row mt"><button class="btn ghost" data-t="back">${ic('chevron-left')} Назад</button>${has ? '<span style="flex:1"></span><button class="btn ghost" data-t="forgot">Забыли пароль?</button>' : ''}</div></div>`;
+  setTimeout(() => { const f = $('#tp') || $('#tp1'); if (f) f.focus(); }, 0);
+}
+const lockMsg = t => { const m = $('#tp-msg'); if (m) m.textContent = t; };
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-t]'); if (!b || SCREEN !== 'lock') return;
+  switch (b.dataset.t) {
+    case 'back': SCREEN = 'home'; render(); break;
+    case 'setpass': { const a = $('#tp1').value, c = $('#tp2').value;
+      if (a.length < 4) { lockMsg('Пароль — не короче 4 символов.'); break; }
+      if (a !== c) { lockMsg('Пароли не совпадают.'); break; }
+      const salt = Math.random().toString(36).slice(2); store.set(PASS_KEY, { salt, hash: passHash(salt, a) }); SCREEN = 'teacher'; render(); toast('Пароль сохранён'); break; }
+    case 'unlock': { const pw = store.get(PASS_KEY, null), v = $('#tp').value;
+      if (pw && passHash(pw.salt, v) === pw.hash) { SCREEN = 'teacher'; render(); } else { lockMsg('Неверный пароль.'); $('#tp').select(); } break; }
+    case 'forgot': if (confirm('Сбросить пароль? Список загруженных работ тоже очистится (сами файлы на диске останутся).')) { store.del(PASS_KEY); TROWS = []; tSave(); render(); } break;
+  }
+});
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-t]'); if (!b || SCREEN !== 'teacher') return; const d = b.dataset;
   switch (d.t) {
@@ -88,7 +118,7 @@ document.addEventListener('click', e => {
     case 'add': pickFiles('teacher'); break;
     case 'open': tOpen(+d.v); break;
     case 'print': window.print(); break;
-    case 'csv': saveFile(`ЛР3_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsv(), 'csv', 'Таблица для Excel'); break;
+    case 'csv': saveFile(`Адиабата_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsv(), 'csv', 'Таблица для Excel'); break;
     case 'clear': if (confirm('Убрать все загруженные работы из списка? Сами файлы останутся на диске.')) { TROWS = []; tSave(); render(); } break;
   }
 });

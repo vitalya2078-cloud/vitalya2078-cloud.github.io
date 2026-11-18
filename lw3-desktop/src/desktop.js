@@ -1,12 +1,12 @@
 /* =====================================================================
-   ЛР № 3 для Windows — оболочка программы.
+   «Показатель адиабаты» для Windows — оболочка программы.
    Сама работа (модель, вопросы, расчёты, проверки, действия data-l3/data-k3, отчёт) —
    lw3-core.js, тот же файл, что и на сайте. Здесь: экраны, профили студентов,
    горячие клавиши, график давления, звук, файлы результата.
    ===================================================================== */
 const IS_TAURI = !!(window.__TAURI__ && window.__TAURI__.core);
 const ui = { main: $('#main'), side: $('#side') };
-let SCREEN = 'home';            // home | work | teacher
+let SCREEN = 'home';            // home | work | lock | teacher
 let PROFILE = null;
 let TAB = 'theory';
 if (LAB_BG) { const im = new Image(); im.onload = () => { L3_BG = Object.assign(im, { edge: LAB_BG.edge, top: LAB_BG.top }); if ($('#l3-cv')) l3Draw(); }; im.src = LAB_BG.src; }   // фон лаборатории под установкой
@@ -20,10 +20,15 @@ const store = {
 function toast(html, kind = '') { const box = $('#toasts'); while (box.children.length >= 3) box.firstChild.remove(); const t = document.createElement('div'); t.className = 'toast ' + kind; t.innerHTML = html; $('#toasts').appendChild(t); setTimeout(() => t.classList.add('out'), 3200); setTimeout(() => t.remove(), 3700); }
 function addXP() { toast(`${ic('award')} Работа защищена. Сохрани файл результата для преподавателя на шаге «Отчёт».`); }
 function render() {
+  if (SCREEN === 'lock') return vLock();
   if (SCREEN === 'teacher') return vTeacher();
   if (SCREEN === 'home' || !PROFILE) return vHome();
   vWork();
 }
+const LOGO = '<span class="logo">γ</span>';
+const isLight = () => document.documentElement.dataset.theme === 'light';
+function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem('lw3d-theme', t); } catch (e) {} render(); }
+const themeBtn = () => `<button class="btn ghost" data-d="theme">${ic('sparkles')} ${isLight() ? 'Тёмная тема' : 'Светлая тема'}</button>`;
 
 /* ---------- профили студентов ---------- */
 const PKEY = 'lw3d-profiles';
@@ -41,11 +46,12 @@ function ensureMeta(S) {
   if (!S.group && PROFILE) S.group = PROFILE.group;
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
 }
-function openProfile(p) {
+function openProfile(p, intro = false) {
   PROFILE = p; L3_KEY = workKey(p.id); L3S = null;
   const S = l3Load(); ensureMeta(S); l3Save(); l3Reset();
   CH.pts = []; CH.marks = [];
   SCREEN = 'work'; render(); ui.main.scrollTop = 0;
+  if (intro) showIntro(0);
 }
 function profileState(p) { return store.get(workKey(p.id), null); }
 function profileStatus(p) {
@@ -58,60 +64,40 @@ function profileStatus(p) {
 function vHome() {
   document.body.classList.add('noside'); ui.side.innerHTML = '';
   const ps = profiles();
-  ui.main.innerHTML = `<div class="home">
-    <div class="hero">
-      <span class="kicker">Лабораторный практикум · термодинамика</span>
-      <h1>Лабораторная работа № 3<br><em>Показатель адиабаты</em></h1>
-      <p>Определение отношения теплоёмкостей C<sub>p</sub>/C<sub>V</sub> воздуха методом Клемана — Дезорма: допуск, работа на установке, обработка результатов, защита и отчёт по бланку кафедры.</p>
-      <div class="facts"><span class="pill">${ic('book-open-check')} допуск — 8 вопросов</span><span class="pill">${ic('flask-conical')} 3 опыта на установке</span><span class="pill">${ic('file-text')} отчёт на 4 листах</span></div>
-      ${heroArt()}
+  ui.main.innerHTML = `<div class="login">
+    <div class="corner tr">${themeBtn()}</div>
+    <div class="login-box">
+      <div class="login-brand">${LOGO}<h1>Показатель адиабаты</h1><p>Метод Клемана — Дезорма</p></div>
+      <div class="card">
+        <label class="field">ФИО<input id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off"></label>
+        <label class="field">Класс / группа<input id="np-group" placeholder="11 А" autocomplete="off"></label>
+        <button class="btn wide big mt" data-d="new">Начать ${kbd('Enter')}</button>
+      </div>
+      ${ps.length ? `<div class="plist-h">Продолжить работу</div><div class="plist">${ps.map(p => `<div class="prof" data-d="open" data-v="${p.id}">${ava(p.fio)}<div class="nm"><b>${esc(p.fio)}</b><small>${esc(p.group || 'без класса')} · ${esc(profileStatus(p))}</small></div><button class="x" data-d="delp" data-v="${p.id}" title="Удалить">${ic('trash-2')}</button></div>`).join('')}</div>` : ''}
     </div>
-    <div class="card">
-      <h2>${ic('user')} Кто выполняет работу?</h2>
-      ${ps.length ? `<div class="plist">${ps.map(p => `<div class="prof" data-d="open" data-v="${p.id}">${ava(p.fio)}<div class="nm"><b>${esc(p.fio)}</b><small>${esc(p.group || 'без класса')} · ${esc(profileStatus(p))}</small></div><button class="x" data-d="delp" data-v="${p.id}" title="Удалить">${ic('trash-2')}</button></div>`).join('')}</div>` : '<p class="mute small">Пока никого нет — впиши себя и начни работу.</p>'}
-      <div class="newp"><label class="field">ФИО<input id="np-fio" placeholder="Иванов И. И." autocomplete="off"></label><label class="field">Класс / группа<input id="np-group" placeholder="например, 11 А" autocomplete="off"></label></div>
-      <button class="btn wide big mt" data-d="new">${ic('play')} Начать работу <kbd>Enter</kbd></button>
-      <div class="or">или</div>
-      <div class="row"><button class="btn line" data-d="import">${ic('file-text')} Продолжить из файла</button><button class="btn line" data-d="teacher">${ic('graduation-cap')} Режим преподавателя</button></div>
-      <p class="ver">Версия ${esc(APP_VER)} · работа сохраняется автоматически · F1 — подсказка по клавишам</p>
-    </div></div>`;
-}
-function heroArt() {
-  return `<svg class="art" viewBox="0 0 520 250" aria-hidden="true"><defs>
-    <linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#9CC8F0" stop-opacity=".18"/><stop offset=".4" stop-color="#DCEEFF" stop-opacity=".38"/><stop offset="1" stop-color="#7AA6D6" stop-opacity=".14"/></linearGradient>
-    <linearGradient id="hw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset="1" stop-color="#F2B544"/></linearGradient></defs>
-    <path d="M36 52 H392 V74" fill="none" stroke="#A9B6C7" stroke-width="5" stroke-linejoin="round"/><path d="M92 52 V176" fill="none" stroke="#A9B6C7" stroke-width="5"/><path d="M196 52 V80" fill="none" stroke="#A9B6C7" stroke-width="5"/>
-    <path d="M178 80 H214 V94 C272 104 276 140 272 232 H120 C116 140 120 104 178 94 Z" fill="url(#hg)" stroke="rgba(210,230,250,.8)" stroke-width="2"/>
-    <path d="M126 200 C160 186 228 214 266 198 L268 232 H122 Z" fill="#5ED0E6" opacity=".12"/>
-    <rect x="62" y="176" width="60" height="50" rx="6" fill="#3D4A5E"/><text x="92" y="207" fill="#E7EDF6" font-family="Golos UI" font-weight="800" font-size="16" text-anchor="middle">Н</text>
-    <circle cx="92" cy="128" r="9" fill="#7E8A9C"/><path d="M76 128 H108" stroke="#5AD3A0" stroke-width="5" stroke-linecap="round"/>
-    <circle cx="36" cy="52" r="9" fill="#7E8A9C"/><path d="M20 52 H52" stroke="#E5484D" stroke-width="5" stroke-linecap="round"/>
-    <rect x="372" y="64" width="62" height="172" rx="4" fill="#F3E9C8"/>
-    <rect x="384" y="74" width="9" height="156" fill="rgba(220,235,250,.5)"/><rect x="384" y="150" width="9" height="80" fill="#3E8EE0"/>
-    <rect x="410" y="74" width="9" height="156" fill="rgba(220,235,250,.5)"/><rect x="410" y="98" width="9" height="132" fill="#3E8EE0"/>
-    <path d="M440 98 H462 M440 150 H462 M456 98 V150" stroke="#F2B544" stroke-width="2"/><text x="468" y="129" fill="#F2B544" font-family="F2 Math" font-style="italic" font-size="22">h</text>
-    <text x="196" y="174" fill="#E7EDF6" font-family="F2 Math" font-style="italic" font-size="40" text-anchor="middle">γ</text>
-    <text x="196" y="200" fill="#AFBCD2" font-family="Golos UI" font-size="12" text-anchor="middle">= Cₚ / Cᵥ</text></svg>`;
+    <div class="corner bl">Версия ${esc(APP_VER)}</div>
+    <div class="corner br"><button class="btn ghost" data-d="import">${ic('file-text')} Открыть файл работы</button><button class="btn ghost" data-d="teacher">${ic('lock')} Преподаватель</button></div>
+  </div>`;
+  setTimeout(() => { const f = $('#np-fio'); if (f && SCREEN === 'home' && $('#modal').hidden) f.focus(); }, 0);
 }
 
 /* ---------- работа: боковая панель ---------- */
 function vSide(S) {
-  const st = L3.steps[S.step][0], fin = L3.steps[S.max][0] === 'report';
-  const pct = Math.round((fin && S.done ? 6 : S.max) / 6 * 100);
-  ui.side.innerHTML = `<div class="brand"><svg class="logo" viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#F2B544"/><text x="24" y="33" text-anchor="middle" font-family="F2 Math" font-style="italic" font-size="30" fill="#1A1405">γ</text></svg><div><b>ЛР № 3</b><span>Показатель адиабаты<br>метод Клемана — Дезорма</span></div></div>
-    <nav class="steps">${L3.steps.map(([k, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
-      return `<button data-l3="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i><span>${t}<small>${on ? 'сейчас' : ok ? 'выполнено' : i > S.max ? 'закрыто' : 'доступно'}</small></span></button>`; }).join('')}</nav>
-    <div><div class="prog-l"><span>Выполнено</span><span>${pct} %</span></div><div class="prog"><div style="width:${pct}%"></div></div></div>
+  const fin = L3.steps[S.max][0] === 'report', pct = Math.round((fin && S.done ? 6 : S.max) / 6 * 100);
+  ui.side.innerHTML = `<div class="brand">${LOGO}<div><b>Показатель адиабаты</b><span>Метод Клемана — Дезорма</span></div></div>
+    <nav class="steps">${L3.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
+      return `<button data-l3="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i>${t}</button>`; }).join('')}</nav>
+    <div class="prog" title="Выполнено ${pct} %"><div style="width:${pct}%"></div></div>
     <div class="side-sp"></div>
     <div class="who">${ava(S.fio || PROFILE.fio)}<div><b title="${esc(S.fio)}">${esc(S.fio || PROFILE.fio)}</b><small>${esc(S.group || PROFILE.group || '')}</small></div></div>
     <div class="side-act">
       <button data-d="save" title="Ctrl+S">${ic('file-text')} Сохранить</button>
+      <button data-d="help" title="F1">${ic('book-open')} Подсказка</button>
       <button data-d="sound">${ic(SND.on ? 'volume-2' : 'volume-x')} Звук</button>
-      <button data-d="full" title="F11">${ic('move')} Экран</button>
-      <button data-d="help" title="F1">${ic('settings')} Клавиши</button>
-      <button class="wide" data-d="home">${ic('chevron-left')} Сменить студента</button>
+      <button data-d="theme">${ic('sparkles')} ${isLight() ? 'Тёмная' : 'Светлая'}</button>
+      <button data-d="full" title="F11">${ic('move')} Весь экран</button>
+      <button data-d="home">${ic('chevron-left')} Выйти</button>
     </div>`;
-  void st;
 }
 
 /* ---------- работа: экраны шагов ---------- */
@@ -120,8 +106,7 @@ const lt = 'АБВГДЕ';
 const inp = (k, val, cls = '', ph = '') => `<input class="inp l3i ${cls}" data-k3="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
 const nextBtn = label => `<button class="btn wide big next" data-l3="next" data-primary>${label} ${ic('chevron-right')} ${kbd('Enter')}</button>`;
 function head(S, extra = '') {
-  const [, t] = L3.steps[S.step];
-  return `<div class="head"><div><div class="kick">Шаг ${S.step + 1} из ${L3.steps.length}</div><h1>${t}</h1></div><div class="sp"></div>${extra}</div>`;
+  return `<div class="head"><h1>${L3.steps[S.step][1]}</h1><div class="sp"></div>${extra}</div>`;
 }
 function vWork() {
   document.body.classList.remove('noside');
@@ -152,7 +137,7 @@ function rig() {
   return `<section class="card rig"><div class="rig-top">
       <div class="meter"><small>Δh, мм</small><b id="d-h">0</b></div><div class="meter"><small>Секундомер</small><b id="d-sw">—</b></div><div class="meter proc"><small>Процесс в баллоне</small><b id="d-proc">—</b></div></div>
     <canvas id="l3-cv" aria-label="Установка Клемана — Дезорма"></canvas>
-    <div class="chart"><div class="chart-h"><b>Давление в баллоне h(t)</b><span><i style="background:#6FB3FF"></i>h, мм</span><span><i style="background:#FF8A5B"></i>температура газа</span><span><i style="background:rgba(90,211,160,.6)"></i>210…220 мм</span></div><canvas id="d-chart"></canvas></div></section>`;
+    <div class="chart"><div class="chart-h"><b>Давление в баллоне h(t)</b><span><i style="background:var(--cold)"></i>h, мм</span><span><i style="background:var(--acc)"></i>температура газа</span><span><i style="background:var(--ok)"></i>210…220 мм</span></div><canvas id="d-chart"></canvas></div></section>`;
 }
 function wPrep(S) {
   const ok = S.power && S.kOpen && !S.k0Open;
@@ -164,7 +149,6 @@ function wPrep(S) {
         <button class="btn ${S.kOpen ? 'on' : 'off'}" data-l3="kv" data-key="K">${ic('sliders-horizontal')} Кран K: ${S.kOpen ? 'открыт' : 'закрыт'} ${kbd('K')}</button>
         <button class="btn ${!S.k0Open ? 'on' : 'off'}" data-l3="k0" data-key="O">${ic('sliders-horizontal')} Кран K₀: ${S.k0Open ? 'открыт' : 'закрыт'} ${kbd('O')}</button>
       </div><p class="lw-msg ${ok ? 'good' : ''}" id="lw-msg">${ok ? 'Установка готова к опыту.' : ''}</p>${ok ? nextBtn('К опытам') : ''}</section>
-    <section class="card"><h2>${ic('clipboard-list')} Чек-лист</h2><ol class="plan">${it(S.power, 'Питание секундомера включено')}${it(S.kOpen, 'Кран K открыт — баллон соединён с компрессором')}${it(!S.k0Open, 'Кран K₀ закрыт — баллон отделён от атмосферы')}</ol></section>
     </div></div>`;
 }
 const PLAN = ['Открыть K, закрыть K₀', 'Накачать 210…220 мм, закрыть K', 'Выждать 1 минуту', 'Записать h₁', 'Выпустить воздух через K₀', 'Закрыть K₀, выждать 1 минуту', 'Записать h₂'];
@@ -196,9 +180,8 @@ function wExp(S) {
   const n = S.runs.length, done = n >= L3.N, ctl = done ? '' : expControls(S), at = PLAN_AT[L3V.phase] ?? 0;   // expControls может перевести «готов» → «накачка»
   const tbl = `<table class="t"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th><th>γ</th></tr>${Array.from({ length: L3.N }, (_, i) => { const r = S.runs[i];
     return `<tr class="${i === n && !done ? 'now' : ''}"><td>${i + 1}</td><td>${r ? r.h1 : i === n && L3V.cur.h1 != null ? L3V.cur.h1 : '—'}</td><td>${r ? r.h2 : '—'}</td><td class="mute">${r ? l3Fix(r.h1 / (r.h1 - r.h2), 3) : ''}</td></tr>`; }).join('')}</table>`;
-  return head(S, `<span class="pill ${done ? 'ok' : 'warn'}">${done ? 'все 3 опыта выполнены' : `опыт ${n + 1} из ${L3.N}`}</span>`) + `<div class="stage">${rig()}<div class="panel">
-    <section class="card now"><span class="kicker">${done ? 'Опыты завершены' : `Опыт ${n + 1} · шаг ${at + 1} из ${PLAN.length}`}</span>${done ? `<p class="say">Три измерения h₁ и h₂ записаны. Переходи к обработке результатов.</p>${nextBtn('К обработке')}` : ctl}<p class="lw-msg" id="lw-msg"></p></section>
-    ${done ? '' : `<section class="card"><h2>${ic('clipboard-list')} Порядок опыта</h2><ol class="plan">${PLAN.map((t, i) => `<li class="${i < at ? 'done' : i === at ? 'cur' : ''}">${t}</li>`).join('')}</ol></section>`}
+  return head(S, done ? `<span class="pill ok">${ic('circle-check')} все опыты выполнены</span>` : '') + `<div class="stage">${rig()}<div class="panel">
+    <section class="card now"><span class="kicker">${done ? 'Опыты завершены' : `Опыт ${n + 1} из ${L3.N}`}</span>${done ? `<p class="say">Три измерения h₁ и h₂ записаны. Переходи к обработке результатов.</p>${nextBtn('К обработке')}` : `<div class="segs">${PLAN.map((_, i) => `<i class="${i < at ? 'done' : i === at ? 'cur' : ''}"></i>`).join('')}</div><div class="segs-l"><b>${PLAN[at]}</b><span>${at + 1} / ${PLAN.length}</span></div>${ctl}`}<p class="lw-msg" id="lw-msg"></p></section>
     <section class="card"><h2>${ic('grid-3x3')} Таблица 1 · измерения</h2>${tbl}<p class="mute small mt">Точность зависит от момента закрытия K₀: раньше — h₂ больше и γ завышен, позже — h₂ меньше и γ занижен.</p></section>
     </div></div>`;
 }
@@ -279,30 +262,31 @@ function liveTick(start) {
   drawChart(); sndTick(true);
   liveRaf = requestAnimationFrame(() => liveTick(false));
 }
+let CHC = null;   // цвета графика из темы (обновляются при смене темы)
+const chartColors = () => { const th = document.documentElement.dataset.theme; if (!CHC || CHC.th !== th) { const v = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim(); CHC = { th, grid: v('--line'), tx: v('--mute'), ok: v('--ok-soft'), h: v('--cold'), t: v('--acc'), mark: v('--tx') }; } return CHC; };
 function drawChart() {
-  const cv = $('#d-chart'); if (!cv) return;
+  const cv = $('#d-chart'); if (!cv) return; const K = chartColors();
   const W = cv.clientWidth, H = cv.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
   if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
   const span = 150, t1 = Math.max(CH.t, span), t0 = t1 - span, L = 34, R = W - 8, T = 6, B = H - 18;
   const X = t => L + (t - t0) / span * (R - L), Y = p => B - Math.max(-10, Math.min(250, p)) / 250 * (B - T);
-  c.fillStyle = 'rgba(90,211,160,.12)'; c.fillRect(L, Y(220), R - L, Y(210) - Y(220));
-  c.strokeStyle = 'rgba(255,255,255,.07)'; c.lineWidth = 1; c.fillStyle = '#7C8BA6'; c.font = '600 10px "Golos UI"'; c.textAlign = 'right'; c.textBaseline = 'middle';
+  c.fillStyle = K.ok; c.fillRect(L, Y(220), R - L, Y(210) - Y(220));
+  c.strokeStyle = K.grid; c.lineWidth = 1; c.fillStyle = K.tx; c.font = '600 10px "Golos UI"'; c.textAlign = 'right'; c.textBaseline = 'middle';
   for (let p = 0; p <= 250; p += 50) { c.beginPath(); c.moveTo(L, Y(p)); c.lineTo(R, Y(p)); c.stroke(); c.fillText(p, L - 6, Y(p)); }
   c.textAlign = 'center'; c.textBaseline = 'top';
   for (let s = Math.ceil(t0 / 30) * 30; s <= t1; s += 30) { const x = X(s); c.beginPath(); c.moveTo(x, T); c.lineTo(x, B); c.stroke(); c.fillText(Math.round(s) + ' с', x, B + 4); }
   const pts = CH.pts.filter(q => q[0] >= t0 - 1);
   if (pts.length > 1) {
-    c.strokeStyle = 'rgba(255,138,91,.85)'; c.lineWidth = 1.5; c.setLineDash([4, 3]); c.beginPath();
+    c.strokeStyle = K.t; c.lineWidth = 1.5; c.setLineDash([4, 3]); c.beginPath();
     pts.forEach(([t, , th], i) => { const y = Y(120 + th / .006 * 100); i ? c.lineTo(X(t), y) : c.moveTo(X(t), y); }); c.stroke(); c.setLineDash([]);
-    const g = c.createLinearGradient(0, T, 0, B); g.addColorStop(0, 'rgba(111,179,255,.35)'); g.addColorStop(1, 'rgba(111,179,255,0)');
-    c.beginPath(); pts.forEach(([t, p], i) => i ? c.lineTo(X(t), Y(p)) : c.moveTo(X(t), Y(p))); c.lineTo(X(pts[pts.length - 1][0]), B); c.lineTo(X(pts[0][0]), B); c.closePath(); c.fillStyle = g; c.fill();
-    c.strokeStyle = '#6FB3FF'; c.lineWidth = 2.2; c.beginPath(); pts.forEach(([t, p], i) => i ? c.lineTo(X(t), Y(p)) : c.moveTo(X(t), Y(p))); c.stroke();
+    c.globalAlpha = .14; c.beginPath(); pts.forEach(([t, p], i) => i ? c.lineTo(X(t), Y(p)) : c.moveTo(X(t), Y(p))); c.lineTo(X(pts[pts.length - 1][0]), B); c.lineTo(X(pts[0][0]), B); c.closePath(); c.fillStyle = K.h; c.fill(); c.globalAlpha = 1;
+    c.strokeStyle = K.h; c.lineWidth = 2.2; c.beginPath(); pts.forEach(([t, p], i) => i ? c.lineTo(X(t), Y(p)) : c.moveTo(X(t), Y(p))); c.stroke();
   }
-  CH.marks.filter(m => m[0] >= t0).forEach(([t, h, lab]) => { const x = X(t), y = Y(h); c.fillStyle = '#F2B544'; c.beginPath(); c.arc(x, y, 4, 0, 7); c.fill();
+  CH.marks.filter(m => m[0] >= t0).forEach(([t, h, lab]) => { const x = X(t), y = Y(h); c.fillStyle = K.t; c.beginPath(); c.arc(x, y, 4, 0, 7); c.fill(); c.fillStyle = K.mark;
     c.font = '700 11px "Golos UI"'; c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText(`${lab} = ${h}`, x + 6, y - 3); });
 }
-const SND = { on: store.get('lw3d-sound', true), ctx: null, hum: null, hiss: null };
+const SND = { on: store.get('lw3d-sound', false), ctx: null, hum: null, hiss: null };
 function sndInit() {
   if (SND.ctx || !SND.on) return;
   try {
@@ -334,8 +318,8 @@ function packResult() {
   return JSON.stringify(Object.assign({}, body, { sig: hmac256(SIG_KEY, JSON.stringify(body)) }));
 }
 function unpackResult(text) {
-  let d; try { d = JSON.parse(text); } catch (e) { return { err: 'это не файл результата ЛР № 3' }; }
-  if (!d || d.format !== RESULT_FORMAT || !d.state) return { err: 'это не файл результата ЛР № 3' };
+  let d; try { d = JSON.parse(text); } catch (e) { return { err: 'это не файл работы «Показатель адиабаты»' }; }
+  if (!d || d.format !== RESULT_FORMAT || !d.state) return { err: 'это не файл работы «Показатель адиабаты»' };
   const { sig, ...body } = d;
   return { d: body, ok: typeof sig === 'string' && sig === hmac256(SIG_KEY, JSON.stringify(body)) };
 }
@@ -351,7 +335,7 @@ async function saveFile(name, text, ext, label) {
 }
 function saveWork() {
   const S = l3Load(); ensureMeta(S);
-  return saveFile(`ЛР3_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`, packResult(), 'lw3', 'Результат ЛР № 3');
+  return saveFile(`Адиабата_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`, packResult(), 'lw3', 'Файл работы');
 }
 function pickFiles(mode) { const i = $('#file-in'); i.value = ''; i.multiple = mode === 'teacher'; i.click(); }
 const readFile = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(r.error); r.readAsText(f, 'utf-8'); });
@@ -377,12 +361,54 @@ function modal(title, body, actions = '') {
   const m = $('#modal'); m.innerHTML = `<div class="mbox"><header><h2>${title}</h2>${actions}<button class="btn line" data-d="mclose">${ic('x')} ${kbd('Esc')}</button></header><div class="mb">${body}</div></div>`; m.hidden = false;
 }
 function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; if (SCREEN === 'work' && PROFILE && l3St() === 'report') $('#printroot').innerHTML = l3ReportHtml(); }
-function showHelp() {
-  modal('Клавиши', `<div class="keys">
-    ${kbd('Пробел')}<span>держать — работает компрессор (на шаге накачки)</span>${kbd('Enter')}<span>главное действие на экране (подсвечено ${kbd('Enter')})</span>
-    ${kbd('K')}<span>кран K (к компрессору) — открыть / закрыть</span>${kbd('O')}<span>кран K₀ (к атмосфере) — открыть / закрыть</span>${kbd('P')}<span>питание секундомера</span>
-    ${kbd('Ctrl+S')}<span>сохранить файл результата</span>${kbd('Ctrl+P')}<span>печать отчёта / PDF (на шаге «Отчёт»)</span>${kbd('F11')}<span>во весь экран</span>${kbd('F1')}<span>эта подсказка</span></div>
-    <p class="mute small mt">Работа сохраняется на компьютере автоматически после каждого действия. Чтобы перенести её на другой компьютер или сдать преподавателю — сохрани файл результата (.lw3).</p>`);
+/* Знакомство: 4 слайда после первого входа, потом — по F1 */
+const INTRO = [
+  { t: 'Как проходит работа', p: 'Шесть шагов по порядку. Следующий открывается, когда выполнен предыдущий. Всё сохраняется само — можно закрыть программу и продолжить потом.',
+    art: () => `<div class="isteps">${[['Допуск', '8 вопросов'], ['Подготовка', 'питание и краны'], ['Опыты', '3 измерения'], ['Обработка', 'расчёт γ'], ['Защита', '8 вопросов'], ['Отчёт', 'печать или PDF']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
+  { t: 'Установка', p: 'Компрессор Н накачивает воздух в баллон Б через кран K. Кран K₀ выпускает воздух наружу. Манометр М показывает давление — разность уровней жидкости в коленах.', art: () => introRig() },
+  { t: 'Клавиши', p: 'Мышью тоже можно, но клавишами быстрее. Подсвеченная кнопка с Enter — главное действие на экране.',
+    art: () => `<div class="keys">${[['Пробел', 'держать — работает компрессор'], ['Enter', 'главное действие'], ['K', 'кран K'], ['O', 'кран K₀'], ['P', 'питание секундомера'], ['Ctrl+S', 'сохранить файл работы'], ['F1', 'это знакомство'], ['F11', 'во весь экран']].map(([k, t]) => `${kbd(k)}<span>${t}</span>`).join('')}</div>` },
+  { t: 'Как сдать работу', p: 'В конце нажми «Сохранить файл для преподавателя» (Ctrl+S) и передай файл на флешке или через общую папку. По этому же файлу работу можно продолжить на другом компьютере.', art: () => introFile() }
+];
+let INTRO_AT = 0;
+function showIntro(i = 0) {
+  INTRO_AT = Math.max(0, Math.min(INTRO.length - 1, i)); const s = INTRO[INTRO_AT], last = INTRO_AT === INTRO.length - 1, m = $('#modal');
+  m.innerHTML = `<div class="intro" data-intro><div class="intro-art">${s.art()}</div><div class="intro-tx"><h2>${s.t}</h2><p>${s.p}</p></div>
+    <div class="intro-ft"><div class="dots">${INTRO.map((_, j) => `<i class="${j === INTRO_AT ? 'on' : ''}"></i>`).join('')}</div>
+    ${last ? '' : '<button class="btn ghost" data-d="intro-skip">Пропустить</button>'}${INTRO_AT ? '<button class="btn line" data-d="intro-prev">Назад</button>' : ''}
+    <button class="btn" data-d="intro-next">${last ? 'Начать работу' : 'Дальше'} ${kbd('Enter')}</button></div></div>`;
+  m.hidden = false;
+}
+const introOpen = () => !$('#modal').hidden && !!$('#modal [data-intro]');
+function introRig() {
+  // схема сдвинута вправо на 170; подписи — слева (K₀, K, Н) и справа (М, Б), линия-выноска к детали
+  const L = (y, t, d, ax, ay) => `<path d="M150 ${y} H${ax - 14} L${ax} ${ay}" fill="none" stroke="var(--line2)" stroke-width="1.5"/><circle cx="${ax}" cy="${ay}" r="4" fill="var(--acc)"/>
+    <text x="140" y="${y - 3}" text-anchor="end" font-size="16" font-weight="800" fill="var(--tx)">${t}</text><text x="140" y="${y + 15}" text-anchor="end" font-size="12.5" fill="var(--mute)">${d}</text>`;
+  const R = (y, t, d, ax, ay) => `<path d="M${ax} ${ay} L${ax + 14} ${y} H650" fill="none" stroke="var(--line2)" stroke-width="1.5"/><circle cx="${ax}" cy="${ay}" r="4" fill="var(--acc)"/>
+    <text x="660" y="${y - 3}" font-size="16" font-weight="800" fill="var(--tx)">${t}</text><text x="660" y="${y + 15}" font-size="12.5" fill="var(--mute)">${d}</text>`;
+  return `<svg viewBox="0 0 860 250" font-family="Golos UI" width="860">
+    <g transform="translate(170 0)">
+    <path d="M30 40 H400 V62 M90 40 V170 M220 40 V62" fill="none" stroke="var(--line2)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M202 60 H238 V72 C290 82 294 120 290 230 H150 C146 120 150 82 202 72 Z" fill="var(--cold-soft)" stroke="var(--cold)" stroke-width="2"/>
+    <text x="220" y="180" text-anchor="middle" font-size="20" font-weight="800" fill="var(--tx)">Б</text>
+    <rect x="60" y="170" width="60" height="52" rx="8" fill="var(--panel2)" stroke="var(--line2)"/><text x="90" y="202" text-anchor="middle" font-size="16" font-weight="800" fill="var(--tx)">Н</text>
+    <circle cx="90" cy="110" r="10" fill="var(--panel2)" stroke="var(--line2)"/><rect x="73" y="107" width="34" height="6" rx="3" fill="var(--ok)"/>
+    <circle cx="30" cy="40" r="10" fill="var(--panel2)" stroke="var(--line2)"/><rect x="27" y="23" width="6" height="34" rx="3" fill="var(--bad)"/>
+    <rect x="380" y="62" width="44" height="168" rx="6" fill="var(--panel2)" stroke="var(--line2)"/>
+    <rect x="389" y="150" width="8" height="74" fill="var(--cold)"/><rect x="407" y="100" width="8" height="124" fill="var(--cold)"/><rect x="389" y="220" width="26" height="6" fill="var(--cold)"/>
+    </g>
+    ${L(40, 'K₀', 'кран к атмосфере', 186, 40)}${L(110, 'K', 'кран к компрессору', 246, 110)}${L(200, 'Н', 'компрессор', 230, 200)}
+    ${R(90, 'М', 'манометр, h — разность уровней', 594, 120)}${R(190, 'Б', 'стеклянный баллон', 460, 190)}</svg>`;
+}
+function introFile() {
+  return `<svg viewBox="0 0 560 200" font-family="Golos UI" width="560">
+    <rect x="30" y="40" width="120" height="130" rx="14" fill="var(--panel)" stroke="var(--line2)" stroke-width="2"/><path d="M118 40 V72 H150" fill="none" stroke="var(--line2)" stroke-width="2"/>
+    <text x="90" y="118" text-anchor="middle" font-size="22" font-weight="800" fill="var(--acc)">.lw3</text><text x="90" y="145" text-anchor="middle" font-size="12" fill="var(--mute)">файл работы</text>
+    <path d="M180 105 H330" stroke="var(--acc)" stroke-width="3" stroke-dasharray="8 8"/><path d="M322 95 L336 105 L322 115" fill="none" stroke="var(--acc)" stroke-width="3"/>
+    <text x="255" y="90" text-anchor="middle" font-size="13" fill="var(--tx2)">флешка или общая папка</text>
+    <rect x="360" y="40" width="170" height="130" rx="14" fill="var(--panel)" stroke="var(--line2)" stroke-width="2"/>
+    ${[0, 1, 2].map(i => `<rect x="378" y="${66 + i * 30}" width="20" height="20" rx="6" fill="var(--ok-soft)"/><path d="M383 ${76 + i * 30} l4 4 l7 -8" fill="none" stroke="var(--ok)" stroke-width="2.5"/><rect x="408" y="${71 + i * 30}" width="${100 - i * 18}" height="10" rx="5" fill="var(--line)"/>`).join('')}
+    <text x="445" y="190" text-anchor="middle" font-size="13" fill="var(--tx2)">преподаватель</text></svg>`;
 }
 async function toggleFull() {
   if (IS_TAURI) { try { await window.__TAURI__.core.invoke('toggle_fullscreen'); } catch (e) {} return; }
@@ -396,19 +422,23 @@ document.addEventListener('click', e => {
     case 'new': {
       const fio = $('#np-fio').value.trim(), group = $('#np-group').value.trim();
       if (fio.length < 3) { toast('Впиши ФИО полностью, например: Иванов И. И.', 'bad'); $('#np-fio').focus(); break; }
-      openProfile(addProfile(fio, group)); break;
+      openProfile(addProfile(fio, group), true); break;
     }
     case 'open': { const p = profiles().find(x => x.id === d.v); if (p) openProfile(p); break; }
     case 'delp': e.stopPropagation(); { const p = profiles().find(x => x.id === d.v);
       if (p && confirm(`Удалить «${p.fio}» и его работу с этого компьютера?`)) { store.set(PKEY, profiles().filter(x => x.id !== p.id)); store.del(workKey(p.id)); render(); } } break;
     case 'import': pickFiles('continue'); break;
-    case 'teacher': SCREEN = 'teacher'; render(); break;
+    case 'teacher': SCREEN = 'lock'; render(); break;
     case 'home': PROFILE = null; L3S = null; SCREEN = 'home'; render(); break;
     case 'tab': TAB = d.v; render(); break;
     case 'save': saveWork(); break;
     case 'sound': SND.on = !SND.on; store.set('lw3d-sound', SND.on); if (SND.on) sndInit(); render(); break;
     case 'full': toggleFull(); break;
-    case 'help': showHelp(); break;
+    case 'help': showIntro(0); break;
+    case 'intro-next': if (INTRO_AT < INTRO.length - 1) showIntro(INTRO_AT + 1); else closeModal(); break;
+    case 'intro-prev': showIntro(INTRO_AT - 1); break;
+    case 'intro-skip': closeModal(); break;
+    case 'theme': setTheme(isLight() ? 'dark' : 'light'); break;
     case 'mclose': closeModal(); break;
   }
 });
@@ -429,7 +459,13 @@ document.addEventListener('pointerdown', () => sndInit(), { once: false, passive
 /* ---------- клавиатура ---------- */
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || ''), typing = tag === 'INPUT' || tag === 'TEXTAREA';
-  if (e.key === 'F1') { e.preventDefault(); showHelp(); return; }
+  if (e.key === 'F1') { e.preventDefault(); if (SCREEN === 'work' && PROFILE) showIntro(0); return; }
+  if (introOpen()) {
+    if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); $('[data-d="intro-next"]').click(); }
+    else if (e.key === 'ArrowLeft' && INTRO_AT) { e.preventDefault(); showIntro(INTRO_AT - 1); }
+    else if (e.key === 'Escape') closeModal();
+    return;
+  }
   if (e.key === 'F11') { e.preventDefault(); toggleFull(); return; }
   if (e.key === 'F5' || (e.ctrlKey && e.code === 'KeyR')) { e.preventDefault(); return; }
   if (e.key === 'Escape' && !$('#modal').hidden) { closeModal(); return; }
@@ -437,6 +473,7 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey && e.code === 'KeyP') { e.preventDefault(); if (SCREEN === 'work' && PROFILE && l3St() === 'report') window.print(); return; }
   if (!$('#modal').hidden) return;
   if (SCREEN === 'home') { if (e.key === 'Enter' && (e.target.id === 'np-fio' || e.target.id === 'np-group')) { e.preventDefault(); $('[data-d="new"]').click(); } return; }
+  if (SCREEN === 'lock') { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); const b = $('[data-t="unlock"],[data-t="setpass"]'); if (b) b.click(); } return; }
   if (SCREEN !== 'work') return;
   if (e.key === 'Enter') { if (tag === 'TEXTAREA') return; const p = $('[data-primary]'); if (p && !p.disabled) { e.preventDefault(); p.click(); } return; }
   if (typing || e.ctrlKey || e.altKey) return;
