@@ -39,7 +39,9 @@ report_css = '\n'.join(l for l in shell.split('\n') if re.match(r'\.lw(p|r)\b', 
 
 meta = json.loads(rd(os.path.join(D, 'src-tauri', 'tauri.conf.json')))
 version = meta['version']
-js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), helpers, icons, core] +
+# фон установки (необязательно): assets/lab-bg.(webp|jpg|png) → dist/img/; без файла сцена рисует фон сама
+bg = next((f for f in ('lab-bg.webp', 'lab-bg.jpg', 'lab-bg.png') if os.path.exists(os.path.join(D, 'assets', f))), None)
+js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps('img/' + bg if bg else None), helpers, icons, core] +
                [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'desktop.js', 'teacher.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
@@ -52,6 +54,9 @@ for w in ('400', '600', '700'):
 for f in os.listdir(os.path.join(SITE, 'fonts')):
     if f.endswith('.woff2') or f.startswith('LICENSE'):
         shutil.copy2(os.path.join(SITE, 'fonts', f), os.path.join(DIST, 'fonts', f))
+if bg:
+    os.makedirs(os.path.join(DIST, 'img'))
+    shutil.copy2(os.path.join(D, 'assets', bg), os.path.join(DIST, 'img', bg))
 with open(os.path.join(DIST, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(html)
-print('dist/index.html %d КБ, версия %s' % (len(html.encode()) // 1024, version))
+print('dist/index.html %d КБ, версия %s, фон: %s' % (len(html.encode()) // 1024, version, bg or 'рисованный'))
