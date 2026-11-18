@@ -1,0 +1,90 @@
+/* Desktop layout for the standalone PHYSICS Lab 3 window. */
+body[data-view="labWork3"], body[data-view="labWork3Report"] {
+  --desktop-bg:#0b1220; --desktop-panel:#121e30; --desktop-line:#26374d;
+  background:var(--desktop-bg)!important; color:#e8eef7;
+}
+body[data-view="labWork3"] #tabs, body[data-view="labWork3Report"] #tabs {display:none!important}
+body[data-view="labWork3"] #main, body[data-view="labWork3Report"] #main {
+  width:100%!important; max-width:none!important; margin:0!important;
+  padding:22px 30px 36px!important; box-sizing:border-box;
+}
+body[data-view="labWork3"] #ttl, body[data-view="labWork3Report"] #ttl {font-size:20px!important;letter-spacing:.01em}
+body[data-view="labWork3"] .lw {
+  width:100%; max-width:1680px; margin:0 auto;
+  display:grid; grid-template-columns:250px minmax(0,1fr);
+  align-items:start; gap:18px 26px;
+}
+body[data-view="labWork3"] .lw-steps {
+  grid-column:1; grid-row:1 / span 12; position:sticky; top:14px;
+  display:flex; flex-direction:column; gap:8px; padding:12px;
+  background:#101b2b; border:1px solid var(--desktop-line); border-radius:16px;
+}
+body[data-view="labWork3"] .lw-steps button {
+  display:flex; align-items:center; gap:12px; width:100%; min-height:54px;
+  text-align:left; border:1px solid transparent; border-radius:11px;
+  padding:9px 12px; background:#17263a; color:#cbd7e7; cursor:pointer;
+}
+body[data-view="labWork3"] .lw-steps button.on {
+  background:#1b3651; border-color:#4b8fc5; color:#fff;
+}
+body[data-view="labWork3"] .lw-steps button b {
+  display:grid; place-items:center; flex:0 0 30px; height:30px;
+  border-radius:9px; background:#263d58; color:#b9dfff;
+}
+body[data-view="labWork3"] .lw > .card,
+body[data-view="labWork3"] .lw > .lw-stage,
+body[data-view="labWork3"] .lw > .lw-msg {grid-column:2; min-width:0}
+body[data-view="labWork3"] .card,
+body[data-view="labWork3"] .lw-stage {
+  background:var(--desktop-panel)!important; color:#e8eef7!important;
+  border:1px solid var(--desktop-line)!important; border-radius:16px!important;
+  box-shadow:0 8px 26px #0003; padding:22px!important;
+}
+body[data-view="labWork3"] .lw-stage {
+  display:grid; grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);
+  align-items:center; gap:22px;
+}
+body[data-view="labWork3"] #l3-cv {
+  display:block; width:100%!important; height:auto!important; min-height:360px;
+  background:#0e1928; border:1px solid #30435a; border-radius:13px;
+}
+body[data-view="labWork3"] .lw-ctl {min-width:0}
+body[data-view="labWork3"] .lw-q button,
+body[data-view="labWork3"] .l3-row .btn,
+body[data-view="labWork3"] .lw-ctl .btn {
+  min-height:44px; font-size:14px;
+}
+body[data-view="labWork3"] .lw-tbl {width:100%; border-collapse:separate; border-spacing:0; overflow:hidden}
+body[data-view="labWork3"] .lw-tbl th {
+  background:#20344c; color:#dcecff; font-weight:650;
+}
+body[data-view="labWork3"] .lw-tbl td, body[data-view="labWork3"] .lw-tbl th {
+  padding:12px 14px; border-bottom:1px solid #2a3a50; text-align:center;
+}
+body[data-view="labWork3"] .lw-tbl input {min-width:100px; min-height:38px; font-size:15px}
+body[data-view="labWork3"] .h {font-size:19px!important}
+body[data-view="labWork3"] .mute, body[data-view="labWork3"] .small {color:#aabbd0!important}
+body[data-view="labWork3"] .lw-intro details {
+  background:#17263a; border:1px solid #2a3d55; border-radius:10px;
+  padding:12px 15px; margin-top:10px;
+}
+body[data-view="labWork3"] .lw-intro summary {cursor:pointer;font-weight:650}
+body[data-view="labWork3"] .lw-row {gap:18px}
+body[data-view="labWork3"] .lw-row label {flex:1;min-width:240px}
+body[data-view="labWork3"] .btn {border-radius:10px}
+body[data-view="labWork3"] .lw-res {font-size:20px;font-weight:700;color:#83ddb9}
+@media (max-width:1100px) {
+ body[data-view="labWork3"] .lw {grid-template-columns:205px minmax(0,1fr);gap:14px}
+ body[data-view="labWork3"] .lw-stage {grid-template-columns:1fr}
+ body[data-view="labWork3"] #main {padding:16px!important}
+}
+@media (max-width:760px) {
+ body[data-view="labWork3"] .lw {display:flex;flex-direction:column}
+ body[data-view="labWork3"] .lw-steps {position:static;flex-direction:row;overflow:auto;width:100%;box-sizing:border-box}
+ body[data-view="labWork3"] .lw-steps button {min-width:160px}
+ body[data-view="labWork3"] .lw-stage {display:block}
+}
+@media print {
+ body[data-view="labWork3"] .lw-steps {display:none}
+ body[data-view="labWork3"] #main {padding:0!important}
+}
