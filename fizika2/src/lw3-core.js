@@ -85,10 +85,12 @@ function l3Draw() {
   // фон и стол
   let g;
   const bg = L3_BG && L3_BG.complete && L3_BG.naturalWidth ? L3_BG : null;
-  if (bg) {
-    const iw = bg.naturalWidth, ih = bg.naturalHeight, sc = Math.max(580 / iw, 452 / ih), w = iw * sc, h = ih * sc;
-    c.drawImage(bg, (580 - w) / 2, (452 - h) * (L3_BG.alignY ?? 1), w, h);
-    g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, 'rgba(6,10,20,.55)'); g.addColorStop(.85, 'rgba(6,10,20,.25)'); g.addColorStop(1, 'rgba(6,10,20,.1)'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
+  if (bg) {   // картинка во всю ширину; её кромка стола (доля высоты edge) — на основании приборов, y = 419
+    const h = bg.naturalHeight * 580 / bg.naturalWidth, y0 = 419 - (L3_BG.edge ?? 1) * h;
+    c.fillStyle = L3_BG.top || '#0F2237'; c.fillRect(0, 0, 580, 452);
+    if (y0 > 0) { g = c.createLinearGradient(0, y0 - 1, 0, y0 + 24); g.addColorStop(0, L3_BG.top || '#0F2237'); g.addColorStop(1, 'rgba(15,34,55,0)'); }
+    c.drawImage(bg, 0, y0, 580, h);
+    if (y0 > 0) { c.fillStyle = g; c.fillRect(0, y0 - 1, 580, 25); }
   } else {
     g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, '#16263C'); g.addColorStop(1, '#0E1A2B'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
     c.fillStyle = 'rgba(255,255,255,.025)'; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452);

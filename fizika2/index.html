@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 129;
+  var embedded = 130;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1239,7 +1239,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 129;
+const F2_BUILD = 130;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -8364,10 +8364,12 @@ function l3Draw() {
   // фон и стол
   let g;
   const bg = L3_BG && L3_BG.complete && L3_BG.naturalWidth ? L3_BG : null;
-  if (bg) {
-    const iw = bg.naturalWidth, ih = bg.naturalHeight, sc = Math.max(580 / iw, 452 / ih), w = iw * sc, h = ih * sc;
-    c.drawImage(bg, (580 - w) / 2, (452 - h) * (L3_BG.alignY ?? 1), w, h);
-    g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, 'rgba(6,10,20,.55)'); g.addColorStop(.85, 'rgba(6,10,20,.25)'); g.addColorStop(1, 'rgba(6,10,20,.1)'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
+  if (bg) {   // картинка во всю ширину; её кромка стола (доля высоты edge) — на основании приборов, y = 419
+    const h = bg.naturalHeight * 580 / bg.naturalWidth, y0 = 419 - (L3_BG.edge ?? 1) * h;
+    c.fillStyle = L3_BG.top || '#0F2237'; c.fillRect(0, 0, 580, 452);
+    if (y0 > 0) { g = c.createLinearGradient(0, y0 - 1, 0, y0 + 24); g.addColorStop(0, L3_BG.top || '#0F2237'); g.addColorStop(1, 'rgba(15,34,55,0)'); }
+    c.drawImage(bg, 0, y0, 580, h);
+    if (y0 > 0) { c.fillStyle = g; c.fillRect(0, y0 - 1, 580, 25); }
   } else {
     g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, '#16263C'); g.addColorStop(1, '#0E1A2B'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
     c.fillStyle = 'rgba(255,255,255,.025)'; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452);

@@ -9,7 +9,7 @@ const ui = { main: $('#main'), side: $('#side') };
 let SCREEN = 'home';            // home | work | teacher
 let PROFILE = null;
 let TAB = 'theory';
-if (LAB_BG) { const im = new Image(); im.onload = () => { L3_BG = im; if ($('#l3-cv')) l3Draw(); }; im.src = LAB_BG; }   // фон лаборатории под установкой
+if (LAB_BG) { const im = new Image(); im.onload = () => { L3_BG = Object.assign(im, { edge: LAB_BG.edge, top: LAB_BG.top }); if ($('#l3-cv')) l3Draw(); }; im.src = LAB_BG.src; }   // фон лаборатории под установкой
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
