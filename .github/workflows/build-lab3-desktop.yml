@@ -52,7 +52,7 @@ jobs:
           python -m pip install --disable-pip-version-check pillow
           @'
           from PIL import Image
-          Image.open("fizika2/icon-192.png").convert("RGBA").save(
+          Image.open("fizika2/icon-192.png").convert("RGBA").resize((256,256)).save(
               "desktop/lab3/icon.ico",
               format="ICO",
               sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)]
