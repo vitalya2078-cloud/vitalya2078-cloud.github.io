@@ -9,6 +9,12 @@
 Запуск: python3 lw3-desktop/build.py
 """
 import json, os, re, shutil
+import sys
+
+try:   # консоль Windows в CI (cp1252) не печатает кириллицу
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 
 D = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.normpath(os.path.join(D, '..', 'fizika2', 'src'))

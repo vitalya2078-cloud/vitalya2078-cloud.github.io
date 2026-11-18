@@ -20,6 +20,9 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHONIOENCODING: utf-8
+
 concurrency:
   group: lw3-desktop-${{ github.ref }}
   cancel-in-progress: true
