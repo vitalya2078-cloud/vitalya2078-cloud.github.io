@@ -37,6 +37,9 @@ jobs:
       - name: Build website
         run: python fizika2/src/build.py
 
+      - name: Lab work 3 model test
+        run: node fizika2/tests/lw3-model.test.mjs
+
       - name: Install browser test runner
         run: |
           npm install --no-save --package-lock=false playwright
@@ -51,6 +54,7 @@ jobs:
             sleep 1
           done
           node fizika2/tests/site-smoke.mjs
+          node fizika2/tests/lw3-site.mjs
 
       - name: Publish tested website
         run: |

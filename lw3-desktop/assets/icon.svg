@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B2C55"/><stop offset="1" stop-color="#0A1022"/></linearGradient>
+    <linearGradient id="am" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD27A"/><stop offset="1" stop-color="#F29A3C"/></linearGradient>
+    <linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#9CC8F0" stop-opacity=".22"/><stop offset=".45" stop-color="#E4F1FF" stop-opacity=".42"/><stop offset="1" stop-color="#7AA6D6" stop-opacity=".16"/></linearGradient>
+  </defs>
+  <rect x="32" y="32" width="960" height="960" rx="220" fill="url(#bg)"/>
+  <rect x="32" y="32" width="960" height="960" rx="220" fill="none" stroke="#2E3F63" stroke-width="8"/>
+  <path d="M410 250 H500 V285 C660 315 672 420 664 800 H246 C238 420 250 315 410 285 Z" fill="url(#gl)" stroke="#D2E6FA" stroke-width="14" stroke-linejoin="round"/>
+  <rect x="396" y="214" width="118" height="44" rx="10" fill="#8A6C45"/>
+  <text x="455" y="690" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Times New Roman, serif" font-style="italic" font-weight="700" font-size="400" fill="url(#am)">γ</text>
+  <path d="M740 300 V780 Q740 830 790 830 Q840 830 840 780 V300" fill="none" stroke="#D2E6FA" stroke-width="14" stroke-linecap="round"/>
+  <path d="M760 560 V780 Q760 808 790 808 Q820 808 820 780 V420" fill="none" stroke="#5ED0E6" stroke-width="24" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Главное окно: только собственные команды программы (сохранение файла, полный экран).",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

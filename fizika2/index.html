@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 127;
+  var embedded = 128;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1239,7 +1239,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 127;
+const F2_BUILD = 128;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -8278,6 +8278,11 @@ document.addEventListener('click', e => {
 });
 
 /* =====================================================================
+   ЛР № 3 — ядро работы, общее для сайта (labwork3.js) и программы для Windows
+   (lw3-desktop/): модель установки, сцена, вопросы, расчёты и проверки, действия
+   (data-l3 / data-k3), отчёт. Экраны каждая оболочка рисует сама.
+   Ждёт от оболочки: $, esc, f1, ic, toast, render, ui.main, addXP, lwMsg, lwNum, lwGauss, lwShuf, LW_LIST.
+
    ЛР № 3. Определение показателя адиабаты (метод Клемана — Дезорма).
    Как на занятии: допуск → подготовка (питание секундомера, краны) → 3 опыта
    (накачка до 210–220 мм, 1 мин, h₁; выпуск через K₀ и закрытие, 1 мин, h₂)
@@ -8290,7 +8295,7 @@ const L3 = {
   steps: [['admit', 'Допуск'], ['prep', 'Подготовка'], ['exp', 'Опыты'], ['proc', 'Обработка'], ['concl', 'Выводы'], ['report', 'Отчёт']],
   N: 3, P0: 10330, g: 1.4, tauH: 9, tauO: .11, pump: 46, wait: 60, speed: 12
 };
-const L3_KEY = 'f2-lw3';
+let L3_KEY = 'f2-lw3';   // десктоп подставляет ключ своего профиля
 let L3S = null;
 function l3Fresh() {
   return { v: 1, step: 0, max: 0, admit: {}, admitOk: false, power: false, kOpen: false, k0Open: true, prepOk: false,
@@ -8383,17 +8388,6 @@ function l3Draw() {
   }
 }
 
-/* ---------- экраны ---------- */
-const l3In = (k, val, ph = '', cls = '') => `<input class="lwi l3i ${cls}" data-k3="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
-const l3Next = (label = 'Дальше') => `<button class="btn wide mt" data-l3="next">${label} ${ic('chevron-right')}</button>`;
-function vLabWork3() {
-  const S = l3Load(), st = L3.steps[S.step][0];
-  frame('ЛР № 3 · Показатель адиабаты', { back: true, sub: L3.steps[S.step][1] });
-  const chips = `<div class="lw-steps">${L3.steps.map(([k, t], i) => `<button data-l3="go" data-v="${i}" class="${i === S.step ? 'on' : ''}${i < S.max || (i === S.max && st === 'report') ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><b>${i + 1}</b><span>${t}</span></button>`).join('')}</div>`;
-  const body = ({ admit: l3Admit, prep: l3Prep, exp: l3Exp, proc: l3Proc, concl: l3Concl, report: l3ReportStep })[st]();
-  setMain(`<div class="lw">${chips}${body}</div>`);
-  if (st === 'prep' || st === 'exp') { l3Draw(); l3Run(); }
-}
 
 /* 1. Допуск */
 const L3_ADMIT = [
@@ -8406,49 +8400,16 @@ const L3_ADMIT = [
   ['Что будет, если закрыть кран K₀ слишком рано?', 'h₂ получится больше, и γ окажется завышенным', ['h₂ получится меньше, γ занижен', 'Ничего не изменится', 'Баллон лопнет']],
   ['Чему равно теоретическое значение γ для воздуха (двухатомный газ, i = 5)?', '1,4', ['1,67', '1,33', '1']]
 ];
-function l3Admit() {
-  const S = L3S, qs = L3_ADMIT.map(([q, a, x], i) => { const opts = lwShuf(i + 80, [a, ...x]), ch = S.admit[i];
-    return `<div class="lw-q"><b>${i + 1}. ${esc(q)}</b>${opts.map(o => `<button data-l3="admit" data-q="${i}" data-v="${esc(o)}" class="${ch === o ? (S.admitChecked ? (o === a ? 'ok' : 'bad') : 'pick') : ''}">${esc(o)}</button>`).join('')}</div>`; }).join('');
-  return `<section class="card lw-intro"><b class="h">Цель работы</b><p>${esc(LW_LIST[2].aim)}</p>
-    <details><summary>Кратко из теории</summary>
-    <p><b>Первый закон термодинамики:</b> Q = ΔU + A. Молярные теплоёмкости идеального газа: Cₘᵥ = iR/2, Cₘₚ = (i + 2)R/2 (уравнение Майера: Cₘₚ − Cₘᵥ = R).</p>
+/* Тексты допуска: теория, установка, ТБ (HTML) */
+const L3_TEXT = {
+  theory: `<p><b>Первый закон термодинамики:</b> Q = ΔU + A. Молярные теплоёмкости идеального газа: Cₘᵥ = iR/2, Cₘₚ = (i + 2)R/2 (уравнение Майера: Cₘₚ − Cₘᵥ = R).</p>
     <p><b>Показатель адиабаты</b> γ = Cₘₚ/Cₘᵥ = (i + 2)/i. Для воздуха (двухатомные молекулы, i = 5) γ = 1,4. Адиабата: PVᵞ = const — теплообмена нет, работа идёт за счёт внутренней энергии.</p>
-    <p><b>Метод.</b> В баллон накачивают воздух и ждут, пока он остынет до комнатной температуры: избыточное давление h₁. Быстро выпускают воздух до атмосферного давления (адиабатное расширение — газ охлаждается), закрывают кран и ждут: газ нагревается обратно, давление растёт до h₂. Из уравнения Пуассона и закона Бойля — Мариотта: γ = h₁/(h₁ − h₂).</p></details>
-    <details><summary>Оборудование и установка</summary><p>Б — большой стеклянный баллон; K — кран, соединяющий баллон с компрессором Н; K₀ — кран, соединяющий баллон с атмосферой; М — U-образный жидкостный манометр (избыточное давление — разность уровней в коленах, мм); секундомер. Кран K открыт в горизонтальном положении ручки, K₀ — в вертикальном.</p></details>
-    <details><summary>Техника безопасности</summary><p>Работу начинают с разрешения преподавателя. Компрессор и секундомер питаются от сети: не касайся проводов и токоведущих частей, при неисправности отключи питание и сообщи преподавателю. Баллон стеклянный — не накачивай выше 220 мм по манометру, не ставь на него предметы и не перемещай. Компрессор работает, пока нажата кнопка: не оставляй его включённым.</p></details></section>
-    <section class="card"><b class="h">Допуск к работе</b><p class="mute">Ответь на вопросы. Нужно не меньше 6 верных из 8.</p>${qs}
-    <button class="btn wide mt" data-l3="admitCheck">${ic('circle-check')} Сдать допуск</button>${S.admitOk ? l3Next('К подготовке') : ''}</section>`;
-}
+    <p><b>Метод.</b> В баллон накачивают воздух и ждут, пока он остынет до комнатной температуры: избыточное давление h₁. Быстро выпускают воздух до атмосферного давления (адиабатное расширение — газ охлаждается), закрывают кран и ждут: газ нагревается обратно, давление растёт до h₂. Из уравнения Пуассона и закона Бойля — Мариотта: γ = h₁/(h₁ − h₂).</p>`,
+  equip: `<p>Б — большой стеклянный баллон; K — кран, соединяющий баллон с компрессором Н; K₀ — кран, соединяющий баллон с атмосферой; М — U-образный жидкостный манометр (избыточное давление — разность уровней в коленах, мм); секундомер. Кран K открыт в горизонтальном положении ручки, K₀ — в вертикальном.</p>`,
+  safety: `<p>Работу начинают с разрешения преподавателя. Компрессор и секундомер питаются от сети: не касайся проводов и токоведущих частей, при неисправности отключи питание и сообщи преподавателю. Баллон стеклянный — не накачивай выше 220 мм по манометру, не ставь на него предметы и не перемещай. Компрессор работает, пока нажата кнопка: не оставляй его включённым.</p>`
+};
+const L3_AIM = () => LW_LIST[2].aim;
 
-/* 2. Подготовка: питание, краны (п. 1–3 порядка выполнения) */
-function l3Prep() {
-  const S = L3S, ok = S.power && S.kOpen && !S.k0Open;
-  return `<section class="card"><b class="h">Подготовка установки</b><p class="mute small">По порядку выполнения: 1) подай питание на секундомер (переключатель на задней панели); 2) открой кран K (ручка горизонтально); 3) закрой кран K₀ (ручка горизонтально). Краны показаны на схеме — зелёная ручка открыта, красная закрыта.</p></section>
-    <section class="lw-stage"><canvas id="l3-cv" aria-label="Установка Клемана — Дезорма"></canvas><div class="lw-ctl">${l3Controls('prep')}
-    <p class="lw-msg" id="lw-msg">${ok ? 'Установка готова к опыту.' : ''}</p>${ok ? l3Next('К опытам') : ''}</div></section>`;
-}
-function l3Controls(mode) {
-  const S = L3S, V = L3V, ph = V.phase;
-  const tog = (k, lab, on) => `<button class="btn ${on ? '' : 'line'}" data-l3="${k}">${lab}</button>`;
-  if (mode === 'prep') return `<div class="l3-row">${tog('power', S.power ? 'Питание: вкл' : 'Подать питание', S.power)}${tog('kv', S.kOpen ? 'Кран K: открыт' : 'Кран K: закрыт', S.kOpen)}${tog('k0', S.k0Open ? 'Кран K₀: открыт' : 'Кран K₀: закрыт', !S.k0Open)}</div>`;
-  if (ph === 'ready' && S.kOpen && !S.k0Open) { V.phase = 'pump'; return l3Controls(mode); }
-  const n = S.runs.length + 1;
-  if (ph === 'ready') return `<p class="l3-step">Опыт ${n}. Открой кран K и закрой K₀.</p><div class="l3-row">${tog('kv', S.kOpen ? 'Кран K: открыт' : 'Открыть кран K', S.kOpen)}${tog('k0', S.k0Open ? 'Закрыть кран K₀' : 'Кран K₀: закрыт', !S.k0Open)}</div>`;
-  if (ph === 'pump') return `<p class="l3-step">Держи кнопку компрессора, пока уровень в правом колене не поднимется на 210…220 мм (разность уровней). Сейчас: <b id="l3-h">${Math.round(V.p)}</b> мм</p><div class="l3-row"><button class="btn" id="l3-pump" data-l3="nop">${ic('zap')} Компрессор — держи</button><button class="btn line" data-l3="closeK">Закрыть K и пустить секундомер</button></div>`;
-  if (ph === 'wait1' || ph === 'wait2') return `<p class="l3-step">Секундомер идёт. Выжди 1 минуту, пока установится постоянное давление.</p><button class="btn wide" data-l3="waitMin" ${V.speed > 1 ? 'disabled' : ''}>${ic('timer')} Ждать 1 мин (ускоренно)</button>`;
-  if (ph === 'read1' || ph === 'read2') { const j = ph === 'read1' ? 1 : 2; return `<p class="l3-step">Секундомер остановлен. По лупам прочитай уровни в обоих коленах и запиши h${j === 1 ? '₁' : '₂'} — разность уровней, мм.</p><div class="lw-ctl-row"><label>h${j === 1 ? '₁' : '₂'}, мм${l3In('ch', V.cur['r' + j] || '', 'мм')}</label><button class="btn" data-l3="rec${j}">${ic('pencil')} Записать</button></div>`; }
-  if (ph === 'vent') return `<p class="l3-step">h₁ = ${l3Fix(V.cur.h1, 0)} мм записано, секундомер сброшен. Открой кран K₀ и закрой его, как только давление сравняется с атмосферным (уровни в коленах выровняются, шипение прекратится).</p><div class="l3-row"><button class="btn" data-l3="k0open" ${S.k0Open ? 'disabled' : ''}>Открыть K₀</button><button class="btn line" data-l3="k0close" ${S.k0Open ? '' : 'disabled'}>Закрыть K₀</button></div>`;
-  if (ph === 'vented') return `<p class="l3-step">Кран K₀ закрыт. Запусти секундомер и выжди 1 минуту, пока газ нагреется до комнатной температуры.</p><button class="btn wide" data-l3="startSw">${ic('timer')} Пуск секундомера</button>`;
-  return '';
-}
-/* 3. Опыты */
-function l3Exp() {
-  const S = L3S, n = S.runs.length, done = n >= L3.N;
-  const tbl = `<table class="lw-tbl"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th></tr>${Array.from({ length: L3.N }, (_, i) => `<tr class="${i === n ? 'now' : ''}"><td>${i + 1}</td><td>${S.runs[i] ? S.runs[i].h1 : i === n && L3V.cur.h1 != null ? L3V.cur.h1 : ''}</td><td>${S.runs[i] ? S.runs[i].h2 : ''}</td></tr>`).join('')}</table>`;
-  return `<section class="card lw-cond"><b class="h">Опыты (п. 3–12)</b><p class="mute small">Повтори измерение h₁ и h₂ три раза. Точность опыта зависит от момента закрытия крана K₀: закроешь раньше — h₂ больше и γ завышен, позже — h₂ меньше и γ занижен.</p></section>
-    <section class="lw-stage"><canvas id="l3-cv" aria-label="Установка Клемана — Дезорма"></canvas><div class="lw-ctl">${done ? l3Next('К обработке') : l3Controls('exp')}<p class="lw-msg" id="lw-msg"></p></div></section>
-    <section class="card"><b class="h">Таблица 1 (измерения)</b>${tbl}</section>`;
-}
 function l3Phase(ph) { L3V.phase = ph; render(); }
 
 /* ---------- обработка ---------- */
@@ -8462,19 +8423,6 @@ function l3Ok(k, u, o) { const e = o[k]; if (!Number.isFinite(u)) return false;
   if (k === 'eg' || k === 'e') return Math.abs(u - e) <= Math.max(.25, e * .08);
   if (k === 'dg') return Math.abs(u - e) <= Math.max(.003, e * .1);
   return Math.abs(u - e) <= .006; }
-function l3Proc() {
-  const S = L3S, o = l3Calc(), P = S.proc, cls = k => S.procOk[k] === true ? 'ok' : S.procOk[k] === false ? 'bad' : '', I = k => l3In('p_' + k, P[k], '', cls(k));
-  const all = L3_KEYS.every(k => S.procOk[k] === true);
-  return `<section class="card"><b class="h">Таблица 1. Показатель адиабаты</b><p class="mute small">γᵢ = h₁/(h₁ − h₂), с точностью до 0,001.</p>
-    <table class="lw-tbl"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th><th>γ</th></tr>${o.a.map((x, i) => `<tr><td>${i + 1}</td><td>${x.h1}</td><td>${x.h2}</td><td>${I('g' + (i + 1))}</td></tr>`).join('')}
-    <tr class="sum"><td colspan="3">Среднее значение ⟨γ⟩ = Σγᵢ/N</td><td>${I('gm')}</td></tr></table></section>
-    <section class="card"><b class="h">Погрешности и сравнение с теорией</b>
-    <div class="lw-row"><label>⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)) ${I('dg')}</label><label>ε_γ = ⟨Δγ⟩/⟨γ⟩·100 %, % ${I('eg')}</label></div>
-    <div class="lw-row"><label>γ_T = (i + 2)/i для воздуха (i = 5) ${I('gT')}</label><label>ε = |γ_T − ⟨γ⟩|/γ_T·100 %, % ${I('e')}</label></div>
-    <button class="btn line wide mt" data-l3="pcheck">${ic('circle-check')} Проверить</button>
-    ${['gm', 'dg'].every(k => S.procOk[k]) ? `<p class="lw-res">γ = ${l3Res(o)}</p>` : ''}</section>
-    <p class="lw-msg" id="lw-msg"></p>${all ? l3Next('К выводам') : '<p class="mute small center">Когда все значения будут верны, откроются выводы.</p>'}`;
-}
 
 /* 5. Выводы и контрольные вопросы */
 const L3_CQ = [
@@ -8494,27 +8442,10 @@ function l3AutoConcl(o) {
     (Math.abs(o.gm - o.gT) <= 2 * o.dg ? 'Экспериментальное значение согласуется с теоретическим в пределах погрешности опыта. ' : o.e <= 4 ? 'Экспериментальное значение близко к теоретическому. ' : '') +
     `Отличие ⟨γ⟩ ${hi ? 'в большую' : 'в меньшую'} сторону объясняется в первую очередь моментом закрытия крана K₀: ${hi ? 'при раннем закрытии давление не успевает сравняться с атмосферным и h₂ получается больше' : 'при позднем закрытии воздух успевает нагреться от стенок и выйти, и h₂ получается меньше'}; кроме того, расширение не строго адиабатно из-за теплообмена со стенками баллона.`;
 }
-function l3Concl() {
-  const S = L3S; if (!S.concl) { S.concl = l3AutoConcl(l3Calc()); l3Save(); }
-  const qs = L3_CQ.map(([q, a, x], i) => { const opts = lwShuf(i + 90, [a, ...x]), ch = S.cq[i];
-    return `<div class="lw-q"><b>${i + 1}. ${esc(q)}</b>${opts.map(op => `<button data-l3="cq" data-q="${i}" data-v="${esc(op)}" class="${ch === op ? (S.cqChecked ? (op === a ? 'ok' : 'bad') : 'pick') : ''}">${esc(op)}</button>`).join('')}</div>`; }).join('');
-  return `<section class="card"><b class="h">Выводы</b><p class="mute small">Черновик собран по твоим результатам. Проверь и допиши своими словами.</p>
-    <textarea class="lw-ta l3i" data-k3="concl" rows="9">${esc(S.concl)}</textarea>
-    <button class="btn line wide mt" data-l3="reconcl">${ic('rotate-ccw')} Собрать черновик заново</button></section>
-    <section class="card"><b class="h">Контрольные вопросы (защита)</b>${qs}<button class="btn wide mt" data-l3="cqCheck">${ic('circle-check')} Проверить ответы</button>${S.cqOk ? l3Next('К отчёту') : ''}</section>`;
-}
 
-/* 6. Отчёт */
-function l3ReportStep() {
-  const S = L3S;
-  return `<section class="card"><b class="h">Отчёт готов</b><p class="mute">Отчёт оформлен по бланку кафедры (4 листа А4). Заполни шапку и сохрани PDF: в окне печати выбери «Сохранить как PDF».</p>
-    <div class="lw-row"><label>ФИО ${l3In('fio', S.fio, 'Иванов И. И.', 'txt')}</label><label>Класс ${l3In('group', S.group, '', 'txt')}</label><label>Дата ${l3In('date', S.date, '', 'txt')}</label></div>
-    <a class="btn wide mt" href="#lw-3-report">${ic('file-text')} Открыть отчёт</a>
-    <button class="btn line wide mt" data-l3="restart">${ic('rotate-ccw')} Выполнить работу заново</button></section>`;
-}
-function vLabWork3Report() {
-  const S = l3Load(); if (L3.steps[S.max][0] !== 'report') { location.hash = 'lw-3'; return; }
-  frame('Отчёт · ЛР № 3', { back: true });
+/* Отчёт по бланку кафедры (4 листа А4): HTML без рамки приложения */
+function l3ReportHtml() {
+  const S = l3Load();
   const o = l3Calc(), ln = v => `<span class="ul">${esc(v || '')}</span>`, [dd, mon, yy] = String(S.date || '').split('.');
   const MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
   const equip = [['Большой стеклянный баллон Б', '—', '—'], ['Краны K (к компрессору) и K₀ (к атмосфере)', '—', '—'], ['Компрессор Н', '—', '—'], ['Манометр М U-образный жидкостный', '0–400 мм', '1 мм'], ['Секундомер', '—', '0,1 с']];
@@ -8546,7 +8477,7 @@ function vLabWork3Report() {
     <p class="small c">Процессы в баллоне на (P, Vₘ)-диаграмме для опыта 1 (в окрестности P₀): 2–3 — адиабатное расширение, 3–4 — изохорное нагревание, 2–4 — изотерма. Наклон адиабаты в γ раз больше наклона изотермы.</p>
     <p class="c b mt2">ВЫВОДЫ ПО ПРОДЕЛАННОЙ РАБОТЕ</p><p class="concl">${esc(S.concl).replace(/\n/g, '<br>')}</p>
     <p class="row sign">Подпись исполнителя ${ln('')}</p></section>`;
-  setMain(`<div class="lwr-tools"><button class="btn" data-l3="print">${ic('printer')} Сохранить PDF / печать</button><a class="btn line" href="#lw-3">${ic('chevron-left')} К работе</a></div><article class="lwr">${p1}${p2}${p3}${p4}</article>`);
+  return `<article class="lwr">${p1}${p2}${p3}${p4}</article>`;
 }
 function l3GraphSvg(o) {
   const x = o.a[0], h1 = x.h1, h2 = x.h2, dx = h1 - h2, X = v => 70 + v / (dx * 1.6) * 420, Y = p => 260 - p / (h1 * 1.15) * 230;
@@ -8626,6 +8557,100 @@ document.addEventListener('click', e => {
     case 'restart': if (confirm('Начать лабораторную работу № 3 заново? Записи и таблицы будут очищены.')) { L3S = l3Fresh(); l3Save(); l3Reset(); location.hash = 'lw-3'; render(); } break;
   }
 });
+/* ЛР № 3 на сайте: экраны. Модель, вопросы, расчёты, действия и отчёт — в lw3-core.js. */
+/* ---------- экраны ---------- */
+const l3In = (k, val, ph = '', cls = '') => `<input class="lwi l3i ${cls}" data-k3="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
+const l3Next = (label = 'Дальше') => `<button class="btn wide mt" data-l3="next">${label} ${ic('chevron-right')}</button>`;
+function vLabWork3() {
+  const S = l3Load(), st = L3.steps[S.step][0];
+  frame('ЛР № 3 · Показатель адиабаты', { back: true, sub: L3.steps[S.step][1] });
+  const chips = `<div class="lw-steps">${L3.steps.map(([k, t], i) => `<button data-l3="go" data-v="${i}" class="${i === S.step ? 'on' : ''}${i < S.max || (i === S.max && st === 'report') ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><b>${i + 1}</b><span>${t}</span></button>`).join('')}</div>`;
+  const body = ({ admit: l3Admit, prep: l3Prep, exp: l3Exp, proc: l3Proc, concl: l3Concl, report: l3ReportStep })[st]();
+  setMain(`<div class="lw">${chips}${body}</div>`);
+  if (st === 'prep' || st === 'exp') { l3Draw(); l3Run(); }
+}
+
+function l3Admit() {
+  const S = L3S, qs = L3_ADMIT.map(([q, a, x], i) => { const opts = lwShuf(i + 80, [a, ...x]), ch = S.admit[i];
+    return `<div class="lw-q"><b>${i + 1}. ${esc(q)}</b>${opts.map(o => `<button data-l3="admit" data-q="${i}" data-v="${esc(o)}" class="${ch === o ? (S.admitChecked ? (o === a ? 'ok' : 'bad') : 'pick') : ''}">${esc(o)}</button>`).join('')}</div>`; }).join('');
+  return `<section class="card lw-intro"><b class="h">Цель работы</b><p>${esc(LW_LIST[2].aim)}</p>
+    <details><summary>Кратко из теории</summary>
+    ${L3_TEXT.theory}</details>
+    <details><summary>Оборудование и установка</summary>${L3_TEXT.equip}</details>
+    <details><summary>Техника безопасности</summary>${L3_TEXT.safety}</details></section>
+    <section class="card"><b class="h">Допуск к работе</b><p class="mute">Ответь на вопросы. Нужно не меньше 6 верных из 8.</p>${qs}
+    <button class="btn wide mt" data-l3="admitCheck">${ic('circle-check')} Сдать допуск</button>${S.admitOk ? l3Next('К подготовке') : ''}</section>`;
+}
+
+
+/* 2. Подготовка: питание, краны (п. 1–3 порядка выполнения) */
+function l3Prep() {
+  const S = L3S, ok = S.power && S.kOpen && !S.k0Open;
+  return `<section class="card"><b class="h">Подготовка установки</b><p class="mute small">По порядку выполнения: 1) подай питание на секундомер (переключатель на задней панели); 2) открой кран K (ручка горизонтально); 3) закрой кран K₀ (ручка горизонтально). Краны показаны на схеме — зелёная ручка открыта, красная закрыта.</p></section>
+    <section class="lw-stage"><canvas id="l3-cv" aria-label="Установка Клемана — Дезорма"></canvas><div class="lw-ctl">${l3Controls('prep')}
+    <p class="lw-msg" id="lw-msg">${ok ? 'Установка готова к опыту.' : ''}</p>${ok ? l3Next('К опытам') : ''}</div></section>`;
+}
+function l3Controls(mode) {
+  const S = L3S, V = L3V, ph = V.phase;
+  const tog = (k, lab, on) => `<button class="btn ${on ? '' : 'line'}" data-l3="${k}">${lab}</button>`;
+  if (mode === 'prep') return `<div class="l3-row">${tog('power', S.power ? 'Питание: вкл' : 'Подать питание', S.power)}${tog('kv', S.kOpen ? 'Кран K: открыт' : 'Кран K: закрыт', S.kOpen)}${tog('k0', S.k0Open ? 'Кран K₀: открыт' : 'Кран K₀: закрыт', !S.k0Open)}</div>`;
+  if (ph === 'ready' && S.kOpen && !S.k0Open) { V.phase = 'pump'; return l3Controls(mode); }
+  const n = S.runs.length + 1;
+  if (ph === 'ready') return `<p class="l3-step">Опыт ${n}. Открой кран K и закрой K₀.</p><div class="l3-row">${tog('kv', S.kOpen ? 'Кран K: открыт' : 'Открыть кран K', S.kOpen)}${tog('k0', S.k0Open ? 'Закрыть кран K₀' : 'Кран K₀: закрыт', !S.k0Open)}</div>`;
+  if (ph === 'pump') return `<p class="l3-step">Держи кнопку компрессора, пока уровень в правом колене не поднимется на 210…220 мм (разность уровней). Сейчас: <b id="l3-h">${Math.round(V.p)}</b> мм</p><div class="l3-row"><button class="btn" id="l3-pump" data-l3="nop">${ic('zap')} Компрессор — держи</button><button class="btn line" data-l3="closeK">Закрыть K и пустить секундомер</button></div>`;
+  if (ph === 'wait1' || ph === 'wait2') return `<p class="l3-step">Секундомер идёт. Выжди 1 минуту, пока установится постоянное давление.</p><button class="btn wide" data-l3="waitMin" ${V.speed > 1 ? 'disabled' : ''}>${ic('timer')} Ждать 1 мин (ускоренно)</button>`;
+  if (ph === 'read1' || ph === 'read2') { const j = ph === 'read1' ? 1 : 2; return `<p class="l3-step">Секундомер остановлен. По лупам прочитай уровни в обоих коленах и запиши h${j === 1 ? '₁' : '₂'} — разность уровней, мм.</p><div class="lw-ctl-row"><label>h${j === 1 ? '₁' : '₂'}, мм${l3In('ch', V.cur['r' + j] || '', 'мм')}</label><button class="btn" data-l3="rec${j}">${ic('pencil')} Записать</button></div>`; }
+  if (ph === 'vent') return `<p class="l3-step">h₁ = ${l3Fix(V.cur.h1, 0)} мм записано, секундомер сброшен. Открой кран K₀ и закрой его, как только давление сравняется с атмосферным (уровни в коленах выровняются, шипение прекратится).</p><div class="l3-row"><button class="btn" data-l3="k0open" ${S.k0Open ? 'disabled' : ''}>Открыть K₀</button><button class="btn line" data-l3="k0close" ${S.k0Open ? '' : 'disabled'}>Закрыть K₀</button></div>`;
+  if (ph === 'vented') return `<p class="l3-step">Кран K₀ закрыт. Запусти секундомер и выжди 1 минуту, пока газ нагреется до комнатной температуры.</p><button class="btn wide" data-l3="startSw">${ic('timer')} Пуск секундомера</button>`;
+  return '';
+}
+/* 3. Опыты */
+function l3Exp() {
+  const S = L3S, n = S.runs.length, done = n >= L3.N;
+  const tbl = `<table class="lw-tbl"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th></tr>${Array.from({ length: L3.N }, (_, i) => `<tr class="${i === n ? 'now' : ''}"><td>${i + 1}</td><td>${S.runs[i] ? S.runs[i].h1 : i === n && L3V.cur.h1 != null ? L3V.cur.h1 : ''}</td><td>${S.runs[i] ? S.runs[i].h2 : ''}</td></tr>`).join('')}</table>`;
+  return `<section class="card lw-cond"><b class="h">Опыты (п. 3–12)</b><p class="mute small">Повтори измерение h₁ и h₂ три раза. Точность опыта зависит от момента закрытия крана K₀: закроешь раньше — h₂ больше и γ завышен, позже — h₂ меньше и γ занижен.</p></section>
+    <section class="lw-stage"><canvas id="l3-cv" aria-label="Установка Клемана — Дезорма"></canvas><div class="lw-ctl">${done ? l3Next('К обработке') : l3Controls('exp')}<p class="lw-msg" id="lw-msg"></p></div></section>
+    <section class="card"><b class="h">Таблица 1 (измерения)</b>${tbl}</section>`;
+}
+
+function l3Proc() {
+  const S = L3S, o = l3Calc(), P = S.proc, cls = k => S.procOk[k] === true ? 'ok' : S.procOk[k] === false ? 'bad' : '', I = k => l3In('p_' + k, P[k], '', cls(k));
+  const all = L3_KEYS.every(k => S.procOk[k] === true);
+  return `<section class="card"><b class="h">Таблица 1. Показатель адиабаты</b><p class="mute small">γᵢ = h₁/(h₁ − h₂), с точностью до 0,001.</p>
+    <table class="lw-tbl"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th><th>γ</th></tr>${o.a.map((x, i) => `<tr><td>${i + 1}</td><td>${x.h1}</td><td>${x.h2}</td><td>${I('g' + (i + 1))}</td></tr>`).join('')}
+    <tr class="sum"><td colspan="3">Среднее значение ⟨γ⟩ = Σγᵢ/N</td><td>${I('gm')}</td></tr></table></section>
+    <section class="card"><b class="h">Погрешности и сравнение с теорией</b>
+    <div class="lw-row"><label>⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)) ${I('dg')}</label><label>ε_γ = ⟨Δγ⟩/⟨γ⟩·100 %, % ${I('eg')}</label></div>
+    <div class="lw-row"><label>γ_T = (i + 2)/i для воздуха (i = 5) ${I('gT')}</label><label>ε = |γ_T − ⟨γ⟩|/γ_T·100 %, % ${I('e')}</label></div>
+    <button class="btn line wide mt" data-l3="pcheck">${ic('circle-check')} Проверить</button>
+    ${['gm', 'dg'].every(k => S.procOk[k]) ? `<p class="lw-res">γ = ${l3Res(o)}</p>` : ''}</section>
+    <p class="lw-msg" id="lw-msg"></p>${all ? l3Next('К выводам') : '<p class="mute small center">Когда все значения будут верны, откроются выводы.</p>'}`;
+}
+
+
+function l3Concl() {
+  const S = L3S; if (!S.concl) { S.concl = l3AutoConcl(l3Calc()); l3Save(); }
+  const qs = L3_CQ.map(([q, a, x], i) => { const opts = lwShuf(i + 90, [a, ...x]), ch = S.cq[i];
+    return `<div class="lw-q"><b>${i + 1}. ${esc(q)}</b>${opts.map(op => `<button data-l3="cq" data-q="${i}" data-v="${esc(op)}" class="${ch === op ? (S.cqChecked ? (op === a ? 'ok' : 'bad') : 'pick') : ''}">${esc(op)}</button>`).join('')}</div>`; }).join('');
+  return `<section class="card"><b class="h">Выводы</b><p class="mute small">Черновик собран по твоим результатам. Проверь и допиши своими словами.</p>
+    <textarea class="lw-ta l3i" data-k3="concl" rows="9">${esc(S.concl)}</textarea>
+    <button class="btn line wide mt" data-l3="reconcl">${ic('rotate-ccw')} Собрать черновик заново</button></section>
+    <section class="card"><b class="h">Контрольные вопросы (защита)</b>${qs}<button class="btn wide mt" data-l3="cqCheck">${ic('circle-check')} Проверить ответы</button>${S.cqOk ? l3Next('К отчёту') : ''}</section>`;
+}
+
+/* 6. Отчёт */
+function l3ReportStep() {
+  const S = L3S;
+  return `<section class="card"><b class="h">Отчёт готов</b><p class="mute">Отчёт оформлен по бланку кафедры (4 листа А4). Заполни шапку и сохрани PDF: в окне печати выбери «Сохранить как PDF».</p>
+    <div class="lw-row"><label>ФИО ${l3In('fio', S.fio, 'Иванов И. И.', 'txt')}</label><label>Класс ${l3In('group', S.group, '', 'txt')}</label><label>Дата ${l3In('date', S.date, '', 'txt')}</label></div>
+    <a class="btn wide mt" href="#lw-3-report">${ic('file-text')} Открыть отчёт</a>
+    <button class="btn line wide mt" data-l3="restart">${ic('rotate-ccw')} Выполнить работу заново</button></section>`;
+}
+function vLabWork3Report() {
+  const S = l3Load(); if (L3.steps[S.max][0] !== 'report') { location.hash = 'lw-3'; return; }
+  frame('Отчёт · ЛР № 3', { back: true });
+  setMain(`<div class="lwr-tools"><button class="btn" data-l3="print">${ic('printer')} Сохранить PDF / печать</button><a class="btn line" href="#lw-3">${ic('chevron-left')} К работе</a></div>${l3ReportHtml()}`);
+}
 
 /* ---------- Тесты: 900 вопросов экзамена, проверки уроков и финалы глав ----------
    Режимы: «с пояснениями» (ответ сразу, комбо, опыт) и «как на экзамене» (разбор в конце, оценка 60/75/90).
