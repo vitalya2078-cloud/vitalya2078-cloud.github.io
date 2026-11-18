@@ -43,6 +43,7 @@ jobs:
           $app = "desktop/lab3/app"
           New-Item -ItemType Directory -Force -Path $app | Out-Null
           Copy-Item "fizika2/index.html" "$app/index.html"
+          Copy-Item "desktop/lab3/desktop.css" "$app/desktop.css"
           Copy-Item "fizika2/content.json" "$app/content.json"
           Copy-Item "fizika2/manifest.webmanifest" "$app/manifest.webmanifest"
           Copy-Item "fizika2/icon-192.png" "$app/icon-192.png"
