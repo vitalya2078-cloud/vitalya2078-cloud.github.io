@@ -1,0 +1,45 @@
+{
+  "name": "physics-lab3-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Настольная версия лабораторной работы № 3 из PHYSICS",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis portable --x64"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "ru.physics.lab3",
+    "productName": "PHYSICS — Лабораторная работа № 3",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "."
+    },
+    "files": [
+      "main.cjs",
+      "app/**/*",
+      "icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "icon": "icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PHYSICS — Лабораторная работа № 3"
+    },
+    "artifactName": "${productName}-${version}-${arch}.${ext}"
+  }
+}
