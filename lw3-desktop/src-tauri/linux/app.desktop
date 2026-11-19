@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories={{categories}}
+Comment=Лабораторная работа № 3: определение показателя адиабаты
+Exec={{exec}}
+Icon={{icon}}
+Name=Показатель адиабаты
+Name[ru]=Показатель адиабаты
+Terminal=false
+Type=Application
+StartupWMClass=lw3-adiabata

@@ -32,7 +32,7 @@ const pdfName = S => `Отчёт_адиабата_${safeName(S && S.fio) || 'с�
 async function savePdf(name) {
   if (IS_TAURI) {
     try { const p = await tauri('save_pdf', { name }); if (p) toast(`${ic('circle-check')} PDF сохранён: ${esc(p)}`); return; }
-    catch (e) { toast(`PDF не сохранился (${esc(String(e))}). Открываю печать — выберите «Microsoft Print to PDF».`, 'bad'); }
+    catch (e) { toast(`PDF не сохранился (${esc(String(e))}). Открываю печать — выберите принтер «${/Windows/.test(navigator.userAgent) ? 'Microsoft Print to PDF' : 'Сохранить в PDF'}».`, 'bad'); }
   }
   window.print();
 }

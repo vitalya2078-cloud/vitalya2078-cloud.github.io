@@ -105,20 +105,76 @@ jobs:
           name: Pokazatel-adiabaty-windows
           path: out/*.exe
 
+  linux:
+    needs: test
+    runs-on: ubuntu-22.04          # glibc 2.35 — пакет встаёт на Astra Linux 1.8+, Debian 12, Ubuntu 22.04+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: lw3-desktop/src-tauri -> target
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev patchelf
+      - name: Build interface
+        run: python lw3-desktop/build.py
+      - name: Build Linux package
+        working-directory: lw3-desktop
+        run: |
+          npm ci --no-audit --no-fund
+          npx tauri build --bundles deb
+      - name: Collect files
+        run: |
+          mkdir -p out web
+          cp lw3-desktop/src-tauri/target/release/bundle/deb/*.deb out/pokazatel-adiabaty_amd64.deb
+          dpkg-deb -f out/pokazatel-adiabaty_amd64.deb Package Version Depends
+          cp -r lw3-desktop/dist/. web/
+          cp lw3-desktop/linux/README-web.txt "web/Как запустить.txt"
+          (cd web && zip -qr ../out/Pokazatel-adiabaty-web.zip .)
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pokazatel-adiabaty-linux
+          path: out/*
+
+  release:
+    needs: [windows, linux]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/lw3-v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
       - name: Version
         id: ver
-        run: echo "v=$(python -c "import json;print(json.load(open('lw3-desktop/src-tauri/tauri.conf.json',encoding='utf-8'))['version'])")" >> "$GITHUB_OUTPUT"
-
-      # релиз с прямыми ссылками на .exe: после каждой сборки на main (тег lw3-v<версия> создаётся здесь же)
+        run: echo "v=$(python3 -c "import json;print(json.load(open('lw3-desktop/src-tauri/tauri.conf.json',encoding='utf-8'))['version'])")" >> "$GITHUB_OUTPUT"
+      # релиз с прямыми ссылками: после каждой сборки на main (тег lw3-v<версия> создаётся здесь же)
       - name: Release
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/lw3-v')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: lw3-v${{ steps.ver.outputs.v }}
           target_commitish: ${{ github.sha }}
           name: Показатель адиабаты ${{ steps.ver.outputs.v }}
           make_latest: true
-          files: out/*.exe
+          files: |
+            out/*.exe
+            out/*.deb
+            out/*.zip
           body: |
-            **Pokazatel-adiabaty-setup.exe** — установщик (ставится без прав администратора, ярлык в «Пуске»).
+            **Windows**
+            **Pokazatel-adiabaty-setup.exe** — установщик (без прав администратора, ярлык в «Пуске»).
             **Pokazatel-adiabaty-portable.exe** — переносная версия: запускается без установки (нужен WebView2, в Windows 10/11 он обычно уже есть).
+
+            **Astra Linux / Linux**
+            **pokazatel-adiabaty_amd64.deb** — программа для Astra Linux 1.8+, Debian 12, Ubuntu 22.04+: `sudo apt install ./pokazatel-adiabaty_amd64.deb`.
+            **Pokazatel-adiabaty-web.zip** — версия для браузера: распаковать и открыть index.html в Firefox / Chromium. Подходит для Astra Linux 1.7 и компьютеров без права установки.

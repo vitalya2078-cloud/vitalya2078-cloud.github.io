@@ -1,0 +1,14 @@
+{
+  "productName": "pokazatel-adiabaty",
+  "bundle": {
+    "linux": {
+      "deb": {
+        "section": "education",
+        "desktopTemplate": "linux/app.desktop"
+      },
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    }
+  }
+}
