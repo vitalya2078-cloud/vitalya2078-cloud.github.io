@@ -6,8 +6,7 @@
 файлы из lw3-desktop/src. Шрифты и картинки установки берутся из сборки программы для компьютера
 (сначала запускается lw3-desktop/build.py). Оболочка под телефон — src/mobile.html и src/mobile.js.
 
-Версия — общая со всеми программами (lw3-desktop/src-tauri/tauri.conf.json); она же
-записывается в android/app/build.gradle (versionName, versionCode).
+Версия — lw3-mobile/package.json; она же записывается в android/app/build.gradle (versionName, versionCode).
 
 Запуск: python3 lw3-mobile/build.py
 """
@@ -47,7 +46,8 @@ desk_shell = rd(os.path.join(DESK, 'src', 'shell.html'))
 fonts = '\n'.join(l for l in desk_shell.split('\n') if l.startswith('@font-face'))
 hod = re.search(r'^const HOD = \[.*?^\];', rd(os.path.join(DESK, 'src', 'hod.js')), re.M | re.S).group(0)
 
-version = json.loads(rd(os.path.join(DESK, 'src-tauri', 'tauri.conf.json')))['version']
+# версия приложения для Android — своя (lw3-mobile/package.json): исправление только в нём выпускается без пересборки программ для компьютера
+version = json.loads(rd(os.path.join(D, 'package.json')))['version']
 
 
 def bg_cfg(f, meta):
@@ -57,7 +57,12 @@ def bg_cfg(f, meta):
     return dict(json.loads(rd(m)) if os.path.exists(m) else {}, src='img/' + f)
 
 
-js = '\n'.join(['const APP_VER = %s;' % json.dumps(version),
+# мост к нативным плагинам Android (registerPlugin) — из @capacitor/core; без него на телефоне не работает ни один плагин
+cap_js_path = os.path.join(D, 'node_modules', '@capacitor', 'core', 'dist', 'capacitor.js')
+if not os.path.exists(cap_js_path):
+    raise SystemExit('нет %s — сначала: cd lw3-mobile && npm ci' % cap_js_path)
+cap_js = re.sub(r'//# sourceMappingURL=.*', '', rd(cap_js_path))
+js = '\n'.join([cap_js, 'const APP_VER = %s;' % json.dumps(version),
                 'const LAB_BG = %s;' % json.dumps(bg_cfg('lab-bg.webp', 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg-light.webp', 'lab-bg-light.json'), ensure_ascii=False),
                 helpers, rd(os.path.join(SITE, 'icons.js')), rd(os.path.join(SITE, 'lw3-core.js')), hod] +

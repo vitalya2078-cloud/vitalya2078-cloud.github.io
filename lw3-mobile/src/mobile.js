@@ -9,7 +9,18 @@
    ===================================================================== */
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 const PLUG = {};
-const plug = n => NATIVE ? (PLUG[n] = PLUG[n] || window.Capacitor.registerPlugin(n)) : null;
+// доступ к нативным плагинам — через capacitor.js (@capacitor/core, встроен в страницу при сборке).
+// Любая ошибка здесь не должна мешать запуску: без плагина приложение работает, просто без этой функции.
+function plug(n) {
+  if (!NATIVE) return null;
+  if (PLUG[n]) return PLUG[n];
+  try {
+    const X = window.capacitorExports || {};
+    if (n === 'SystemBars' && X.SystemBars) return (PLUG[n] = X.SystemBars);
+    const reg = X.registerPlugin || (window.Capacitor && window.Capacitor.registerPlugin);
+    return reg ? (PLUG[n] = reg(n)) : null;
+  } catch (e) { return null; }
+}
 const ui = { main: $('#main'), bar: $('#bar'), dock: $('#dock') };
 let SCREEN = 'home';          // home | work
 let PROFILE = null;
@@ -35,7 +46,7 @@ function render() {
 /* ---------- тема ---------- */
 const isLight = () => document.documentElement.dataset.theme !== 'dark';
 function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem('lw3m-theme', t); } catch (e) {} barStyle(); sceneTheme(); render(); }
-function barStyle() { if (NATIVE) plug('SystemBars').setStyle({ style: isLight() ? 'LIGHT' : 'DARK' }).catch(() => {}); }   // значки строки состояния: тёмные на светлой теме
+function barStyle() { try { const p = plug('SystemBars'); if (p) p.setStyle({ style: isLight() ? 'LIGHT' : 'DARK' }).catch(() => {}); } catch (e) {} }   // значки строки состояния: тёмные на светлой теме
 barStyle();
 const BG = { dark: null, light: null };
 function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; if ($('#l3-cv')) l3Draw(); }
@@ -330,10 +341,11 @@ function showIntro(i) {
 /* ---------- файл работы, PDF ---------- */
 const workFileName = S => `Адиабата_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
 async function shareText(name, text, title) {
-  if (NATIVE) {
+  const FS = plug('Filesystem'), SH = plug('Share');
+  if (FS && SH) {
     try {
-      const r = await plug('Filesystem').writeFile({ path: name, data: text, directory: 'CACHE', encoding: 'utf8' });
-      await plug('Share').share({ title, text: title, files: [r.uri], dialogTitle: title }); return true;
+      const r = await FS.writeFile({ path: name, data: text, directory: 'CACHE', encoding: 'utf8' });
+      await SH.share({ title, text: title, files: [r.uri], dialogTitle: title }); return true;
     } catch (e) { if (/cancel/i.test(String(e && (e.message || e)))) return false; toast('Не удалось отправить файл: ' + esc(String(e && (e.message || e))), 'bad'); return false; }
   }
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/octet-stream' })); a.download = name;
@@ -347,7 +359,8 @@ async function sendWork() {
 }
 async function printReport() {
   const S = l3Load(); $('#printroot').innerHTML = l3ReportHtml();
-  if (NATIVE) { try { await plug('Printer').print({ name: `Отчёт_адиабата_${safeName(S.fio) || 'студент'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
+  const PR = plug('Printer');
+  if (PR) { try { await PR.print({ name: `Отчёт_адиабата_${safeName(S.fio) || 'студент'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
   window.print();
 }
 const readFile = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(r.error); r.readAsText(f, 'utf-8'); });
@@ -430,12 +443,13 @@ addEventListener('blur', () => { L3V.pump = false; });
 document.addEventListener('visibilitychange', () => { if (document.hidden) L3V.pump = false; });
 
 /* ---------- системная кнопка «Назад» ---------- */
-if (NATIVE) {
-  plug('App').addListener('backButton', () => {
+try {
+  const APP = plug('App');
+  if (APP) APP.addListener('backButton', () => {
     if (!$('#sheet').hidden) return closeSheet();
     if (SCREEN === 'work') { PROFILE = null; L3S = null; SCREEN = 'home'; render(); return; }
-    plug('App').exitApp();
-  });
-}
+    APP.exitApp();
+  }).catch(() => {});
+} catch (e) {}
 
 render();

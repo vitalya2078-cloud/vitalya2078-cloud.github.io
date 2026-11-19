@@ -1,0 +1,86 @@
+name: ЛР 3 — только приложение для Android
+
+# Правка только в lw3-mobile: проверка и сборка одного APK, без программ для Windows и Linux.
+# На main готовый APK заменяет файл Pokazatel-adiabaty.apk в последнем релизе — прямая ссылка
+# .../releases/latest/download/Pokazatel-adiabaty.apk сразу отдаёт новую версию, остальные файлы релиза не меняются.
+# Когда меняется общий код (lw3-desktop, fizika2), APK собирается в основной сборке вместе со всем релизом.
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'lw3-mobile/**'
+      - '.github/workflows/lw3-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONIOENCODING: utf-8
+
+concurrency:
+  group: lw3-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build interface
+        working-directory: lw3-mobile
+        run: |
+          npm ci --no-audit --no-fund
+          python build.py
+
+      - name: Tests in phone emulation
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+          python -m http.server 4190 --directory lw3-mobile/www > /tmp/lw3m.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4190/ >/dev/null && break; sleep 1; done
+          mkdir -p shots
+          node lw3-mobile/tests/native-start.mjs
+          SHOTS=shots node lw3-mobile/tests/e2e.mjs
+
+      - name: Android SDK platform
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+
+      - name: Build APK
+        working-directory: lw3-mobile
+        run: |
+          npx cap sync android
+          cd android && ./gradlew assembleRelease --no-daemon
+
+      - name: Collect APK
+        run: |
+          mkdir -p out
+          cp lw3-mobile/android/app/build/outputs/apk/release/app-release.apk out/Pokazatel-adiabaty.apk
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pokazatel-adiabaty-android
+          path: |
+            out/*
+            shots/*.png
+
+      - name: Replace APK in the latest release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          gh release upload "$tag" out/Pokazatel-adiabaty.apk --clobber --repo "$GITHUB_REPOSITORY"
+          echo "APK обновлён в релизе $tag"
