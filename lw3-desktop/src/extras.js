@@ -99,7 +99,9 @@ const PK_NAME = { g1: 'γ₁', g2: 'γ₂', g3: 'γ₃', gm: '⟨γ⟩', dg: '�
 function procHintsHtml(S) {
   const bad = L3_KEYS.filter(k => S.procOk[k] === false); if (!bad.length) return '';
   const o = l3Calc(), pk = (S.dx && S.dx.pk) || {};
-  return `<section class="card hints"><h2>${ic('target')} Подсказки</h2>${bad.map(k => `<p><b>${PK_NAME[k]}</b> ${esc(procHint(k, lwNum(S.proc[k]), o, S, pk[k] || 0))}</p>`).join('')}
+  const empty = bad.filter(k => !String(S.proc[k] ?? '').trim()), wrong = bad.filter(k => !empty.includes(k));   // пустые — одной строкой, подсказки — только к ошибкам
+  return `<section class="card hints"><h2>${ic('target')} Подсказки</h2>${wrong.map(k => `<p><b>${PK_NAME[k]}</b> ${esc(procHint(k, lwNum(S.proc[k]), o, S, pk[k] || 0))}</p>`).join('')}
+    ${empty.length ? `<p class="mute">Заполни пустые ячейки: ${empty.map(k => PK_NAME[k]).join(', ')}.</p>` : ''}
     <p class="mute small">После трёх неверных попыток по ячейке появится пример расчёта.</p></section>`;
 }
 const _wProc = wProc;
@@ -107,7 +109,7 @@ wProc = function (S) { const h = _wProc(S), i = h.indexOf('</table></section>');
 // после проверки: счёт ошибок по ячейкам (ядро уже отметило procOk)
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-l3="pcheck"]'); if (!b) return;
-  setTimeout(() => { const S = L3S; if (!S || !S.dx) return; S.dx.pk = S.dx.pk || {}; L3_KEYS.forEach(k => { if (S.procOk[k] === false) S.dx.pk[k] = (S.dx.pk[k] || 0) + 1; }); l3Save(); render(); }, 0);
+  setTimeout(() => { const S = L3S; if (!S || !S.dx) return; S.dx.pk = S.dx.pk || {}; L3_KEYS.forEach(k => { if (S.procOk[k] === false && String(S.proc[k] ?? '').trim()) S.dx.pk[k] = (S.dx.pk[k] || 0) + 1; });   /* пустая ячейка — не ошибка */ l3Save(); render(); }, 0);
 });
 
 /* ---------- новая версия (если компьютер в интернете) ---------- */
