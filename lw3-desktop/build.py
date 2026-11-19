@@ -69,6 +69,12 @@ for f in (bg, bgl):
     if f:
         os.makedirs(os.path.join(DIST, 'img'), exist_ok=True)
         shutil.copy2(os.path.join(D, 'assets', f), os.path.join(DIST, 'img', f))
+# приборы установки (необязательно): assets/parts/*.webp → dist/img/parts/; без файла прибор рисуется кодом
+PARTS = os.path.join(D, 'assets', 'parts')
+if os.path.isdir(PARTS):
+    os.makedirs(os.path.join(DIST, 'img', 'parts'), exist_ok=True)
+    for f in os.listdir(PARTS):
+        if f.endswith('.webp'): shutil.copy2(os.path.join(PARTS, f), os.path.join(DIST, 'img', 'parts', f))
 with open(os.path.join(DIST, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(html)
 print('dist/index.html %d КБ, версия %s, фон: %s / %s' % (len(html.encode()) // 1024, version, bg or 'рисованный', bgl or 'рисованный'))

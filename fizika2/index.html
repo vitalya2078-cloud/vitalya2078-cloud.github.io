@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 133;
+  var embedded = 135;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1239,7 +1239,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 133;
+const F2_BUILD = 135;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -8341,6 +8341,8 @@ const l3Levels = () => { const z = L3S.zero, h = L3V.p; return [z - h / 2, z + h
    анимация — молекулы воздуха в баллоне (скорость по температуре, число по массе газа), струя при выпуске,
    плавный поворот ручек кранов. На модель и отсчёты не влияет. */
 let L3_BG = null;
+const L3_SPR = {};   // картинки приборов (compressor, valve, cork, stopwatch): оболочка кладёт сюда Image; нет картинки — прибор рисуется кодом
+const l3Spr = k => { const im = L3_SPR[k]; return im && im.complete && im.naturalWidth ? im : null; };
 let L3_THEME = 'dark';   // программа переключает на 'light' (светлая тема); сайт — всегда тёмная
 const L3PAL = {
   dark: { bg0: '#16263C', bg1: '#0E1A2B', grid: 'rgba(255,255,255,.025)', tb: ['#6A5A47', '#4A3D30', '#251E18'], tbEdge: 'rgba(255,230,200,.18)', vign: .35,
@@ -8411,30 +8413,40 @@ function l3Draw() {
   c.restore();
   l3BalloonPath(c); c.strokeStyle = P.glass; c.lineWidth = 2; c.stroke();
   c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 1; c.beginPath(); c.moveTo(170, 175); c.quadraticCurveTo(156, 220, 158, 300); c.stroke();
-  g = c.createLinearGradient(208, 0, 264, 0); g.addColorStop(0, '#5A4630'); g.addColorStop(.45, '#8C7150'); g.addColorStop(1, '#4E3D29'); c.fillStyle = g; c.fillRect(208, 118, 56, 14);
-  c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(208, 118, 56, 2);
+  const sc = l3Spr('cork');
+  if (sc) { const w = 58, h = w * sc.naturalHeight / sc.naturalWidth; c.save(); c.beginPath(); c.rect(0, 99, 580, 80); c.clip(); c.drawImage(sc, 236 - w / 2, 160 - h, w, h); c.restore(); }   // трубка уходит под магистраль, пробка — в горлышко
+  else { g = c.createLinearGradient(208, 0, 264, 0); g.addColorStop(0, '#5A4630'); g.addColorStop(.45, '#8C7150'); g.addColorStop(1, '#4E3D29'); c.fillStyle = g; c.fillRect(208, 118, 56, 14);
+    c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(208, 118, 56, 2); }
   c.fillStyle = P.lab; c.font = '800 20px "Golos UI", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('Б', 236, 380);
   c.font = '600 10px "Golos UI", system-ui'; c.fillStyle = P.lab2; c.fillText(t > .15 ? 'воздух нагрет' : t < -.15 ? 'воздух охладился' : 'комнатная температура', 236, 396);
   // компрессор Н (дрожит, пока работает)
   const jx = pumping ? Math.sin(now * 95) * .9 : 0;
   c.save(); c.translate(jx, 0);
+  const sh = l3Spr('compressor');
+  if (sh) { const w = 76, h = w * sh.naturalHeight / sh.naturalWidth; c.drawImage(sh, 110 - w / 2, 280, w, h);
+    c.fillStyle = pumping ? '#5AD3A0' : '#1A2230'; c.beginPath(); c.arc(110 - w / 2 + w * .874, 280 + h * .349, 3.4, 0, 7); c.fill();
+    if (pumping) { c.fillStyle = 'rgba(90,211,160,.3)'; c.beginPath(); c.arc(110 - w / 2 + w * .874, 280 + h * .349, 8, 0, 7); c.fill(); }
+  } else {
   g = c.createLinearGradient(74, 300, 146, 364); g.addColorStop(0, '#56657C'); g.addColorStop(1, '#2F3A4B'); c.fillStyle = g; c.beginPath(); c.roundRect ? c.roundRect(74, 300, 72, 64, 6) : c.rect(74, 300, 72, 64); c.fill();
   c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 1; c.stroke();
   c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 2; for (let y = 350; y <= 358; y += 4) { c.beginPath(); c.moveTo(82, y); c.lineTo(104, y); c.stroke(); }
   c.fillStyle = '#E7EDF6'; c.font = '800 18px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText('Н', 110, 334);
   c.fillStyle = pumping ? '#5AD3A0' : '#2A3443'; c.beginPath(); c.arc(136, 310, 5, 0, 7); c.fill();
   if (pumping) { c.fillStyle = 'rgba(90,211,160,.25)'; c.beginPath(); c.arc(136, 310, 10, 0, 7); c.fill(); }
+  }
   c.restore();
-  c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = P.lab2; c.textAlign = 'center'; c.fillText('компрессор', 110, 376);
+  c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = P.lab2; c.textAlign = 'center'; c.fillText('компрессор', 110, sh ? 384 : 376);
   // краны: K — открыт горизонтально; K₀ — закрыт горизонтально (ручка поворачивается плавно)
-  const valve = (x, y, open, ang, name) => {
-    g = c.createRadialGradient(x - 3, y - 3, 1, x, y, 11); g.addColorStop(0, '#C3CCD8'); g.addColorStop(1, '#5F6B7B'); c.fillStyle = g; c.beginPath(); c.arc(x, y, 10, 0, 7); c.fill();
+  const sv = l3Spr('valve');
+  const valve = (x, y, open, ang, name, vert) => {
+    if (sv) { const w = 55, h = w * sv.naturalHeight / sv.naturalWidth; c.save(); c.translate(x, y); if (vert) c.rotate(Math.PI / 2); c.drawImage(sv, -w / 2, -h / 2, w, h); c.restore(); }
+    else { g = c.createRadialGradient(x - 3, y - 3, 1, x, y, 11); g.addColorStop(0, '#C3CCD8'); g.addColorStop(1, '#5F6B7B'); c.fillStyle = g; c.beginPath(); c.arc(x, y, 10, 0, 7); c.fill(); }
     c.save(); c.translate(x, y); c.rotate(ang); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(-17, -2, 34, 7);
     g = c.createLinearGradient(0, -4, 0, 4); g.addColorStop(0, open ? '#8CF0C4' : '#FF8A90'); g.addColorStop(1, open ? '#2FA678' : '#B8323A'); c.fillStyle = g;
     c.beginPath(); c.roundRect ? c.roundRect(-17, -3.5, 34, 7, 3.5) : c.rect(-17, -3.5, 34, 7); c.fill(); c.restore();
     c.fillStyle = P.lab; c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill();
-    c.font = '800 13px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText(name, x + 14, y - 16); c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = open ? P.ok : P.bad; c.fillText(open ? 'открыт' : 'закрыт', x + 14, y + 20); };
-  valve(110, 220, S.kOpen, L3D.ak, 'K'); valve(46, 96, S.k0Open, L3D.ak0, 'K₀');
+    c.font = '800 13px "Golos UI", system-ui'; const lf = sv && vert; c.textAlign = lf ? 'right' : 'left'; const lx = lf ? x - 18 : x + (sv ? 17 : 14), ly = sv ? 19 : 16;   /* у K подпись слева — справа баллон */ c.fillText(name, lx, y - ly); c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = open ? P.ok : P.bad; c.fillText(open ? 'открыт' : 'закрыт', lx, y + ly + 4); };
+  valve(110, 220, S.kOpen, L3D.ak, 'K', true); valve(46, 96, S.k0Open, L3D.ak0, 'K₀');
   if (V.hiss > .05) { c.strokeStyle = `rgba(${P.air},${Math.min(.9, V.hiss)})`; c.lineWidth = 1.5; for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(46, 70 - i * 9, 6 + i * 4, Math.PI * 1.15, Math.PI * 1.85); c.stroke(); } }
   for (const j of L3D.jet) { c.fillStyle = `rgba(${P.air},${(j.life / .7) * .8})`; c.beginPath(); c.arc(j.x, j.y, 1.8, 0, 7); c.fill(); }
   // манометр М: U-трубка со шкалой 0…400 мм
@@ -8450,9 +8462,17 @@ function l3Draw() {
   tube(470, hl); tube(500, hr); c.fillStyle = '#3E8EE0'; c.fillRect(466, Y(0), 38, 8);
   c.fillStyle = P.lab; c.font = '800 14px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText('М', 485, 440 - 4);
   // секундомер
+  const ss = l3Spr('stopwatch');
+  if (ss) { const w = 150, h = w * ss.naturalHeight / ss.naturalWidth, x0 = 296, y0 = 16; c.drawImage(ss, x0, y0, w, h);
+    c.fillStyle = S.power ? '#7CF29B' : '#24402C'; c.font = '700 19px "Golos UI", ui-monospace, monospace'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillText(S.power ? l3Fix(V.sw, 1) : '', x0 + w * .77, y0 + h * .46);
+    c.fillStyle = S.power ? '#5AD3A0' : '#5B2A2E'; c.beginPath(); c.arc(x0 + w * .916, y0 + h * .463, 3.2, 0, 7); c.fill();
+    if (S.power) { c.fillStyle = 'rgba(90,211,160,.3)'; c.beginPath(); c.arc(x0 + w * .916, y0 + h * .463, 7, 0, 7); c.fill(); }
+    c.textAlign = 'left';
+  } else {
   g = c.createLinearGradient(0, 16, 0, 70); g.addColorStop(0, '#2A3445'); g.addColorStop(1, '#1A2230'); c.fillStyle = g; c.fillRect(300, 18, 140, 52);
   c.fillStyle = '#0B1A10'; c.fillRect(308, 25, 92, 30); c.fillStyle = S.power ? '#7CF29B' : '#24402C'; c.font = '700 20px "Golos UI", ui-monospace, monospace'; c.textAlign = 'right'; c.fillText(S.power ? l3Fix(V.sw, 1) : '', 396, 41);
   c.fillStyle = '#9FB1C8'; c.font = '600 8px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('СЕКУНДОМЕР, с', 308, 64); c.fillStyle = S.power ? '#5AD3A0' : '#5B2A2E'; c.beginPath(); c.arc(424, 38, 6, 0, 7); c.fill();
+  }
   if (V.speed > 1) { c.fillStyle = '#F2B544'; c.font = '700 10px "Golos UI", system-ui'; c.fillText(`ожидание ускорено ×${L3.speed}`, 300, 84); }
   // лупа: оба колена манометра (на чтении h₁ и h₂)
   if (V.phase === 'read1' || V.phase === 'read2') {
