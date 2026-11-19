@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 136;
+  var embedded = 137;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1239,7 +1239,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 136;
+const F2_BUILD = 137;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -8395,25 +8395,35 @@ function l3Draw() {
   const shadow = (x, w) => { g = c.createRadialGradient(x, 419, 2, x, 419, w); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.save(); c.translate(x, 419); c.scale(1, .12); c.translate(-x, -419); c.fillStyle = g; c.beginPath(); c.arc(x, 419, w, 0, 7); c.fill(); c.restore(); };
   shadow(236, 120); shadow(110, 52); shadow(485, 48);
   // трубки (металл)
-  // трубки (металл): отрезки с объёмным бликом; фитинги — после приборов, поверх стыков
-  const metal = (vert, a, b) => { g = vert ? c.createLinearGradient(a, 0, b, 0) : c.createLinearGradient(0, a, 0, b);   /* поперёк трубы */
-    [[0, '#4A5565'], [.22, '#AEBACA'], [.42, '#EEF3F9'], [.68, '#8C9AAD'], [1, '#424D5C']].forEach(([o, col]) => g.addColorStop(o, col)); return g; };
-  const seg = (x1, y1, x2, y2, w = 7) => { const v = x1 === x2, x = Math.min(x1, x2), y = Math.min(y1, y2);
-    c.fillStyle = v ? metal(true, x1 - w / 2, x1 + w / 2) : metal(false, y1 - w / 2, y1 + w / 2); v ? c.fillRect(x1 - w / 2, y, w, Math.abs(y2 - y1)) : c.fillRect(x, y1 - w / 2, Math.abs(x2 - x1), w);
-    c.fillStyle = 'rgba(20,28,40,.35)'; v ? (c.fillRect(x1 - w / 2 - .6, y, .8, Math.abs(y2 - y1)), c.fillRect(x1 + w / 2 - .2, y, .8, Math.abs(y2 - y1))) : (c.fillRect(x, y1 - w / 2 - .6, Math.abs(x2 - x1), .8), c.fillRect(x, y1 + w / 2 - .2, Math.abs(x2 - x1), .8)); };
-  seg(46, 96, 470, 96); seg(470, 96, 470, 122); seg(110, 96, 110, 300); seg(236, 96, 236, 128);
-  const sleeve = (x, y, vert, len = 10, w = 11) => { c.save(); c.translate(x, y); if (vert) c.rotate(Math.PI / 2);
-    c.fillStyle = metal(false, -w / 2, w / 2); c.beginPath(); c.roundRect ? c.roundRect(-len / 2, -w / 2, len, w, 2) : c.rect(-len / 2, -w / 2, len, w); c.fill();
-    c.fillStyle = 'rgba(25,32,45,.55)'; c.fillRect(-len / 2, -w / 2, 1.4, w); c.fillRect(len / 2 - 1.4, -w / 2, 1.4, w); c.strokeStyle = 'rgba(20,28,40,.5)'; c.lineWidth = .8; c.strokeRect(-len / 2, -w / 2, len, w); c.restore(); };
+  // трубки: профиль металла снят с картинки трубы (обводка, блик, тень); кольца-муфты и плавный изгиб — кодом
+  const PIPE = [[0, '#1D2432'], [.06, '#1D2432'], [.065, '#A9B4C8'], [.24, '#AAB5C9'], [.27, '#DFE5F1'], [.37, '#DFE5F1'], [.38, '#A8B4C7'], [.6, '#97A3B8'], [.62, '#7A899F'], [.94, '#637086'], [.945, '#1D2430'], [1, '#1D2430']];
+  const metal = (vert, a, b) => { g = vert ? c.createLinearGradient(b, 0, a, 0) : c.createLinearGradient(0, a, 0, b);   /* поперёк трубы; у вертикальных блик справа — так изгиб без «перелома» */
+    PIPE.forEach(([o, col]) => g.addColorStop(o, col)); return g; };
+  const PW = 8;
+  const seg = (x1, y1, x2, y2, w = PW) => { const v = x1 === x2;
+    c.fillStyle = v ? metal(true, x1 - w / 2, x1 + w / 2) : metal(false, y1 - w / 2, y1 + w / 2);
+    v ? c.fillRect(x1 - w / 2, Math.min(y1, y2), w, Math.abs(y2 - y1)) : c.fillRect(Math.min(x1, x2), y1 - w / 2, Math.abs(x2 - x1), w); };
+  const bend = (cx, cy, R, a0, a1, w = PW) => {   // плавный изгиб: профиль по радиусу (снаружи — верх трубы)
+    g = c.createRadialGradient(cx, cy, R - w / 2, cx, cy, R + w / 2); PIPE.forEach(([o, col]) => g.addColorStop(1 - o, col));
+    c.strokeStyle = g; c.lineWidth = w; c.lineCap = 'butt'; c.beginPath(); c.arc(cx, cy, R, a0, a1); c.stroke(); };
+  const BR = 12;   // радиус изгиба к манометру
+  seg(46, 96, 470 - BR, 96); bend(470 - BR, 96 + BR, BR, -Math.PI / 2, 0); seg(470, 96 + BR, 470, 122); seg(110, 96, 110, 300); seg(236, 96, 236, 128);
+  const ring = (x, y, vert, len = 5, w = PW + 4) => { c.save(); c.translate(x, y); if (vert) c.rotate(Math.PI / 2);   // кольцо-муфта: тот же металл, чуть толще, с обводкой и скруглением
+    c.fillStyle = metal(false, -w / 2, w / 2); c.beginPath(); c.roundRect ? c.roundRect(-len / 2, -w / 2, len, w, 1.6) : c.rect(-len / 2, -w / 2, len, w); c.fill();
+    c.strokeStyle = '#1D2432'; c.lineWidth = .9; c.stroke(); c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(-len / 2 + 1, -w / 2 + 1.2, .9, w - 2.4); c.restore(); };
+  const tee = (x, y) => { seg(x, y, x, y + 10, PW);   // тройник: корпус с закруглёнными краями и кольца на трёх выходах
+    c.fillStyle = metal(false, y - PW / 2 - 1.5, y + PW / 2 + 1.5); c.beginPath(); c.roundRect ? c.roundRect(x - 9, y - PW / 2 - 1.5, 18, PW + 3, 3) : c.rect(x - 9, y - PW / 2 - 1.5, 18, PW + 3); c.fill(); c.strokeStyle = '#1D2432'; c.lineWidth = .9; c.stroke();
+    c.fillStyle = metal(true, x - PW / 2 - 1.5, x + PW / 2 + 1.5); c.beginPath(); c.roundRect ? c.roundRect(x - PW / 2 - 1.5, y, PW + 3, 9, [0, 0, 3, 3]) : c.rect(x - PW / 2 - 1.5, y, PW + 3, 9); c.fill(); c.stroke();
+    ring(x - 10, y, false); ring(x + 10, y, false); ring(x, y + 10, true); };
   const fittings = () => {
-    sleeve(110, 99, true, 9, 11); sleeve(110, 96, false, 18, 12);            // тройник к крану K
-    sleeve(236, 99, true, 8, 11); sleeve(236, 96, false, 18, 12);            // тройник к пробке
-    g = c.createRadialGradient(468, 94, 1, 470, 96, 9); g.addColorStop(0, '#EEF3F9'); g.addColorStop(.6, '#9AA8BA'); g.addColorStop(1, '#4A5565');
-    c.fillStyle = g; c.beginPath(); c.arc(470, 96, 7.5, 0, 7); c.fill(); c.strokeStyle = 'rgba(20,28,40,.5)'; c.lineWidth = .8; c.stroke();   // уголок к манометру
-    sleeve(110, 284, true, 9, 11);                                            // муфта у компрессора
+    tee(110, 96); tee(236, 96);                                     // ответвления к крану K и к пробке
+    ring(470 - BR - 3, 96, false); ring(470, 96 + BR + 3, true);    // кольца по краям изгиба
+    ring(470, 118, true, 6);                                        // вход в манометр
+    ring(110, 284, true, 6);                                        // муфта у компрессора
+    ring(80, 96, false); ring(110, 188, true); ring(110, 252, true); // по краям кранов
     const clamp = (x, y, vert) => { c.save(); c.translate(x, y); if (vert) c.rotate(-Math.PI / 2);   // хомут, крепление к стене
       c.fillStyle = '#2B3442'; c.fillRect(-2, -14, 4, 9); c.fillRect(-2.6, -6.5, 5.2, 13); c.fillStyle = '#7D8A9C'; c.beginPath(); c.arc(0, -13, 2.2, 0, 7); c.fill(); c.restore(); };
-    clamp(170, 96); clamp(360, 96); clamp(110, 160, true);
+    clamp(170, 96); clamp(360, 96); clamp(110, 150, true);
   };
   // баллон Б: стекло, оттенок по температуре, молекулы воздуха
   const t = Math.max(-1, Math.min(1, V.th / .006));
