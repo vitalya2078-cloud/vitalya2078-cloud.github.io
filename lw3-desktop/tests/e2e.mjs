@@ -31,9 +31,11 @@ try {
   must(await page.locator('#modal').isHidden(), 'знакомство не закрылось');
   await page.keyboard.press('F1'); must(await page.locator('#modal [data-intro]').isVisible(), 'F1 не открывает знакомство');
   await page.click('[data-d="intro-skip"]'); must(await page.locator('#modal').isHidden(), '«Пропустить» не закрывает');
-  // светлая тема переключается и запоминается
-  await page.click('.tb [data-d="theme"]'); must(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lw3d-theme') === 'light' && L3_THEME === 'light'), 'светлая тема не включилась');
-  await shot(page, 'light'); await page.click('.tb [data-d="theme"]');
+  // по умолчанию — светлая тема; тёмная переключается и запоминается
+  must(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && L3_THEME === 'light'), 'по умолчанию не светлая тема');
+  await shot(page, 'light');
+  await page.click('.tb [data-d="theme"]'); must(await page.evaluate(() => document.documentElement.dataset.theme === 'dark' && localStorage.getItem('lw3d-theme') === 'dark' && L3_THEME === 'dark'), 'тёмная тема не включилась');
+  await page.click('.tb [data-d="theme"]');
 
   const o = await runLw3(page, {
     log: t => console.log('  ' + t),
