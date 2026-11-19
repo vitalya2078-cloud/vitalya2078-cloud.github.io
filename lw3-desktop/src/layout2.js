@@ -23,6 +23,13 @@ function topbar(S) {
 }
 
 /* ---------- тренажёр: подготовка и опыты ---------- */
+// три опыта: выполненный — с результатами, текущий — что делать сейчас, следующий — впереди
+function runList(S, at) {
+  return Array.from({ length: L3.N }, (_, i) => { const r = S.runs[i];
+    if (r) return `<li class="done">Опыт ${i + 1}<small>h₁ = ${r.h1}, h₂ = ${r.h2} мм · γ = ${l3Fix(r.h1 / (r.h1 - r.h2), 3)}</small></li>`;
+    if (i === S.runs.length && at >= 0) return `<li class="cur">Опыт ${i + 1}<small>сейчас: ${PLAN[at].charAt(0).toLowerCase() + PLAN[at].slice(1)}</small></li>`;
+    return `<li>Опыт ${i + 1}<small>впереди</small></li>`; }).join('');
+}
 function trainerTable(S) {
   const n = S.runs.length;
   return `<table class="t"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th><th>γ</th></tr>${Array.from({ length: L3.N }, (_, i) => { const r = S.runs[i];
@@ -42,19 +49,18 @@ function vTrainer(S, st) {
       <button class="btn ${!S.k0Open ? 'on' : 'off'}" data-l3="k0" data-key="O">Кран K₀: ${S.k0Open ? 'открыт' : 'закрыт'} ${kbd('O')}</button>
       ${ok ? `<button class="btn" data-l3="next" data-primary>К опытам ${kbd('Enter')}</button>` : ''}</div>`;
   } else if (done) {
-    title = 'Опыты завершены'; sub = 'три измерения записаны';
-    plan = PLAN.map(t => `<li class="done">${t}</li>`).join('');
+    title = 'Опыты завершены'; sub = `${L3.N} из ${L3.N}`;
+    plan = runList(S, -1);
     dock = `<p class="say">Переходи к обработке результатов.</p><div class="ctl"><button class="btn" data-l3="next" data-primary>К обработке ${kbd('Enter')}</button></div>`;
   } else {
     const ctl = expControls(S), at = PLAN_AT[L3V.phase] ?? 0;
-    title = `Опыт ${n + 1} из ${L3.N}`; sub = `шаг ${at + 1} из ${PLAN.length}`;
-    plan = PLAN.map((t, i) => `<li class="${i < at ? 'done' : i === at ? 'cur' : ''}">${t}</li>`).join('');
+    title = `Опыт ${n + 1} из ${L3.N}`; sub = `выполнено ${n} из ${L3.N}`;
+    plan = runList(S, at);
     dock = ctl;
   }
   return topbar(S) + `<div class="tr">
     <aside class="tr-l">
       <section class="card"><div class="tr-h"><b>${title}</b><span>${sub}</span></div>
-        ${st === 'exp' ? `<div class="runs">${Array.from({ length: L3.N }, (_, i) => `<i class="${i < n ? 'done' : i === n ? 'cur' : ''}"></i>`).join('')}</div>` : ''}
         <ol class="plan">${plan}</ol></section>
       <section class="card meters"><div class="meter"><small>Δh, мм</small><b id="d-h">0</b></div><div class="meter"><small>Секундомер</small><b id="d-sw">—</b></div><div class="meter proc"><small>Процесс в баллоне</small><b id="d-proc">—</b></div></section>
       <section class="card tr-tip">${ic('target')}<span>Раньше закроешь K₀ — h₂ больше и γ завышен; позже — h₂ меньше и γ занижен.</span></section>

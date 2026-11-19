@@ -46,10 +46,20 @@ function folderCard() {
       ${FOLDER_FIXED ? '' : `<button class="btn line" data-t="folder-pick">${ic('layers')} ${FOLDER ? 'Другая папка' : 'Выбрать папку'}</button>${FOLDER ? `<button class="btn ghost" data-t="folder-clear">${ic('x')}</button>` : ''}`}</div>
     <p class="mute small">Папка запоминается на этом компьютере. Чтобы задать её сразу для всех компьютеров класса, положите рядом с программой файл <b>adiabata.json</b> с текстом <code>{"folder": "\\\\сервер\\папка"}</code>.</p></section>`;
 }
+/* совпадающие измерения у разных студентов: ≥ 2 одинаковых пары h₁/h₂ из 3 → вероятно, списано */
+function tDups(rows) {
+  const d = rows.map(() => []);
+  for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) {
+    const a = rows[i].runs, b = rows[j].runs; if (!a.length || !b.length) continue;
+    const same = a.filter(x => b.some(y => y.h1 === x.h1 && y.h2 === x.h2)).length;
+    if (same >= 2 || (same >= 1 && Math.min(a.length, b.length) === 1)) { d[i].push(rows[j].fio); d[j].push(rows[i].fio); }
+  }
+  return d;
+}
 function vTeacher() {
   document.body.classList.add('noside'); ui.side.innerHTML = '';
-  const rows = TROWS.map(tRow), fin = rows.filter(r => r.o), gms = fin.map(r => r.o.gm);
-  const mean = gms.length ? gms.reduce((s, x) => s + x, 0) / gms.length : NaN, fake = rows.filter(r => !r.auth).length;
+  const rows = TROWS.map(tRow), fin = rows.filter(r => r.o), gms = fin.map(r => r.o.gm), dups = tDups(rows);
+  const mean = gms.length ? gms.reduce((s, x) => s + x, 0) / gms.length : NaN, fake = rows.filter((r, i) => !r.auth || dups[i].length).length;
   ui.main.innerHTML = `<div class="head"><h1>Результаты группы</h1><div class="sp"></div>${themeBtn()}
       <button class="btn line" data-t="back">${ic('chevron-left')} Выйти</button>
       <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
@@ -59,12 +69,12 @@ function vTeacher() {
     <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы <b>.lw3</b>, которые сохранили студенты, или нажми, чтобы выбрать.</div>
     <div class="stats">
       <div class="stat"><small>Работ</small><b>${rows.length}</b></div>
-      <div class="stat"><small>Защищено</small><b style="color:var(--green)">${rows.filter(r => r.done).length}</b></div>
+      <div class="stat"><small>Защищено</small><b style="color:var(--ok)">${rows.filter(r => r.done).length}</b></div>
       <div class="stat"><small>Средний ⟨γ⟩ группы</small><b>${gms.length ? nf(mean, 3) : '—'}</b></div>
-      <div class="stat"><small>Подлинность</small><b style="color:${fake ? 'var(--red)' : 'var(--green)'}">${rows.length ? (fake ? `${fake} под вопросом` : 'всё в порядке') : '—'}</b></div></div>
+      <div class="stat"><small>Подлинность</small><b style="color:${fake ? 'var(--bad)' : 'var(--ok)'}">${rows.length ? (fake ? `${fake} под вопросом` : 'всё в порядке') : '—'}</b></div></div>
     ${gms.length ? `<section class="card"><h2>${ic('target')} ⟨γ⟩ по студентам <span class="pill">теория γ = 1,40</span></h2>${tStrip(fin)}</section>` : ''}
     <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Студент</th><th>Класс</th><th>Дата</th><th>Этап</th><th>Допуск</th><th>h₁ / h₂, мм</th><th>⟨γ⟩ ± ⟨Δγ⟩</th><th>ε, %</th><th>Защита</th><th>Попытки<br>доп. / обр. / защ.</th><th>Файл</th></tr>
-      ${rows.map((r, i) => `<tr class="r" data-t="open" data-v="${i}"><td><div style="display:flex; gap:10px; align-items:center">${ava(r.fio)}<b>${esc(r.fio)}</b></div></td><td>${esc(r.group)}</td><td>${esc(r.date)}</td>
+      ${rows.map((r, i) => `<tr class="r" data-t="open" data-v="${i}"><td><div style="display:flex; gap:10px; align-items:center">${ava(r.fio)}<div><b>${esc(r.fio)}</b>${dups[i].length ? `<small class="dup">${ic('circle-x')} измерения совпадают: ${esc(dups[i].join(', '))}</small>` : ''}</div></div></td><td>${esc(r.group)}</td><td>${esc(r.date)}</td>
         <td><span class="pill ${r.done ? 'ok' : 'warn'}">${esc(r.stage)}</span></td><td class="n">${r.adm}/8</td>
         <td>${r.runs.map(x => `${x.h1}/${x.h2}`).join(' · ') || '—'}</td><td class="n"><b>${r.o ? esc(l3Res(r.o)) : '—'}</b></td><td class="n">${r.o ? nf(r.o.e, 1) : '—'}</td>
         <td class="n">${r.done ? `${r.cq}/8` : '—'}</td><td class="n">${r.dx.admitTries || 0} / ${r.dx.procTries || 0} / ${r.dx.cqTries || 0}</td>
@@ -107,10 +117,11 @@ function tDetails(S) {
 }
 function tCsv() {
   const q = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-  const head = ['ФИО', 'Класс', 'Дата', 'Этап', 'Допуск (верно из 8)', 'h1 опыт 1', 'h2 опыт 1', 'h1 опыт 2', 'h2 опыт 2', 'h1 опыт 3', 'h2 опыт 3', '<γ>', '<Δγ>', 'εγ, %', 'ε, %', 'Защита (верно из 8)', 'Попыток допуска', 'Попыток обработки', 'Попыток защиты', 'Подлинность'];
-  const lines = TROWS.map(tRow).map(r => [r.fio, r.group, r.date, r.stage, r.adm, ...[0, 1, 2].flatMap(i => r.runs[i] ? [r.runs[i].h1, r.runs[i].h2] : ['', '']),
+  const head = ['ФИО', 'Класс', 'Дата', 'Этап', 'Допуск (верно из 8)', 'h1 опыт 1', 'h2 опыт 1', 'h1 опыт 2', 'h2 опыт 2', 'h1 опыт 3', 'h2 опыт 3', '<γ>', '<Δγ>', 'εγ, %', 'ε, %', 'Защита (верно из 8)', 'Попыток допуска', 'Попыток обработки', 'Попыток защиты', 'Подлинность', 'Измерения совпадают с'];
+  const all = TROWS.map(tRow), dd = tDups(all);
+  const lines = all.map((r, k) => [r.fio, r.group, r.date, r.stage, r.adm, ...[0, 1, 2].flatMap(i => r.runs[i] ? [r.runs[i].h1, r.runs[i].h2] : ['', '']),
     r.o ? nf(r.o.gm, 3) : '', r.o ? nf(r.o.dg, 3) : '', r.o ? nf(r.o.eg, 1) : '', r.o ? nf(r.o.e, 1) : '', r.done ? r.cq : '',
-    r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.auth ? 'подлинный' : 'ИЗМЕНЁН'].map(q).join(';'));
+    r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.auth ? 'подлинный' : 'ИЗМЕНЁН', dd[k].join(', ')].map(q).join(';'));
   return '﻿' + [head.map(q).join(';'), ...lines].join('\r\n');
 }
 /* ---------- пароль ---------- */

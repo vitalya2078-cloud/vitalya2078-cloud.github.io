@@ -309,7 +309,9 @@ body.full #main{padding:0; overflow:hidden; display:flex; flex-direction:column}
 .plan li{display:flex; gap:10px; align-items:flex-start; padding:7px 8px; border-radius:9px; color:var(--mute); font-size:14px; line-height:1.35}
 .plan li::before{counter-increment:p; content:counter(p); flex:none; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font:700 11.5px "Golos UI"; border:1.5px solid var(--line2)}
 .plan li.done{color:var(--tx2)} .plan li.done::before{content:"✓"; background:var(--ok-soft); border-color:var(--ok); color:var(--ok)}
-.plan li.cur{color:var(--tx); background:var(--acc-soft); font-weight:600} .plan li.cur::before{background:var(--acc); border-color:var(--acc); color:var(--acc-tx)}
+.plan li.cur{color:var(--tx); background:var(--acc-soft); font-weight:600}
+.plan li small{display:block; font-size:12.5px; font-weight:500; color:var(--mute); margin-top:2px} .plan li.cur small{color:var(--acc)} .plan li.done small{color:var(--tx2)}
+.tr .plan li{flex-wrap:wrap; padding:10px 8px} .tr .plan li > small{flex-basis:100%; padding-left:32px; margin-top:-2px} .plan li.cur::before{background:var(--acc); border-color:var(--acc); color:var(--acc-tx)}
 .tr .meters{display:grid; grid-template-columns:1fr 1fr; gap:8px}
 .tr .meters .meter{min-width:0} .tr .meters .meter.proc{grid-column:1/-1; min-width:0}
 .tr-c{min-width:0; min-height:0; display:flex; flex-direction:column; gap:12px}
@@ -376,6 +378,7 @@ body.full #hod{top:60px; width:338px}
 .hints{border-color:var(--warn); margin-top:16px} .hints p{margin:6px 0; line-height:1.5} .hints p b{color:var(--acc); margin-right:6px}
 .folder-row{display:flex; align-items:center; gap:10px} .folder-row > div{flex:1; min-width:0} .folder-row p{margin:4px 0 0; word-break:break-all}
 .folder code{background:var(--bg2); padding:1px 6px; border-radius:6px}
+.dup{display:flex; align-items:center; gap:4px; color:var(--bad); font-size:12px; font-weight:600; margin-top:2px} .dup .ic{width:14px; height:14px}
 .tdet{margin-bottom:18px} .tdet-row{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px}
 .tqa{list-style:none; padding:0; margin:6px 0 0; font-size:13.5px} .tqa li{padding:4px 0; border-bottom:1px solid var(--line)}
 .tqa li.ok{color:var(--tx2)} .tqa li.bad{color:var(--bad)} .tqa small{display:block; color:var(--mute)}

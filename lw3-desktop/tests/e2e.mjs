@@ -106,6 +106,7 @@ try {
   await page.setInputFiles('#file-in', [fake]);
   await page.waitForFunction(() => TROWS.length === 2);
   must((await page.locator('table.tt').innerText()).includes('изменён'), 'подделка не распознана');
+  must(await page.locator('table.tt .dup').count() === 2, 'не отмечены совпадающие измерения у двух студентов');
   await shot(page, 'teacher');
   await page.click('tr.r >> nth=0'); await page.locator('#modal .lwp').first().waitFor(); await shot(page, 'teacher-report');
   must(await page.locator('#modal .tdet .tqa li').count() === 16, 'нет подробностей по вопросам у преподавателя');

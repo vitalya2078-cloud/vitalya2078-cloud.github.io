@@ -49,6 +49,24 @@ check(gLate < gGood - .01, 'позднее закрытие K₀ занижае�
 check(good.every(x => x.h1 > 150 && x.h1 < 220 && x.h2 > 20 && x.h2 < 80), 'h₁ и h₂ в пределах шкалы и методички');
 check(new Set(good.map(x => x.g.toFixed(3))).size > 5, 'опыты различаются (есть разброс)');
 
+// у каждого студента свои параметры: при одинаковых действиях ⟨γ⟩ заметно разный, но физически верный
+function student() {   // 3 опыта одного студента (одна и та же установка)
+  const S0 = l3Fresh(), res = [];
+  for (let i = 0; i < 3; i++) { const S = l3Fresh(); S.par = S0.par; S.power = true; setS(S); l3Reset();
+    S.kOpen = true; S.k0Open = false; L3V.pump = true; let guard = 0; while (L3V.p < 215 && guard++ < 1e5) step(.01);
+    L3V.pump = false; S.kOpen = false; run(S, 60); const h1 = levels(S); S.k0Open = true; run(S, .6, .002); S.k0Open = false; run(S, 60); const h2 = levels(S);
+    res.push({ h1, h2 }); }
+  return { par: S0.par, runs: res, gm: mean(res.map(r => r.h1 / (r.h1 - r.h2))) };
+}
+const studs = Array.from({ length: 30 }, student), gms = studs.map(x => x.gm);
+const sd = Math.sqrt(mean(gms.map(g => (g - mean(gms)) ** 2)));
+console.log(`30 студентов: ⟨γ⟩ от ${Math.min(...gms).toFixed(3)} до ${Math.max(...gms).toFixed(3)}, разброс σ = ${sd.toFixed(3)}`);
+check(gms.every(g => g > 1.33 && g < 1.46), 'у каждого студента ⟨γ⟩ в пределах 1,33…1,46');
+check(sd > .01, 'у разных студентов ⟨γ⟩ заметно различается');
+const sigs = new Set(studs.map(x => x.runs.map(r => r.h1 + '/' + r.h2).join(' ')));
+check(sigs.size === studs.length, 'наборы измерений h₁/h₂ у всех студентов разные');
+check(studs.every(x => x.par && x.par.g >= 1.372 && x.par.g <= 1.418), 'параметры установки сохраняются в работе студента');
+
 // обработка: формулы методички
 const S = l3Fresh(); S.runs = [{ h1: 180, h2: 50 }, { h1: 184, h2: 52 }, { h1: 178, h2: 48 }]; setS(S);
 const o = l3Calc(), gs = S.runs.map(r => r.h1 / (r.h1 - r.h2)), gm = mean(gs), dg = gs.reduce((s, x) => s + Math.abs(gm - x), 0) / Math.sqrt(6);

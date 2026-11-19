@@ -18,12 +18,16 @@ const L3 = {
 };
 let L3_KEY = 'f2-lw3';   // десктоп подставляет ключ своего профиля
 let L3S = null;
+/* Параметры установки у каждого студента свои (случайные при начале работы, хранятся в его работе),
+   чтобы h₁, h₂ и ⟨γ⟩ у соседей отличались и списать было нельзя:
+   g — «истинный» показатель адиабаты воздуха в баллоне (влажность, примеси), kH — теплообмен со стенками, kO — скорость выпуска. */
+const l3Par = () => ({ g: +(1.372 + Math.random() * .046).toFixed(3), kH: +(.8 + Math.random() * .5).toFixed(2), kO: +(.8 + Math.random() * .5).toFixed(2) });
 function l3Fresh() {
-  return { v: 1, step: 0, max: 0, admit: {}, admitOk: false, power: false, kOpen: false, k0Open: true, prepOk: false,
+  return { v: 1, par: l3Par(), step: 0, max: 0, admit: {}, admitOk: false, power: false, kOpen: false, k0Open: true, prepOk: false,
     zero: 200 + Math.round((Math.random() - .5) * 6), runs: [], proc: {}, procOk: {}, concl: '', cq: {}, cqOk: false,
     fio: '', group: '', date: new Date().toLocaleDateString('ru-RU'), done: false };
 }
-function l3Load() { if (L3S) return L3S; try { L3S = JSON.parse(localStorage.getItem(L3_KEY) || 'null'); } catch (e) { L3S = null; } if (!L3S || L3S.v !== 1) L3S = l3Fresh(); return L3S; }
+function l3Load() { if (L3S) return L3S; try { L3S = JSON.parse(localStorage.getItem(L3_KEY) || 'null'); } catch (e) { L3S = null; } if (!L3S || L3S.v !== 1) L3S = l3Fresh(); if (!L3S.par) L3S.par = l3Par(); return L3S; }
 function l3Save() { try { localStorage.setItem(L3_KEY, JSON.stringify(L3S)); } catch (e) {} }
 const l3St = () => L3.steps[l3Load().step][0];
 const l3Fix = (v, d) => Number.isFinite(v) ? v.toFixed(d).replace('.', ',') : '—';
@@ -31,10 +35,10 @@ const l3Res = o => o.dg < .01 ? `${l3Fix(o.gm, 3)} ± ${l3Fix(o.dg, 3)}` : `${l3
 
 /* ---------- модель (не сохраняется: незаконченный опыт начинается заново) ---------- */
 let L3V = { tH: L3.tauH, tO: L3.tauO, m: 1, th: 0, p: 0, pump: false, raf: 0, last: 0, sw: 0, swOn: false, speed: 1, phase: 'ready', cur: {}, k0t: 0, hiss: 0 };
-function l3Vary() { L3V.tH = L3.tauH * (1 + .14 * lwGauss()); L3V.tO = L3.tauO * (1 + .25 * Math.abs(lwGauss())); }
+function l3Vary() { const P = (L3S && L3S.par) || {}; L3V.tH = L3.tauH * (P.kH || 1) * (1 + .14 * lwGauss()); L3V.tO = L3.tauO * (P.kO || 1) * (1 + .25 * Math.abs(lwGauss())); }
 function l3Reset() { l3Vary(); Object.assign(L3V, { m: 1, th: 0, p: 0, pump: false, sw: 0, swOn: false, speed: 1, phase: 'ready', cur: {}, hiss: 0 }); }
 function l3Step(dt) {
-  const S = L3S, P0 = L3.P0, k = (L3.g - 1) / L3.g, V = L3V;
+  const S = L3S, P0 = L3.P0, G = (S.par && S.par.g) || L3.g, k = (G - 1) / G, V = L3V;
   const pFrom = () => P0 * (V.m * (1 + V.th) - 1);
   if (V.pump && S.kOpen && !S.k0Open) { const p0 = V.p; V.m += L3.pump / P0 * dt * (1 - V.p / 900); V.p = pFrom(); V.th += k * (V.p - p0) / P0; }
   if (S.k0Open) {                       // выпуск в атмосферу: быстро до P0, остаток расширяется адиабатно
