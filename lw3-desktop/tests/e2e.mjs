@@ -25,7 +25,9 @@ try {
   // знакомство: 4 слайда, листается Enter, закрывается на последнем
   must(await page.locator('#modal [data-intro]').isVisible(), 'нет знакомства после входа');
   await shot(page, 'intro-1');
-  for (let i = 0; i < 4; i++) await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter'); await page.keyboard.press('Enter');   // слайд «Клавиши»: список не вылезает из своей области
+  must(await page.evaluate(() => document.querySelector('.keys').getBoundingClientRect().bottom <= document.querySelector('.intro-art').getBoundingClientRect().bottom + 1), 'клавиши вылезают за область слайда');
+  for (let i = 0; i < 2; i++) await page.keyboard.press('Enter');
   must(await page.locator('#modal').isHidden(), 'знакомство не закрылось');
   await page.keyboard.press('F1'); must(await page.locator('#modal [data-intro]').isVisible(), 'F1 не открывает знакомство');
   await page.click('[data-d="intro-skip"]'); must(await page.locator('#modal').isHidden(), '«Пропустить» не закрывает');
