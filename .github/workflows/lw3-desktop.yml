@@ -7,7 +7,6 @@ on:
     branches: ['**']        # без этого фильтр tags отключает запуск по пушу в ветки
     paths:
       - 'lw3-desktop/**'
-      - 'lw3-mobile/**'
       - 'fizika2/src/lw3-core.js'
       - 'fizika2/src/labwork.js'
       - 'fizika2/src/app.js'
@@ -60,10 +59,12 @@ jobs:
 
       - name: Full lab run in the Android interface (phone emulation)
         run: |
+          (cd lw3-mobile && npm ci --no-audit --no-fund)
           python lw3-mobile/build.py
           python -m http.server 4190 --directory lw3-mobile/www > /tmp/lw3m.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4190/ >/dev/null && break; sleep 1; done
           SHOTS=shots node lw3-mobile/tests/e2e.mjs
+          node lw3-mobile/tests/native-start.mjs
 
       - name: Screenshots
         if: always()
