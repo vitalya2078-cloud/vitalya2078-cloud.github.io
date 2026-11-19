@@ -1,4 +1,4 @@
-name: ЛР 3 — программа для Windows
+name: ЛР 3 — программы для Windows, Linux и Android
 
 # Сначала проверка (модель, полное прохождение в браузере), затем сборка на Windows:
 # установщик NSIS (без прав администратора) и переносной .exe. Тег lw3-v* — ещё и релиз на GitHub.
@@ -7,6 +7,7 @@ on:
     branches: ['**']        # без этого фильтр tags отключает запуск по пушу в ветки
     paths:
       - 'lw3-desktop/**'
+      - 'lw3-mobile/**'
       - 'fizika2/src/lw3-core.js'
       - 'fizika2/src/labwork.js'
       - 'fizika2/src/app.js'
@@ -56,6 +57,13 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4180/ >/dev/null && break; sleep 1; done
           mkdir -p shots
           SHOTS=shots node lw3-desktop/tests/e2e.mjs
+
+      - name: Full lab run in the Android interface (phone emulation)
+        run: |
+          python lw3-mobile/build.py
+          python -m http.server 4190 --directory lw3-mobile/www > /tmp/lw3m.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4190/ >/dev/null && break; sleep 1; done
+          SHOTS=shots node lw3-mobile/tests/e2e.mjs
 
       - name: Screenshots
         if: always()
@@ -145,8 +153,55 @@ jobs:
           name: Pokazatel-adiabaty-linux
           path: out/*
 
+  android:
+    needs: test
+    runs-on: ubuntu-latest           # Android SDK уже установлен на раннере
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Android SDK platform
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+      - name: Build interface and sync
+        working-directory: lw3-mobile
+        run: |
+          npm ci --no-audit --no-fund
+          python build.py
+          npx cap sync android
+      # постоянный ключ подписи (если задан в секретах) — чтобы новые версии ставились поверх старых
+      - name: Signing key
+        env:
+          KS_B64: ${{ secrets.LW3_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/lw3.jks"; echo "LW3_KEYSTORE=$RUNNER_TEMP/lw3.jks" >> "$GITHUB_ENV"; else echo "::warning::Секрет LW3_KEYSTORE_B64 не задан — APK подписан отладочным ключом"; fi
+      - name: Build APK
+        working-directory: lw3-mobile/android
+        env:
+          LW3_KEYSTORE_PASS: ${{ secrets.LW3_KEYSTORE_PASS }}
+          LW3_KEY_ALIAS: ${{ secrets.LW3_KEY_ALIAS }}
+          LW3_KEY_PASS: ${{ secrets.LW3_KEY_PASS }}
+        run: ./gradlew assembleRelease --no-daemon
+      - name: Collect APK
+        run: |
+          mkdir -p out
+          cp lw3-mobile/android/app/build/outputs/apk/release/app-release.apk out/Pokazatel-adiabaty.apk
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pokazatel-adiabaty-android
+          path: out/*
+
   release:
-    needs: [windows, linux]
+    needs: [windows, linux, android]
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/lw3-v')
     runs-on: ubuntu-latest
     steps:
@@ -170,10 +225,14 @@ jobs:
             out/*.exe
             out/*.deb
             out/*.zip
+            out/*.apk
           body: |
             **Windows**
             **Pokazatel-adiabaty-setup.exe** — установщик (без прав администратора, ярлык в «Пуске»).
             **Pokazatel-adiabaty-portable.exe** — переносная версия: запускается без установки (нужен WebView2, в Windows 10/11 он обычно уже есть).
+
+            **Android**
+            **Pokazatel-adiabaty.apk** — приложение для телефона (Android 7 и новее): своя раскладка под экран телефона, отправка работы преподавателю через мессенджер или почту, отчёт в PDF.
 
             **Astra Linux / Linux**
             **pokazatel-adiabaty_amd64.deb** — программа для Astra Linux 1.8+, Debian 12, Ubuntu 22.04+: `sudo apt install ./pokazatel-adiabaty_amd64.deb`.

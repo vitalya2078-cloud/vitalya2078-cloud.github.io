@@ -61,42 +61,7 @@ document.addEventListener('click', e => {
   setTimeout(() => { if (L3S && L3S.done && L3S.dx && !L3S.dx.submitted && FOLDER && IS_TAURI) submitWork(true); }, 50);
 });
 
-/* ---------- подсказки в обработке ---------- */
-const SUBI = ['₁', '₂', '₃'];
-function procHint(k, u, o, S, n) {
-  const near = (a, b, tol = .006) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= Math.max(tol, Math.abs(b) * .004);
-  if (!Number.isFinite(u)) return 'Не число: впиши значение, дробную часть — через запятую.';
-  const g = o.a.map(x => x.g), F = (v, d = 3) => l3Fix(v, d);
-  if (/^g\d$/.test(k)) {
-    const i = +k[1] - 1, r = S.runs[i], s = SUBI[i];
-    let h = near(u, r.h2 / (r.h1 - r.h2)) ? 'В числителе должно быть h₁, а не h₂.'
-      : near(u, r.h1 / r.h2) ? 'В знаменателе — разность h₁ − h₂, а не h₂.'
-      : near(u, (r.h1 - r.h2) / r.h1) ? 'Дробь перевёрнута: γ = h₁ / (h₁ − h₂).'
-      : g.some((x, j) => j !== i && near(u, x)) ? `Это γ другого опыта — возьми h₁ и h₂ из строки ${i + 1}.`
-      : Math.abs(u - g[i]) < .02 ? 'Почти верно — проверь округление: три знака после запятой.'
-      : `γ${s} = h₁ / (h₁ − h₂) по данным строки ${i + 1}.`;
-    if (n >= 3) h += ` Пример: γ${s} = ${r.h1} / (${r.h1} − ${r.h2}) = ${r.h1} / ${r.h1 - r.h2} = ${F(g[i])}.`;
-    return h;
-  }
-  const sum = g.reduce((a, x) => a + x, 0), sa = g.reduce((a, x) => a + Math.abs(o.gm - x), 0);
-  if (k === 'gm') return (near(u, sum) ? 'Сумму нужно разделить на N = 3.' : '⟨γ⟩ = (γ₁ + γ₂ + γ₃) / 3 — по верным γᵢ из таблицы.')
-    + (n >= 3 ? ` Пример: (${g.map(x => F(x)).join(' + ')}) / 3 = ${F(o.gm)}.` : '');
-  if (k === 'dg') return (near(u, sa, .002) ? 'Сумму модулей нужно разделить на √(N(N − 1)) = √6 ≈ 2,449.'
-      : near(u, sa / 3, .002) ? 'Делить нужно на √(N(N − 1)) = √6, а не на N.'
-      : near(u, sa / 6, .002) ? 'Делить нужно на √6, а не на 6.'
-      : '⟨Δγ⟩ = (|⟨γ⟩ − γ₁| + |⟨γ⟩ − γ₂| + |⟨γ⟩ − γ₃|) / √6.')
-    + (n >= 3 ? ` Пример: (${g.map(x => F(Math.abs(o.gm - x))).join(' + ')}) / 2,449 = ${F(o.dg)}.` : '');
-  if (k === 'eg') return (near(u, o.dg / o.gm, .0005) ? 'Не забудь умножить на 100 %.' : 'ε_γ = ⟨Δγ⟩ / ⟨γ⟩ · 100 %, с точностью до 0,1.')
-    + (n >= 3 ? ` Пример: ${F(o.dg)} / ${F(o.gm)} · 100 % = ${F(o.eg, 1)} %.` : '');
-  if (k === 'gT') return near(u, 5 / 3) ? 'Для воздуха (двухатомный газ) i = 5, а не 3.' : near(u, 4 / 3) ? 'Для воздуха i = 5, а не 6.'
-    : near(u, 5 / 7) ? 'Дробь перевёрнута: γ_T = (i + 2) / i.' : 'γ_T = (i + 2) / i при i = 5' + (n >= 3 ? ' = 7 / 5 = 1,400.' : '.');
-  if (k === 'e') { const d = Math.abs(o.gT - o.gm);
-    return (near(u, d, .002) ? 'Разность нужно разделить на γ_T и умножить на 100 %.' : near(u, d / o.gT, .0005) ? 'Не забудь умножить на 100 %.'
-      : near(u, d / o.gm * 100, .05) ? 'Делить нужно на γ_T = 1,4, а не на ⟨γ⟩.' : 'ε = |γ_T − ⟨γ⟩| / γ_T · 100 %.')
-      + (n >= 3 ? ` Пример: |1,400 − ${F(o.gm)}| / 1,400 · 100 % = ${F(o.e, 1)} %.` : ''); }
-  return '';
-}
-const PK_NAME = { g1: 'γ₁', g2: 'γ₂', g3: 'γ₃', gm: '⟨γ⟩', dg: '⟨Δγ⟩', eg: 'ε_γ', gT: 'γ_T', e: 'ε' };
+/* ---------- подсказки в обработке: procHint и PK_NAME — в hints.js (общий с Android) ---------- */
 function procHintsHtml(S) {
   const bad = L3_KEYS.filter(k => S.procOk[k] === false); if (!bad.length) return '';
   const o = l3Calc(), pk = (S.dx && S.dx.pk) || {};

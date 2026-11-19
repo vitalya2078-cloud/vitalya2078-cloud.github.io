@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="color-scheme" content="light dark">
+<title>Показатель адиабаты</title>
+<script>try { document.documentElement.dataset.theme = localStorage.getItem("lw3m-theme") === "dark" ? "dark" : "light"; } catch (e) {}</script>
+<style>
+/*{{FONTS}}*/
+/* =====================================================================
+   «Показатель адиабаты» для Android: своя раскладка под телефон.
+   Одна колонка, крупные кнопки внизу экрана (под большой палец), нижние листы вместо окон.
+   Светлая тема по умолчанию; тёмная — в меню.
+   ===================================================================== */
+:root, [data-theme="light"]{
+  color-scheme:light;
+  --bg:#EEF0F3; --card:#FFFFFF; --card2:#F6F7F9; --line:#E1E4E9; --line2:#C9CED6;
+  --tx:#14171C; --tx2:#454C57; --mute:#6E7682;
+  --acc:#E4571B; --acc-tx:#FFFFFF; --acc-soft:rgba(228,87,27,.10);
+  --cold:#1E6FD6; --cold-soft:rgba(30,111,214,.10);
+  --ok:#128A52; --ok-soft:rgba(18,138,82,.10); --bad:#D2283C; --bad-soft:rgba(210,40,60,.09); --warn:#A86A0C; --warn-soft:rgba(200,130,20,.12);
+  --sh:0 1px 2px rgba(20,23,28,.06), 0 6px 18px rgba(20,23,28,.06); --overlay:rgba(20,23,28,.45); --paper-bg:#DADDE3;
+}
+[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0E1013; --card:#181B20; --card2:#1F232A; --line:#2A2F37; --line2:#38404B;
+  --tx:#ECEEF1; --tx2:#AEB4BE; --mute:#7D8590;
+  --acc:#FF7A45; --acc-tx:#1C0C04; --acc-soft:rgba(255,122,69,.13);
+  --cold:#58A6FF; --cold-soft:rgba(88,166,255,.13);
+  --ok:#3DD68C; --ok-soft:rgba(61,214,140,.12); --bad:#FF5D6C; --bad-soft:rgba(255,93,108,.12); --warn:#F5B83D; --warn-soft:rgba(245,184,61,.12);
+  --sh:0 8px 24px rgba(0,0,0,.35); --overlay:rgba(6,7,9,.72); --paper-bg:#262A31;
+}
+/* отступы под системные панели Android (вырез камеры, жесты) */
+:root{ --st:max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px)); --sb:max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)); }
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; min-height:100%}
+body{background:var(--bg); color:var(--tx); font:16px/1.5 "Golos UI", system-ui, sans-serif; -webkit-font-smoothing:antialiased; user-select:none; overscroll-behavior:none}
+input,textarea{user-select:text}
+button,input,textarea{font:inherit; color:inherit}
+.ic{width:20px; height:20px; flex:none; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-4px}
+.m{font-family:"F2 Math", serif; font-style:italic}
+.mute{color:var(--mute)} .small{font-size:13.5px} .center{text-align:center}
+b{font-weight:700}
+
+/* ---------- верхняя панель и шаги ---------- */
+#bar{position:sticky; top:0; z-index:20; background:var(--bg); padding:calc(var(--st) + 6px) 12px 8px}
+#bar:empty{display:none}
+.bar{display:flex; align-items:center; gap:6px; min-height:44px}
+.bar h1{flex:1; min-width:0; margin:0; font-size:17px; font-weight:800; line-height:1.2}
+.bar h1 small{display:block; font-size:12.5px; font-weight:600; color:var(--mute)}
+.ib{width:44px; height:44px; border-radius:14px; border:0; background:transparent; display:grid; place-items:center; color:var(--tx2)}
+.ib:active{background:var(--card2)}
+.steps{display:grid; grid-template-columns:repeat(6, 1fr); gap:4px; margin-top:4px}
+.steps button{height:6px; border:0; padding:0; border-radius:3px; background:var(--line)}
+.steps button.done{background:var(--ok)} .steps button.cur{background:var(--acc)}
+
+/* ---------- содержимое ---------- */
+#main{padding:8px 14px calc(var(--dock, 96px) + var(--sb) + 16px); max-width:620px; margin:0 auto}
+.card{background:var(--card); border-radius:20px; padding:16px; box-shadow:var(--sh); margin-bottom:12px}
+.card h2{display:flex; align-items:center; gap:8px; margin:0 0 10px; font-size:17px}
+.card h2 .tag{margin-left:auto}
+.tag{display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:99px; font-size:12.5px; font-weight:700; background:var(--card2); color:var(--tx2)}
+.tag.ok{background:var(--ok-soft); color:var(--ok)} .tag.bad{background:var(--bad-soft); color:var(--bad)} .tag.warn{background:var(--warn-soft); color:var(--warn)} .tag.acc{background:var(--acc-soft); color:var(--acc)}
+.lead{font-size:15px; color:var(--tx2); margin:0}
+
+/* ---------- кнопки ---------- */
+.btn{display:flex; align-items:center; justify-content:center; gap:8px; min-height:52px; padding:12px 18px; border-radius:16px; border:0;
+  background:var(--acc); color:var(--acc-tx); font-weight:700; font-size:16px; width:100%; text-align:center}
+.btn:active{transform:scale(.985)} .btn:disabled{opacity:.45}
+.btn.line{background:var(--card); color:var(--tx); box-shadow:inset 0 0 0 1.5px var(--line2)}
+.btn.soft{background:var(--card2); color:var(--tx)}
+.btn.ok{background:var(--ok); color:#fff} .btn.bad{background:var(--bad); color:#fff}
+.row{display:flex; gap:10px} .row > *{flex:1}
+.stack{display:grid; gap:10px}
+.lnk{background:none; border:0; color:var(--acc); font-weight:700; padding:6px 0; display:inline-flex; gap:6px; align-items:center}
+
+/* нижняя панель действий */
+#dock{position:fixed; left:0; right:0; bottom:0; z-index:20; padding:10px 14px calc(var(--sb) + 12px); background:linear-gradient(to top, var(--bg) 70%, transparent)}
+#dock:empty{display:none}
+#dock > div{max-width:620px; margin:0 auto; display:grid; gap:8px}
+.say{margin:0 2px 2px; font-size:14.5px; color:var(--tx2); line-height:1.4}
+.lw-msg{margin:0 2px; font-size:14px; font-weight:700} .lw-msg:empty{display:none} .lw-msg.bad{color:var(--bad)} .lw-msg.good{color:var(--ok)}
+
+/* ---------- вход ---------- */
+.login{min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:calc(var(--st) + 24px) 18px calc(var(--sb) + 24px); max-width:520px; margin:0 auto}
+.brand{text-align:center; margin-bottom:22px}
+.logo{display:inline-grid; place-items:center; width:72px; height:72px; border-radius:22px; background:var(--acc); color:var(--acc-tx); font:italic 800 40px/1 "F2 Math", serif; box-shadow:0 10px 30px var(--acc-soft)}
+.brand h1{margin:14px 0 2px; font-size:26px; font-weight:800} .brand p{margin:0; color:var(--mute)}
+.field{display:grid; gap:6px; font-size:13.5px; font-weight:700; color:var(--tx2); margin-bottom:12px}
+.inp{width:100%; min-height:52px; padding:12px 14px; border-radius:14px; border:1.5px solid var(--line2); background:var(--card); font-size:17px; outline:none}
+.inp:focus{border-color:var(--acc)}
+.inp::placeholder{color:var(--mute); opacity:.55; font-weight:400}
+.inp.ok{border-color:var(--ok); background:var(--ok-soft)} .inp.bad{border-color:var(--bad); background:var(--bad-soft)}
+textarea.inp{min-height:220px; line-height:1.5; font-size:15px; resize:vertical}
+.plist{display:grid; gap:8px; margin-top:6px}
+.prof{display:flex; align-items:center; gap:12px; padding:12px; border-radius:16px; background:var(--card); box-shadow:var(--sh); border:0; width:100%; text-align:left}
+.prof .nm{flex:1; min-width:0} .prof b{display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .prof small{color:var(--mute)}
+.ava{display:grid; place-items:center; width:42px; height:42px; border-radius:14px; color:#14171C; font-weight:800; font-size:15px; flex:none}
+.foot{display:flex; justify-content:space-between; align-items:center; margin-top:18px; color:var(--mute); font-size:13px}
+
+/* ---------- вопросы ---------- */
+.qn{display:flex; align-items:center; gap:8px; color:var(--mute); font-size:13.5px; font-weight:700; margin-bottom:8px}
+.qn .dots{display:flex; gap:4px; margin-left:auto} .qn .dots i{width:8px; height:8px; border-radius:4px; background:var(--line)}
+.qn .dots i.a{background:var(--tx2)} .qn .dots i.cur{background:var(--acc); width:18px} .qn .dots i.ok{background:var(--ok)} .qn .dots i.bad{background:var(--bad)}
+.q{font-size:19px; font-weight:700; line-height:1.35; margin:0 0 14px}
+.opts{display:grid; gap:10px}
+.opt{display:flex; align-items:center; gap:12px; text-align:left; padding:14px; min-height:56px; border-radius:16px; border:1.5px solid var(--line); background:var(--card); font-size:15.5px; line-height:1.35}
+.opt .lt{display:grid; place-items:center; width:30px; height:30px; border-radius:10px; background:var(--card2); font-weight:800; font-size:14px; flex:none}
+.opt.pick{border-color:var(--acc); background:var(--acc-soft)} .opt.pick .lt{background:var(--acc); color:var(--acc-tx)}
+.opt.ok{border-color:var(--ok); background:var(--ok-soft)} .opt.ok .lt{background:var(--ok); color:#fff}
+.opt.bad{border-color:var(--bad); background:var(--bad-soft)} .opt.bad .lt{background:var(--bad); color:#fff}
+.res-list{display:grid; gap:6px; margin:10px 0 0; padding:0; list-style:none}
+.res-list li{display:flex; gap:8px; align-items:flex-start; font-size:14px; padding:8px 10px; border-radius:12px; background:var(--card2)}
+.res-list li.bad{background:var(--bad-soft)} .res-list li button{margin-left:auto; flex:none}
+
+/* ---------- установка ---------- */
+.scene{position:relative; border-radius:20px; overflow:hidden; background:#0F2237; box-shadow:var(--sh); margin-bottom:12px}
+.scene canvas{display:block; width:100%}
+.scene.zoom canvas{width:auto; max-width:none}
+.scene .zbtn{position:absolute; right:8px; top:8px; min-height:36px; width:auto; padding:6px 12px; font-size:13.5px; border-radius:12px; background:rgba(14,16,19,.7); color:#fff}
+.live{display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:8px; margin-bottom:12px}
+.live div{background:var(--card); border-radius:16px; padding:10px 12px; box-shadow:var(--sh)}
+.live small{display:block; color:var(--mute); font-size:12px; font-weight:700}
+.live b{font-size:20px; font-variant-numeric:tabular-nums} .live div:last-child b{font-size:14.5px; line-height:1.3; display:block}
+.sw{display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:16px; background:var(--card); box-shadow:var(--sh); border:0; width:100%; text-align:left; min-height:64px}
+.sw .nm{flex:1} .sw .nm small{display:block; color:var(--mute); font-size:13px}
+.tog{width:52px; height:30px; border-radius:15px; background:var(--line2); position:relative; flex:none; transition:background .15s}
+.tog::after{content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:12px; background:#fff; transition:left .15s; box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.sw.on .tog{background:var(--ok)} .sw.on .tog::after{left:25px} .sw.need .tog{background:var(--bad)}
+.runs{display:grid; grid-template-columns:repeat(3, 1fr); gap:8px}
+.runs div{background:var(--card2); border-radius:14px; padding:8px 10px; font-size:13px}
+.runs div.now{box-shadow:inset 0 0 0 2px var(--acc)} .runs div.ok{background:var(--ok-soft)}
+.runs b{display:block; font-size:15px}
+.bar2{height:10px; border-radius:5px; background:var(--card2); overflow:hidden; position:relative}
+.bar2 > i{display:block; height:100%; width:0; background:var(--cold); border-radius:5px}
+.bar2.zone::before{content:""; position:absolute; left:87.5%; width:4.2%; top:0; bottom:0; background:var(--ok); opacity:.45}
+.hold{min-height:84px; font-size:19px; border-radius:22px; touch-action:none; -webkit-user-select:none; user-select:none}
+.hold.pressed{background:var(--ok); color:#fff; transform:scale(.97)}
+.read{display:grid; grid-template-columns:1fr auto; gap:8px} .read .btn{width:auto}
+
+/* ---------- обработка ---------- */
+.pv{display:grid; gap:4px; padding:12px 0; border-top:1px solid var(--line)} .pv:first-of-type{border-top:0}
+.pv label{display:flex; align-items:baseline; gap:8px; font-weight:700} .pv label small{font-weight:600; color:var(--mute); margin-left:auto; font-size:13px}
+.pv .f{font-size:13.5px; color:var(--mute)} .pv .hint{font-size:13.5px; color:var(--bad); font-weight:600}
+.resv{font-size:22px; font-weight:800; text-align:center; padding:6px; color:var(--ok)}
+
+/* ---------- отчёт ---------- */
+.hero{text-align:center; padding:22px 16px} .hero .ic{width:44px; height:44px; color:var(--ok)}
+.hero h2{justify-content:center; font-size:22px; margin:8px 0 4px} .hero p{margin:0; color:var(--tx2)}
+.paper-wrap{background:var(--paper-bg); border-radius:16px; padding:10px; overflow:hidden}
+.paper-wrap .lwr{transform-origin:0 0}
+.paper-wrap .lwp{margin:0 0 10px !important}
+
+/* ---------- нижний лист ---------- */
+#sheet{position:fixed; inset:0; z-index:50; background:var(--overlay); display:flex; align-items:flex-end; justify-content:center}
+#sheet[hidden]{display:none}
+.sbox{width:100%; max-width:680px; max-height:92vh; background:var(--bg); border-radius:24px 24px 0 0; display:flex; flex-direction:column; animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(40px); opacity:.4}}
+.sbox header{display:flex; align-items:center; gap:8px; padding:8px 8px 6px 18px}
+.sbox header h2{flex:1; margin:0; font-size:18px; display:flex; gap:8px; align-items:center}
+.sbox .grab{width:40px; height:5px; border-radius:3px; background:var(--line2); margin:8px auto 0}
+.sbody{overflow:auto; padding:4px 16px 16px; -webkit-overflow-scrolling:touch}
+.sact{padding:8px 16px calc(var(--sb) + 14px); display:grid; gap:8px}
+.sact:empty{display:none}
+.tabs{display:flex; gap:6px; margin-bottom:12px; overflow-x:auto}
+.tabs button{border:0; border-radius:12px; padding:9px 14px; background:var(--card2); font-weight:700; white-space:nowrap}
+.tabs button.on{background:var(--acc); color:var(--acc-tx)}
+.txt p{margin:0 0 10px; line-height:1.55}
+.menu{display:grid; gap:8px}
+.menu button{display:flex; align-items:center; gap:14px; padding:14px; border-radius:16px; border:0; background:var(--card); text-align:left; font-weight:700; min-height:56px}
+.menu button small{display:block; font-weight:500; color:var(--mute); font-size:13px}
+.hod{counter-reset:h; list-style:none; padding:0; margin:0; display:grid; gap:6px}
+.hod li{display:flex; gap:10px; padding:10px 12px; border-radius:14px; background:var(--card); font-size:14.5px; line-height:1.45}
+.hod li i{font-style:normal; font-weight:800; color:var(--mute); min-width:20px}
+.hod li.cur{box-shadow:inset 0 0 0 2px var(--acc); background:var(--acc-soft)} .hod li.cur i{color:var(--acc)}
+.slide{text-align:center; padding:8px 4px 4px} .slide .big{font-size:52px; line-height:1} .slide h3{font-size:21px; margin:10px 0 6px} .slide p{color:var(--tx2); margin:0}
+.isteps{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; text-align:left}
+.isteps div{background:var(--card); border-radius:14px; padding:10px; font-size:13.5px} .isteps b{display:block; font-size:15px}
+.sdots{display:flex; gap:6px; justify-content:center; margin:14px 0 4px} .sdots i{width:8px; height:8px; border-radius:4px; background:var(--line2)} .sdots i.on{background:var(--acc); width:20px}
+
+/* сводка «Что рассказать на защите» (общая с программой для Windows) */
+.sum{display:grid; gap:10px; font-size:15px; line-height:1.55}
+.sum section{background:var(--card); border-radius:16px; padding:12px 14px}
+.sum h3{display:flex; gap:8px; align-items:center; margin:0 0 6px; font-size:15.5px} .sum p{margin:0}
+.sum .pill{display:inline-flex; gap:6px; align-items:center; padding:6px 10px; border-radius:12px; background:var(--warn-soft); color:var(--warn); font-weight:700; font-size:13.5px}
+.tt{border-collapse:collapse; width:100%; font-size:14px} .tt th{font-size:12px; color:var(--mute); text-align:left; font-weight:700; padding:6px 4px; border-bottom:1px solid var(--line)}
+.tt td{padding:7px 4px; border-bottom:1px solid var(--line)} .tt td.n{text-align:right; font-variant-numeric:tabular-nums}
+.sum-qa{list-style:none; padding:0; margin:0} .sum-qa li{padding:8px 0; border-bottom:1px solid var(--line)} .sum-qa li:last-child{border:0} .sum-qa span{display:block; color:var(--tx2)}
+
+/* ---------- уведомления ---------- */
+#toasts{position:fixed; left:12px; right:12px; bottom:calc(var(--dock, 0px) + var(--sb) + 8px); z-index:60; display:grid; gap:8px; pointer-events:none; justify-items:center}
+.toast{max-width:560px; width:100%; padding:12px 16px; border-radius:16px; background:var(--tx); color:var(--bg); font-weight:600; font-size:14.5px; box-shadow:var(--sh); animation:up .2s ease-out}
+.toast.bad{background:var(--bad); color:#fff}
+
+/* ---------- отчёт: печать ---------- */
+#printroot{display:none}
+/*{{REPORT_CSS}}*/
+@media print{
+  @page{size:A4; margin:12mm}
+  html,body{background:#fff !important; min-height:0}
+  #bar,#main,#dock,#sheet,#toasts{display:none !important}
+  #printroot{display:block}
+  .lwr{display:block} .lwp{box-shadow:none; border-radius:0; padding:0; max-width:none; page-break-after:always; break-after:page}
+  .lwp:last-child{page-break-after:auto; break-after:auto}
+}
+</style>
+</head>
+<body>
+<header id="bar"></header>
+<main id="main"></main>
+<footer id="dock"></footer>
+<div id="sheet" hidden></div>
+<div id="toasts"></div>
+<div id="printroot" class="lwr"></div>
+<input type="file" id="file-in" hidden>
+<script>
+{{JS}}
+</script>
+</body>
+</html>

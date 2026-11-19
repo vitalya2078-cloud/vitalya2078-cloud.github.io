@@ -255,22 +255,7 @@ function sndTick(active) {
 }
 
 /* ---------- файл результата ---------- */
-const SIG_KEY = 'lw3:kafedra-fiziki:Clement-Desormes:v1';
-const RESULT_FORMAT = 'lw3-result';
-function packResult() {
-  const S = l3Load(); ensureMeta(S);
-  const o = S.runs.length === L3.N ? l3Calc() : null;
-  const body = { format: RESULT_FORMAT, v: 1, app: APP_VER, saved: new Date().toISOString(), student: { fio: S.fio || '', group: S.group || '' },
-    state: S, summary: o ? { gm: o.gm, dg: o.dg, eg: o.eg, e: o.e } : null };
-  return JSON.stringify(Object.assign({}, body, { sig: hmac256(SIG_KEY, JSON.stringify(body)) }));
-}
-function unpackResult(text) {
-  let d; try { d = JSON.parse(text); } catch (e) { return { err: 'это не файл работы «Показатель адиабаты»' }; }
-  if (!d || d.format !== RESULT_FORMAT || !d.state) return { err: 'это не файл работы «Показатель адиабаты»' };
-  const { sig, ...body } = d;
-  return { d: body, ok: typeof sig === 'string' && sig === hmac256(SIG_KEY, JSON.stringify(body)) };
-}
-const safeName = s => String(s || '').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_').slice(0, 60);
+/* packResult, unpackResult, safeName — в result.js (общий с программой для Android) */
 async function saveFile(name, text, ext, label) {
   if (IS_TAURI) {
     try { const p = await window.__TAURI__.core.invoke('save_file', { name, contents: text, ext, label }); if (p) toast(`${ic('circle-check')} Сохранено: ${esc(p)}`); return !!p; }

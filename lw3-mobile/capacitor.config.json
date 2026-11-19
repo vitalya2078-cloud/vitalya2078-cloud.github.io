@@ -1,0 +1,10 @@
+{
+  "appId": "io.github.vitalya2078.adiabata",
+  "appName": "Показатель адиабаты",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}
