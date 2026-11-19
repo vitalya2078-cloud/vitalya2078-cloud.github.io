@@ -1,7 +1,7 @@
 /* =====================================================================
    «Физпрактикум»: реестр лабораторных работ — общий для программы на компьютере и на телефоне.
    Работа — модуль сайта (fizika2/src: labwork.js — ЛР 1, labwork2.js — ЛР 2, lw3-core.js — ЛР 3)
-   со своими действиями (data-lw / data-l2 / data-l3), хранением и отчётом. Ждёт от оболочки: workKey, store.
+   или работа на общем движке labs-e.js (ЛР 4–8, le4.js … le8.js) со своими действиями (data-lw / data-l2 / data-l3 / data-le), хранением и отчётом. Ждёт от оболочки: workKey, store.
    ===================================================================== */
 let LAB = 3;
 const LABS = {
@@ -32,8 +32,9 @@ const LABS = {
     sig: S => (S.runs || []).map(r => r.h1 + '/' + r.h2).join(';') }
 };
 const curLab = () => LABS[LAB];
-const labTitle = n => (LW_LIST.find(w => w.id === n) || {}).title || LABS[n].short;
-const labAim = n => (LW_LIST.find(w => w.id === n) || {}).aim || '';
+const labTitle = n => LABS[n].title || (LW_LIST.find(w => w.id === n) || {}).title || LABS[n].short;
+const labAim = n => LABS[n].aim || (LW_LIST.find(w => w.id === n) || {}).aim || '';
+const labNums = () => Object.keys(LABS).map(Number).sort((a, b) => a - b);
 const labDone = (L, S) => S && L.steps[S.max || 0] && L.steps[S.max || 0][0] === 'report';
 /* вычисление по чужому состоянию (файл студента, демо) */
 function withLabState(n, S, fn) { const back = LABS[n].swap(S); try { return fn(); } finally { back(); } }
@@ -44,6 +45,7 @@ function labStatus(n, S) { const L = LABS[n]; if (!S) return 'не начата'
 /* ЛР 1 и ЛР 2: текущий пункт хода работы по шагу и записям */
 function hodNowLab() {
   const L = curLab(), S = L.S(); if (!S) return 0; const st = L.steps[S.step][0];
+  if (LAB >= 4) return leHodNow(S, st);
   if (LAB === 1) return ({ prep: 1, free: S.free.length ? 3 : 2, coll2: (S.ex[2].rows.length ? 5 : 4), proc: S.procOk.px0 ? 8 : 6, concl: 9 })[st] || 0;
   return ({ prep: 1, exp1: S.runs.length ? 3 : 2, exp2: S.ex2.length ? 5 : 4, proc: 6, concl: 8 })[st] || 0;
 }

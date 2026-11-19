@@ -6,6 +6,7 @@
 import { chromium, devices } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
+import { leDriver } from '../../lw3-desktop/tests/le-drivers.mjs';
 const BASE = process.env.BASE || 'http://127.0.0.1:4190/';
 const SHOTS = process.env.SHOTS || '';
 const shot = async (p, n) => { if (SHOTS) await p.screenshot({ path: path.join(SHOTS, `mfz-${n}.png`) }); };
@@ -20,7 +21,7 @@ const st = () => E(() => curLab().steps[curLab().S().step][0]);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '11 В'); await page.click('[data-m="new"]'); await page.click('#sheet [data-m="sclose"]');
-must(await page.locator('.labm').count() === 3, 'на главном экране не 3 работы'); await shot(page, 'labs');
+must(await page.locator('.labm').count() === 8, 'на главном экране не 8 работ'); await shot(page, 'labs');
 
 async function admitAndCq(act, key) {
   const list = await E(k => curLab()[k].map(([, a]) => a), key);
@@ -110,12 +111,23 @@ must(await st() === 'concl', 'ЛР 1: нет выводов');
 await page.click('[data-m="ctab"][data-v="cq"]'); await admitAndCq('lw', 'cq'); must(await st() === 'report', 'ЛР 1: нет отчёта');
 await finish(1, 'lw');
 
+/* ===================== ЛР 4–8 ===================== */
+const drv = leDriver(page, must, shot);
+for (const n of [4, 5, 6, 7, 8]) {
+  await page.click(`[data-m="lab"][data-v="${n}"]`); await W(200); await admitAndCq('le', 'admit');
+  must(await st() === 'prep', `ЛР ${n}: нет подготовки`);
+  await drv.run(n);
+  must(await st() === 'concl', `ЛР ${n}: нет выводов`);
+  await page.click('[data-m="ctab"][data-v="cq"]'); await W(150); await admitAndCq('le', 'cq'); must(await st() === 'report', `ЛР ${n}: нет отчёта`);
+  await finish(n, 'le');
+}
+
 /* главный экран: обе работы защищены, ЛР 3 не тронута; файл ЛР 2 открывается для продолжения на «другом компьютере» */
-must((await page.locator('.labm.done').count()) === 2, 'на главном экране не отмечены защищённые работы'); await shot(page, 'labs-done');
+must((await page.locator('.labm.done').count()) === 7, 'на главном экране не отмечены защищённые работы'); await shot(page, 'labs-done');
 const ctx2 = await b.newContext({ ...devices['Pixel 7'] }); const p2 = await ctx2.newPage(); p2.on('pageerror', e => errors.push(e.message));
 await p2.goto(BASE, { waitUntil: 'networkidle' }); await p2.setInputFiles('#file-in', f2); await p2.waitForFunction(() => SCREEN === 'work');
 must(await p2.evaluate(() => LAB === 2 && L2S.done && L2.steps[L2S.step][0] === 'report'), 'ЛР 2 из файла не восстановилась'); await ctx2.close();
 
 if (errors.length) throw new Error('ошибки в браузере: ' + errors.join(' | '));
-console.log('PASS: Физпрактикум на телефоне — выбор работы, ЛР 1 и ЛР 2 целиком: допуск, подготовка, опыты, обработка, защита, сводка, отчёт, файл работы, продолжение из файла.');
+console.log('PASS: Физпрактикум на телефоне — выбор работы, ЛР 1, 2, 4–8 целиком: допуск, подготовка, опыты, обработка, защита, сводка, отчёт, файл работы, продолжение из файла.');
 await b.close();

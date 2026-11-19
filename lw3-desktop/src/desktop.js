@@ -55,7 +55,7 @@ function openProfile(p, intro = false, lab = 0) {   // студент → экр
 }
 function profileState(p) { return store.get(workKey(p.id), null); }
 function profileStatus(p) {   // кратко по всем работам студента
-  const st = [1, 2, 3].map(n => [n, labState(n, p.id)]).filter(([, S]) => S && (S.max || S.done));
+  const st = labNums().map(n => [n, labState(n, p.id)]).filter(([, S]) => S && (S.max || S.done));
   if (!st.length) return 'работы не начаты';
   return st.map(([n, S]) => `ЛР ${n}: ${S.done ? 'защищена' : 'шаг ' + ((S.max || 0) + 1)}`).join(' · ');
 }

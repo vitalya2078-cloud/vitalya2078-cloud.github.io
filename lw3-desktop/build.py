@@ -59,7 +59,7 @@ js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs.js', 'teacher.js')])
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'labs.js', 'teacher.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 

@@ -7,7 +7,7 @@
 /* ---------- выбор работы ---------- */
 function vLabs() {
   document.body.classList.add('noside'); document.body.classList.remove('full'); ui.side.innerHTML = '';
-  const p = PROFILE, cards = [1, 2, 3].map(n => { const L = LABS[n], S = labState(n, p.id), n2 = L.steps.length, at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), n2) : 0;
+  const p = PROFILE, cards = labNums().map(n => { const L = LABS[n], S = labState(n, p.id), n2 = L.steps.length, at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), n2) : 0;
     let res = ''; if (S && S.done) { try { res = withLabState(n, S, () => L.result()); } catch (e) { res = ''; } }
     return `<button class="labc ${S && S.done ? 'done' : ''}" data-d="lab" data-v="${n}"><span class="labc-n">ЛР ${n}</span><span class="labc-ic">${ic(L.icon)}</span>
       <b>${esc(labTitle(n))}</b><small>${esc(labStatus(n, S))}</small>${res ? `<em>${esc(res)}</em>` : ''}
@@ -30,7 +30,7 @@ function gTop(S, L) {
   const fin = L.steps[S.max][0] === 'report';
   return `<header class="tb">
     <div class="tb-brand"><button class="tb-ic" data-d="labs" title="К списку работ">${ic('chevron-left')}</button><span class="logo">γ</span><b>ЛР ${L.no}<small>${esc(L.short)}</small></b></div>
-    <nav class="tb-steps">${L.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
+    <nav class="tb-steps${L.steps.length > 7 || L.steps.map(x => x[1]).join('').length > 58 ? ' many' : ''}">${L.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
       return `<button data-${L.act}="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i><span>${t}</span></button>`; }).join('<s></s>')}</nav>
     <div class="tb-act">
       <button class="btn line tb-hod" data-d="hod" title="Ход работы (H)">${ic('clipboard-list')} Ход работы ${kbd('H')}</button>
@@ -123,16 +123,16 @@ document.addEventListener('click', e => {
 });
 // ответ выбран — следующий вопрос без ответа (ЛР 1 и ЛР 2)
 document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('[data-lw="admit"],[data-l2="admit"],[data-lw="cq"],[data-l2="cq"]'); if (!b || LAB === 3) return;
-  const L = curLab(), S = L.S(), adm = (b.dataset.lw || b.dataset.l2) === 'admit', list = adm ? L.admit : L.cq;
+  const b = e.target.closest && e.target.closest('[data-lw="admit"],[data-l2="admit"],[data-le="admit"],[data-lw="cq"],[data-l2="cq"],[data-le="cq"]'); if (!b || LAB === 3) return;
+  const L = curLab(), S = L.S(), adm = (b.dataset.lw || b.dataset.l2 || b.dataset.le) === 'admit', list = adm ? L.admit : L.cq;
   if (!S || (adm ? S.admitChecked : S.cqChecked)) return;
   setTimeout(() => { const ans = adm ? S.admit : S.cq, cur = adm ? AQ : CQI; let nx = list.findIndex((_, j) => j > cur && !ans[j]); if (nx < 0) nx = list.findIndex((_, j) => !ans[j]); if (nx < 0) nx = list.length;
     if (adm) AQ = nx; else CQI = nx; render(); }, 260);
 });
 // учёт попыток и времени — как у ЛР 3 (для преподавателя)
 document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('[data-lw],[data-l2]'); if (!b || LAB === 3) return;
-  const L = curLab(), S = L.S(); if (!S || !S.dx) return; const a = b.dataset.lw || b.dataset.l2;
+  const b = e.target.closest && e.target.closest('[data-lw],[data-l2],[data-le]'); if (!b || LAB === 3) return;
+  const L = curLab(), S = L.S(); if (!S || !S.dx) return; const a = b.dataset.lw || b.dataset.l2 || b.dataset.le;
   const k = { admitCheck: 'admitTries', pcheck: 'procTries', cqCheck: 'cqTries' }[a]; if (k) S.dx[k] = (S.dx[k] || 0) + 1;
   if (a === 'cqCheck') setTimeout(() => { if (S.done && !S.dx.finished) { S.dx.finished = new Date().toISOString(); L.save(); } if (S.done && !S.dx.submitted && FOLDER && IS_TAURI) submitWork(true); }, 50);
   if (a === 'next' || a === 'go') { AQ = 0; CQI = 0; }

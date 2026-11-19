@@ -71,7 +71,7 @@ js = '\n'.join([cap_js, 'const APP_VER = %s;' % json.dumps(version),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False),
                 helpers, rd(os.path.join(SITE, 'icons.js')), rd(os.path.join(SITE, 'lw3-core.js')), hod] +
-               [rd(os.path.join(DESK, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'labs-core.js')] +
+               [rd(os.path.join(DESK, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js')] +
                [rd(os.path.join(D, 'src', f)) for f in ('mobile.js', 'mlabs.js')])
 html = (rd(os.path.join(D, 'src', 'mobile.html')).replace('/*{{FONTS}}*/', fonts).replace('/*{{REPORT_CSS}}*/', report_css)
         .replace('{{JS}}', js.replace('</script', '<\\/script')))

@@ -420,6 +420,15 @@ body.full #hod{top:60px; width:338px}
 .slab.live > *{grid-column:2}
 .slab.live > .lw-stage{grid-column:1; grid-row:1 / span 12; position:sticky; top:0; background:none; padding:0}
 .slab.live #lw-cv, .slab.live #l2-cv{width:100%; max-height:calc(100vh - 210px); object-fit:contain}
+.slab #le-cv{display:block; width:100%; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid rgba(128,140,160,.3)}
+.slab.live #le-cv{max-height:calc(100vh - 210px); object-fit:contain}
+.tb-steps.many button:not(.on) span{display:none} .tb-steps.many{gap:2px}
+.lw-screw.le-knob{flex-wrap:wrap; gap:6px} .lw-screw.le-knob span{flex:1 1 100%} .lw-screw.le-knob b{min-width:76px; font-size:18px; text-align:center} .lw-screw.le-knob .lp-btn{flex:1 1 0; width:auto; min-width:40px; padding:0 4px; font-size:13px}
+.lw-stage:has(#le-cv) .lw-ctl-row{flex-wrap:wrap} .lw-stage:has(#le-cv) .lw-ctl-row > .btn{flex:1 1 auto}
+.lw-ctl-row.le-rec{flex-wrap:wrap} .lw-ctl-row.le-rec label{flex:1 1 96px} .lw-ctl-row.le-rec .btn{flex:1 1 120px}
+.le-knob{flex-wrap:wrap; gap:6px} .le-knob span{flex:1 1 100%} .le-knob b{min-width:76px; font-size:18px} .le-knob .lp-btn{flex:1 1 0; width:auto; min-width:44px; padding:0 4px; font-size:13px}
+.seg.wrap{flex-wrap:wrap} .seg.wrap button{flex:1 1 auto} .seg button.ok{outline:2px solid var(--ok, #3DD6A0)} .seg button.bad{outline:2px solid var(--bad, #FF6B8B)}
+.lw-row.three label{flex:1 1 90px}
 .slab .lw-msg{min-height:1.2em}
 .slab .btn.wide{width:100%} .slab .mt{margin-top:10px}
 .field .inp{width:100%; padding:10px 12px; border-radius:12px; border:1.5px solid var(--line2); background:var(--panel2); color:var(--tx); font:600 15px "Golos UI", system-ui}

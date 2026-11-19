@@ -523,7 +523,7 @@ function lwMsg(t, bad) { const m = $('#lw-msg'); if (m) { m.textContent = t; m.c
 function lwGo(i) { LWS.step = Math.max(0, Math.min(i, LWS.max)); lwSave(); render(); ui.main.scrollTop = 0; }
 function lwAdvance() { LWS.max = Math.max(LWS.max, LWS.step + 1); LWS.step = LWS.step + 1; lwSave(); render(); ui.main.scrollTop = 0; }
 document.addEventListener('input', e => {
-  const el = e.target.closest && e.target.closest('.lwi:not(.l2i):not(.l3i), .lw-ta:not(.l2i):not(.l3i)'); if (!el || !LWS) return;
+  const el = e.target.closest && e.target.closest('.lwi:not(.l2i):not(.l3i):not(.lei), .lw-ta:not(.l2i):not(.l3i):not(.lei)'); if (!el || !LWS) return;
   const k = el.dataset.k;
   if (k.startsWith('p_')) { LWS.proc[k.slice(2)] = el.value; delete LWS.procOk[k.slice(2)]; el.classList.remove('ok', 'bad'); }
   else if (/^r[xy]0[23]$/.test(k)) LWS.ex[k[3]][k[1] === 'x' ? 'rx' : 'ry'] = el.value;

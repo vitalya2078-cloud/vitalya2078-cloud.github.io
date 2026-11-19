@@ -33,7 +33,7 @@ function l3SummaryHtml(S) {
 
 
 /* ЛР 1 и ЛР 2 — та же сводка «Что рассказать на защите» */
-function labSummaryHtml(n, S) { return n === 1 ? lwSummaryHtml(S) : n === 2 ? l2SummaryHtml(S) : l3SummaryHtml(S); }
+function labSummaryHtml(n, S) { return n >= 4 ? leSummaryHtml(n, S) : n === 1 ? lwSummaryHtml(S) : n === 2 ? l2SummaryHtml(S) : l3SummaryHtml(S); }
 const sumBox = (icn, t, body) => `<section><h3>${ic(icn)} ${t}</h3>${body}</section>`;
 const sumQa = list => `<ul class="sum-qa">${list.map(([q, a]) => `<li><b>${esc(q)}</b><span>${esc(a)}</span></li>`).join('')}</ul>`;
 function lwSummaryHtml(S) {

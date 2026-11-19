@@ -8,7 +8,7 @@ function mLabs() {
   const p = PROFILE; ui.bar.innerHTML = ''; dock('');
   ui.main.innerHTML = `<div class="labs-m">
     <div class="labs-mh"><span class="logo sm">γ</span><div><h1>Физпрактикум</h1><p>${esc(p.fio)}${p.group ? ' · ' + esc(p.group) : ''}</p></div><button class="ib" data-m="home" aria-label="Сменить студента">${ic('chevron-left')}</button></div>
-    ${[1, 2, 3].map(n => { const L = LABS[n], S = labState(n, p.id), at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), L.steps.length) : 0;
+    ${labNums().map(n => { const L = LABS[n], S = labState(n, p.id), at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), L.steps.length) : 0;
       let res = ''; if (S && S.done) { try { res = withLabState(n, S, () => L.result()); } catch (e) {} }
       return `<button class="labm ${S && S.done ? 'done' : ''}" data-m="lab" data-v="${n}"><span class="labm-ic">${ic(L.icon)}</span><div><small>ЛР ${n}</small><b>${esc(labTitle(n))}</b><span>${esc(labStatus(n, S))}</span>${res ? `<em>${esc(res)}</em>` : ''}
         <i class="labm-bar"><i style="width:${Math.round(at / L.steps.length * 100)}%"></i></i></div></button>`; }).join('')}
@@ -88,22 +88,22 @@ document.addEventListener('click', e => {
 });
 // ответ выбран — следующий вопрос без ответа
 document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('[data-lw="admit"],[data-l2="admit"],[data-lw="cq"],[data-l2="cq"]'); if (!b || LAB === 3) return;
-  const L = curLab(), adm = (b.dataset.lw || b.dataset.l2) === 'admit', list = adm ? L.admit : L.cq;
+  const b = e.target.closest && e.target.closest('[data-lw="admit"],[data-l2="admit"],[data-le="admit"],[data-lw="cq"],[data-l2="cq"],[data-le="cq"]'); if (!b || LAB === 3) return;
+  const L = curLab(), adm = (b.dataset.lw || b.dataset.l2 || b.dataset.le) === 'admit', list = adm ? L.admit : L.cq;
   setTimeout(() => { const S = L.S(); if (!S) return; const ans = adm ? S.admit : S.cq, cur = adm ? AQ : CQ;
     let nx = list.findIndex((_, j) => j > cur && !ans[j]); if (nx < 0) nx = list.findIndex((_, j) => !ans[j]);
     if (nx >= 0 && nx !== cur) { if (adm) AQ = nx; else CQ = nx; render(); scrollTo(0, 0); } }, 260);
 });
 // попытки, время, переходы — как у ЛР 3
 document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('[data-lw],[data-l2]'); if (!b || LAB === 3) return;
-  const L = curLab(), S = L.S(); if (!S || !S.dx) return; const a = b.dataset.lw || b.dataset.l2;
+  const b = e.target.closest && e.target.closest('[data-lw],[data-l2],[data-le]'); if (!b || LAB === 3) return;
+  const L = curLab(), S = L.S(); if (!S || !S.dx) return; const a = b.dataset.lw || b.dataset.l2 || b.dataset.le;
   const k = { admitCheck: 'admitTries', pcheck: 'procTries', cqCheck: 'cqTries' }[a]; if (k) S.dx[k] = (S.dx[k] || 0) + 1;
   if (a === 'cqCheck') setTimeout(() => { if (S.done && !S.dx.finished) { S.dx.finished = new Date().toISOString(); L.save(); } }, 0);
   if (['admitCheck', 'cqCheck', 'next', 'go', 'restart'].includes(a)) setTimeout(() => scrollTo(0, 0), 0);
 }, true);
 // шапка отчёта ЛР 1 / ЛР 2 — обновить лист
 document.addEventListener('input', e => {
-  const t = e.target; if (LAB === 3 || !t.classList || !t.classList.contains('txt')) return; const k = t.dataset.k || t.dataset.k2; if (!['fio', 'group', 'date'].includes(k)) return;
+  const t = e.target; if (LAB === 3 || !t.classList || !t.classList.contains('txt')) return; const k = t.dataset.k || t.dataset.k2 || t.dataset.ke; if (!['fio', 'group', 'date'].includes(k)) return;
   clearTimeout(window.__rep2); window.__rep2 = setTimeout(() => { const html = curLab().report(), p = $('#m-paper .lwr'); if (p) { p.innerHTML = html; fitPaper(); } $('#printroot').innerHTML = html; }, 300);
 });

@@ -184,7 +184,7 @@ render();
 
 /* ---------- ЛР 1 и ЛР 2 ---------- */
 function tTabs() {
-  return `<div class="ttabs">${[1, 2, 3].map(n => { const k = TROWS.filter(r => (r.d.lab || 3) === n).length;
+  return `<div class="ttabs">${labNums().map(n => { const k = TROWS.filter(r => (r.d.lab || 3) === n).length;
     return `<button data-t="tlab" data-v="${n}" class="${TLAB === n ? 'on' : ''}">ЛР ${n}${k ? ` <small>${k}</small>` : ''}</button>`; }).join('')}</div>`;
 }
 function tRowLab(r) {

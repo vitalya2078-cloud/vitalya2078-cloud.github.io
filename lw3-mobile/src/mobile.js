@@ -52,10 +52,10 @@ function barStyle() { try { const p = plug('SystemBars'); if (p) p.setStyle({ st
 barStyle();
 const BG = { dark: null, light: null };
 const BG2 = { dark: null, light: null };
-function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; L2_BG = BG2[L3_THEME]; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); }
+function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; L2_BG = BG2[L3_THEME]; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); if ($('#le-cv')) leDraw(); }
 function loadBg(cfg, key, to = BG) { if (!cfg) return; const im = new Image(); im.onload = () => { to[key] = Object.assign(im, { edge: cfg.edge, top: cfg.top }); sceneTheme(); }; im.src = cfg.src; }
 loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); loadBg(LAB_BG2, 'dark', BG2); loadBg(LAB_BG2_LIGHT, 'light', BG2); sceneTheme();
-['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens', 'puck-steel', 'puck-brass', 'launcher', 'cross', 'cyl', 'pulley', 'hanger', 'plate', 'magnet'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); }; im.src = `img/parts/${k}.webp`; });
+['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens', 'puck-steel', 'puck-brass', 'launcher', 'cross', 'cyl', 'pulley', 'hanger', 'plate', 'magnet', 'psu', 'generator', 'multimeter', 'miniblock', 'magnetron', 'coil', 'helmholtz', 'compass'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); if ($('#le-cv')) leDraw(); }; im.src = `img/parts/${k}.webp`; });
 
 /* ---------- профили (несколько студентов на одном телефоне) ---------- */
 const PKEY = 'lw3m-profiles';
@@ -81,7 +81,7 @@ function openProfile(p, intro = false, lab = 0) {   // студент → выб
 }
 const firstOpen = (list, ans) => { const i = list.findIndex((_, j) => !(ans || {})[j]); return i < 0 ? 0 : i; };
 function profileStatus(p) {
-  const st = [1, 2, 3].map(n => [n, labState(n, p.id)]).filter(([, S]) => S && (S.max || S.done));
+  const st = labNums().map(n => [n, labState(n, p.id)]).filter(([, S]) => S && (S.max || S.done));
   return st.length ? st.map(([n, S]) => `ЛР ${n}: ${S.done ? 'защищена' : 'шаг ' + ((S.max || 0) + 1)}`).join(' · ') : 'работы не начаты';
 }
 
