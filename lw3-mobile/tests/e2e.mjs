@@ -24,6 +24,8 @@ await page.fill('#np-fio', 'Петрова Анна Сергеевна'); await 
 must(await page.locator('#sheet .slide').isVisible(), 'нет знакомства'); await shot(page, 'intro');
 for (let i = 0; i < 3; i++) await tap('[data-m="intro-next"]');
 must(await page.locator('#sheet').isHidden(), 'знакомство не закрылось');
+must(await E(() => SCREEN === 'labs'), 'после входа нет выбора работы'); await shot(page, 'labs');
+await tap('[data-m="lab"][data-v="3"]');
 
 // 1. допуск: вопросы по одному, после ответа — сам следующий
 const A = await E(() => L3_ADMIT.map(([, a]) => a)); await shot(page, 'admit');

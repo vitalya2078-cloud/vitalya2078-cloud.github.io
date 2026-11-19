@@ -1,4 +1,4 @@
-name: ЛР 3 — программы для Windows, Linux и Android
+name: Физпрактикум — программы для Windows, Linux и Android
 
 # Сначала проверка (модель, полное прохождение в браузере), затем сборка на Windows:
 # установщик NSIS (без прав администратора) и переносной .exe. Тег lw3-v* — ещё и релиз на GitHub.
@@ -56,6 +56,7 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4180/ >/dev/null && break; sleep 1; done
           mkdir -p shots
           SHOTS=shots node lw3-desktop/tests/e2e.mjs
+          SHOTS=shots node lw3-desktop/tests/e2e-labs.mjs
 
       - name: Full lab run in the Android interface (phone emulation)
         run: |
@@ -65,6 +66,7 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4190/ >/dev/null && break; sleep 1; done
           SHOTS=shots node lw3-mobile/tests/e2e.mjs
           node lw3-mobile/tests/native-start.mjs
+          SHOTS=shots node lw3-mobile/tests/e2e-labs.mjs
 
       - name: Screenshots
         if: always()
@@ -220,7 +222,7 @@ jobs:
         with:
           tag_name: lw3-v${{ steps.ver.outputs.v }}
           target_commitish: ${{ github.sha }}
-          name: Показатель адиабаты ${{ steps.ver.outputs.v }}
+          name: Физпрактикум ${{ steps.ver.outputs.v }}
           make_latest: true
           files: |
             out/*.exe
@@ -228,6 +230,8 @@ jobs:
             out/*.zip
             out/*.apk
           body: |
+            **Физпрактикум** — лабораторные работы по физике: ЛР 1 «Изучение закона сохранения импульса», ЛР 2 «Определение момента инерции абсолютно твёрдого тела», ЛР 3 «Определение показателя адиабаты». Названия файлов прежние — ссылки на скачивание не меняются.
+
             **Windows**
             **Pokazatel-adiabaty-setup.exe** — установщик (без прав администратора, ярлык в «Пуске»).
             **Pokazatel-adiabaty-portable.exe** — переносная версия: запускается без установки (нужен WebView2, в Windows 10/11 он обычно уже есть).

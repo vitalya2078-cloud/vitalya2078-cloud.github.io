@@ -61,7 +61,10 @@ function l2Run(S, plates, lcm) {                            // один пуск
 }
 
 /* ---------- сцена: маятник Обербека, колонна с линейкой, секундомер ---------- */
-let L2V = { s: 1, raf: 0, anim: null, tShow: null };        // s — доля пройденного пути (0 — груз вверху)
+let L2V = { s: 1, raf: 0, anim: null, tShow: null };
+let L2_BG = null;   // фон лаборатории (программа подставляет картинку по теме: Image с полями edge, top)
+const l2Spr = k => (typeof l3Spr === 'function' ? l3Spr(k) : null);
+const l2Tx = () => (typeof L3_THEME !== 'undefined' && L3_THEME === 'light') ? '#3B4656' : '#C9D4E3';        // s — доля пройденного пути (0 — груз вверху)
 function l2Draw() {
   const cv = $('#l2-cv'); if (!cv) return; const S = L2S;
   const box = cv.getBoundingClientRect(), cssW = box.width || 600, dpr = Math.min(2.5, devicePixelRatio || 1), k = cssW / 580, cssH = 452 * k;
@@ -69,8 +72,10 @@ function l2Draw() {
   const c = cv.getContext('2d'); c.setTransform(dpr * k, 0, 0, dpr * k, 0, 0);
   const st = l2St(), lcm = st === 'exp2' ? S.l2 : S.l1, r = l2R(S), h = S.h, sm = L2V.s * h;
   // фон — стена лаборатории
-  let g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, '#16263C'); g.addColorStop(1, '#0E1A2B'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
-  c.fillStyle = 'rgba(255,255,255,.025)'; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452);
+  let g; const bgi = L2_BG && L2_BG.complete && L2_BG.naturalWidth ? L2_BG : null;
+  if (bgi) { const hh = bgi.naturalHeight * 580 / bgi.naturalWidth, y0 = 432 - (bgi.edge ?? 1) * hh; c.fillStyle = bgi.top || '#0F2237'; c.fillRect(0, 0, 580, 452); c.drawImage(bgi, 0, y0, 580, hh); }
+  else { g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, '#16263C'); g.addColorStop(1, '#0E1A2B'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
+  c.fillStyle = 'rgba(255,255,255,.025)'; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452); }
   // основание с винтами
   g = c.createLinearGradient(0, 410, 0, 446); g.addColorStop(0, '#5B6B80'); g.addColorStop(1, '#2C3747'); c.fillStyle = g; c.fillRect(20, 412, 540, 30);
   c.fillStyle = '#1E2733'; [40, 540].forEach(x => { c.fillRect(x - 8, 442, 16, 6); });
@@ -81,12 +86,13 @@ function l2Draw() {
   c.fillStyle = '#F3E9C8'; c.fillRect(CX + 14, yAt(1.0), 30, L2.K * 1.0 + 1);
   c.strokeStyle = '#3A2F17'; c.fillStyle = '#3A2F17'; c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'middle';
   for (let cm = 0; cm <= 100; cm++) { const y = yAt(cm / 100); c.lineWidth = cm % 10 ? .6 : 1.1; c.beginPath(); c.moveTo(CX + 14, y); c.lineTo(CX + 14 + (cm % 10 ? (cm % 5 ? 5 : 8) : 12), y); c.stroke(); if (cm % 10 === 0) c.fillText(cm, CX + 28, y); }
-  c.fillStyle = '#C9D4E3'; c.font = '700 10px "Golos UI", system-ui'; c.fillText('h, см', CX + 12, top - 8);
+  c.fillStyle = l2Tx(); c.font = '700 10px "Golos UI", system-ui'; c.fillText('h, см', CX + 12, top - 8);
   // датчик (кольцо) внизу
   c.strokeStyle = '#E5484D'; c.lineWidth = 3; c.beginPath(); c.ellipse(CX - 30, Ys + 4, 14, 4, 0, 0, 7); c.stroke();
   // кронштейн и блок 4
-  c.fillStyle = '#7A889C'; c.fillRect(CX - 40, top - 4, 46, 8);
-  const BX = CX - 40, BY = top + 2, br = 9; g = c.createRadialGradient(BX - 3, BY - 3, 2, BX, BY, br); g.addColorStop(0, '#E9EEF4'); g.addColorStop(1, '#5E6B7E'); c.fillStyle = g; c.beginPath(); c.arc(BX, BY, br, 0, 7); c.fill();
+  const BX = CX - 40, BY = top + 2, br = 9, spP = l2Spr('pulley');
+  if (spP) { const w = 64, h = w * spP.naturalHeight / spP.naturalWidth; c.drawImage(spP, BX - w * .25, BY - h * .53, w, h); }   // блок на кронштейне — картинка
+  else { c.fillStyle = '#7A889C'; c.fillRect(CX - 40, top - 4, 46, 8); g = c.createRadialGradient(BX - 3, BY - 3, 2, BX, BY, br); g.addColorStop(0, '#E9EEF4'); g.addColorStop(1, '#5E6B7E'); c.fillStyle = g; c.beginPath(); c.arc(BX, BY, br, 0, 7); c.fill(); }
   // крестовина
   const OX = 170, OY = 175, SC = 520, rp = [14, 24], rv = rp[S.pul - 1], phi = Math.PI / 4 + sm / r;
   // нить: со шкива (верх) к блоку, вниз к грузу
@@ -96,7 +102,10 @@ function l2Draw() {
   // стойка крестовины
   g = c.createLinearGradient(OX - 8, 0, OX + 8, 0); g.addColorStop(0, '#6E7B8E'); g.addColorStop(.5, '#C7D0DC'); g.addColorStop(1, '#55627A'); c.fillStyle = g; c.fillRect(OX - 7, OY, 14, 412 - OY);
   c.save(); c.translate(OX, OY); c.rotate(phi);
-  for (let i = 0; i < 4; i++) {
+  const spX = l2Spr('cross'), spC = l2Spr('cyl');
+  if (spX) { c.save(); c.rotate(-Math.PI / 4); const w = 2 * (.25 * SC + 10) / 1.36; c.drawImage(spX, -w / 2, -w * spX.naturalHeight / spX.naturalWidth / 2, w, w * spX.naturalHeight / spX.naturalWidth); c.restore(); }   // крестовина — картинка
+  for (let i = 0; i < 4 && (spX && spC); i++) { c.save(); c.rotate(i * Math.PI / 2); const cxm = lcm / 100 * SC, cw = 30, chh = cw * spC.naturalHeight / spC.naturalWidth; c.drawImage(spC, cxm - cw / 2, -chh / 2 - 2, cw, chh); c.restore(); }
+  for (let i = 0; i < 4 && !(spX && spC); i++) {
     c.save(); c.rotate(i * Math.PI / 2);
     g = c.createLinearGradient(0, -3, 0, 3); g.addColorStop(0, '#E1E7EF'); g.addColorStop(1, '#6B788B'); c.fillStyle = g; c.fillRect(10, -3, .25 * SC, 6);
     for (let cm = 5; cm <= 25; cm += 5) { c.fillStyle = '#2B3442'; c.fillRect(cm / 100 * SC - .5, -3, 1, 6); }
@@ -108,17 +117,20 @@ function l2Draw() {
   c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(0, 0); c.lineTo(rp[1] - 3, 0); c.stroke();
   c.restore();
   c.fillStyle = '#2A3443'; c.beginPath(); c.arc(OX, OY, 4, 0, 7); c.fill();
-  c.fillStyle = '#C9D4E3'; c.font = '600 10px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText(`шкив ${S.pul} · l = ${lcm} см`, OX, OY + 150);
+  c.fillStyle = l2Tx(); c.font = '600 10px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText(`шкив ${S.pul} · l = ${lcm} см`, OX, OY + 150);
   // электромагнит
-  c.fillStyle = S.wound && !L2V.anim ? '#E5484D' : '#5B2A2E'; c.fillRect(OX - 22, OY - 60, 14, 10); c.fillStyle = '#C9D4E3'; c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('электромагнит', OX - 6, OY - 55);
+  const spM = l2Spr('magnet'); if (spM) { const w = 26, h = w * spM.naturalHeight / spM.naturalWidth; c.drawImage(spM, OX - 34, OY - 72, w, h); }
+  c.fillStyle = S.wound && !L2V.anim ? '#E5484D' : '#5B2A2E'; if (spM) { c.beginPath(); c.arc(OX - 21, OY - 75, 4, 0, 7); c.fill(); } else c.fillRect(OX - 22, OY - 60, 14, 10); c.fillStyle = l2Tx(); c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('электромагнит', OX - 6, OY - 55);
   // груз: подвес + накладные
   const gx = BX + br;
   c.fillStyle = '#2B3442'; c.fillRect(gx - 1, wTop - 6, 2, 6);
   const drawPl = (y, hgt, col) => { const gg = c.createLinearGradient(gx - 13, 0, gx + 13, 0); gg.addColorStop(0, col[0]); gg.addColorStop(.5, col[1]); gg.addColorStop(1, col[0]); c.fillStyle = gg; c.fillRect(gx - 13, y, 26, hgt); c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = .8; c.strokeRect(gx - 13, y, 26, hgt); };
-  for (let i = 0; i < plates; i++) drawPl(wTop + i * 5, 5, ['#6B4A12', '#E3B65A']);
-  drawPl(wTop + plates * 5, 26, ['#4B5568', '#B9C4D2']);
-  const wb = wTop + plates * 5 + 26;                         // нижний край груза
-  c.fillStyle = '#C9D4E3'; c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'right'; c.fillText(`m = ${f1(l2Mass(plates) * 1000, 0)} г`, gx - 17, wb - 10);
+  const wb = wTop + plates * 5 + 26, spH = l2Spr('hanger'), spPl = l2Spr('plate');
+  if (spH && spPl) { const hw = 22, top0 = wTop - 6; c.drawImage(spH, gx - hw / 2, top0, hw, wb - top0);   // подвес и накладные грузы — картинки
+    for (let i = 0; i < plates; i++) { c.save(); c.translate(gx, wb - 6 - (i + .5) * 5.4); c.rotate(Math.PI / 2); c.drawImage(spPl, -2.9, -13, 5.8, 26); c.restore(); } }
+  else { for (let i = 0; i < plates; i++) drawPl(wTop + i * 5, 5, ['#6B4A12', '#E3B65A']);
+  drawPl(wTop + plates * 5, 26, ['#4B5568', '#B9C4D2']); }                         // нижний край груза
+  c.fillStyle = l2Tx(); c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'right'; c.fillText(`m = ${f1(l2Mass(plates) * 1000, 0)} г`, gx - 17, wb - 10);
   // секундомер
   g = c.createLinearGradient(0, 340, 0, 400); g.addColorStop(0, '#2A3445'); g.addColorStop(1, '#1A2230'); c.fillStyle = g; c.fillRect(20, 344, 170, 58);
   c.fillStyle = '#0B1A10'; c.fillRect(30, 352, 112, 30); c.fillStyle = '#7CF29B'; c.font = '700 22px "Golos UI", ui-monospace, monospace'; c.textAlign = 'right'; c.textBaseline = 'middle';

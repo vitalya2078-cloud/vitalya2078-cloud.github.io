@@ -5,11 +5,11 @@
 const tauri = (cmd, args) => window.__TAURI__.core.invoke(cmd, args);
 
 /* ---------- тема установки: рисунок общий с сайтом, палитра и фон по теме ---------- */
-const BG = { dark: null, light: null };
-function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; if ($('#l3-cv')) l3Draw(); }
-function loadBg(cfg, key) { if (!cfg) return; const im = new Image(); im.onload = () => { BG[key] = Object.assign(im, { edge: cfg.edge, top: cfg.top }); sceneTheme(); }; im.src = cfg.src; }
-loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); sceneTheme();
-['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); };   /* бутылка — другой контур: молекулы заново */ im.src = `img/parts/${k}.webp`; });   // приборы-картинки
+const BG = { dark: null, light: null }, BG2 = { dark: null, light: null };   // BG2 — фон без формул для ЛР 1, 2…
+function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; L2_BG = BG2[L3_THEME]; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); }
+function loadBg(cfg, key, to = BG) { if (!cfg) return; const im = new Image(); im.onload = () => { to[key] = Object.assign(im, { edge: cfg.edge, top: cfg.top }); sceneTheme(); }; im.src = cfg.src; }
+loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); loadBg(LAB_BG2, 'dark', BG2); loadBg(LAB_BG2_LIGHT, 'light', BG2); sceneTheme();
+['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens', 'puck-steel', 'puck-brass', 'launcher', 'cross', 'cyl', 'pulley', 'hanger', 'plate', 'magnet'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); };   /* бутылка — другой контур: молекулы заново */ im.src = `img/parts/${k}.webp`; });   // приборы-картинки
 const _setTheme = setTheme;
 setTheme = function (t) { document.documentElement.dataset.theme = t; sceneTheme(); _setTheme(t); };
 

@@ -54,6 +54,7 @@ jobs:
           mkdir -p shots
           node lw3-mobile/tests/native-start.mjs
           SHOTS=shots node lw3-mobile/tests/e2e.mjs
+          SHOTS=shots node lw3-mobile/tests/e2e-labs.mjs
 
       - name: Android SDK platform
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null

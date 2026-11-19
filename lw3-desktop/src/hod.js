@@ -32,12 +32,6 @@ function hodNow() {
   if (st !== 'exp' || n >= L3.N) return 13;
   return ({ ready: n ? 3 : (!S.kOpen ? 2 : 3), pump: 4, wait1: 6, read1: 6, vent: 8, vented: 9, wait2: 9, read2: 10 })[ph] || 4;
 }
-/* ЛР 1 и ЛР 2: текущий пункт хода работы по шагу и записям */
-function hodNowLab() {
-  const L = curLab(), S = L.S(); if (!S) return 0; const st = L.steps[S.step][0];
-  if (LAB === 1) return ({ prep: 1, free: S.free.length ? 3 : 2, coll2: (S.ex[2].rows.length ? 5 : 4), coll3: 5, proc: S.procOk.px0 ? 8 : 6, concl: 9 })[st] || 0;
-  return ({ prep: 1, exp1: S.runs.length ? 3 : 2, exp2: S.ex2.length ? 5 : 4, proc: 6, concl: 8 })[st] || 0;
-}
 function hodRender() {
   let el = $('#hod');
   if (!el) { el = document.createElement('aside'); el.id = 'hod'; document.body.appendChild(el); }

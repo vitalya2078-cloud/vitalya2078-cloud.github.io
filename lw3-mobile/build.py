@@ -40,8 +40,11 @@ subprocess.run([sys.executable, os.path.join(DESK, 'build.py')], check=True, std
 
 app_js, lab_js, site_shell = rd(os.path.join(SITE, 'app.js')), rd(os.path.join(SITE, 'labwork.js')), rd(os.path.join(SITE, 'shell.html'))
 lw_list = re.search(r'^const LW_LIST = \[.*?^\];', lab_js, re.M | re.S).group(0)
-helpers = '\n'.join([take(app_js, n) for n in ('$', 'esc', 'f1')] + [lw_list] + [take(lab_js, n) for n in ('lwNum', 'lwGauss', 'lwShuf', 'lwMsg')])
+# ЛР 1 и ЛР 2 — модули сайта целиком (там же LW_LIST, lwNum, lwGauss, lwShuf, lwMsg, LAB_DEPT)
+helpers = '\n'.join([take(app_js, n) for n in ('$', 'esc', 'f1')] + [lab_js, rd(os.path.join(SITE, 'labwork2.js'))])
 report_css = '\n'.join(l for l in site_shell.split('\n') if re.match(r'\.lw(p|r)\b', l))
+LAB_CSS_RE = r'(\.lw-(pucks|row|ta|hint|screw|scroll|tbl|res|aim|arrows|ctl|ctl-row|who|stage|cond|intro)\b|\.lwi\b|\.lp-btn\b|\.seg\b|\.l2-cal\b|#lw-cv\b|#l2-cv\b)'
+report_css += '\n' + '\n'.join(l for l in site_shell.split('\n') if re.match(LAB_CSS_RE, l))
 desk_shell = rd(os.path.join(DESK, 'src', 'shell.html'))
 fonts = '\n'.join(l for l in desk_shell.split('\n') if l.startswith('@font-face'))
 hod = re.search(r'^const HOD = \[.*?^\];', rd(os.path.join(DESK, 'src', 'hod.js')), re.M | re.S).group(0)
@@ -65,9 +68,11 @@ cap_js = re.sub(r'//# sourceMappingURL=.*', '', rd(cap_js_path))
 js = '\n'.join([cap_js, 'const APP_VER = %s;' % json.dumps(version),
                 'const LAB_BG = %s;' % json.dumps(bg_cfg('lab-bg.webp', 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg-light.webp', 'lab-bg-light.json'), ensure_ascii=False),
+                'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
+                'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False),
                 helpers, rd(os.path.join(SITE, 'icons.js')), rd(os.path.join(SITE, 'lw3-core.js')), hod] +
-               [rd(os.path.join(DESK, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js')] +
-               [rd(os.path.join(D, 'src', 'mobile.js'))])
+               [rd(os.path.join(DESK, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'labs-core.js')] +
+               [rd(os.path.join(D, 'src', f)) for f in ('mobile.js', 'mlabs.js')])
 html = (rd(os.path.join(D, 'src', 'mobile.html')).replace('/*{{FONTS}}*/', fonts).replace('/*{{REPORT_CSS}}*/', report_css)
         .replace('{{JS}}', js.replace('</script', '<\\/script')))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'

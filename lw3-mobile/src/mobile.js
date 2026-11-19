@@ -40,6 +40,8 @@ function toast(html, kind = '') {
 function addXP() { toast(`${ic('award')} Работа защищена! Отправь файл преподавателю на шаге «Отчёт».`); }
 function render() {
   if (SCREEN === 'home' || !PROFILE) return vHome();
+  if (SCREEN === 'labs') return mLabs();
+  if (LAB !== 3) return mWorkLab();
   vWork();
 }
 
@@ -49,10 +51,11 @@ function setTheme(t) { document.documentElement.dataset.theme = t; try { localSt
 function barStyle() { try { const p = plug('SystemBars'); if (p) p.setStyle({ style: isLight() ? 'LIGHT' : 'DARK' }).catch(() => {}); } catch (e) {} }   // значки строки состояния: тёмные на светлой теме
 barStyle();
 const BG = { dark: null, light: null };
-function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; if ($('#l3-cv')) l3Draw(); }
-function loadBg(cfg, key) { if (!cfg) return; const im = new Image(); im.onload = () => { BG[key] = Object.assign(im, { edge: cfg.edge, top: cfg.top }); sceneTheme(); }; im.src = cfg.src; }
-loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); sceneTheme();
-['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); }; im.src = `img/parts/${k}.webp`; });
+const BG2 = { dark: null, light: null };
+function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; L2_BG = BG2[L3_THEME]; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); }
+function loadBg(cfg, key, to = BG) { if (!cfg) return; const im = new Image(); im.onload = () => { to[key] = Object.assign(im, { edge: cfg.edge, top: cfg.top }); sceneTheme(); }; im.src = cfg.src; }
+loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); loadBg(LAB_BG2, 'dark', BG2); loadBg(LAB_BG2_LIGHT, 'light', BG2); sceneTheme();
+['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens', 'puck-steel', 'puck-brass', 'launcher', 'cross', 'cyl', 'pulley', 'hanger', 'plate', 'magnet'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); }; im.src = `img/parts/${k}.webp`; });
 
 /* ---------- профили (несколько студентов на одном телефоне) ---------- */
 const PKEY = 'lw3m-profiles';
@@ -71,18 +74,15 @@ function ensureMeta(S) {
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
   S.dx.device = 'android';
 }
-function openProfile(p, intro = false) {
-  PROFILE = p; L3_KEY = workKey(p.id); L3S = null;
-  const S = l3Load(); ensureMeta(S); l3Save(); l3Reset();
-  AQ = firstOpen(L3_ADMIT, S.admit); CQ = firstOpen(L3_CQ, S.cq); CTAB = S.cqOk ? 'cq' : 'concl';
-  SCREEN = 'work'; render(); scrollTo(0, 0);
+function openProfile(p, intro = false, lab = 0) {   // студент → выбор работы (или сразу работа lab)
+  PROFILE = p; L3S = null; LWS = null; L2S = null;
+  if (lab) mOpenLab(lab); else { SCREEN = 'labs'; render(); scrollTo(0, 0); }
   if (intro) showIntro(0);
 }
 const firstOpen = (list, ans) => { const i = list.findIndex((_, j) => !(ans || {})[j]); return i < 0 ? 0 : i; };
 function profileStatus(p) {
-  const S = store.get(workKey(p.id), null); if (!S) return 'не начата';
-  if (S.done) return 'защищена';
-  return 'этап: ' + L3.steps[Math.min(S.max || 0, L3.steps.length - 1)][1].toLowerCase();
+  const st = [1, 2, 3].map(n => [n, labState(n, p.id)]).filter(([, S]) => S && (S.max || S.done));
+  return st.length ? st.map(([n, S]) => `ЛР ${n}: ${S.done ? 'защищена' : 'шаг ' + ((S.max || 0) + 1)}`).join(' · ') : 'работы не начаты';
 }
 
 /* ---------- вход ---------- */
@@ -90,7 +90,7 @@ function vHome() {
   ui.bar.innerHTML = ''; dock('');
   const ps = profiles();
   ui.main.innerHTML = `<div class="login">
-    <div class="brand"><span class="logo">γ</span><h1>Показатель адиабаты</h1><p>Метод Клемана — Дезорма</p></div>
+    <div class="brand"><span class="logo">γ</span><h1>Физпрактикум</h1><p>Лабораторные работы по физике</p></div>
     <div class="card">
       <label class="field">ФИО<input class="inp" id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off" autocapitalize="words" enterkeyhint="next"></label>
       <label class="field">Класс / группа<input class="inp" id="np-group" placeholder="11 А" autocomplete="off" enterkeyhint="go"></label>
@@ -124,11 +124,11 @@ function vWork() {
 
 /* --- вопросы по одному (допуск и защита) --- */
 const LT = 'АБВГ';
-function qCard(list, ans, checked, i, act, seed, total) {
+function qCard(list, ans, checked, i, act, seed, total, attr = 'l3') {
   const [q, a, x] = list[i], ch = ans[i], opts = lwShuf(i + seed, [a, ...x]);
   return `<section class="card"><div class="qn">Вопрос ${i + 1} из ${total}<span class="dots">${list.map((_, j) => `<i class="${j === i ? 'cur' : checked ? (ans[j] === list[j][1] ? 'ok' : 'bad') : ans[j] ? 'a' : ''}"></i>`).join('')}</span></div>
     <p class="q">${esc(q)}</p>
-    <div class="opts">${opts.map((o, j) => `<button class="opt ${ch === o ? (checked ? (o === a ? 'ok' : 'bad') : 'pick') : ''}" data-l3="${act}" data-q="${i}" data-v="${esc(o)}"><span class="lt">${LT[j]}</span><span>${esc(o)}</span></button>`).join('')}</div></section>`;
+    <div class="opts">${opts.map((o, j) => `<button class="opt ${ch === o ? (checked ? (o === a ? 'ok' : 'bad') : 'pick') : ''}" data-${attr}="${act}" data-q="${i}" data-v="${esc(o)}"><span class="lt">${LT[j]}</span><span>${esc(o)}</span></button>`).join('')}</div></section>`;
 }
 function qResult(list, ans, ok, kind) {
   const n = list.filter(([, a], i) => ans[i] === a).length;
@@ -298,6 +298,7 @@ function showTheory() {
     ${TTAB === 'equip' ? `<div style="background:#fff; border-radius:16px; padding:8px; margin-bottom:12px">${l3SchemeSvg()}</div>` : ''}<div class="txt">${L3_TEXT[TTAB]}</div>`);
 }
 function hodNow() {
+  if (LAB !== 3) return hodNowLab();
   if (!L3S) return 0;
   const S = L3S, st = l3St(), ph = L3V.phase, n = S.runs.length;
   if (st === 'admit') return 0;
@@ -308,7 +309,7 @@ function hodNow() {
 function showHod() {
   const cur = hodNow();
   sheet(`${ic('clipboard-list')} Ход работы`, `<p class="mute small" style="margin:0 0 10px">Раздел 4 методички. Текущий пункт подсвечен.</p>
-    <ol class="hod">${HOD.map((t, i) => `<li class="${i + 1 === cur ? 'cur' : ''}"><i>${i + 1}</i><span>${t}</span></li>`).join('')}</ol>`);
+    <ol class="hod">${(LAB === 3 ? HOD : curLab().hod).map((t, i) => `<li class="${i + 1 === cur ? 'cur' : ''}"><i>${i + 1}</i><span>${t}</span></li>`).join('')}</ol>`);
   const c = $('.hod li.cur'); if (c) c.scrollIntoView({ block: 'center' });
 }
 function showMenu() {
@@ -317,12 +318,12 @@ function showMenu() {
     ${it('hod', 'clipboard-list', 'Ход работы', 'порядок по методичке')}${it('theory', 'book-open', 'Теория', 'формулы, установка, безопасность')}
     ${it('send', 'file-text', 'Отправить файл работы', 'преподавателю — в мессенджер, почту, на диск')}
     ${it('theme', 'sparkles', isLight() ? 'Тёмная тема' : 'Светлая тема', '')}${it('intro', 'captions', 'Как проходит работа', 'короткое знакомство')}
-    ${it('home', 'house', 'К списку студентов', 'работа сохранится')}</div>`);
+    ${it('labs', 'layers', 'К списку работ', 'работа сохранится')}${it('home', 'house', 'Сменить студента', '')}</div>`);
 }
 function openSummary() {
-  const S = l3Load(); if (!S || (S.runs || []).length !== L3.N) return;
-  sheet(`${ic('graduation-cap')} Что рассказать на защите`, l3SummaryHtml(S), `<button class="btn" data-m="sclose">${ic('file-text')} К отчёту</button>`);
-  S.dx = S.dx || {}; if (!S.dx.sumSeen) { S.dx.sumSeen = new Date().toISOString(); l3Save(); }
+  const L = curLab(), S = L.load(); if (!S || (LAB === 3 ? (S.runs || []).length !== L3.N : !S.cqOk)) return;
+  sheet(`${ic('graduation-cap')} Что рассказать на защите`, labSummaryHtml(LAB, S), `<button class="btn" data-m="sclose">${ic('file-text')} К отчёту</button>`);
+  S.dx = S.dx || {}; if (!S.dx.sumSeen) { S.dx.sumSeen = new Date().toISOString(); L.save(); }
 }
 const INTRO = [
   { big: '🧪', t: 'Как проходит работа', p: 'Шесть шагов по порядку. Следующий открывается, когда выполнен предыдущий. Всё сохраняется само — можно закрыть приложение и продолжить потом.',
@@ -339,7 +340,7 @@ function showIntro(i) {
 }
 
 /* ---------- файл работы, PDF ---------- */
-const workFileName = S => `Адиабата_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
+const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
 async function shareText(name, text, title) {
   const FS = plug('Filesystem'), SH = plug('Share');
   if (FS && SH) {
@@ -353,14 +354,14 @@ async function shareText(name, text, title) {
   toast(`${ic('circle-check')} Файл «${esc(name)}» сохранён в загрузки`); return true;
 }
 async function sendWork() {
-  const S = l3Load(); ensureMeta(S);
-  const ok = await shareText(workFileName(S), packResult(), 'Работа «Показатель адиабаты»');
-  if (ok && S.done) { S.dx.submitted = new Date().toISOString(); l3Save(); if (l3St() === 'report') render(); }
+  const L = curLab(), S = L.load(); ensureMeta(S);
+  const ok = await shareText(workFileName(S), packResult(), `Работа: ЛР ${LAB} — ${labTitle(LAB)}`);
+  if (ok && S.done) { S.dx.submitted = new Date().toISOString(); L.save(); if (L.steps[S.step][0] === 'report') render(); }
 }
 async function printReport() {
-  const S = l3Load(); $('#printroot').innerHTML = l3ReportHtml();
+  const L = curLab(), S = L.load(); $('#printroot').innerHTML = L.report();
   const PR = plug('Printer');
-  if (PR) { try { await PR.print({ name: `Отчёт_адиабата_${safeName(S.fio) || 'студент'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
+  if (PR) { try { await PR.print({ name: `Отчёт_ЛР${LAB}_${safeName(S.fio) || 'студент'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
   window.print();
 }
 const readFile = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(r.error); r.readAsText(f, 'utf-8'); });
@@ -375,7 +376,7 @@ function continueFrom(text) {
   let p = profiles().find(x => x.fio.toLowerCase() === fio.toLowerCase() && (x.group || '') === group);
   if (p) { const cur = store.get(workKey(p.id), null); if (cur && (cur.max || 0) > (S.max || 0) && !confirm(`У «${fio}» на этом телефоне работа продвинута дальше. Заменить её работой из файла?`)) return; }
   else p = addProfile(fio, group);
-  store.set(workKey(p.id), S); toast(`Работа «${esc(fio)}» загружена из файла`); openProfile(p);
+  store.set(LABS[r.d.lab || 3].key(p.id), S); toast(`Работа «${esc(fio)}» загружена из файла`); openProfile(p, false, r.d.lab || 3);
 }
 
 /* ---------- действия оболочки (data-m) ---------- */
@@ -404,7 +405,7 @@ document.addEventListener('click', e => {
     case 'theme': closeSheet(); setTheme(isLight() ? 'dark' : 'light'); break;
     case 'intro': showIntro(0); break;
     case 'intro-next': if (INTRO_AT < INTRO.length - 1) showIntro(INTRO_AT + 1); else closeSheet(); break;
-    case 'sclose': closeSheet(); if (SCREEN === 'work' && L3S && l3St() === 'report') $('#printroot').innerHTML = l3ReportHtml(); break;
+    case 'sclose': closeSheet(); if (SCREEN === 'work') { const L = curLab(), S = L.S(); if (S && L.steps[S.step][0] === 'report') $('#printroot').innerHTML = L.report(); } break;
   }
 });
 // ответ на вопрос — сам переходит к следующему без ответа
@@ -447,7 +448,8 @@ try {
   const APP = plug('App');
   if (APP) APP.addListener('backButton', () => {
     if (!$('#sheet').hidden) return closeSheet();
-    if (SCREEN === 'work') { PROFILE = null; L3S = null; SCREEN = 'home'; render(); return; }
+    if (SCREEN === 'work') { SCREEN = 'labs'; render(); return; }
+    if (SCREEN === 'labs') { PROFILE = null; L3S = null; SCREEN = 'home'; render(); return; }
     APP.exitApp();
   }).catch(() => {});
 } catch (e) {}

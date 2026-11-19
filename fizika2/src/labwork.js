@@ -105,13 +105,17 @@ const lwInField = p => p && p[0] > LW1.R && p[0] < LW1.field.w - LW1.R && p[1] >
 
 /* ---------- рисование поля ---------- */
 let LWV = { anim: null, raf: 0, lens: null, pos: null };
+/* картинки деталей (программа подкладывает их в L3_SPR) и светлая тема программы; на сайте — рисунок кодом */
+const lwSpr = k => (typeof l3Spr === 'function' ? l3Spr(k) : null);
+const lwLight = () => typeof L3_THEME !== 'undefined' && L3_THEME === 'light';
+const lwTx = () => lwLight() ? '#3B4656' : '#C9D4E3';
 function lwDraw() {
   const cv = $('#lw-cv'); if (!cv) return;
   const box = cv.getBoundingClientRect(), cssW = box.width || 600, dpr = Math.min(2.5, devicePixelRatio || 1);
   const VW = 580, VH = 452, k = cssW / VW, cssH = VH * k;
   if (cv.width !== Math.round(cssW * dpr)) { cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); }
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
-  c.fillStyle = '#0B1020'; c.fillRect(0, 0, cssW, cssH);
+  c.fillStyle = lwLight() ? '#E2E7EE' : '#0B1020'; c.fillRect(0, 0, cssW, cssH);
   const map = (x, y) => [(x + 60) * k, (422 - y) * k];
   lwScene(c, map, k, false);
   // лупа: увеличенный фрагмент поля в углу
@@ -152,9 +156,9 @@ function lwScene(c, map, s, fine) {
   c.font = `600 ${fine ? 12 : Math.max(9, Math.min(12.5, s * 9))}px "Golos UI", system-ui`;
   if (fine) { c.fillStyle = 'rgba(20,70,90,.9)'; c.textBaseline = 'top'; c.textAlign = 'left';
     for (let x = Math.ceil(lx0 / 10) * 10; x <= lx1; x += 10) for (let y = Math.ceil(ly0 / 10) * 10; y <= ly1; y += 10) { const [a, b] = P(x, y); c.fillText(x + '; ' + y, a + 3, b + 2); } }
-  else { c.fillStyle = '#C9D4E3'; c.textAlign = 'center'; c.textBaseline = 'top';
+  else { c.fillStyle = lwTx(); c.textAlign = 'center'; c.textBaseline = 'top';
     for (let x = 0; x < F.w; x += 50) { const [a, b] = P(x, -10); c.fillText(x, a, b + 4); }
-    { const [a, b] = P(F.w, -10); c.fillStyle = '#F2B544'; c.fillText('x, мм', a - 6, b + 4); c.fillStyle = '#C9D4E3'; }
+    { const [a, b] = P(F.w, -10); c.fillStyle = '#F2B544'; c.fillText('x, мм', a - 6, b + 4); c.fillStyle = lwTx(); }
     c.textAlign = 'right'; c.textBaseline = 'middle'; for (let y = 0; y < F.h; y += 50) { const [a, b] = P(-10, y); c.fillText(y, a - 4, b); }
     { const [a, b] = P(-10, F.h); c.fillStyle = '#F2B544'; c.fillText('y, мм', a - 3, b); } }
   // закрашенные (заштрихованные) круги для тела 2
@@ -167,27 +171,31 @@ function lwScene(c, map, s, fine) {
   const pos = LWV.pos || lwRestPos(), y0 = S.y01, back = S.x01 - R;
   const steel = (x1, y1, x2, y2, vertical) => { const [x, y, w, h] = rect(x1, y1, x2, y2), g = vertical ? c.createLinearGradient(x, y, x + w, y) : c.createLinearGradient(x, y, x, y + h);
     g.addColorStop(0, '#C9D3DF'); g.addColorStop(.45, '#8C99AA'); g.addColorStop(1, '#4E5B6D'); c.fillStyle = g; c.fillRect(x, y, w, h); c.strokeStyle = 'rgba(20,28,40,.6)'; c.lineWidth = Math.max(.6, s * .2); c.strokeRect(x, y, w, h); };
-  steel(-58, y0 - 26, -14, y0 + 26);                                   // основание механизма
-  steel(-58, y0 + R + 1, back + 6, y0 + R + 4); steel(-58, y0 - R - 4, back + 6, y0 - R - 1); // направляющие
-  { const [x, y, w, h] = rect(-43, y0 - 9, -18, y0 + 9), g = c.createLinearGradient(x, y, x, y + h);             // корпус
+  const spL = lwSpr('launcher');
+  if (spL) { const [lx, ty] = P(-64, 0), [rx] = P(back + 8, 0), w = rx - lx, h = w * spL.naturalHeight / spL.naturalWidth, [, yc] = P(0, y0); c.drawImage(spL, lx, yc - h / 2, w, h); }   // механизм — картинка
+  else { steel(-58, y0 - 26, -14, y0 + 26);                                   // основание механизма
+  steel(-58, y0 + R + 1, back + 6, y0 + R + 4); steel(-58, y0 - R - 4, back + 6, y0 - R - 1); } // направляющие
+  if (!spL) { const [x, y, w, h] = rect(-43, y0 - 9, -18, y0 + 9), g = c.createLinearGradient(x, y, x, y + h);             // корпус
     g.addColorStop(0, '#2B3445'); g.addColorStop(.5, '#46536A'); g.addColorStop(1, '#232B39'); c.fillStyle = g; c.fillRect(x, y, w, h);
     c.strokeStyle = 'rgba(220,230,240,.55)'; c.lineWidth = Math.max(.8, s * .35); c.beginPath();                    // витки пружины в прорези
     const sp = LWV.anim && LWV.anim.t < .06 ? 1.25 : 1; for (let k = 0; k <= 12; k++) { const [a] = P(-41 + k * 1.8 * sp, 0); const [, t] = P(0, y0 + 5), [, bt] = P(0, y0 - 5); c.moveTo(a, t); c.lineTo(a + 1.3 * s, bt); } c.stroke(); }
   const strike = LWV.anim && LWV.anim.t < .06 ? 3 : 0;
   steel(-18, y0 - 2.5, back - 1 + strike, y0 + 2.5);                   // боёк
   { const [a, b] = P(-50, y0), r = 6 * s, g = c.createRadialGradient(a - r * .3, b - r * .3, r * .2, a, b, r);       // винт с накаткой
-    g.addColorStop(0, '#F3D17A'); g.addColorStop(1, '#8E6A1E'); c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill();
-    c.strokeStyle = 'rgba(60,40,10,.6)'; c.lineWidth = Math.max(.6, s * .25); for (let k = 0; k < 18; k++) { const q = k / 18 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .78 * Math.cos(q), b + r * .78 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
-    if (!fine) { c.fillStyle = '#C9D4E3'; c.font = `700 ${Math.max(9, 4.6 * s)}px "Golos UI", system-ui`; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('винт ' + S.screw, P(-58, 0)[0], P(0, y0 - 26)[1] + 3); } }
+    g.addColorStop(0, '#F3D17A'); g.addColorStop(1, '#8E6A1E'); c.fillStyle = g; if (!spL) { c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); }
+    c.strokeStyle = 'rgba(60,40,10,.6)'; c.lineWidth = Math.max(.6, s * .25); if (!spL) for (let k = 0; k < 18; k++) { const q = k / 18 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .78 * Math.cos(q), b + r * .78 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
+    if (!fine) { c.fillStyle = lwTx(); c.font = `700 ${Math.max(9, 4.6 * s)}px "Golos UI", system-ui`; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('винт ' + S.screw, P(-58, 0)[0], P(0, y0 - 26)[1] + 3); } }
   // шайбы
   const puck = (p, kind) => { if (!p) return; const [a, b] = P(p[0], p[1]), r = R * s, m = lwPuck(S['p' + kind]);
     c.save(); c.shadowColor = 'rgba(10,20,30,.45)'; c.shadowBlur = 4 * s; c.shadowOffsetX = 1.2 * s; c.shadowOffsetY = 1.6 * s;
     const g = c.createRadialGradient(a - r * .35, b - r * .4, r * .1, a, b, r);
     if (kind === 1) { g.addColorStop(0, '#F4F7FB'); g.addColorStop(.55, '#AEB9C8'); g.addColorStop(1, '#5D6A7D'); } else if (kind === 3) { g.addColorStop(0, '#FFD9C7'); g.addColorStop(.55, '#C46A45'); g.addColorStop(1, '#6E2E17'); } else { g.addColorStop(0, '#FFF0C2'); g.addColorStop(.55, '#D6A54A'); g.addColorStop(1, '#7E5A1A'); }
-    c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); c.restore();
+    const sp = lwSpr(kind === 1 ? 'puck-steel' : 'puck-brass');
+    if (sp) { c.drawImage(sp, a - r, b - r, 2 * r, 2 * r); c.restore(); if (kind === 3) { c.fillStyle = 'rgba(196,106,69,.28)'; c.beginPath(); c.arc(a, b, r * .93, 0, 7); c.fill(); } }   // шайба — картинка; тело 3 — медный оттенок
+    else { c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); c.restore();
     c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.55)' : 'rgba(90,60,15,.6)'; c.lineWidth = Math.max(.5, s * .2);             // накатка по ободу
     for (let k = 0; k < 48; k++) { const q = k / 48 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .9 * Math.cos(q), b + r * .9 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
-    c.beginPath(); c.arc(a, b, r * .62, 0, 7); c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.35)' : 'rgba(90,60,15,.35)'; c.lineWidth = Math.max(.6, s * .3); c.stroke();
+    c.beginPath(); c.arc(a, b, r * .62, 0, 7); c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.35)' : 'rgba(90,60,15,.35)'; c.lineWidth = Math.max(.6, s * .3); c.stroke(); }
     c.fillStyle = kind === 1 ? '#2D3848' : '#4E3608'; c.textAlign = 'center'; c.textBaseline = 'middle';                    // гравировка
     c.font = `800 ${r * .55}px "Golos UI", system-ui`; c.fillText(kind, a, b - r * .12);
     if (m) { c.font = `600 ${r * .24}px "Golos UI", system-ui`; c.fillText(f1(m.m * 1000, 1) + ' г', a, b + r * .38); }

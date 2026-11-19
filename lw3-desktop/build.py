@@ -56,8 +56,10 @@ def bg_cfg(f, meta):
     m = os.path.join(D, 'assets', meta)
     return dict(json.loads(rd(m)) if os.path.exists(m) else {}, src='img/' + f) if f else None
 js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
-                'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs.js', 'teacher.js')])
+                'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
+                'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
+                'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, core] +
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs.js', 'teacher.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 
@@ -69,7 +71,7 @@ for w in ('400', '600', '700'):
 for f in os.listdir(os.path.join(SITE, 'fonts')):
     if f.endswith('.woff2') or f.startswith('LICENSE'):
         shutil.copy2(os.path.join(SITE, 'fonts', f), os.path.join(DIST, 'fonts', f))
-for f in (bg, bgl):
+for f in (bg, bgl, 'lab-bg2.webp', 'lab-bg2-light.webp'):
     if f:
         os.makedirs(os.path.join(DIST, 'img'), exist_ok=True)
         shutil.copy2(os.path.join(D, 'assets', f), os.path.join(DIST, 'img', f))

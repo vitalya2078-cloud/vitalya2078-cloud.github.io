@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 139;
+  var embedded = 140;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1239,7 +1239,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 139;
+const F2_BUILD = 140;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -7340,13 +7340,17 @@ const lwInField = p => p && p[0] > LW1.R && p[0] < LW1.field.w - LW1.R && p[1] >
 
 /* ---------- рисование поля ---------- */
 let LWV = { anim: null, raf: 0, lens: null, pos: null };
+/* картинки деталей (программа подкладывает их в L3_SPR) и светлая тема программы; на сайте — рисунок кодом */
+const lwSpr = k => (typeof l3Spr === 'function' ? l3Spr(k) : null);
+const lwLight = () => typeof L3_THEME !== 'undefined' && L3_THEME === 'light';
+const lwTx = () => lwLight() ? '#3B4656' : '#C9D4E3';
 function lwDraw() {
   const cv = $('#lw-cv'); if (!cv) return;
   const box = cv.getBoundingClientRect(), cssW = box.width || 600, dpr = Math.min(2.5, devicePixelRatio || 1);
   const VW = 580, VH = 452, k = cssW / VW, cssH = VH * k;
   if (cv.width !== Math.round(cssW * dpr)) { cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); }
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
-  c.fillStyle = '#0B1020'; c.fillRect(0, 0, cssW, cssH);
+  c.fillStyle = lwLight() ? '#E2E7EE' : '#0B1020'; c.fillRect(0, 0, cssW, cssH);
   const map = (x, y) => [(x + 60) * k, (422 - y) * k];
   lwScene(c, map, k, false);
   // лупа: увеличенный фрагмент поля в углу
@@ -7387,9 +7391,9 @@ function lwScene(c, map, s, fine) {
   c.font = `600 ${fine ? 12 : Math.max(9, Math.min(12.5, s * 9))}px "Golos UI", system-ui`;
   if (fine) { c.fillStyle = 'rgba(20,70,90,.9)'; c.textBaseline = 'top'; c.textAlign = 'left';
     for (let x = Math.ceil(lx0 / 10) * 10; x <= lx1; x += 10) for (let y = Math.ceil(ly0 / 10) * 10; y <= ly1; y += 10) { const [a, b] = P(x, y); c.fillText(x + '; ' + y, a + 3, b + 2); } }
-  else { c.fillStyle = '#C9D4E3'; c.textAlign = 'center'; c.textBaseline = 'top';
+  else { c.fillStyle = lwTx(); c.textAlign = 'center'; c.textBaseline = 'top';
     for (let x = 0; x < F.w; x += 50) { const [a, b] = P(x, -10); c.fillText(x, a, b + 4); }
-    { const [a, b] = P(F.w, -10); c.fillStyle = '#F2B544'; c.fillText('x, мм', a - 6, b + 4); c.fillStyle = '#C9D4E3'; }
+    { const [a, b] = P(F.w, -10); c.fillStyle = '#F2B544'; c.fillText('x, мм', a - 6, b + 4); c.fillStyle = lwTx(); }
     c.textAlign = 'right'; c.textBaseline = 'middle'; for (let y = 0; y < F.h; y += 50) { const [a, b] = P(-10, y); c.fillText(y, a - 4, b); }
     { const [a, b] = P(-10, F.h); c.fillStyle = '#F2B544'; c.fillText('y, мм', a - 3, b); } }
   // закрашенные (заштрихованные) круги для тела 2
@@ -7402,27 +7406,31 @@ function lwScene(c, map, s, fine) {
   const pos = LWV.pos || lwRestPos(), y0 = S.y01, back = S.x01 - R;
   const steel = (x1, y1, x2, y2, vertical) => { const [x, y, w, h] = rect(x1, y1, x2, y2), g = vertical ? c.createLinearGradient(x, y, x + w, y) : c.createLinearGradient(x, y, x, y + h);
     g.addColorStop(0, '#C9D3DF'); g.addColorStop(.45, '#8C99AA'); g.addColorStop(1, '#4E5B6D'); c.fillStyle = g; c.fillRect(x, y, w, h); c.strokeStyle = 'rgba(20,28,40,.6)'; c.lineWidth = Math.max(.6, s * .2); c.strokeRect(x, y, w, h); };
-  steel(-58, y0 - 26, -14, y0 + 26);                                   // основание механизма
-  steel(-58, y0 + R + 1, back + 6, y0 + R + 4); steel(-58, y0 - R - 4, back + 6, y0 - R - 1); // направляющие
-  { const [x, y, w, h] = rect(-43, y0 - 9, -18, y0 + 9), g = c.createLinearGradient(x, y, x, y + h);             // корпус
+  const spL = lwSpr('launcher');
+  if (spL) { const [lx, ty] = P(-64, 0), [rx] = P(back + 8, 0), w = rx - lx, h = w * spL.naturalHeight / spL.naturalWidth, [, yc] = P(0, y0); c.drawImage(spL, lx, yc - h / 2, w, h); }   // механизм — картинка
+  else { steel(-58, y0 - 26, -14, y0 + 26);                                   // основание механизма
+  steel(-58, y0 + R + 1, back + 6, y0 + R + 4); steel(-58, y0 - R - 4, back + 6, y0 - R - 1); } // направляющие
+  if (!spL) { const [x, y, w, h] = rect(-43, y0 - 9, -18, y0 + 9), g = c.createLinearGradient(x, y, x, y + h);             // корпус
     g.addColorStop(0, '#2B3445'); g.addColorStop(.5, '#46536A'); g.addColorStop(1, '#232B39'); c.fillStyle = g; c.fillRect(x, y, w, h);
     c.strokeStyle = 'rgba(220,230,240,.55)'; c.lineWidth = Math.max(.8, s * .35); c.beginPath();                    // витки пружины в прорези
     const sp = LWV.anim && LWV.anim.t < .06 ? 1.25 : 1; for (let k = 0; k <= 12; k++) { const [a] = P(-41 + k * 1.8 * sp, 0); const [, t] = P(0, y0 + 5), [, bt] = P(0, y0 - 5); c.moveTo(a, t); c.lineTo(a + 1.3 * s, bt); } c.stroke(); }
   const strike = LWV.anim && LWV.anim.t < .06 ? 3 : 0;
   steel(-18, y0 - 2.5, back - 1 + strike, y0 + 2.5);                   // боёк
   { const [a, b] = P(-50, y0), r = 6 * s, g = c.createRadialGradient(a - r * .3, b - r * .3, r * .2, a, b, r);       // винт с накаткой
-    g.addColorStop(0, '#F3D17A'); g.addColorStop(1, '#8E6A1E'); c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill();
-    c.strokeStyle = 'rgba(60,40,10,.6)'; c.lineWidth = Math.max(.6, s * .25); for (let k = 0; k < 18; k++) { const q = k / 18 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .78 * Math.cos(q), b + r * .78 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
-    if (!fine) { c.fillStyle = '#C9D4E3'; c.font = `700 ${Math.max(9, 4.6 * s)}px "Golos UI", system-ui`; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('винт ' + S.screw, P(-58, 0)[0], P(0, y0 - 26)[1] + 3); } }
+    g.addColorStop(0, '#F3D17A'); g.addColorStop(1, '#8E6A1E'); c.fillStyle = g; if (!spL) { c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); }
+    c.strokeStyle = 'rgba(60,40,10,.6)'; c.lineWidth = Math.max(.6, s * .25); if (!spL) for (let k = 0; k < 18; k++) { const q = k / 18 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .78 * Math.cos(q), b + r * .78 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
+    if (!fine) { c.fillStyle = lwTx(); c.font = `700 ${Math.max(9, 4.6 * s)}px "Golos UI", system-ui`; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('винт ' + S.screw, P(-58, 0)[0], P(0, y0 - 26)[1] + 3); } }
   // шайбы
   const puck = (p, kind) => { if (!p) return; const [a, b] = P(p[0], p[1]), r = R * s, m = lwPuck(S['p' + kind]);
     c.save(); c.shadowColor = 'rgba(10,20,30,.45)'; c.shadowBlur = 4 * s; c.shadowOffsetX = 1.2 * s; c.shadowOffsetY = 1.6 * s;
     const g = c.createRadialGradient(a - r * .35, b - r * .4, r * .1, a, b, r);
     if (kind === 1) { g.addColorStop(0, '#F4F7FB'); g.addColorStop(.55, '#AEB9C8'); g.addColorStop(1, '#5D6A7D'); } else if (kind === 3) { g.addColorStop(0, '#FFD9C7'); g.addColorStop(.55, '#C46A45'); g.addColorStop(1, '#6E2E17'); } else { g.addColorStop(0, '#FFF0C2'); g.addColorStop(.55, '#D6A54A'); g.addColorStop(1, '#7E5A1A'); }
-    c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); c.restore();
+    const sp = lwSpr(kind === 1 ? 'puck-steel' : 'puck-brass');
+    if (sp) { c.drawImage(sp, a - r, b - r, 2 * r, 2 * r); c.restore(); if (kind === 3) { c.fillStyle = 'rgba(196,106,69,.28)'; c.beginPath(); c.arc(a, b, r * .93, 0, 7); c.fill(); } }   // шайба — картинка; тело 3 — медный оттенок
+    else { c.fillStyle = g; c.beginPath(); c.arc(a, b, r, 0, 7); c.fill(); c.restore();
     c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.55)' : 'rgba(90,60,15,.6)'; c.lineWidth = Math.max(.5, s * .2);             // накатка по ободу
     for (let k = 0; k < 48; k++) { const q = k / 48 * Math.PI * 2; c.beginPath(); c.moveTo(a + r * .9 * Math.cos(q), b + r * .9 * Math.sin(q)); c.lineTo(a + r * Math.cos(q), b + r * Math.sin(q)); c.stroke(); }
-    c.beginPath(); c.arc(a, b, r * .62, 0, 7); c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.35)' : 'rgba(90,60,15,.35)'; c.lineWidth = Math.max(.6, s * .3); c.stroke();
+    c.beginPath(); c.arc(a, b, r * .62, 0, 7); c.strokeStyle = kind === 1 ? 'rgba(40,52,70,.35)' : 'rgba(90,60,15,.35)'; c.lineWidth = Math.max(.6, s * .3); c.stroke(); }
     c.fillStyle = kind === 1 ? '#2D3848' : '#4E3608'; c.textAlign = 'center'; c.textBaseline = 'middle';                    // гравировка
     c.font = `800 ${r * .55}px "Golos UI", system-ui`; c.fillText(kind, a, b - r * .12);
     if (m) { c.font = `600 ${r * .24}px "Golos UI", system-ui`; c.fillText(f1(m.m * 1000, 1) + ' г', a, b + r * .38); }
@@ -7918,7 +7926,10 @@ function l2Run(S, plates, lcm) {                            // один пуск
 }
 
 /* ---------- сцена: маятник Обербека, колонна с линейкой, секундомер ---------- */
-let L2V = { s: 1, raf: 0, anim: null, tShow: null };        // s — доля пройденного пути (0 — груз вверху)
+let L2V = { s: 1, raf: 0, anim: null, tShow: null };
+let L2_BG = null;   // фон лаборатории (программа подставляет картинку по теме: Image с полями edge, top)
+const l2Spr = k => (typeof l3Spr === 'function' ? l3Spr(k) : null);
+const l2Tx = () => (typeof L3_THEME !== 'undefined' && L3_THEME === 'light') ? '#3B4656' : '#C9D4E3';        // s — доля пройденного пути (0 — груз вверху)
 function l2Draw() {
   const cv = $('#l2-cv'); if (!cv) return; const S = L2S;
   const box = cv.getBoundingClientRect(), cssW = box.width || 600, dpr = Math.min(2.5, devicePixelRatio || 1), k = cssW / 580, cssH = 452 * k;
@@ -7926,8 +7937,10 @@ function l2Draw() {
   const c = cv.getContext('2d'); c.setTransform(dpr * k, 0, 0, dpr * k, 0, 0);
   const st = l2St(), lcm = st === 'exp2' ? S.l2 : S.l1, r = l2R(S), h = S.h, sm = L2V.s * h;
   // фон — стена лаборатории
-  let g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, '#16263C'); g.addColorStop(1, '#0E1A2B'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
-  c.fillStyle = 'rgba(255,255,255,.025)'; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452);
+  let g; const bgi = L2_BG && L2_BG.complete && L2_BG.naturalWidth ? L2_BG : null;
+  if (bgi) { const hh = bgi.naturalHeight * 580 / bgi.naturalWidth, y0 = 432 - (bgi.edge ?? 1) * hh; c.fillStyle = bgi.top || '#0F2237'; c.fillRect(0, 0, 580, 452); c.drawImage(bgi, 0, y0, 580, hh); }
+  else { g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, '#16263C'); g.addColorStop(1, '#0E1A2B'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
+  c.fillStyle = 'rgba(255,255,255,.025)'; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452); }
   // основание с винтами
   g = c.createLinearGradient(0, 410, 0, 446); g.addColorStop(0, '#5B6B80'); g.addColorStop(1, '#2C3747'); c.fillStyle = g; c.fillRect(20, 412, 540, 30);
   c.fillStyle = '#1E2733'; [40, 540].forEach(x => { c.fillRect(x - 8, 442, 16, 6); });
@@ -7938,12 +7951,13 @@ function l2Draw() {
   c.fillStyle = '#F3E9C8'; c.fillRect(CX + 14, yAt(1.0), 30, L2.K * 1.0 + 1);
   c.strokeStyle = '#3A2F17'; c.fillStyle = '#3A2F17'; c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'middle';
   for (let cm = 0; cm <= 100; cm++) { const y = yAt(cm / 100); c.lineWidth = cm % 10 ? .6 : 1.1; c.beginPath(); c.moveTo(CX + 14, y); c.lineTo(CX + 14 + (cm % 10 ? (cm % 5 ? 5 : 8) : 12), y); c.stroke(); if (cm % 10 === 0) c.fillText(cm, CX + 28, y); }
-  c.fillStyle = '#C9D4E3'; c.font = '700 10px "Golos UI", system-ui'; c.fillText('h, см', CX + 12, top - 8);
+  c.fillStyle = l2Tx(); c.font = '700 10px "Golos UI", system-ui'; c.fillText('h, см', CX + 12, top - 8);
   // датчик (кольцо) внизу
   c.strokeStyle = '#E5484D'; c.lineWidth = 3; c.beginPath(); c.ellipse(CX - 30, Ys + 4, 14, 4, 0, 0, 7); c.stroke();
   // кронштейн и блок 4
-  c.fillStyle = '#7A889C'; c.fillRect(CX - 40, top - 4, 46, 8);
-  const BX = CX - 40, BY = top + 2, br = 9; g = c.createRadialGradient(BX - 3, BY - 3, 2, BX, BY, br); g.addColorStop(0, '#E9EEF4'); g.addColorStop(1, '#5E6B7E'); c.fillStyle = g; c.beginPath(); c.arc(BX, BY, br, 0, 7); c.fill();
+  const BX = CX - 40, BY = top + 2, br = 9, spP = l2Spr('pulley');
+  if (spP) { const w = 64, h = w * spP.naturalHeight / spP.naturalWidth; c.drawImage(spP, BX - w * .25, BY - h * .53, w, h); }   // блок на кронштейне — картинка
+  else { c.fillStyle = '#7A889C'; c.fillRect(CX - 40, top - 4, 46, 8); g = c.createRadialGradient(BX - 3, BY - 3, 2, BX, BY, br); g.addColorStop(0, '#E9EEF4'); g.addColorStop(1, '#5E6B7E'); c.fillStyle = g; c.beginPath(); c.arc(BX, BY, br, 0, 7); c.fill(); }
   // крестовина
   const OX = 170, OY = 175, SC = 520, rp = [14, 24], rv = rp[S.pul - 1], phi = Math.PI / 4 + sm / r;
   // нить: со шкива (верх) к блоку, вниз к грузу
@@ -7953,7 +7967,10 @@ function l2Draw() {
   // стойка крестовины
   g = c.createLinearGradient(OX - 8, 0, OX + 8, 0); g.addColorStop(0, '#6E7B8E'); g.addColorStop(.5, '#C7D0DC'); g.addColorStop(1, '#55627A'); c.fillStyle = g; c.fillRect(OX - 7, OY, 14, 412 - OY);
   c.save(); c.translate(OX, OY); c.rotate(phi);
-  for (let i = 0; i < 4; i++) {
+  const spX = l2Spr('cross'), spC = l2Spr('cyl');
+  if (spX) { c.save(); c.rotate(-Math.PI / 4); const w = 2 * (.25 * SC + 10) / 1.36; c.drawImage(spX, -w / 2, -w * spX.naturalHeight / spX.naturalWidth / 2, w, w * spX.naturalHeight / spX.naturalWidth); c.restore(); }   // крестовина — картинка
+  for (let i = 0; i < 4 && (spX && spC); i++) { c.save(); c.rotate(i * Math.PI / 2); const cxm = lcm / 100 * SC, cw = 30, chh = cw * spC.naturalHeight / spC.naturalWidth; c.drawImage(spC, cxm - cw / 2, -chh / 2 - 2, cw, chh); c.restore(); }
+  for (let i = 0; i < 4 && !(spX && spC); i++) {
     c.save(); c.rotate(i * Math.PI / 2);
     g = c.createLinearGradient(0, -3, 0, 3); g.addColorStop(0, '#E1E7EF'); g.addColorStop(1, '#6B788B'); c.fillStyle = g; c.fillRect(10, -3, .25 * SC, 6);
     for (let cm = 5; cm <= 25; cm += 5) { c.fillStyle = '#2B3442'; c.fillRect(cm / 100 * SC - .5, -3, 1, 6); }
@@ -7965,17 +7982,20 @@ function l2Draw() {
   c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(0, 0); c.lineTo(rp[1] - 3, 0); c.stroke();
   c.restore();
   c.fillStyle = '#2A3443'; c.beginPath(); c.arc(OX, OY, 4, 0, 7); c.fill();
-  c.fillStyle = '#C9D4E3'; c.font = '600 10px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText(`шкив ${S.pul} · l = ${lcm} см`, OX, OY + 150);
+  c.fillStyle = l2Tx(); c.font = '600 10px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText(`шкив ${S.pul} · l = ${lcm} см`, OX, OY + 150);
   // электромагнит
-  c.fillStyle = S.wound && !L2V.anim ? '#E5484D' : '#5B2A2E'; c.fillRect(OX - 22, OY - 60, 14, 10); c.fillStyle = '#C9D4E3'; c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('электромагнит', OX - 6, OY - 55);
+  const spM = l2Spr('magnet'); if (spM) { const w = 26, h = w * spM.naturalHeight / spM.naturalWidth; c.drawImage(spM, OX - 34, OY - 72, w, h); }
+  c.fillStyle = S.wound && !L2V.anim ? '#E5484D' : '#5B2A2E'; if (spM) { c.beginPath(); c.arc(OX - 21, OY - 75, 4, 0, 7); c.fill(); } else c.fillRect(OX - 22, OY - 60, 14, 10); c.fillStyle = l2Tx(); c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('электромагнит', OX - 6, OY - 55);
   // груз: подвес + накладные
   const gx = BX + br;
   c.fillStyle = '#2B3442'; c.fillRect(gx - 1, wTop - 6, 2, 6);
   const drawPl = (y, hgt, col) => { const gg = c.createLinearGradient(gx - 13, 0, gx + 13, 0); gg.addColorStop(0, col[0]); gg.addColorStop(.5, col[1]); gg.addColorStop(1, col[0]); c.fillStyle = gg; c.fillRect(gx - 13, y, 26, hgt); c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = .8; c.strokeRect(gx - 13, y, 26, hgt); };
-  for (let i = 0; i < plates; i++) drawPl(wTop + i * 5, 5, ['#6B4A12', '#E3B65A']);
-  drawPl(wTop + plates * 5, 26, ['#4B5568', '#B9C4D2']);
-  const wb = wTop + plates * 5 + 26;                         // нижний край груза
-  c.fillStyle = '#C9D4E3'; c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'right'; c.fillText(`m = ${f1(l2Mass(plates) * 1000, 0)} г`, gx - 17, wb - 10);
+  const wb = wTop + plates * 5 + 26, spH = l2Spr('hanger'), spPl = l2Spr('plate');
+  if (spH && spPl) { const hw = 22, top0 = wTop - 6; c.drawImage(spH, gx - hw / 2, top0, hw, wb - top0);   // подвес и накладные грузы — картинки
+    for (let i = 0; i < plates; i++) { c.save(); c.translate(gx, wb - 6 - (i + .5) * 5.4); c.rotate(Math.PI / 2); c.drawImage(spPl, -2.9, -13, 5.8, 26); c.restore(); } }
+  else { for (let i = 0; i < plates; i++) drawPl(wTop + i * 5, 5, ['#6B4A12', '#E3B65A']);
+  drawPl(wTop + plates * 5, 26, ['#4B5568', '#B9C4D2']); }                         // нижний край груза
+  c.fillStyle = l2Tx(); c.font = '600 9px "Golos UI", system-ui'; c.textAlign = 'right'; c.fillText(`m = ${f1(l2Mass(plates) * 1000, 0)} г`, gx - 17, wb - 10);
   // секундомер
   g = c.createLinearGradient(0, 340, 0, 400); g.addColorStop(0, '#2A3445'); g.addColorStop(1, '#1A2230'); c.fillStyle = g; c.fillRect(20, 344, 170, 58);
   c.fillStyle = '#0B1A10'; c.fillRect(30, 352, 112, 30); c.fillStyle = '#7CF29B'; c.font = '700 22px "Golos UI", ui-monospace, monospace'; c.textAlign = 'right'; c.textBaseline = 'middle';

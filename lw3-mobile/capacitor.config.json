@@ -1,6 +1,6 @@
 {
   "appId": "io.github.vitalya2078.adiabata",
-  "appName": "Показатель адиабаты",
+  "appName": "Физпрактикум",
   "webDir": "www",
   "android": {
     "allowMixedContent": false,
