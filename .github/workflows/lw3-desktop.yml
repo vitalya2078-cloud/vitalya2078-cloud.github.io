@@ -105,11 +105,19 @@ jobs:
           name: Pokazatel-adiabaty-windows
           path: out/*.exe
 
+      - name: Version
+        id: ver
+        run: echo "v=$(python -c "import json;print(json.load(open('lw3-desktop/src-tauri/tauri.conf.json',encoding='utf-8'))['version'])")" >> "$GITHUB_OUTPUT"
+
+      # релиз с прямыми ссылками на .exe: после каждой сборки на main (тег lw3-v<версия> создаётся здесь же)
       - name: Release
-        if: startsWith(github.ref, 'refs/tags/lw3-v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/lw3-v')
         uses: softprops/action-gh-release@v2
         with:
-          name: Показатель адиабаты ${{ github.ref_name }}
+          tag_name: lw3-v${{ steps.ver.outputs.v }}
+          target_commitish: ${{ github.sha }}
+          name: Показатель адиабаты ${{ steps.ver.outputs.v }}
+          make_latest: true
           files: out/*.exe
           body: |
             **Pokazatel-adiabaty-setup.exe** — установщик (ставится без прав администратора, ярлык в «Пуске»).
