@@ -23,6 +23,8 @@ function render() {
   if (SCREEN === 'lock') return vLock();
   if (SCREEN === 'teacher') return vTeacher();
   if (SCREEN === 'home' || !PROFILE) return vHome();
+  if (SCREEN === 'labs') return vLabs();
+  if (LAB !== 3) return vWorkLab();
   vWork();
 }
 const LOGO = '<span class="logo">γ</span>';
@@ -46,18 +48,16 @@ function ensureMeta(S) {
   if (!S.group && PROFILE) S.group = PROFILE.group;
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
 }
-function openProfile(p, intro = false) {
-  PROFILE = p; L3_KEY = workKey(p.id); L3S = null;
-  const S = l3Load(); ensureMeta(S); l3Save(); l3Reset();
-  CH.pts = []; CH.marks = [];
-  SCREEN = 'work'; render(); ui.main.scrollTop = 0;
+function openProfile(p, intro = false, lab = 0) {   // студент → экран выбора работы (или сразу работа lab)
+  PROFILE = p; L3S = null; LWS = null; L2S = null; CH.pts = []; CH.marks = [];
+  if (lab) openLab(lab); else { SCREEN = 'labs'; render(); ui.main.scrollTop = 0; }
   if (intro) showIntro(0);
 }
 function profileState(p) { return store.get(workKey(p.id), null); }
-function profileStatus(p) {
-  const S = profileState(p); if (!S) return 'не начата';
-  if (S.done) return 'защищена';
-  return 'этап: ' + L3.steps[Math.min(S.max || 0, L3.steps.length - 1)][1].toLowerCase();
+function profileStatus(p) {   // кратко по всем работам студента
+  const st = [1, 2, 3].map(n => [n, labState(n, p.id)]).filter(([, S]) => S && (S.max || S.done));
+  if (!st.length) return 'работы не начаты';
+  return st.map(([n, S]) => `ЛР ${n}: ${S.done ? 'защищена' : 'шаг ' + ((S.max || 0) + 1)}`).join(' · ');
 }
 
 /* ---------- стартовый экран ---------- */
@@ -67,7 +67,7 @@ function vHome() {
   ui.main.innerHTML = `<div class="login">
     <div class="corner tr">${themeBtn()}</div>
     <div class="login-box">
-      <div class="login-brand">${LOGO}<h1>Показатель адиабаты</h1><p>Метод Клемана — Дезорма</p></div>
+      <div class="login-brand">${LOGO}<h1>Физпрактикум</h1><p>Лабораторные работы по физике</p></div>
       <div class="card">
         <label class="field">ФИО<input id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off"></label>
         <label class="field">Класс / группа<input id="np-group" placeholder="11 А" autocomplete="off"></label>
@@ -149,9 +149,9 @@ function wProc(S) {
       <div class="fcard"><small>Показатель адиабаты в опыте</small><span class="m">γ = h₁ / (h₁ − h₂)</span></div>
       <div class="fcard"><small>Среднее значение</small><span class="m">⟨γ⟩ = Σγᵢ / N</span></div>
       <div class="fcard"><small>Средняя абсолютная погрешность</small><span class="m">⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1))</span></div>
-      <div class="fcard"><small>Относительная погрешность</small><span class="m">ε<sub>γ</sub> = ⟨Δγ⟩ / ⟨γ⟩ · 100 %</span></div>
+      <div class="fcard"><small>Относительная погрешность</small><span class="m">ε<sub>γ</sub> = ⟨Δγ⟩ / ⟨γ⟩ · 100</span></div>
       <div class="fcard"><small>Теория: двухатомный газ, i = 5</small><span class="m">γ<sub>T</sub> = (i + 2) / i</span></div>
-      <div class="fcard"><small>Расхождение с теорией</small><span class="m">ε = |γ<sub>T</sub> − ⟨γ⟩| / γ<sub>T</sub> · 100 %</span></div>
+      <div class="fcard"><small>Расхождение с теорией</small><span class="m">ε = |γ<sub>T</sub> − ⟨γ⟩| / γ<sub>T</sub> · 100</span></div>
       <p class="mute small">N = 3 — число опытов. Проценты — с точностью до 0,1.</p></section></div>`;
 }
 function wConcl(S) {
@@ -266,8 +266,8 @@ async function saveFile(name, text, ext, label) {
   toast(`${ic('circle-check')} Файл «${esc(name)}» сохранён в загрузки`); return true;
 }
 function saveWork() {
-  const S = l3Load(); ensureMeta(S);
-  return saveFile(`Адиабата_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`, packResult(), 'lw3', 'Файл работы');
+  const S = curLab().load(); ensureMeta(S);
+  return saveFile(workFileName(S), packResult(), 'lw3', 'Файл работы');
 }
 function pickFiles(mode) { const i = $('#file-in'); i.value = ''; i.multiple = mode === 'teacher'; i.click(); }
 const readFile = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(r.error); r.readAsText(f, 'utf-8'); });
@@ -285,14 +285,14 @@ function continueFrom(text) {
   let p = profiles().find(x => x.fio.toLowerCase() === fio.toLowerCase() && (x.group || '') === group);
   if (p) { const cur = profileState(p); if (cur && (cur.max || 0) > (S.max || 0) && !confirm(`У «${fio}» на этом компьютере работа продвинута дальше. Заменить её работой из файла?`)) return; }
   else p = addProfile(fio, group);
-  store.set(workKey(p.id), S); toast(`Работа «${esc(fio)}» загружена из файла`); openProfile(p);
+  store.set(LABS[r.d.lab || 3].key(p.id), S); toast(`Работа «${esc(fio)}» загружена из файла`); openProfile(p, false, r.d.lab || 3);
 }
 
 /* ---------- окна ---------- */
 function modal(title, body, actions = '') {
   const m = $('#modal'); m.innerHTML = `<div class="mbox"><header><h2>${title}</h2>${actions}<button class="btn line" data-d="mclose">${ic('x')} ${kbd('Esc')}</button></header><div class="mb">${body}</div></div>`; m.hidden = false;
 }
-function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; if (SCREEN === 'work' && PROFILE && l3St() === 'report') $('#printroot').innerHTML = l3ReportHtml(); }
+function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; if (SCREEN === 'work' && PROFILE) { const L = curLab(), S = L.S(); if (S && L.steps[S.step][0] === 'report') $('#printroot').innerHTML = L.report(); } }
 /* Знакомство: 4 слайда после первого входа, потом — по F1 */
 const INTRO = [
   { t: 'Как проходит работа', p: 'Шесть шагов по порядку. Следующий открывается, когда выполнен предыдущий. Всё сохраняется само — можно закрыть программу и продолжить потом.',
@@ -402,7 +402,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'F5' || (e.ctrlKey && e.code === 'KeyR')) { e.preventDefault(); return; }
   if (e.key === 'Escape' && !$('#modal').hidden) { closeModal(); return; }
   if (e.ctrlKey && e.code === 'KeyS') { e.preventDefault(); if (SCREEN === 'work' && PROFILE) saveWork(); return; }
-  if (e.ctrlKey && e.code === 'KeyP') { e.preventDefault(); if (SCREEN === 'work' && PROFILE && l3St() === 'report') window.print(); return; }
+  if (e.ctrlKey && e.code === 'KeyP') { e.preventDefault(); if (SCREEN === 'work' && PROFILE) { const L = curLab(), S = L.S(); if (S && L.steps[S.step][0] === 'report') window.print(); } return; }
   if (!$('#modal').hidden) return;
   if (SCREEN === 'home') { if (e.key === 'Enter' && (e.target.id === 'np-fio' || e.target.id === 'np-group')) { e.preventDefault(); $('[data-d="new"]').click(); } return; }
   if (SCREEN === 'lock') { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); const b = $('[data-t="unlock"],[data-t="setpass"]'); if (b) b.click(); } return; }

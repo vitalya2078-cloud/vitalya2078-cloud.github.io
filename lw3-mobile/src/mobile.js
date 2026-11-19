@@ -226,7 +226,7 @@ function wExp(S) {
 }
 
 /* --- обработка --- */
-const PK_F = { gm: '⟨γ⟩ = (γ₁ + γ₂ + γ₃) / 3', dg: '⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)), N = 3', eg: 'ε<sub>γ</sub> = ⟨Δγ⟩ / ⟨γ⟩ · 100 %', gT: 'γ<sub>T</sub> = (i + 2) / i, для воздуха i = 5', e: 'ε = |γ<sub>T</sub> − ⟨γ⟩| / γ<sub>T</sub> · 100 %' };
+const PK_F = { gm: '⟨γ⟩ = (γ₁ + γ₂ + γ₃) / 3', dg: '⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)), N = 3', eg: 'ε<sub>γ</sub> = ⟨Δγ⟩ / ⟨γ⟩ · 100', gT: 'γ<sub>T</sub> = (i + 2) / i, для воздуха i = 5', e: 'ε = |γ<sub>T</sub> − ⟨γ⟩| / γ<sub>T</sub> · 100' };
 const PK_D = { gm: '0,001', dg: '0,001', eg: '0,1 %', gT: '0,001', e: '0,1 %' };
 function wProc(S) {
   const o = l3Calc(), P = S.proc, pk = (S.dx && S.dx.pk) || {}, all = L3_KEYS.every(k => S.procOk[k] === true), bad = L3_KEYS.filter(k => S.procOk[k] === false).length;

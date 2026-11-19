@@ -23,21 +23,29 @@ let HOD_OPEN = false;
 
 /* номер текущего пункта (1…13) по состоянию работы; 0 — пункт не выделяется */
 function hodNow() {
-  if (!L3S || SCREEN !== 'work') return 0;
+  if (SCREEN !== 'work') return 0;
+  if (LAB !== 3) return hodNowLab();
+  if (!L3S) return 0;
   const S = L3S, st = l3St(), ph = L3V.phase, n = S.runs.length;
   if (st === 'admit') return 0;
   if (st === 'prep') return !S.power ? 1 : !S.kOpen ? 2 : S.k0Open ? 3 : 4;
   if (st !== 'exp' || n >= L3.N) return 13;
   return ({ ready: n ? 3 : (!S.kOpen ? 2 : 3), pump: 4, wait1: 6, read1: 6, vent: 8, vented: 9, wait2: 9, read2: 10 })[ph] || 4;
 }
+/* ЛР 1 и ЛР 2: текущий пункт хода работы по шагу и записям */
+function hodNowLab() {
+  const L = curLab(), S = L.S(); if (!S) return 0; const st = L.steps[S.step][0];
+  if (LAB === 1) return ({ prep: 1, free: S.free.length ? 3 : 2, coll2: (S.ex[2].rows.length ? 5 : 4), coll3: 5, proc: S.procOk.px0 ? 8 : 6, concl: 9 })[st] || 0;
+  return ({ prep: 1, exp1: S.runs.length ? 3 : 2, exp2: S.ex2.length ? 5 : 4, proc: 6, concl: 8 })[st] || 0;
+}
 function hodRender() {
   let el = $('#hod');
   if (!el) { el = document.createElement('aside'); el.id = 'hod'; document.body.appendChild(el); }
-  const cur = hodNow(), st = L3S && SCREEN === 'work' ? l3St() : '', n = L3S ? L3S.runs.length : 0;
+  const cur = hodNow(), st = LAB === 3 && L3S && SCREEN === 'work' ? l3St() : '', n = LAB === 3 && L3S ? L3S.runs.length : 0, list = LAB === 3 ? HOD : curLab().hod;
   el.className = (HOD_OPEN && SCREEN === 'work' ? 'open ' : '') + (document.body.classList.contains('full') ? 'right' : 'left');
-  el.innerHTML = `<header><div><b>Ход работы</b><span>Порядок выполнения работы — методичка, раздел 4</span></div><button class="tb-ic" data-d="hod" title="Закрыть (H)">${ic('x')}</button></header>
+  el.innerHTML = `<header><div><b>Ход работы</b><span>Порядок выполнения работы — методичка, ЛР № ${LAB}</span></div><button class="tb-ic" data-d="hod" title="Закрыть (H)">${ic('x')}</button></header>
     ${st === 'exp' && n < L3.N ? `<p class="hod-run">Сейчас: опыт ${n + 1} из ${L3.N}</p>` : ''}
-    <ol>${HOD.map((t, i) => `<li class="${i + 1 === cur ? 'cur' : ''}"><i>${i + 1}</i><span>${t}</span></li>`).join('')}</ol>`;
+    <ol>${list.map((t, i) => `<li class="${i + 1 === cur ? 'cur' : ''}"><i>${i + 1}</i><span>${t}</span></li>`).join('')}</ol>`;
   const c = el.querySelector('li.cur'); if (c && HOD_OPEN) c.scrollIntoView({ block: 'nearest' });
 }
 function hodToggle() { HOD_OPEN = !HOD_OPEN; hodRender(); }

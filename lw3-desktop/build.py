@@ -37,11 +37,15 @@ def take(src, name):
 
 app_js, lab_js, shell = rd(os.path.join(SITE, 'app.js')), rd(os.path.join(SITE, 'labwork.js')), rd(os.path.join(SITE, 'shell.html'))
 lw_list = re.search(r'^const LW_LIST = \[.*?^\];', lab_js, re.M | re.S).group(0)
-helpers = '\n'.join([take(app_js, n) for n in ('$', 'esc', 'f1')] + [lw_list] + [take(lab_js, n) for n in ('lwNum', 'lwGauss', 'lwShuf', 'lwMsg')])
+# ЛР 1 и ЛР 2 — модули сайта целиком (там же LW_LIST, lwNum, lwGauss, lwShuf, lwMsg, LAB_DEPT)
+helpers = '\n'.join([take(app_js, n) for n in ('$', 'esc', 'f1')] + [lab_js, rd(os.path.join(SITE, 'labwork2.js'))])
 icons = rd(os.path.join(SITE, 'icons.js'))
 core = rd(os.path.join(SITE, 'lw3-core.js'))
 # стили бланка отчёта — те же, что на сайте (правила .lwp / .lwr)
 report_css = '\n'.join(l for l in shell.split('\n') if re.match(r'\.lw(p|r)\b', l))
+# экраны ЛР 1 и ЛР 2 (подготовка, опыты, обработка) — стили сайта; цвета берутся из темы программы
+LAB_CSS_RE = r'(\.lw-(pucks|row|ta|hint|screw|scroll|tbl|res|aim|arrows|ctl|ctl-row|who|stage|cond|intro)\b|\.lwi\b|\.lp-btn\b|\.seg\b|\.l2-cal\b|#lw-cv\b|#l2-cv\b)'
+report_css += '\n' + '\n'.join(l for l in shell.split('\n') if re.match(LAB_CSS_RE, l))
 
 meta = json.loads(rd(os.path.join(D, 'src-tauri', 'tauri.conf.json')))
 version = meta['version']
@@ -53,7 +57,7 @@ def bg_cfg(f, meta):
     return dict(json.loads(rd(m)) if os.path.exists(m) else {}, src='img/' + f) if f else None
 js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'teacher.js')])
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs.js', 'teacher.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 

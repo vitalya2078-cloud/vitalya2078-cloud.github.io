@@ -21,7 +21,7 @@ try {
   // пустое ФИО не принимается
   await page.click('[data-d="new"]'); must(await page.evaluate(() => SCREEN === 'home'), 'профиль создан без ФИО');
   await page.fill('#np-fio', 'Сидорова Анна Викторовна'); await page.fill('#np-group', '11 Б'); await page.press('#np-group', 'Enter');
-  must(await page.evaluate(() => SCREEN === 'work' && L3S.fio === 'Сидорова Анна Викторовна' && L3S.group === '11 Б'), 'профиль не открылся');
+  must(await page.evaluate(() => SCREEN === 'labs' && PROFILE.fio === 'Сидорова Анна Викторовна'), 'после входа нет выбора работы');
   // знакомство: 4 слайда, листается Enter, закрывается на последнем
   must(await page.locator('#modal [data-intro]').isVisible(), 'нет знакомства после входа');
   await shot(page, 'intro-1');
@@ -29,6 +29,8 @@ try {
   must(await page.evaluate(() => document.querySelector('.keys').getBoundingClientRect().bottom <= document.querySelector('.intro-art').getBoundingClientRect().bottom + 1), 'клавиши вылезают за область слайда');
   for (let i = 0; i < 2; i++) await page.keyboard.press('Enter');
   must(await page.locator('#modal').isHidden(), 'знакомство не закрылось');
+  await page.click('[data-d="lab"][data-v="3"]');
+  must(await page.evaluate(() => SCREEN === 'work' && LAB === 3 && L3S.fio === 'Сидорова Анна Викторовна' && L3S.group === '11 Б'), 'ЛР 3 не открылась');
   await page.keyboard.press('F1'); must(await page.locator('#modal [data-intro]').isVisible(), 'F1 не открывает знакомство');
   await page.click('[data-d="intro-skip"]'); must(await page.locator('#modal').isHidden(), '«Пропустить» не закрывает');
   // по умолчанию — светлая тема; тёмная переключается и запоминается
@@ -95,7 +97,7 @@ try {
   const fake = path.join(SHOTS || '/tmp', 'lw3-fake.lw3'); fs.writeFileSync(fake, JSON.stringify(forged));
 
   // режим преподавателя: подлинный и подделанный файлы
-  await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]');
+  await page.click('[data-d="labs"]'); await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]');
   // пароль преподавателя: задать, выйти, войти с неверным и верным
   await page.fill('#tp1', '4321'); await page.fill('#tp2', '1234'); await page.click('[data-t="setpass"]');
   must(await page.evaluate(() => SCREEN === 'lock'), 'принят пароль, не совпавший с повтором');

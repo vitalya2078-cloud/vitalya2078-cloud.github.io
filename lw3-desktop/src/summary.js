@@ -8,9 +8,9 @@
 
 /* ---------- студент: сводка перед отчётом ---------- */
 function openSummary() {
-  const S = l3Load(); if (!S || (S.runs || []).length !== L3.N) return;
-  modal(`${ic('graduation-cap')} Что рассказать на защите`, l3SummaryHtml(S), `<button class="btn" data-d="mclose">${ic('file-text')} К отчёту</button>`);
-  S.dx = S.dx || {}; if (!S.dx.sumSeen) { S.dx.sumSeen = new Date().toISOString(); l3Save(); }
+  const L = curLab(), S = L.load(); if (!S || !S.cqOk && LAB !== 3) return; if (LAB === 3 && (S.runs || []).length !== L3.N) return;
+  modal(`${ic('graduation-cap')} Что рассказать на защите`, labSummaryHtml(LAB, S), `<button class="btn" data-d="mclose">${ic('file-text')} К отчёту</button>`);
+  S.dx = S.dx || {}; if (!S.dx.sumSeen) { S.dx.sumSeen = new Date().toISOString(); L.save(); }
 }
 const _wReportS = wReport;
 wReport = function (S) {

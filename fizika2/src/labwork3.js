@@ -61,8 +61,8 @@ function l3Proc() {
     <table class="lw-tbl"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th><th>γ</th></tr>${o.a.map((x, i) => `<tr><td>${i + 1}</td><td>${x.h1}</td><td>${x.h2}</td><td>${I('g' + (i + 1))}</td></tr>`).join('')}
     <tr class="sum"><td colspan="3">Среднее значение ⟨γ⟩ = Σγᵢ/N</td><td>${I('gm')}</td></tr></table></section>
     <section class="card"><b class="h">Погрешности и сравнение с теорией</b>
-    <div class="lw-row"><label>⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)) ${I('dg')}</label><label>ε_γ = ⟨Δγ⟩/⟨γ⟩·100 %, % ${I('eg')}</label></div>
-    <div class="lw-row"><label>γ_T = (i + 2)/i для воздуха (i = 5) ${I('gT')}</label><label>ε = |γ_T − ⟨γ⟩|/γ_T·100 %, % ${I('e')}</label></div>
+    <div class="lw-row"><label>⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)) ${I('dg')}</label><label>ε_γ = ⟨Δγ⟩/⟨γ⟩·100, % ${I('eg')}</label></div>
+    <div class="lw-row"><label>γ_T = (i + 2)/i для воздуха (i = 5) ${I('gT')}</label><label>ε = |γ_T − ⟨γ⟩|/γ_T·100, % ${I('e')}</label></div>
     <button class="btn line wide mt" data-l3="pcheck">${ic('circle-check')} Проверить</button>
     ${['gm', 'dg'].every(k => S.procOk[k]) ? `<p class="lw-res">γ = ${l3Res(o)}</p>` : ''}</section>
     <p class="lw-msg" id="lw-msg"></p>${all ? l3Next('К выводам') : '<p class="mute small center">Когда все значения будут верны, откроются выводы.</p>'}`;

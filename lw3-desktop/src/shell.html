@@ -398,6 +398,34 @@ body.full #hod{top:60px; width:338px}
   .lwr{display:block}.lwp{box-shadow:none; border-radius:0; padding:0; max-width:none; page-break-after:always; break-after:page}
   .lwp:last-child{page-break-after:auto; break-after:auto}
 }
+
+/* ---------- Физпрактикум: выбор работы ---------- */
+:root{--text:var(--tx); --mint:var(--ok); --blue:var(--cold); --gold:var(--acc); --pink:var(--bad); --violet:#9B7BFF; --ui:"Golos UI", system-ui, sans-serif; --serif:"F2 Math", serif; --r:16px; --on-accent:var(--acc-tx); --card:var(--panel); --card2:var(--panel2)}
+.labs{max-width:1100px; margin:0 auto; padding:28px 28px 40px}
+.labs-h{display:flex; align-items:center; gap:14px} .labs-h h1{margin:0; font-size:26px} .labs-h p{margin:2px 0 0; color:var(--mute)} .labs-h .sp{flex:1}
+.labs-t{margin:26px 2px 12px; font-weight:800; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute)}
+.labs-g{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px}
+.labc{position:relative; display:grid; gap:6px; text-align:left; padding:20px; border-radius:20px; border:1px solid var(--line); background:var(--panel); box-shadow:var(--sh); cursor:pointer; min-height:190px; align-content:start}
+.labc:hover{border-color:var(--acc)} .labc b{font-size:18px; line-height:1.3; padding-right:56px} .labc small{color:var(--mute)} .labc em{font-style:normal; font-weight:700; color:var(--ok)}
+.labc-n{font-weight:800; font-size:13px; color:var(--acc)} .labc-ic{position:absolute; right:18px; top:18px; width:48px; height:48px; border-radius:14px; display:grid; place-items:center; background:var(--acc-soft); color:var(--acc)} .labc-ic .ic{width:26px; height:26px}
+.labc.done .labc-ic{background:var(--ok-soft); color:var(--ok)}
+.labc-bar{margin-top:auto; height:6px; border-radius:3px; background:var(--panel2); overflow:hidden} .labc-bar i{display:block; height:100%; background:var(--acc)} .labc.done .labc-bar i{background:var(--ok)}
+.labs-f{margin-top:18px}
+.tb-brand b small{display:block; font-size:11.5px; font-weight:600; color:var(--mute); line-height:1.2}
+.qs-card.flat{box-shadow:none; border:0; padding:0; background:none}
+/* ---------- ЛР 1 и ЛР 2: экраны сайта в раскладке программы ---------- */
+.slab{display:grid; gap:14px; max-width:1240px; margin:0 auto}
+.slab .card{margin:0} .slab .h{display:block; font-weight:800; font-size:16px; margin-bottom:6px}
+.slab.live{grid-template-columns:minmax(0,1.25fr) minmax(340px,.85fr); align-items:start; grid-auto-flow:row dense}
+.slab.live > *{grid-column:2}
+.slab.live > .lw-stage{grid-column:1; grid-row:1 / span 12; position:sticky; top:0; background:none; padding:0}
+.slab.live #lw-cv, .slab.live #l2-cv{width:100%; max-height:calc(100vh - 210px); object-fit:contain}
+.slab .lw-msg{min-height:1.2em}
+.slab .btn.wide{width:100%} .slab .mt{margin-top:10px}
+.field .inp{width:100%; padding:10px 12px; border-radius:12px; border:1.5px solid var(--line2); background:var(--panel2); color:var(--tx); font:600 15px "Golos UI", system-ui}
+.card .lw-ta.inp, .card textarea.inp{width:100%; min-height:300px}
+.rep .paper .lwr{display:grid; gap:16px}
+.ttabs{display:inline-flex; gap:4px; margin-left:14px; padding:4px; border-radius:14px; background:var(--panel2)} .ttabs button{border:0; background:none; padding:7px 14px; border-radius:10px; font-weight:700; color:var(--mute); cursor:pointer} .ttabs button.on{background:var(--panel); color:var(--tx); box-shadow:var(--sh)} .ttabs small{color:var(--acc)}
 </style>
 </head>
 <body>

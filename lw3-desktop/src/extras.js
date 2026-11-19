@@ -29,7 +29,7 @@ document.addEventListener('keydown', e => {
 }, true);
 
 /* ---------- PDF одной кнопкой (WebView2); иначе — окно печати ---------- */
-const pdfName = S => `Отчёт_адиабата_${safeName(S && S.fio) || 'студент'}.pdf`;
+const pdfName = S => `Отчёт_ЛР${LAB}_${safeName(S && S.fio) || 'студент'}.pdf`;
 async function savePdf(name) {
   if (IS_TAURI) {
     try { const p = await tauri('save_pdf', { name }); if (p) toast(`${ic('circle-check')} PDF сохранён: ${esc(p)}`); return; }
@@ -41,9 +41,9 @@ async function savePdf(name) {
 /* ---------- общая папка для сдачи работ ---------- */
 let FOLDER = store.get('lw3d-folder', ''), FOLDER_FIXED = false;
 if (IS_TAURI) tauri('app_config').then(t => { if (!t) return; try { const c = JSON.parse(t); if (c.folder) { FOLDER = String(c.folder); FOLDER_FIXED = true; render(); } } catch (e) {} }).catch(() => {});
-const workFileName = S => `Адиабата_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
+const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
 async function submitWork(auto) {
-  const S = l3Load(); ensureMeta(S);
+  const L = curLab(), S = L.load(); ensureMeta(S); const l3Save = () => L.save();
   if (IS_TAURI && FOLDER) {
     try {
       const p = await tauri('write_lw3', { dir: FOLDER, name: workFileName(S), contents: packResult() });
@@ -89,7 +89,7 @@ if (IS_TAURI) fetch('https://api.github.com/repos/vitalya2078-cloud/vitalya2078-
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-d]'); if (!b) return;
   switch (b.dataset.d) {
-    case 'pdf': savePdf(pdfName(L3S)); break;
+    case 'pdf': savePdf(pdfName(curLab().S())); break;
     case 'submit': submitWork(false); break;
     case 'upd': if (UPD) tauri('open_release', { url: UPD.url }).catch(err => toast(esc(String(err)), 'bad')); break;
   }

@@ -311,7 +311,7 @@ function l3ReportHtml() {
   const o = l3Calc(), ln = v => `<span class="ul">${esc(v || '')}</span>`, [dd, mon, yy] = String(S.date || '').split('.');
   const MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
   const equip = [['Большой стеклянный баллон Б', '—', '—'], ['Краны K (к компрессору) и K₀ (к атмосфере)', '—', '—'], ['Компрессор Н', '—', '—'], ['Манометр М U-образный жидкостный', '0–400 мм', '1 мм'], ['Секундомер', '—', '0,1 с']];
-  const p1 = `<section class="lwp"><p class="c b">Лаборатория кафедры физики</p><hr>
+  const p1 = `<section class="lwp"><p class="c b">${typeof LAB_DEPT === 'string' ? LAB_DEPT : 'Лаборатория кафедры физики и общетехнических дисциплин'}</p><hr>
     <p class="row">Оценка ${ln('')} Подпись преподавателя ${ln('')}</p>
     <p class="row">Курсант (студент) ${ln(S.fio)} Класс <span class="ul s">${esc(S.group || '')}</span></p>
     <p class="row">Дата выполнения «<span class="ul s">${esc(dd || '')}</span>» <span class="ul m">${MON[(+mon || 1) - 1]}</span> 20<span class="ul s">${esc((yy || '').slice(2))}</span> г.</p>
@@ -329,12 +329,12 @@ function l3ReportHtml() {
     <tr><td colspan="3">Среднее значение</td><td>⟨γ⟩ = ${l3Fix(o.gm, 3)}</td></tr></table>
     <p class="row sign">Подпись зав. кабинетом ${ln('')}</p></section>`;
   const p3 = `<section class="lwp"><p class="c b">РАСЧЕТНЫЕ ФОРМУЛЫ ИСКОМЫХ ВЕЛИЧИН И ПОГРЕШНОСТЕЙ</p>
-    <div class="fm"><p>γ = h₁/(h₁ − h₂) &nbsp; (19); &nbsp; ⟨γ⟩ = Σγᵢ/N</p><p>⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)); &nbsp; ε_γ = ⟨Δγ⟩/⟨γ⟩·100 %</p><p>γ_T = Cₘₚ/Cₘᵥ = (i + 2)/i; &nbsp; ε = |γ_T − ⟨γ⟩|/γ_T·100 %</p></div><hr>
+    <div class="fm"><p>γ = h₁/(h₁ − h₂) &nbsp; (19); &nbsp; ⟨γ⟩ = Σγᵢ/N</p><p>⟨Δγ⟩ = Σ|⟨γ⟩ − γᵢ| / √(N(N − 1)); &nbsp; ε_γ = ⟨Δγ⟩/⟨γ⟩·100</p><p>γ_T = Cₘₚ/Cₘᵥ = (i + 2)/i; &nbsp; ε = |γ_T − ⟨γ⟩|/γ_T·100</p></div><hr>
     <p class="c b">ВЫЧИСЛЕНИЕ РЕЗУЛЬТАТОВ ИЗМЕРЕНИЯ И ПОГРЕШНОСТЕЙ</p>
     ${o.a.map((x, i) => `<p class="small">γ${'₁₂₃'[i]} = ${x.h1}/(${x.h1} − ${x.h2}) = ${l3Fix(x.g, 3)}</p>`).join('')}
     <p class="small">⟨γ⟩ = ${l3Fix(o.gm, 3)}; &nbsp; ⟨Δγ⟩ = ${l3Fix(o.dg, 3)}; &nbsp; ε_γ = ${f1(o.eg, 1)} %</p>
     <p class="small"><b>γ = ${l3Res(o)}</b></p>
-    <p class="small">γ_T = (5 + 2)/5 = 1,40 (воздух — двухатомный газ, i = 5); &nbsp; ε = |1,40 − ${l3Fix(o.gm, 3)}|/1,40·100 % = ${f1(o.e, 1)} %</p></section>`;
+    <p class="small">γ_T = (5 + 2)/5 = 1,40 (воздух — двухатомный газ, i = 5); &nbsp; ε = |1,40 − ${l3Fix(o.gm, 3)}|/1,40·100 = ${f1(o.e, 1)} %</p></section>`;
   const p4 = `<section class="lwp"><p class="c b">ПОСТРОЕНИЕ ГРАФИКОВ</p>${l3GraphSvg(o)}
     <p class="small c">Процессы в баллоне на (P, Vₘ)-диаграмме для опыта 1 (в окрестности P₀): 2–3 — адиабатное расширение, 3–4 — изохорное нагревание, 2–4 — изотерма. Наклон адиабаты в γ раз больше наклона изотермы.</p>
     <p class="c b mt2">ВЫВОДЫ ПО ПРОДЕЛАННОЙ РАБОТЕ</p><p class="concl">${esc(S.concl).replace(/\n/g, '<br>')}</p>

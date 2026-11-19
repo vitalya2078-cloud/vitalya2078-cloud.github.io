@@ -8,7 +8,7 @@ let AQ = 0;                   // текущий вопрос допуска в �
 function topbar(S) {
   const fin = L3.steps[S.max][0] === 'report';
   return `<header class="tb">
-    <div class="tb-brand">${LOGO}<b>Показатель адиабаты</b></div>
+    <div class="tb-brand"><button class="tb-ic" data-d="labs" title="К списку работ">${ic('chevron-left')}</button>${LOGO}<b>ЛР 3<small>Показатель адиабаты</small></b></div>
     <nav class="tb-steps">${L3.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
       return `<button data-l3="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i><span>${t}</span></button>`; }).join('<s></s>')}</nav>
     <div class="tb-act">
@@ -18,7 +18,6 @@ function topbar(S) {
       <button class="tb-ic" data-d="help" title="Подсказка (F1)">${ic('book-open')}</button>
       <button class="tb-ic" data-d="theme" title="Тема">${ic('sparkles')}</button>
       <button class="tb-ic" data-d="sound" title="Звук">${ic(SND.on ? 'volume-2' : 'volume-x')}</button>
-      <button class="tb-ic" data-d="home" title="Выйти">${ic('chevron-left')}</button>
     </div></header>`;
 }
 
@@ -108,22 +107,22 @@ function showTheory() {
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-d]'); if (!b) return; const d = b.dataset;
   if (d.d === 'aq') { AQ = +d.v; render(); }
-  if (d.d === 'theory') showTheory();
-  if (d.d === 'ttab') { TAB = d.v; showTheory(); }
+  if (d.d === 'theory') (LAB === 3 ? showTheory : showTheoryLab)();
+  if (d.d === 'ttab') { TAB = d.v; (LAB === 3 ? showTheory : showTheoryLab)(); }
   if (d.d === 'stab') { TAB = d.v; render(); }
 });
 // после выбора ответа — короткая пауза и следующий вопрос (если ответ ещё не проверялся)
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-l3="admit"]'); if (!b) return;
-  if (L3S && !L3S.admitChecked) setTimeout(() => { if (SCREEN === 'work' && l3St() === 'admit' && +b.dataset.q === AQ && AQ < L3_ADMIT.length) { AQ++; render(); } }, 260);
+  if (LAB === 3 && L3S && !L3S.admitChecked) setTimeout(() => { if (SCREEN === 'work' && l3St() === 'admit' && +b.dataset.q === AQ && AQ < L3_ADMIT.length) { AQ++; render(); } }, 260);
 });
 document.addEventListener('keydown', e => {
   if (SCREEN !== 'work' || !$('#modal').hidden || e.ctrlKey || e.altKey) return;
   const tag = e.target.tagName || ''; if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-  const st = l3St();
-  if (st === 'admit') {
+  const L = curLab(), S0 = L.S(); if (!S0) return; const st = L.steps[S0.step][0];
+  if (st === 'admit' || (st === 'concl' && LAB !== 3)) {
     const k = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Numpad1: 0, Numpad2: 1, Numpad3: 2, Numpad4: 3 }[e.code];
     const opts = document.querySelectorAll('.qs-opts button'); if (k != null && opts[k]) { e.preventDefault(); opts[k].click(); }
-    if (e.key === 'ArrowRight' && AQ < L3_ADMIT.length) { AQ++; render(); } if (e.key === 'ArrowLeft' && AQ > 0) { AQ--; render(); }
+    if (st === 'admit') { if (e.key === 'ArrowRight' && AQ < L.admit.length) { AQ++; render(); } if (e.key === 'ArrowLeft' && AQ > 0) { AQ--; render(); } }
   }
 });

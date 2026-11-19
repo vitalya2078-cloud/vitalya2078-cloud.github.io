@@ -3,7 +3,8 @@
    проверка подлинности, отчёт любого студента, выгрузка в Excel (CSV).
    ===================================================================== */
 const TKEY = 'lw3d-teacher';
-let TROWS = store.get(TKEY, []);          // [{ name, ok, d }]
+let TROWS = store.get(TKEY, []);          // [{ name, ok, d }] — работы всех лабораторных; d.lab — номер работы
+let TLAB = 3, TVIEW = [];                  // вкладка «ЛР n» и её строки
 const tSave = () => store.set(TKEY, TROWS);
 const nf = (v, d) => Number.isFinite(v) ? v.toFixed(d).replace('.', ',') : '';
 
@@ -26,8 +27,8 @@ function teacherAddTexts(list, quiet) {
   for (const { name, text } of list) {
     const r = unpackResult(text);
     if (r.err) { bad++; continue; }
-    const key = (r.d.state.fio || '') + '|' + (r.d.state.group || '');
-    TROWS = TROWS.filter(x => ((x.d.state.fio || '') + '|' + (x.d.state.group || '')) !== key);   // повторный файл того же студента заменяет прежний
+    const kf = x => (x.d.state.fio || '') + '|' + (x.d.state.group || '') + '|' + (x.d.lab || 3), key = kf(r);
+    TROWS = TROWS.filter(x => kf(x) !== key); TLAB = r.d.lab || 3;   // повторный файл того же студента заменяет прежний
     TROWS.push({ name, ok: r.ok, d: r.d }); added++;
   }
   TROWS.sort((a, b) => String(a.d.state.fio).localeCompare(String(b.d.state.fio), 'ru'));
@@ -59,9 +60,11 @@ function tDups(rows) {
 }
 function vTeacher() {
   document.body.classList.add('noside'); ui.side.innerHTML = '';
-  const rows = TROWS.map(tRow), fin = rows.filter(r => r.o), gms = fin.map(r => r.o.gm), dups = tDups(rows);
+  TVIEW = TROWS.filter(r => (r.d.lab || 3) === TLAB);
+  if (TLAB !== 3) return vTeacherLab();
+  const rows = TVIEW.map(tRow), fin = rows.filter(r => r.o), gms = fin.map(r => r.o.gm), dups = tDups(rows);
   const mean = gms.length ? gms.reduce((s, x) => s + x, 0) / gms.length : NaN, fake = rows.filter((r, i) => !r.auth || dups[i].length).length;
-  ui.main.innerHTML = `<div class="head"><h1>Результаты группы</h1><div class="sp"></div>${themeBtn()}
+  ui.main.innerHTML = `<div class="head"><h1>Результаты группы</h1>${tTabs()}<div class="sp"></div>${themeBtn()}
       <button class="btn line" data-t="back">${ic('chevron-left')} Выйти</button>
       <button class="btn line" data-t="demo">${ic('graduation-cap')} Демо-прохождение</button>
       <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
@@ -96,7 +99,7 @@ function tStrip(fin) {
   </svg>`;
 }
 function tOpen(i) {
-  const r = TROWS[i]; if (!r) return; const row = tRow(r);
+  const r = TVIEW[i]; if (!r) return; if ((r.d.lab || 3) !== 3) return tOpenLab(r); const row = tRow(r);
   const keep = L3S; L3S = r.d.state; let html; try { html = row.runs.length === L3.N && r.d.state.concl ? l3ReportHtml() : ''; } finally { L3S = keep; }
   $('#printroot').innerHTML = html; TPDF = row.fio;
   modal(`${esc(row.fio)} · ${esc(row.group)}`, `${row.auth ? '' : `<p class="pill bad" style="margin-bottom:12px">${ic('circle-x')} Файл изменён после сохранения в программе — результат не подтверждён</p>`}
@@ -106,21 +109,21 @@ function tOpen(i) {
 }
 let TPDF = '';
 /* подробности: ответы допуска и защиты, время по шагам, попытки */
-function tDetails(S) {
-  const dx = S.dx || {}, t = dx.t || {}, keys = L3.steps.map(([k]) => k);
+function tDetails(S, n = 3) {
+  const LL = LABS[n], dx = S.dx || {}, t = dx.t || {}, keys = LL.steps.map(([k]) => k), NS = keys.length - 1;
   const at = k => t[k] ? new Date(t[k]).getTime() : NaN, end = dx.finished ? new Date(dx.finished).getTime() : NaN;
   const dur = ms => !Number.isFinite(ms) || ms < 0 ? '—' : ms < 60000 ? '< 1 мин' : ms < 3600000 ? `${Math.round(ms / 60000)} мин` : `${Math.floor(ms / 3600000)} ч ${Math.round(ms % 3600000 / 60000)} мин`;
-  const times = keys.slice(0, 5).map((k, i) => `<span class="pill">${L3.steps[i][1]}: ${dur((i < 4 ? at(keys[i + 1]) : end) - at(k))}</span>`).join(' ');
+  const times = keys.slice(0, NS).map((k, i) => `<span class="pill">${LL.steps[i][1]}: ${dur((i < NS - 1 ? at(keys[i + 1]) : end) - at(k))}</span>`).join(' ');
   const qa = (list, ans) => list.map(([q, a], i) => `<li class="${ans && ans[i] === a ? 'ok' : 'bad'}">${ans && ans[i] === a ? '✓' : '✗'} ${esc(q)}${ans && ans[i] && ans[i] !== a ? `<small>ответ: ${esc(ans[i])}</small>` : ''}</li>`).join('');
   const pk = dx.pk || {}, pkTxt = Object.keys(pk).length ? Object.entries(pk).map(([k, n]) => `${PK_NAME[k] || k} — ${n}`).join(', ') : 'нет';
   return `<section class="tdet"><div class="tdet-row">${times}<span class="pill">всего: ${dur(end - at('admit'))}</span></div>
     <div class="tdet-row mute small">Попытки: допуск — ${dx.admitTries || 0}, обработка — ${dx.procTries || 0}, защита — ${dx.cqTries || 0}. Ошибки в ячейках обработки: ${esc(pkTxt)}.</div>
-    <div class="grid2 even"><div><b>Допуск</b><ul class="tqa">${qa(L3_ADMIT, S.admit)}</ul></div><div><b>Защита</b><ul class="tqa">${S.cqOk || Object.keys(S.cq || {}).length ? qa(L3_CQ, S.cq) : '<li class="mute">ещё не проходил</li>'}</ul></div></div></section>`;
+    <div class="grid2 even"><div><b>Допуск</b><ul class="tqa">${qa(LL.admit, S.admit)}</ul></div><div><b>Защита</b><ul class="tqa">${S.cqOk || Object.keys(S.cq || {}).length ? qa(LL.cq, S.cq) : '<li class="mute">ещё не проходил</li>'}</ul></div></div></section>`;
 }
 function tCsv() {
   const q = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   const head = ['ФИО', 'Класс', 'Дата', 'Этап', 'Допуск (верно из 8)', 'h1 опыт 1', 'h2 опыт 1', 'h1 опыт 2', 'h2 опыт 2', 'h1 опыт 3', 'h2 опыт 3', '<γ>', '<Δγ>', 'εγ, %', 'ε, %', 'Защита (верно из 8)', 'Попыток допуска', 'Попыток обработки', 'Попыток защиты', 'Подлинность', 'Измерения совпадают с'];
-  const all = TROWS.map(tRow), dd = tDups(all);
+  const all = TVIEW.map(tRow), dd = tDups(all);
   const lines = all.map((r, k) => [r.fio, r.group, r.date, r.stage, r.adm, ...[0, 1, 2].flatMap(i => r.runs[i] ? [r.runs[i].h1, r.runs[i].h2] : ['', '']),
     r.o ? nf(r.o.gm, 3) : '', r.o ? nf(r.o.dg, 3) : '', r.o ? nf(r.o.eg, 1) : '', r.o ? nf(r.o.e, 1) : '', r.done ? r.cq : '',
     r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.demo ? 'ДЕМО' : r.auth ? 'подлинный' : 'ИЗМЕНЁН', dd[k].join(', ')].map(q).join(';'));
@@ -168,7 +171,8 @@ document.addEventListener('click', e => {
     case 'folder-pick': tauri('pick_folder').then(d => { if (d) { FOLDER = d; store.set('lw3d-folder', d); render(); folderLoad(); } }).catch(e => toast(esc(String(e)), 'bad')); break;
     case 'folder-load': folderLoad(); break;
     case 'folder-clear': FOLDER = ''; store.set('lw3d-folder', ''); render(); break;
-    case 'csv': saveFile(`Адиабата_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsv(), 'csv', 'Таблица для Excel'); break;
+    case 'tlab': TLAB = +d.v; render(); break;
+    case 'csv': if (TLAB !== 3) { saveFile(`ЛР${TLAB}_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsvLab(), 'csv', 'Таблица для Excel'); break; } saveFile(`Адиабата_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsv(), 'csv', 'Таблица для Excel'); break;
     case 'clear': if (confirm('Убрать все загруженные работы из списка? Сами файлы останутся на диске.')) { TROWS = []; tSave(); render(); } break;
   }
 });
@@ -177,3 +181,46 @@ document.addEventListener('dragleave', e => { const z = $('.drop'); if (z && !e.
 document.addEventListener('drop', () => { const z = $('.drop'); if (z) z.classList.remove('over'); });
 
 render();
+
+/* ---------- ЛР 1 и ЛР 2 ---------- */
+function tTabs() {
+  return `<div class="ttabs">${[1, 2, 3].map(n => { const k = TROWS.filter(r => (r.d.lab || 3) === n).length;
+    return `<button data-t="tlab" data-v="${n}" class="${TLAB === n ? 'on' : ''}">ЛР ${n}${k ? ` <small>${k}</small>` : ''}</button>`; }).join('')}</div>`;
+}
+function tRowLab(r) {
+  const n = r.d.lab, L = LABS[n], S = r.d.state, demo = !!(S.demo || (S.dx && S.dx.demo)), done = !!S.done;
+  let res = ''; if (done) { try { res = withLabState(n, S, () => L.result()); } catch (e) { res = ''; } }
+  const adm = L.admit.filter(([, a], i) => S.admit && S.admit[i] === a).length, cq = L.cq.filter(([, a], i) => S.cq && S.cq[i] === a).length;
+  const stage = demo ? 'демо' : done ? 'защищена' : L.steps[Math.min(S.max || 0, L.steps.length - 1)][1].toLowerCase();
+  return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', date: S.date || '', stage, done, res, adm, cq, dx: S.dx || {}, auth: r.ok && !demo, demo, sig: L.sig(S), n };
+}
+function vTeacherLab() {
+  const rows = TVIEW.map(tRowLab), dups = rows.map((r, i) => rows.filter((x, j) => j !== i && r.sig && x.sig === r.sig).map(x => x.fio)), fake = rows.filter((r, i) => !r.auth || dups[i].length).length;
+  ui.main.innerHTML = `<div class="head"><h1>Результаты группы</h1>${tTabs()}<div class="sp"></div>${themeBtn()}
+      <button class="btn line" data-t="back">${ic('chevron-left')} Выйти</button>
+      <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
+      <button class="btn" data-t="add">${ic('plus')} Добавить файлы</button></div>
+    ${folderCard()}
+    <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы работ, которые сохранили студенты, или нажми, чтобы выбрать.</div>
+    <div class="stats"><div class="stat"><small>Работ — ЛР ${TLAB}</small><b>${rows.length}</b></div><div class="stat"><small>Защищено</small><b style="color:var(--ok)">${rows.filter(r => r.done).length}</b></div>
+      <div class="stat"><small>Подлинность</small><b style="color:${fake ? 'var(--bad)' : 'var(--ok)'}">${rows.length ? (fake ? `${fake} под вопросом` : 'всё в порядке') : '—'}</b></div></div>
+    <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Студент</th><th>Класс</th><th>Дата</th><th>Этап</th><th>Допуск</th><th>Результат</th><th>Защита</th><th>Попытки<br>доп. / обр. / защ.</th><th>Файл</th></tr>
+      ${rows.map((r, i) => `<tr class="r" data-t="open" data-v="${i}"><td><div style="display:flex; gap:10px; align-items:center">${ava(r.fio)}<div><b>${esc(r.fio)}</b>${r.dx.device === 'android' ? ' <span class="pill">с телефона</span>' : ''}${dups[i].length ? `<small class="dup">${ic('circle-x')} измерения совпадают: ${esc(dups[i].join(', '))}</small>` : ''}</div></div></td><td>${esc(r.group)}</td><td>${esc(r.date)}</td>
+        <td><span class="pill ${r.done ? 'ok' : 'warn'}">${esc(r.stage)}</span></td><td class="n">${r.adm}/8</td><td><b>${esc(r.res || '—')}</b></td><td class="n">${r.done ? `${r.cq}/${LABS[r.n].cq.length}` : '—'}</td>
+        <td class="n">${r.dx.admitTries || 0} / ${r.dx.procTries || 0} / ${r.dx.cqTries || 0}</td><td>${r.demo ? '<span class="pill warn">демо</span>' : r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`
+      : `<p class="mute center" style="padding:30px">Работ по ЛР ${TLAB} пока нет.</p>`}</section>`;
+}
+function tOpenLab(r) {
+  const n = r.d.lab, L = LABS[n], row = tRowLab(r), S = r.d.state;
+  let html = ''; if (S.done) { try { html = withLabState(n, S, () => L.report()); } catch (e) { html = ''; } }
+  $('#printroot').innerHTML = html; TPDF = row.fio;
+  modal(`${esc(row.fio)} · ${esc(row.group)} · ЛР ${n}`, `${row.auth || row.demo ? '' : `<p class="pill bad" style="margin-bottom:12px">${ic('circle-x')} Файл изменён после сохранения в программе — результат не подтверждён</p>`}
+    ${tDetails(S, n)}${html ? `<div class="paper" style="max-height:none"><div class="lwr">${html}</div></div>` : `<p class="mute">Работа не доведена до отчёта: этап — ${esc(row.stage)}.</p>`}`,
+    html ? `<button class="btn" data-t="pdf">${ic('file-text')} Сохранить PDF</button><button class="btn line" data-t="print">${ic('printer')} Печать</button>` : '');
+}
+function tCsvLab() {
+  const q = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const head = ['ФИО', 'Класс', 'Дата', 'Этап', 'Допуск (верно из 8)', 'Результат', 'Защита (верно)', 'Попыток допуска', 'Попыток обработки', 'Попыток защиты', 'Подлинность'];
+  const lines = TVIEW.map(tRowLab).map(r => [r.fio, r.group, r.date, r.stage, r.adm, r.res, r.done ? r.cq : '', r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.demo ? 'ДЕМО' : r.auth ? 'подлинный' : 'ИЗМЕНЁН'].map(q).join(';'));
+  return '﻿' + [head.map(q).join(';'), ...lines].join('\r\n');
+}
