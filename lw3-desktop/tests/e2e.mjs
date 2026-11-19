@@ -63,6 +63,11 @@ try {
       }
     }
   });
+  // перед отчётом — сводка «Что рассказать на защите» (один раз сама, потом кнопкой)
+  await page.locator('#modal .sum').waitFor(); await shot(page, 'summary');
+  must(await page.locator('#modal .sum-t tr').count() === 4 && (await page.locator('#modal .sum').innerText()).includes('1,40'), 'в сводке нет измерений или теории');
+  await page.keyboard.press('Escape'); must(await page.locator('#modal').isHidden(), 'сводка не закрылась');
+  await page.click('[data-d="summary"]'); must(await page.locator('#modal .sum').isVisible(), 'кнопка сводки не работает'); await page.keyboard.press('Escape');
   await page.waitForTimeout(300); await shot(page, 'report-step');
   must(await page.locator('#d-paper .lwp').count() === 4, 'в отчёте не 4 листа');
   must(await page.locator('#printroot .lwp').count() === 4, 'отчёт не подготовлен к печати');
@@ -113,6 +118,11 @@ try {
   await page.click('tr.r >> nth=0'); await page.locator('#modal .lwp').first().waitFor(); await shot(page, 'teacher-report');
   must(await page.locator('#modal .tdet .tqa li').count() === 16, 'нет подробностей по вопросам у преподавателя');
   await page.keyboard.press('Escape');
+  // демо-прохождение: работа выполнена моделью, сводка и 4 листа отчёта; в список группы не попадает
+  await page.click('[data-t="demo"]'); await page.locator('#modal .sum').waitFor();
+  must(await page.locator('#modal .lwp').count() === 4 && await page.locator('#modal .sum-t tr').count() === 4 && (await page.locator('#modal .sum').innerText()).includes('Демо'), 'демо-прохождение неполное');
+  must(await page.evaluate(() => TROWS.length === 2 && SCREEN === 'teacher'), 'демо попало в список группы');
+  await shot(page, 'teacher-demo'); await page.keyboard.press('Escape');
   const [csv] = await Promise.all([page.waitForEvent('download'), page.click('[data-t="csv"]')]);
   const csvText = fs.readFileSync(await csv.path(), 'utf8');
   must(csvText.startsWith('﻿ФИО;') && csvText.split('\r\n').length === 3, 'CSV неверный');

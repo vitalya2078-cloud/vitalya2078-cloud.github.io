@@ -12,9 +12,10 @@ function tRow(r) {
   let o = null; if (runs.length === L3.N) { const keep = L3S; L3S = S; try { o = l3Calc(); } finally { L3S = keep; } }
   // проверка: γ из таблицы совпадает с записанной сводкой
   const consistent = !o || !r.d.summary || Math.abs(o.gm - r.d.summary.gm) < 1e-9;
-  const stage = done ? 'защищена' : L3.steps[Math.min(S.max || 0, L3.steps.length - 1)][1].toLowerCase();
+  const demo = !!(S.demo || (S.dx && S.dx.demo));   // демо-прохождение — не работа студента
+  const stage = demo ? 'демо' : done ? 'защищена' : L3.steps[Math.min(S.max || 0, L3.steps.length - 1)][1].toLowerCase();
   const adm = L3_ADMIT.filter(([, a], i) => S.admit && S.admit[i] === a).length, cq = L3_CQ.filter(([, a], i) => S.cq && S.cq[i] === a).length;
-  return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', date: S.date || '', stage, done, runs, o, adm, cq, dx: S.dx || {}, auth: r.ok && consistent, saved: r.d.saved };
+  return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', date: S.date || '', stage, done, runs, o, adm, cq, dx: S.dx || {}, auth: r.ok && consistent && !demo, demo, saved: r.d.saved };
 }
 async function teacherAdd(files) {
   const list = []; for (const f of files) list.push({ name: f.name, text: await readFile(f) });
@@ -62,6 +63,7 @@ function vTeacher() {
   const mean = gms.length ? gms.reduce((s, x) => s + x, 0) / gms.length : NaN, fake = rows.filter((r, i) => !r.auth || dups[i].length).length;
   ui.main.innerHTML = `<div class="head"><h1>Результаты группы</h1><div class="sp"></div>${themeBtn()}
       <button class="btn line" data-t="back">${ic('chevron-left')} Выйти</button>
+      <button class="btn line" data-t="demo">${ic('graduation-cap')} Демо-прохождение</button>
       <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
       <button class="btn line" data-t="clear" ${rows.length ? '' : 'disabled'}>${ic('trash-2')} Очистить</button>
       <button class="btn" data-t="add">${ic('plus')} Добавить файлы</button></div>
@@ -78,7 +80,7 @@ function vTeacher() {
         <td><span class="pill ${r.done ? 'ok' : 'warn'}">${esc(r.stage)}</span></td><td class="n">${r.adm}/8</td>
         <td>${r.runs.map(x => `${x.h1}/${x.h2}`).join(' · ') || '—'}</td><td class="n"><b>${r.o ? esc(l3Res(r.o)) : '—'}</b></td><td class="n">${r.o ? nf(r.o.e, 1) : '—'}</td>
         <td class="n">${r.done ? `${r.cq}/8` : '—'}</td><td class="n">${r.dx.admitTries || 0} / ${r.dx.procTries || 0} / ${r.dx.cqTries || 0}</td>
-        <td>${r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`
+        <td>${r.demo ? `<span class="pill warn">демо</span>` : r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`
       : '<p class="mute center" style="padding:30px">Пока пусто. Попроси студентов сохранить работу (кнопка «Сохранить файл для преподавателя» или Ctrl+S) и собери файлы на флешку или в общую папку.</p>'}</section>
     <p class="mute small mt">Подпись файла защищает от правки результата вручную (в Блокноте и т. п.). Файлы хранятся только на этом компьютере, пока ты их не очистишь.</p>`;
 }
@@ -121,7 +123,7 @@ function tCsv() {
   const all = TROWS.map(tRow), dd = tDups(all);
   const lines = all.map((r, k) => [r.fio, r.group, r.date, r.stage, r.adm, ...[0, 1, 2].flatMap(i => r.runs[i] ? [r.runs[i].h1, r.runs[i].h2] : ['', '']),
     r.o ? nf(r.o.gm, 3) : '', r.o ? nf(r.o.dg, 3) : '', r.o ? nf(r.o.eg, 1) : '', r.o ? nf(r.o.e, 1) : '', r.done ? r.cq : '',
-    r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.auth ? 'подлинный' : 'ИЗМЕНЁН', dd[k].join(', ')].map(q).join(';'));
+    r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.demo ? 'ДЕМО' : r.auth ? 'подлинный' : 'ИЗМЕНЁН', dd[k].join(', ')].map(q).join(';'));
   return '﻿' + [head.map(q).join(';'), ...lines].join('\r\n');
 }
 /* ---------- пароль ---------- */
@@ -160,6 +162,7 @@ document.addEventListener('click', e => {
     case 'back': SCREEN = 'home'; render(); break;
     case 'add': pickFiles('teacher'); break;
     case 'open': tOpen(+d.v); break;
+    case 'demo': teacherDemo(); break;
     case 'print': window.print(); break;
     case 'pdf': savePdf(`Отчёт_адиабата_${safeName(TPDF) || 'студент'}.pdf`); break;
     case 'folder-pick': tauri('pick_folder').then(d => { if (d) { FOLDER = d; store.set('lw3d-folder', d); render(); folderLoad(); } }).catch(e => toast(esc(String(e)), 'bad')); break;

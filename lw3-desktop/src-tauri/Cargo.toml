@@ -1,6 +1,6 @@
 [package]
 name = "lw3-adiabata"
-version = "1.4.4"
+version = "1.5.0"
 description = "Лабораторная работа № 3: показатель адиабаты (Клеман — Дезорм)"
 edition = "2021"
 publish = false
