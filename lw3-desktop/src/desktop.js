@@ -83,44 +83,21 @@ function vHome() {
 }
 
 /* ---------- работа: боковая панель ---------- */
-function vSide(S) {
-  const fin = L3.steps[S.max][0] === 'report', pct = Math.round((fin && S.done ? 6 : S.max) / 6 * 100);
-  ui.side.innerHTML = `<div class="brand">${LOGO}<div><b>Показатель адиабаты</b><span>Метод Клемана — Дезорма</span></div></div>
-    <nav class="steps">${L3.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
-      return `<button data-l3="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i>${t}</button>`; }).join('')}</nav>
-    <div class="prog" title="Выполнено ${pct} %"><div style="width:${pct}%"></div></div>
-    <div class="side-sp"></div>
-    <div class="who">${ava(S.fio || PROFILE.fio)}<div><b title="${esc(S.fio)}">${esc(S.fio || PROFILE.fio)}</b><small>${esc(S.group || PROFILE.group || '')}</small></div></div>
-    <div class="side-act">
-      <button class="wide" data-d="hod" title="H">${ic('clipboard-list')} Ход работы</button>
-      <button data-d="save" title="Ctrl+S">${ic('file-text')} Сохранить</button>
-      <button data-d="help" title="F1">${ic('book-open')} Подсказка</button>
-      <button data-d="sound">${ic(SND.on ? 'volume-2' : 'volume-x')} Звук</button>
-      <button data-d="theme">${ic('sparkles')} ${isLight() ? 'Тёмная' : 'Светлая'}</button>
-      <button data-d="full" title="F11">${ic('move')} Весь экран</button>
-      <button data-d="home">${ic('chevron-left')} Выйти</button>
-    </div>`;
-}
 
 /* ---------- работа: экраны шагов ---------- */
 const kbd = k => `<kbd>${k}</kbd>`;
 const lt = 'АБВГДЕ';
 const inp = (k, val, cls = '', ph = '') => `<input class="inp l3i ${cls}" data-k3="${k}" inputmode="decimal" autocomplete="off" value="${esc(val ?? '')}" placeholder="${ph}">`;
 const nextBtn = label => `<button class="btn wide big next" data-l3="next" data-primary>${label} ${ic('chevron-right')} ${kbd('Enter')}</button>`;
-function head(S, extra = '') {
-  return `<div class="head"><h1>${L3.steps[S.step][1]}</h1><div class="sp"></div>${extra}</div>`;
+function head(S, extra = '') {   // шаг виден в верхней полосе; здесь — только отметки (всё верно, ошибки…)
+  return extra ? `<div class="head"><div class="sp"></div>${extra}</div>` : '';
 }
 function vWork() {
-  document.body.classList.remove('noside');
+  document.body.classList.add('noside', 'full'); ui.side.innerHTML = '';   // верхняя полоса шагов вместо боковой панели
   const S = l3Load(); ensureMeta(S);
   const st = L3.steps[S.step][0];
-  if (newLayout(st)) {        // новая раскладка: без боковой панели, во весь экран
-    document.body.classList.add('noside', 'full'); ui.side.innerHTML = '';
-    ui.main.innerHTML = st === 'admit' ? vAdmitStep(S) : vTrainer(S, st);
-  } else {
-    document.body.classList.remove('full'); vSide(S);
-    ui.main.innerHTML = ({ admit: wAdmit, prep: wPrep, exp: wExp, proc: wProc, concl: wConcl, report: wReport })[st](S);
-  }
+  ui.main.innerHTML = st === 'admit' ? vAdmitStep(S) : st === 'prep' || st === 'exp' ? vTrainer(S, st)
+    : topbar(S) + `<div class="pg">${({ proc: wProc, concl: wConcl, report: wReport })[st](S)}</div>`;
   $('#printroot').innerHTML = st === 'report' ? l3ReportHtml() : '';
   if (st === 'prep' || st === 'exp') { l3Draw(); l3Run(); liveTick(true); }
 }
@@ -128,35 +105,6 @@ function quiz(list, S, act, seed, key) {
   const chosen = S[key], checked = S[key === 'admit' ? 'admitChecked' : 'cqChecked'];
   return list.map(([q, a, x], i) => { const opts = lwShuf(i + seed, [a, ...x]), ch = chosen[i];
     return `<div class="q"><b>${i + 1}. ${esc(q)}</b><div class="opts">${opts.map((o, j) => `<button data-l3="${act}" data-q="${i}" data-v="${esc(o)}" class="${ch === o ? (checked ? (o === a ? 'ok' : 'bad') : 'pick') : ''}"><span class="lt">${lt[j]}</span><span>${esc(o)}</span></button>`).join('')}</div></div>`; }).join('');
-}
-function wAdmit(S) {
-  const n = Object.keys(S.admit).length;
-  const tabs = [['theory', 'Теория'], ['equip', 'Установка'], ['safety', 'Безопасность']];
-  return head(S, S.admitOk ? `<span class="pill ok">${ic('circle-check')} допуск сдан</span>` : '') + `<div class="grid2">
-    <div class="sticky"><section class="card"><span class="kicker">Цель работы</span><p class="aim">${esc(L3_AIM())}</p></section>
-    <section class="card"><div class="tabs">${tabs.map(([k, t]) => `<button data-d="tab" data-v="${k}" class="${TAB === k ? 'on' : ''}">${t}</button>`).join('')}</div>
-    <div class="read">${TAB === 'equip' ? `<div class="paper-mini">${l3SchemeSvg()}</div>` : ''}${L3_TEXT[TAB]}</div></section></div>
-    <section class="card"><h2>${ic('book-open-check')} Допуск к работе <span class="pill ${n === 8 ? 'ok' : ''}">отвечено ${n} из 8</span></h2>
-    <p class="mute small">Ответь на все вопросы. Нужно не меньше 6 верных из 8.</p>${quiz(L3_ADMIT, S, 'admit', 80, 'admit')}
-    <button class="btn wide big ${S.admitOk ? 'line' : ''}" data-l3="admitCheck" ${S.admitOk ? '' : 'data-primary'}>${ic('circle-check')} Сдать допуск ${S.admitOk ? '' : kbd('Enter')}</button>${S.admitOk ? nextBtn('К подготовке установки') : ''}</section></div>`;
-}
-function rig() {
-  return `<section class="card rig"><div class="rig-top">
-      <div class="meter"><small>Δh, мм</small><b id="d-h">0</b></div><div class="meter"><small>Секундомер</small><b id="d-sw">—</b></div><div class="meter proc"><small>Процесс в баллоне</small><b id="d-proc">—</b></div></div>
-    <canvas id="l3-cv" aria-label="Установка Клемана — Дезорма"></canvas>
-    <div class="chart"><div class="chart-h"><b>Давление в баллоне h(t)</b><span><i style="background:var(--cold)"></i>h, мм</span><span><i style="background:var(--acc)"></i>температура газа</span><span><i style="background:var(--ok)"></i>210…220 мм</span></div><canvas id="d-chart"></canvas></div></section>`;
-}
-function wPrep(S) {
-  const ok = S.power && S.kOpen && !S.k0Open;
-  const it = (on, t) => `<li class="${on ? 'done' : ''}">${t}</li>`;
-  return head(S) + `<div class="stage">${rig()}<div class="panel">
-    <section class="card now"><span class="kicker">Подготовка установки</span><p class="say">По порядку выполнения: подай питание на секундомер, открой кран <b>K</b> (к компрессору) и закрой кран <b>K₀</b> (к атмосфере). На схеме зелёная ручка — открыт, красная — закрыт.</p>
-      <div class="ctl">
-        <button class="btn ${S.power ? 'on' : 'line'}" data-l3="power" data-key="P">${ic('zap')} ${S.power ? 'Питание секундомера: включено' : 'Подать питание на секундомер'} ${kbd('P')}</button>
-        <button class="btn ${S.kOpen ? 'on' : 'off'}" data-l3="kv" data-key="K">${ic('sliders-horizontal')} Кран K: ${S.kOpen ? 'открыт' : 'закрыт'} ${kbd('K')}</button>
-        <button class="btn ${!S.k0Open ? 'on' : 'off'}" data-l3="k0" data-key="O">${ic('sliders-horizontal')} Кран K₀: ${S.k0Open ? 'открыт' : 'закрыт'} ${kbd('O')}</button>
-      </div><p class="lw-msg ${ok ? 'good' : ''}" id="lw-msg">${ok ? 'Установка готова к опыту.' : ''}</p>${ok ? nextBtn('К опытам') : ''}</section>
-    </div></div>`;
 }
 const PLAN = ['Открыть K, закрыть K₀', 'Накачать 210…220 мм, закрыть K', 'Выждать 1 минуту', 'Записать h₁', 'Выпустить воздух через K₀', 'Закрыть K₀, выждать 1 минуту', 'Записать h₂'];
 const PLAN_AT = { ready: 0, pump: 1, wait1: 2, read1: 3, vent: 4, vented: 5, wait2: 5, read2: 6 };
@@ -182,15 +130,6 @@ function expControls(S) {
   if (ph === 'vented') return `<p class="say">Кран K₀ закрыт. Запусти секундомер и выжди <b>1 минуту</b>, пока газ нагреется до комнатной температуры.</p>
       <div class="ctl"><button class="btn big" data-l3="startSw" data-primary>${ic('timer')} Пуск секундомера ${kbd('Enter')}</button></div>`;
   return '';
-}
-function wExp(S) {
-  const n = S.runs.length, done = n >= L3.N, ctl = done ? '' : expControls(S), at = PLAN_AT[L3V.phase] ?? 0;   // expControls может перевести «готов» → «накачка»
-  const tbl = `<table class="t"><tr><th>№</th><th>h₁, мм</th><th>h₂, мм</th><th>γ</th></tr>${Array.from({ length: L3.N }, (_, i) => { const r = S.runs[i];
-    return `<tr class="${i === n && !done ? 'now' : ''}"><td>${i + 1}</td><td>${r ? r.h1 : i === n && L3V.cur.h1 != null ? L3V.cur.h1 : '—'}</td><td>${r ? r.h2 : '—'}</td><td class="mute">${r ? l3Fix(r.h1 / (r.h1 - r.h2), 3) : ''}</td></tr>`; }).join('')}</table>`;
-  return head(S, done ? `<span class="pill ok">${ic('circle-check')} все опыты выполнены</span>` : '') + `<div class="stage">${rig()}<div class="panel">
-    <section class="card now"><span class="kicker">${done ? 'Опыты завершены' : `Опыт ${n + 1} из ${L3.N}`}</span>${done ? `<p class="say">Три измерения h₁ и h₂ записаны. Переходи к обработке результатов.</p>${nextBtn('К обработке')}` : `<div class="segs">${PLAN.map((_, i) => `<i class="${i < at ? 'done' : i === at ? 'cur' : ''}"></i>`).join('')}</div><div class="segs-l"><b>${PLAN[at]}</b><span>${at + 1} / ${PLAN.length}</span></div>${ctl}`}<p class="lw-msg" id="lw-msg"></p></section>
-    <section class="card"><h2>${ic('grid-3x3')} Таблица 1 · измерения</h2>${tbl}<p class="mute small mt">Точность зависит от момента закрытия K₀: раньше — h₂ больше и γ завышен, позже — h₂ меньше и γ занижен.</p></section>
-    </div></div>`;
 }
 function wProc(S) {
   const o = l3Calc(), P = S.proc, cls = k => S.procOk[k] === true ? 'ok' : S.procOk[k] === false ? 'bad' : '', I = k => inp('p_' + k, P[k], cls(k));

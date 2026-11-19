@@ -30,11 +30,12 @@ try {
   await page.keyboard.press('F1'); must(await page.locator('#modal [data-intro]').isVisible(), 'F1 не открывает знакомство');
   await page.click('[data-d="intro-skip"]'); must(await page.locator('#modal').isHidden(), '«Пропустить» не закрывает');
   // светлая тема переключается и запоминается
-  await page.click('#side [data-d="theme"]'); must(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lw3d-theme') === 'light'), 'светлая тема не включилась');
-  await shot(page, 'light'); await page.click('#side [data-d="theme"]');
+  await page.click('.tb [data-d="theme"]'); must(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lw3d-theme') === 'light'), 'светлая тема не включилась');
+  await shot(page, 'light'); await page.click('.tb [data-d="theme"]');
 
   const o = await runLw3(page, {
     log: t => console.log('  ' + t),
+    reveal: async (kind, i) => { await page.waitForTimeout(300); await page.evaluate(q => { AQ = q; render(); }, kind === 'admit' ? i : 8); },
     beforeStep: async st => {
       await page.waitForTimeout(250); await shot(page, st);
       if (st === 'prep') {             // клавиши P, K, O переключают то же, что кнопки; вернуть как было
@@ -48,7 +49,7 @@ try {
         await page.keyboard.down('Space'); await page.waitForTimeout(700); await page.keyboard.up('Space');
         const p1 = await page.evaluate(() => L3V.p); must(p1 > 10, 'пробел не включает компрессор: ' + p1);
         await page.waitForTimeout(300); must(await page.evaluate(() => !L3V.pump), 'компрессор не выключился');
-        must(await page.locator('#d-chart').count() === 1 && await page.locator('.steps button').count() === 6, 'нет графика или шагов');
+        must(await page.locator('#d-chart').count() === 1 && await page.locator('.tb-steps button').count() === 6, 'нет графика или шагов');
         // ход работы: 13 пунктов методички, на накачке подсвечен п. 4, открывается и закрывается клавишей H
         await page.keyboard.press('h'); await page.waitForTimeout(300);
         must(await page.locator('#hod.open li').count() === 13, 'ход работы не открылся');

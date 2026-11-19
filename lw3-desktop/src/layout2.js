@@ -1,11 +1,9 @@
 /* =====================================================================
-   Новая раскладка (прототип): «тренажёр» для подготовки и опытов,
-   «пошагово» для допуска. Включается флагом lw3d-layout = 'new'.
+   Раскладка программы: верхняя полоса шагов, «тренажёр» для подготовки и опытов,
+   «пошагово» для допуска (обработка, выводы и отчёт — в desktop.js под той же полосой).
    Работа та же: кнопки и поля с теми же data-l3 / data-k3 и id, что ждёт ядро.
    ===================================================================== */
-let LAYOUT = store.get('lw3d-layout', 'classic');
 let AQ = 0;                   // текущий вопрос допуска в пошаговом виде
-const newLayout = st => LAYOUT === 'new' && ['admit', 'prep', 'exp'].includes(st);
 
 function topbar(S) {
   const fin = L3.steps[S.max][0] === 'report';
@@ -110,11 +108,11 @@ document.addEventListener('click', e => {
 });
 // после выбора ответа — короткая пауза и следующий вопрос (если ответ ещё не проверялся)
 document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('[data-l3="admit"]'); if (!b || LAYOUT !== 'new') return;
+  const b = e.target.closest && e.target.closest('[data-l3="admit"]'); if (!b) return;
   if (L3S && !L3S.admitChecked) setTimeout(() => { if (SCREEN === 'work' && l3St() === 'admit' && +b.dataset.q === AQ && AQ < L3_ADMIT.length) { AQ++; render(); } }, 260);
 });
 document.addEventListener('keydown', e => {
-  if (LAYOUT !== 'new' || SCREEN !== 'work' || !$('#modal').hidden || e.ctrlKey || e.altKey) return;
+  if (SCREEN !== 'work' || !$('#modal').hidden || e.ctrlKey || e.altKey) return;
   const tag = e.target.tagName || ''; if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   const st = l3St();
   if (st === 'admit') {

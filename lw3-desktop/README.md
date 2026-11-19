@@ -40,10 +40,10 @@
 ## Сборка
 
 Готовые файлы собирает GitHub Actions (`.github/workflows/lw3-desktop.yml`): сначала тесты, затем сборка на Windows.
-В артефакте `LR3-Adiabata-windows`:
+В артефакте `Pokazatel-adiabaty-windows`:
 
-- `LR3-Adiabata-setup.exe` — установщик NSIS. Ставится **без прав администратора** (в профиль пользователя).
-- `LR3-Adiabata-portable.exe` — запускается без установки, например с флешки.
+- `Pokazatel-adiabaty-setup.exe` — установщик NSIS. Ставится **без прав администратора** (в профиль пользователя).
+- `Pokazatel-adiabaty-portable.exe` — запускается без установки, например с флешки.
 
 Тег `lw3-v1.0.0` дополнительно публикует релиз с этими файлами.
 

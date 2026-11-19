@@ -199,7 +199,7 @@ table.t td input{width:100%; max-width:130px; text-align:center; padding:8px 10p
 
 /* ---------- отчёт ---------- */
 .rep{display:grid; grid-template-columns:340px minmax(0, 1fr); gap:24px; align-items:start}
-.paper{background:var(--paper-bg); border-radius:14px; padding:22px; max-height:calc(100vh - 120px); overflow:auto}
+.paper{background:var(--paper-bg); border-radius:14px; padding:22px; max-height:calc(100vh - 60px - 48px); overflow:auto}
 .paper .lwr{gap:22px}
 .done-badge{display:flex; gap:12px; align-items:center; padding:14px; border-radius:12px; background:var(--ok-soft); margin-bottom:14px}
 .done-badge .ic{width:28px; height:28px; color:var(--ok)}
@@ -292,6 +292,11 @@ body.full #main{padding:0; overflow:hidden; display:flex; flex-direction:column}
 .tb-ic:hover{background:var(--hover); color:var(--tx)}
 @media (max-width:1600px){ .tb-brand b{display:none} .tb-steps{gap:4px} .tb-steps s{flex-basis:14px} }
 @media (max-width:1300px){ .tb-steps button span{display:none} .tb-steps button.on span{display:inline} .tb-who span:last-child{display:none} }
+
+/* ---------- обработка, выводы, отчёт под верхней полосой ---------- */
+.pg{flex:1; min-height:0; overflow:auto; padding:20px 24px 32px}
+.pg .head{margin-bottom:12px; min-height:0}
+.pg .sticky{top:0}
 
 /* ---------- тренажёр ---------- */
 .tr{flex:1; min-height:0; display:grid; grid-template-columns:270px minmax(0, 1fr) 320px; gap:16px; padding:16px 18px; overflow:hidden}

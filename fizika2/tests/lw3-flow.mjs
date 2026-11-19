@@ -1,6 +1,7 @@
 // Полное прохождение ЛР № 3 через настоящие кнопки и поля (data-l3 / data-k3) — общее для сайта и программы для Windows.
 // Ничего не подменяет в модели: компрессор держится, ожидание идёт, уровни читаются по модели, кран K₀ закрывается по времени.
-export async function runLw3(page, { log = () => {}, beforeStep = async () => {} } = {}) {
+// reveal(kind, i) — для интерфейсов, где вопросы показываются по одному: открыть нужный вопрос перед кликом
+export async function runLw3(page, { log = () => {}, beforeStep = async () => {}, reveal = async () => {} } = {}) {
   const click = async sel => { const b = page.locator(sel).first(); await b.waitFor({ state: 'visible', timeout: 15000 }); await b.click(); };
   const step = () => page.evaluate(() => L3.steps[L3S.step][0]);
   const waitPhase = (ph, t = 30000) => page.waitForFunction(p => L3V.phase === p, ph, { timeout: t });
@@ -8,11 +9,11 @@ export async function runLw3(page, { log = () => {}, beforeStep = async () => {}
   // 1. Допуск: сначала одна ошибка в каждом вопросе → не сдан, затем верные ответы → сдан
   await beforeStep('admit');
   const admit = await page.evaluate(() => L3_ADMIT.map(([, a, x]) => ({ a, x: x[0] })));
-  for (const [i, q] of admit.entries()) await click(`[data-l3="admit"][data-q="${i}"][data-v="${q.x.replace(/"/g, '\\"')}"]`);
-  await click('[data-l3="admitCheck"]');
+  for (const [i, q] of admit.entries()) { await reveal('admit', i); await click(`[data-l3="admit"][data-q="${i}"][data-v="${q.x.replace(/"/g, '\\"')}"]`); }
+  await reveal('admitCheck'); await click('[data-l3="admitCheck"]');
   if (await page.evaluate(() => L3S.admitOk)) throw new Error('допуск сдан с неверными ответами');
-  for (const [i, q] of admit.entries()) await click(`[data-l3="admit"][data-q="${i}"][data-v="${q.a.replace(/"/g, '\\"')}"]`);
-  await click('[data-l3="admitCheck"]');
+  for (const [i, q] of admit.entries()) { await reveal('admit', i); await click(`[data-l3="admit"][data-q="${i}"][data-v="${q.a.replace(/"/g, '\\"')}"]`); }
+  await reveal('admitCheck'); await click('[data-l3="admitCheck"]');
   if (!await page.evaluate(() => L3S.admitOk)) throw new Error('допуск не сдан с верными ответами');
   await click('[data-l3="next"]');
   if (await step() !== 'prep') throw new Error('после допуска не открылась подготовка');
