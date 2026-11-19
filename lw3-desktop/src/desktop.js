@@ -9,7 +9,6 @@ const ui = { main: $('#main'), side: $('#side') };
 let SCREEN = 'home';            // home | work | lock | teacher
 let PROFILE = null;
 let TAB = 'theory';
-if (LAB_BG) { const im = new Image(); im.onload = () => { L3_BG = Object.assign(im, { edge: LAB_BG.edge, top: LAB_BG.top }); if ($('#l3-cv')) l3Draw(); }; im.src = LAB_BG.src; }   // фон лаборатории под установкой
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
@@ -76,7 +75,7 @@ function vHome() {
       </div>
       ${ps.length ? `<div class="plist-h">Продолжить работу</div><div class="plist">${ps.map(p => `<div class="prof" data-d="open" data-v="${p.id}">${ava(p.fio)}<div class="nm"><b>${esc(p.fio)}</b><small>${esc(p.group || 'без класса')} · ${esc(profileStatus(p))}</small></div><button class="x" data-d="delp" data-v="${p.id}" title="Удалить">${ic('trash-2')}</button></div>`).join('')}</div>` : ''}
     </div>
-    <div class="corner bl">Версия ${esc(APP_VER)}</div>
+    <div class="corner bl">Версия ${esc(APP_VER)}${UPD ? ` · <button class="btn ghost" data-d="upd" style="color:var(--acc)">${ic('sparkles')} Вышла версия ${esc(UPD.v)} — скачать</button>` : ''}</div>
     <div class="corner br"><button class="btn ghost" data-d="import">${ic('file-text')} Открыть файл работы</button><button class="btn ghost" data-d="teacher">${ic('lock')} Преподаватель</button></div>
   </div>`;
   setTimeout(() => { const f = $('#np-fio'); if (f && SCREEN === 'home' && $('#modal').hidden) f.focus(); }, 0);
@@ -96,6 +95,7 @@ function vWork() {
   document.body.classList.add('noside', 'full'); ui.side.innerHTML = '';   // верхняя полоса шагов вместо боковой панели
   const S = l3Load(); ensureMeta(S);
   const st = L3.steps[S.step][0];
+  S.dx.t = S.dx.t || {}; if (!S.dx.t[st]) { S.dx.t[st] = new Date().toISOString(); l3Save(); }   // когда студент впервые дошёл до шага
   ui.main.innerHTML = st === 'admit' ? vAdmitStep(S) : st === 'prep' || st === 'exp' ? vTrainer(S, st)
     : topbar(S) + `<div class="pg">${({ proc: wProc, concl: wConcl, report: wReport })[st](S)}</div>`;
   $('#printroot').innerHTML = st === 'report' ? l3ReportHtml() : '';
@@ -171,9 +171,10 @@ function wReport(S) {
   return head(S) + `<div class="rep"><div class="sticky">
     <section class="card"><div class="done-badge">${ic('trophy')}<div><b>Работа выполнена</b><span class="mute small">γ = ${l3Res(o)} · ε = ${f1(o.e, 1)} %</span></div></div>
       <div style="display:grid; gap:10px">${f('fio', 'ФИО', 'Иванов И. И.')}${f('group', 'Класс / группа', '')}${f('date', 'Дата', 'дд.мм.гггг')}</div>
-      <button class="btn wide big mt" data-d="save" data-primary>${ic('file-text')} Сохранить файл для преподавателя ${kbd('Ctrl+S')}</button>
-      <button class="btn line wide mt" data-l3="print">${ic('printer')} Печать / PDF ${kbd('Ctrl+P')}</button>
-      <p class="mute small">В окне печати выбери принтер или «Microsoft Print to PDF» / «Сохранить как PDF».</p>
+      ${S.dx && S.dx.submitted ? `<p class="pill ok mt">${ic('circle-check')} Работа сдана ${new Date(S.dx.submitted).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>` : ''}
+      <button class="btn wide big mt" data-d="submit" ${S.dx && S.dx.submitted ? '' : 'data-primary'}>${ic('graduation-cap')} ${IS_TAURI && FOLDER ? 'Сдать работу в папку класса' : 'Сохранить файл для преподавателя'} ${S.dx && S.dx.submitted ? '' : kbd('Enter')}</button>
+      ${IS_TAURI && FOLDER ? `<p class="mute small">Папка: ${esc(FOLDER)}</p><button class="btn ghost wide" data-d="save">${ic('file-text')} Сохранить копию файла ${kbd('Ctrl+S')}</button>` : ''}
+      <div class="row mt"><button class="btn line" data-d="pdf">${ic('file-text')} Сохранить PDF</button><button class="btn line" data-l3="print">${ic('printer')} Печать ${kbd('Ctrl+P')}</button></div>
       <button class="btn line wide mt" data-l3="restart">${ic('rotate-ccw')} Выполнить работу заново</button></section></div>
     <div class="paper" id="d-paper">${l3ReportHtml()}</div></div>`;
 }
@@ -313,7 +314,7 @@ const INTRO = [
     art: () => `<div class="isteps">${[['Допуск', '8 вопросов'], ['Подготовка', 'питание и краны'], ['Опыты', '3 измерения'], ['Обработка', 'расчёт γ'], ['Защита', '8 вопросов'], ['Отчёт', 'печать или PDF']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
   { t: 'Установка', p: 'Компрессор Н накачивает воздух в баллон Б через кран K. Кран K₀ выпускает воздух наружу. Манометр М показывает давление — разность уровней жидкости в коленах.', art: () => introRig() },
   { t: 'Клавиши', p: 'Мышью тоже можно, но клавишами быстрее. Подсвеченная кнопка с Enter — главное действие на экране.',
-    art: () => `<div class="keys">${[['Пробел', 'держать — работает компрессор'], ['Enter', 'главное действие'], ['K', 'кран K'], ['O', 'кран K₀'], ['P', 'питание секундомера'], ['Ctrl+S', 'сохранить файл работы'], ['H', 'ход работы (порядок по методичке)'], ['F1', 'это знакомство'], ['F11', 'во весь экран']].map(([k, t]) => `${kbd(k)}<span>${t}</span>`).join('')}</div>` },
+    art: () => `<div class="keys">${[['Пробел', 'держать — работает компрессор'], ['Enter', 'главное действие'], ['K', 'кран K'], ['O', 'кран K₀'], ['P', 'питание секундомера'], ['Ctrl+S', 'сохранить файл работы'], ['H', 'ход работы (порядок по методичке)'], ['F1', 'это знакомство'], ['Ctrl + / −', 'крупнее / мельче (Ctrl 0 — как было)'], ['F11', 'во весь экран']].map(([k, t]) => `${kbd(k)}<span>${t}</span>`).join('')}</div>` },
   { t: 'Как сдать работу', p: 'В конце нажми «Сохранить файл для преподавателя» (Ctrl+S) и передай файл на флешке или через общую папку. По этому же файлу работу можно продолжить на другом компьютере.', art: () => introFile() }
 ];
 let INTRO_AT = 0;

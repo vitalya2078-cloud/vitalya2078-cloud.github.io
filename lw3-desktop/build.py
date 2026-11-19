@@ -47,8 +47,13 @@ meta = json.loads(rd(os.path.join(D, 'src-tauri', 'tauri.conf.json')))
 version = meta['version']
 # фон установки (необязательно): assets/lab-bg.(webp|jpg|png) → dist/img/; без файла сцена рисует фон сама
 bg = next((f for f in ('lab-bg.webp', 'lab-bg.jpg', 'lab-bg.png') if os.path.exists(os.path.join(D, 'assets', f))), None)
-js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps(dict(json.loads(rd(os.path.join(D, 'assets', 'lab-bg.json'))) if os.path.exists(os.path.join(D, 'assets', 'lab-bg.json')) else {}, src='img/' + bg) if bg else None, ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'desktop.js', 'layout2.js', 'hod.js', 'teacher.js')])
+bgl = next((f for f in ('lab-bg-light.webp', 'lab-bg-light.jpg', 'lab-bg-light.png') if os.path.exists(os.path.join(D, 'assets', f))), None)
+def bg_cfg(f, meta):
+    m = os.path.join(D, 'assets', meta)
+    return dict(json.loads(rd(m)) if os.path.exists(m) else {}, src='img/' + f) if f else None
+js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
+                'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False), helpers, icons, core] +
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'teacher.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 
@@ -60,9 +65,10 @@ for w in ('400', '600', '700'):
 for f in os.listdir(os.path.join(SITE, 'fonts')):
     if f.endswith('.woff2') or f.startswith('LICENSE'):
         shutil.copy2(os.path.join(SITE, 'fonts', f), os.path.join(DIST, 'fonts', f))
-if bg:
-    os.makedirs(os.path.join(DIST, 'img'))
-    shutil.copy2(os.path.join(D, 'assets', bg), os.path.join(DIST, 'img', bg))
+for f in (bg, bgl):
+    if f:
+        os.makedirs(os.path.join(DIST, 'img'), exist_ok=True)
+        shutil.copy2(os.path.join(D, 'assets', f), os.path.join(DIST, 'img', f))
 with open(os.path.join(DIST, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(html)
-print('dist/index.html %d КБ, версия %s, фон: %s' % (len(html.encode()) // 1024, version, bg or 'рисованный'))
+print('dist/index.html %d КБ, версия %s, фон: %s / %s' % (len(html.encode()) // 1024, version, bg or 'рисованный', bgl or 'рисованный'))

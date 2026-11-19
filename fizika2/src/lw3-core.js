@@ -58,6 +58,13 @@ const l3Levels = () => { const z = L3S.zero, h = L3V.p; return [z - h / 2, z + h
    анимация — молекулы воздуха в баллоне (скорость по температуре, число по массе газа), струя при выпуске,
    плавный поворот ручек кранов. На модель и отсчёты не влияет. */
 let L3_BG = null;
+let L3_THEME = 'dark';   // программа переключает на 'light' (светлая тема); сайт — всегда тёмная
+const L3PAL = {
+  dark: { bg0: '#16263C', bg1: '#0E1A2B', grid: 'rgba(255,255,255,.025)', tb: ['#6A5A47', '#4A3D30', '#251E18'], tbEdge: 'rgba(255,230,200,.18)', vign: .35,
+    lab: '#E7EDF6', lab2: '#C9D4E3', mol: 'rgba(215,232,250,.8)', glass: 'rgba(210,230,250,.8)', air: '220,235,255', ok: '#5AD3A0', bad: '#F2727E' },
+  light: { bg0: '#F2F5F9', bg1: '#DCE3EC', grid: 'rgba(20,40,70,.05)', tb: ['#D2B48C', '#B08D63', '#86663F'], tbEdge: 'rgba(255,255,255,.6)', vign: .1,
+    lab: '#1C2430', lab2: '#4A5566', mol: 'rgba(60,92,135,.85)', glass: 'rgba(50,85,130,.7)', air: '80,110,150', ok: '#138A55', bad: '#C9303F' }
+};
 const L3D = { last: 0, mol: null, jet: [], ak: null, ak0: null };
 const l3BalloonPath = c => { c.beginPath(); c.moveTo(214, 128); c.lineTo(258, 128); c.lineTo(258, 146); c.bezierCurveTo(330, 160, 336, 200, 332, 410); c.lineTo(140, 410); c.bezierCurveTo(136, 200, 142, 160, 214, 146); c.closePath(); };
 const l3Inside = (x, y) => y > 152 && y < 404 && Math.abs(x - 236) < (y < 222 ? 18 + (y - 146) * .9 : 86);
@@ -81,7 +88,7 @@ function l3Draw() {
   const box = cv.getBoundingClientRect(), cssW = box.width || 600, dpr = Math.min(2.5, devicePixelRatio || 1), k = cssW / 580, cssH = 452 * k;
   if (cv.width !== Math.round(cssW * dpr)) { cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); }
   const c = cv.getContext('2d'); c.setTransform(dpr * k, 0, 0, dpr * k, 0, 0);
-  const now = l3Anim(S, V), pumping = V.pump && S.kOpen && !S.k0Open;
+  const now = l3Anim(S, V), pumping = V.pump && S.kOpen && !S.k0Open, P = L3PAL[L3_THEME] || L3PAL.dark;
   // фон и стол
   let g;
   const bg = L3_BG && L3_BG.complete && L3_BG.naturalWidth ? L3_BG : null;
@@ -92,12 +99,12 @@ function l3Draw() {
     c.drawImage(bg, 0, y0, 580, h);
     if (y0 > 0) { c.fillStyle = g; c.fillRect(0, y0 - 1, 580, 25); }
   } else {
-    g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, '#16263C'); g.addColorStop(1, '#0E1A2B'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
-    c.fillStyle = 'rgba(255,255,255,.025)'; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452);
-    g = c.createLinearGradient(0, 418, 0, 452); g.addColorStop(0, '#6A5A47'); g.addColorStop(.12, '#4A3D30'); g.addColorStop(1, '#251E18'); c.fillStyle = g; c.fillRect(0, 418, 580, 34);
-    c.fillStyle = 'rgba(255,230,200,.18)'; c.fillRect(0, 418, 580, 1.5);
+    g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, P.bg0); g.addColorStop(1, P.bg1); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
+    c.fillStyle = P.grid; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452);
+    g = c.createLinearGradient(0, 418, 0, 452); g.addColorStop(0, P.tb[0]); g.addColorStop(.12, P.tb[1]); g.addColorStop(1, P.tb[2]); c.fillStyle = g; c.fillRect(0, 418, 580, 34);
+    c.fillStyle = P.tbEdge; c.fillRect(0, 418, 580, 1.5);
   }
-  g = c.createRadialGradient(290, 240, 160, 290, 240, 420); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.35)'); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
+  g = c.createRadialGradient(290, 240, 160, 290, 240, 420); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${P.vign})`); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
   const shadow = (x, w) => { g = c.createRadialGradient(x, 419, 2, x, 419, w); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.save(); c.translate(x, 419); c.scale(1, .12); c.translate(-x, -419); c.fillStyle = g; c.beginPath(); c.arc(x, 419, w, 0, 7); c.fill(); c.restore(); };
   shadow(236, 120); shadow(110, 52); shadow(485, 48);
   // трубки (металл)
@@ -111,18 +118,18 @@ function l3Draw() {
   if (Math.abs(t) > .02) { c.fillStyle = t > 0 ? `rgba(255,120,70,${.26 * t})` : `rgba(90,170,255,${-.3 * t})`; c.fill(); }
   c.clip();
   const n = Math.max(24, Math.min(L3D.mol.length, Math.round(48 * (1 + ((V.m || 1) - 1) * 30))));
-  const mc = t > .05 ? `rgba(255,${Math.round(205 - 90 * t)},${Math.round(170 - 110 * t)},.85)` : t < -.05 ? `rgba(${Math.round(190 + 80 * t)},${Math.round(220 + 20 * t)},255,.85)` : 'rgba(215,232,250,.8)';
+  const mc = t > .05 ? `rgba(255,${Math.round(205 - 90 * t)},${Math.round(170 - 110 * t)},.85)` : t < -.05 ? `rgba(${Math.round(190 + 80 * t)},${Math.round(220 + 20 * t)},255,.85)` : P.mol;
   c.fillStyle = mc; for (let i = 0; i < n; i++) { const p = L3D.mol[i]; c.beginPath(); c.arc(p.x, p.y, 2.1, 0, 7); c.fill(); }
   g = c.createLinearGradient(150, 0, 190, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.22)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(150, 170, 40, 230);
   g = c.createLinearGradient(300, 0, 318, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(300, 200, 18, 190);
   c.fillStyle = 'rgba(255,255,255,.07)'; c.fillRect(140, 400, 192, 10);
   c.restore();
-  l3BalloonPath(c); c.strokeStyle = 'rgba(210,230,250,.8)'; c.lineWidth = 2; c.stroke();
+  l3BalloonPath(c); c.strokeStyle = P.glass; c.lineWidth = 2; c.stroke();
   c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 1; c.beginPath(); c.moveTo(170, 175); c.quadraticCurveTo(156, 220, 158, 300); c.stroke();
   g = c.createLinearGradient(208, 0, 264, 0); g.addColorStop(0, '#5A4630'); g.addColorStop(.45, '#8C7150'); g.addColorStop(1, '#4E3D29'); c.fillStyle = g; c.fillRect(208, 118, 56, 14);
   c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(208, 118, 56, 2);
-  c.fillStyle = '#E7EDF6'; c.font = '800 20px "Golos UI", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('Б', 236, 380);
-  c.font = '600 10px "Golos UI", system-ui'; c.fillStyle = '#C9D4E3'; c.fillText(t > .15 ? 'воздух нагрет' : t < -.15 ? 'воздух охладился' : 'комнатная температура', 236, 396);
+  c.fillStyle = P.lab; c.font = '800 20px "Golos UI", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('Б', 236, 380);
+  c.font = '600 10px "Golos UI", system-ui'; c.fillStyle = P.lab2; c.fillText(t > .15 ? 'воздух нагрет' : t < -.15 ? 'воздух охладился' : 'комнатная температура', 236, 396);
   // компрессор Н (дрожит, пока работает)
   const jx = pumping ? Math.sin(now * 95) * .9 : 0;
   c.save(); c.translate(jx, 0);
@@ -133,18 +140,18 @@ function l3Draw() {
   c.fillStyle = pumping ? '#5AD3A0' : '#2A3443'; c.beginPath(); c.arc(136, 310, 5, 0, 7); c.fill();
   if (pumping) { c.fillStyle = 'rgba(90,211,160,.25)'; c.beginPath(); c.arc(136, 310, 10, 0, 7); c.fill(); }
   c.restore();
-  c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = '#C9D4E3'; c.textAlign = 'center'; c.fillText('компрессор', 110, 376);
+  c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = P.lab2; c.textAlign = 'center'; c.fillText('компрессор', 110, 376);
   // краны: K — открыт горизонтально; K₀ — закрыт горизонтально (ручка поворачивается плавно)
   const valve = (x, y, open, ang, name) => {
     g = c.createRadialGradient(x - 3, y - 3, 1, x, y, 11); g.addColorStop(0, '#C3CCD8'); g.addColorStop(1, '#5F6B7B'); c.fillStyle = g; c.beginPath(); c.arc(x, y, 10, 0, 7); c.fill();
     c.save(); c.translate(x, y); c.rotate(ang); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(-17, -2, 34, 7);
     g = c.createLinearGradient(0, -4, 0, 4); g.addColorStop(0, open ? '#8CF0C4' : '#FF8A90'); g.addColorStop(1, open ? '#2FA678' : '#B8323A'); c.fillStyle = g;
     c.beginPath(); c.roundRect ? c.roundRect(-17, -3.5, 34, 7, 3.5) : c.rect(-17, -3.5, 34, 7); c.fill(); c.restore();
-    c.fillStyle = '#E7EDF6'; c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill();
-    c.font = '800 13px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText(name, x + 14, y - 16); c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = open ? '#5AD3A0' : '#F2727E'; c.fillText(open ? 'открыт' : 'закрыт', x + 14, y + 20); };
+    c.fillStyle = P.lab; c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill();
+    c.font = '800 13px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText(name, x + 14, y - 16); c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = open ? P.ok : P.bad; c.fillText(open ? 'открыт' : 'закрыт', x + 14, y + 20); };
   valve(110, 220, S.kOpen, L3D.ak, 'K'); valve(46, 96, S.k0Open, L3D.ak0, 'K₀');
-  if (V.hiss > .05) { c.strokeStyle = `rgba(220,235,255,${Math.min(.9, V.hiss)})`; c.lineWidth = 1.5; for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(46, 70 - i * 9, 6 + i * 4, Math.PI * 1.15, Math.PI * 1.85); c.stroke(); } }
-  for (const j of L3D.jet) { c.fillStyle = `rgba(215,232,250,${(j.life / .7) * .8})`; c.beginPath(); c.arc(j.x, j.y, 1.8, 0, 7); c.fill(); }
+  if (V.hiss > .05) { c.strokeStyle = `rgba(${P.air},${Math.min(.9, V.hiss)})`; c.lineWidth = 1.5; for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(46, 70 - i * 9, 6 + i * 4, Math.PI * 1.15, Math.PI * 1.85); c.stroke(); } }
+  for (const j of L3D.jet) { c.fillStyle = `rgba(${P.air},${(j.life / .7) * .8})`; c.beginPath(); c.arc(j.x, j.y, 1.8, 0, 7); c.fill(); }
   // манометр М: U-трубка со шкалой 0…400 мм
   const Y = mm => 404 - mm * .72, [hl, hr] = l3Levels();
   g = c.createLinearGradient(444, 0, 526, 0); g.addColorStop(0, '#6B4F31'); g.addColorStop(.5, '#8A6A45'); g.addColorStop(1, '#5C432A'); c.fillStyle = g; c.fillRect(444, Y(400) - 12, 82, Y(0) - Y(400) + 34);
@@ -156,7 +163,7 @@ function l3Draw() {
     c.beginPath(); c.moveTo(x - 4, yt - 1.6); c.quadraticCurveTo(x, yt + 1.6, x + 4, yt - 1.6); c.lineTo(x + 4, Y(0) + 8); c.lineTo(x - 4, Y(0) + 8); c.closePath(); c.fill();
     c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(x - 3.5, Y(400), 1.2, Y(0) - Y(400)); };
   tube(470, hl); tube(500, hr); c.fillStyle = '#3E8EE0'; c.fillRect(466, Y(0), 38, 8);
-  c.fillStyle = '#E7EDF6'; c.font = '800 14px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText('М', 485, 440 - 4);
+  c.fillStyle = P.lab; c.font = '800 14px "Golos UI", system-ui'; c.textAlign = 'center'; c.fillText('М', 485, 440 - 4);
   // секундомер
   g = c.createLinearGradient(0, 16, 0, 70); g.addColorStop(0, '#2A3445'); g.addColorStop(1, '#1A2230'); c.fillStyle = g; c.fillRect(300, 18, 140, 52);
   c.fillStyle = '#0B1A10'; c.fillRect(308, 25, 92, 30); c.fillStyle = S.power ? '#7CF29B' : '#24402C'; c.font = '700 20px "Golos UI", ui-monospace, monospace'; c.textAlign = 'right'; c.fillText(S.power ? l3Fix(V.sw, 1) : '', 396, 41);

@@ -30,7 +30,7 @@ try {
   await page.keyboard.press('F1'); must(await page.locator('#modal [data-intro]').isVisible(), 'F1 не открывает знакомство');
   await page.click('[data-d="intro-skip"]'); must(await page.locator('#modal').isHidden(), '«Пропустить» не закрывает');
   // светлая тема переключается и запоминается
-  await page.click('.tb [data-d="theme"]'); must(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lw3d-theme') === 'light'), 'светлая тема не включилась');
+  await page.click('.tb [data-d="theme"]'); must(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lw3d-theme') === 'light' && L3_THEME === 'light'), 'светлая тема не включилась');
   await shot(page, 'light'); await page.click('.tb [data-d="theme"]');
 
   const o = await runLw3(page, {
@@ -64,6 +64,18 @@ try {
   must(await page.locator('#printroot .lwp').count() === 4, 'отчёт не подготовлен к печати');
   await page.fill('[data-k3="fio"]', 'Сидорова А. В.'); await page.waitForTimeout(400);
   must((await page.locator('#d-paper').innerText()).includes('Сидорова А. В.'), 'шапка отчёта не обновилась');
+  // масштаб: Ctrl + и Ctrl 0
+  await page.keyboard.press('Control+Equal'); must(await page.evaluate(() => document.documentElement.style.zoom === '1.1'), 'Ctrl + не увеличивает');
+  await page.keyboard.press('Control+Digit0'); must(await page.evaluate(() => document.documentElement.style.zoom === ''), 'Ctrl 0 не сбрасывает масштаб');
+  // подсказка в обработке: сумма вместо среднего → «разделить на N»
+  await page.click('[data-l3="go"][data-v="3"]');
+  const [sum, gmOk] = await page.evaluate(() => { const o = l3Calc(); return [o.a.reduce((a, x) => a + x.g, 0).toFixed(3).replace('.', ','), o.gm.toFixed(3).replace('.', ',')]; });
+  await page.locator('[data-k3="p_gm"]').fill(sum); await page.click('[data-l3="pcheck"]'); await page.waitForTimeout(200);
+  must((await page.locator('.hints').innerText()).includes('разделить на N'), 'нет подсказки в обработке');
+  await shot(page, 'hint');
+  await page.locator('[data-k3="p_gm"]').fill(gmOk); await page.click('[data-l3="pcheck"]'); await page.waitForTimeout(200);
+  must(await page.locator('.hints').count() === 0, 'подсказка не исчезла после исправления');
+  await page.click('[data-l3="go"][data-v="5"]');
 
   // файл результата
   const [dl] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Control+s')]);
@@ -94,6 +106,7 @@ try {
   must((await page.locator('table.tt').innerText()).includes('изменён'), 'подделка не распознана');
   await shot(page, 'teacher');
   await page.click('tr.r >> nth=0'); await page.locator('#modal .lwp').first().waitFor(); await shot(page, 'teacher-report');
+  must(await page.locator('#modal .tdet .tqa li').count() === 16, 'нет подробностей по вопросам у преподавателя');
   await page.keyboard.press('Escape');
   const [csv] = await Promise.all([page.waitForEvent('download'), page.click('[data-t="csv"]')]);
   const csvText = fs.readFileSync(await csv.path(), 'utf8');

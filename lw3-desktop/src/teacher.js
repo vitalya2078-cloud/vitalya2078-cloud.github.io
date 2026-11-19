@@ -17,17 +17,34 @@ function tRow(r) {
   return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', date: S.date || '', stage, done, runs, o, adm, cq, dx: S.dx || {}, auth: r.ok && consistent, saved: r.d.saved };
 }
 async function teacherAdd(files) {
+  const list = []; for (const f of files) list.push({ name: f.name, text: await readFile(f) });
+  teacherAddTexts(list);
+}
+function teacherAddTexts(list, quiet) {
   let added = 0, bad = 0;
-  for (const f of files) {
-    const r = unpackResult(await readFile(f));
+  for (const { name, text } of list) {
+    const r = unpackResult(text);
     if (r.err) { bad++; continue; }
     const key = (r.d.state.fio || '') + '|' + (r.d.state.group || '');
     TROWS = TROWS.filter(x => ((x.d.state.fio || '') + '|' + (x.d.state.group || '')) !== key);   // повторный файл того же студента заменяет прежний
-    TROWS.push({ name: f.name, ok: r.ok, d: r.d }); added++;
+    TROWS.push({ name, ok: r.ok, d: r.d }); added++;
   }
   TROWS.sort((a, b) => String(a.d.state.fio).localeCompare(String(b.d.state.fio), 'ru'));
   tSave(); render();
-  toast(`Добавлено работ: ${added}${bad ? ` · не распознано файлов: ${bad}` : ''}`, bad && !added ? 'bad' : '');
+  if (!quiet || bad) toast(`Загружено работ: ${added}${bad ? ` · не распознано файлов: ${bad}` : ''}`, bad && !added ? 'bad' : '');
+}
+async function folderLoad() {
+  if (!IS_TAURI || !FOLDER) return;
+  try { const list = await tauri('read_lw3_dir', { dir: FOLDER }); teacherAddTexts(list.map(([name, text]) => ({ name, text }))); }
+  catch (e) { toast(`Папка недоступна: ${esc(String(e))}`, 'bad'); }
+}
+function folderCard() {
+  if (!IS_TAURI) return `<section class="card mt folder"><b>${ic('layers')} Папка класса для сдачи работ</b><p class="mute small">Доступно в программе для Windows: студенты сдают работу в общую папку, а вы загружаете все работы одной кнопкой.</p></section>`;
+  return `<section class="card mt folder"><div class="folder-row"><div><b>${ic('layers')} Папка класса для сдачи работ</b>
+      <p class="mute small">${FOLDER ? esc(FOLDER) : 'Не выбрана. Выберите общую сетевую папку класса — после защиты работа студента сама сохранится туда.'}${FOLDER_FIXED ? ' · задана в файле adiabata.json рядом с программой' : ''}</p></div>
+      ${FOLDER ? `<button class="btn" data-t="folder-load">${ic('rotate-cw')} Загрузить работы из папки</button>` : ''}
+      ${FOLDER_FIXED ? '' : `<button class="btn line" data-t="folder-pick">${ic('layers')} ${FOLDER ? 'Другая папка' : 'Выбрать папку'}</button>${FOLDER ? `<button class="btn ghost" data-t="folder-clear">${ic('x')}</button>` : ''}`}</div>
+    <p class="mute small">Папка запоминается на этом компьютере. Чтобы задать её сразу для всех компьютеров класса, положите рядом с программой файл <b>adiabata.json</b> с текстом <code>{"folder": "\\\\сервер\\папка"}</code>.</p></section>`;
 }
 function vTeacher() {
   document.body.classList.add('noside'); ui.side.innerHTML = '';
@@ -38,7 +55,8 @@ function vTeacher() {
       <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
       <button class="btn line" data-t="clear" ${rows.length ? '' : 'disabled'}>${ic('trash-2')} Очистить</button>
       <button class="btn" data-t="add">${ic('plus')} Добавить файлы</button></div>
-    <div class="drop" data-t="add">${ic('file-text')} Перетащи сюда файлы <b>.lw3</b>, которые сохранили студенты, или нажми, чтобы выбрать.</div>
+    ${folderCard()}
+    <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы <b>.lw3</b>, которые сохранили студенты, или нажми, чтобы выбрать.</div>
     <div class="stats">
       <div class="stat"><small>Работ</small><b>${rows.length}</b></div>
       <div class="stat"><small>Защищено</small><b style="color:var(--green)">${rows.filter(r => r.done).length}</b></div>
@@ -68,10 +86,24 @@ function tStrip(fin) {
 function tOpen(i) {
   const r = TROWS[i]; if (!r) return; const row = tRow(r);
   const keep = L3S; L3S = r.d.state; let html; try { html = row.runs.length === L3.N && r.d.state.concl ? l3ReportHtml() : ''; } finally { L3S = keep; }
-  $('#printroot').innerHTML = html;
+  $('#printroot').innerHTML = html; TPDF = row.fio;
   modal(`${esc(row.fio)} · ${esc(row.group)}`, `${row.auth ? '' : `<p class="pill bad" style="margin-bottom:12px">${ic('circle-x')} Файл изменён после сохранения в программе — результат не подтверждён</p>`}
+    ${tDetails(r.d.state)}
     ${html ? `<div class="paper" style="max-height:none">${html}</div>` : `<p class="mute">Работа не доведена до отчёта: этап — ${esc(row.stage)}. Опытов выполнено: ${row.runs.length} из ${L3.N}.</p>`}`,
-    html ? `<button class="btn" data-t="print">${ic('printer')} Печать / PDF</button>` : '');
+    html ? `<button class="btn" data-t="pdf">${ic('file-text')} Сохранить PDF</button><button class="btn line" data-t="print">${ic('printer')} Печать</button>` : '');
+}
+let TPDF = '';
+/* подробности: ответы допуска и защиты, время по шагам, попытки */
+function tDetails(S) {
+  const dx = S.dx || {}, t = dx.t || {}, keys = L3.steps.map(([k]) => k);
+  const at = k => t[k] ? new Date(t[k]).getTime() : NaN, end = dx.finished ? new Date(dx.finished).getTime() : NaN;
+  const dur = ms => !Number.isFinite(ms) || ms < 0 ? '—' : ms < 60000 ? '< 1 мин' : ms < 3600000 ? `${Math.round(ms / 60000)} мин` : `${Math.floor(ms / 3600000)} ч ${Math.round(ms % 3600000 / 60000)} мин`;
+  const times = keys.slice(0, 5).map((k, i) => `<span class="pill">${L3.steps[i][1]}: ${dur((i < 4 ? at(keys[i + 1]) : end) - at(k))}</span>`).join(' ');
+  const qa = (list, ans) => list.map(([q, a], i) => `<li class="${ans && ans[i] === a ? 'ok' : 'bad'}">${ans && ans[i] === a ? '✓' : '✗'} ${esc(q)}${ans && ans[i] && ans[i] !== a ? `<small>ответ: ${esc(ans[i])}</small>` : ''}</li>`).join('');
+  const pk = dx.pk || {}, pkTxt = Object.keys(pk).length ? Object.entries(pk).map(([k, n]) => `${PK_NAME[k] || k} — ${n}`).join(', ') : 'нет';
+  return `<section class="tdet"><div class="tdet-row">${times}<span class="pill">всего: ${dur(end - at('admit'))}</span></div>
+    <div class="tdet-row mute small">Попытки: допуск — ${dx.admitTries || 0}, обработка — ${dx.procTries || 0}, защита — ${dx.cqTries || 0}. Ошибки в ячейках обработки: ${esc(pkTxt)}.</div>
+    <div class="grid2 even"><div><b>Допуск</b><ul class="tqa">${qa(L3_ADMIT, S.admit)}</ul></div><div><b>Защита</b><ul class="tqa">${S.cqOk || Object.keys(S.cq || {}).length ? qa(L3_CQ, S.cq) : '<li class="mute">ещё не проходил</li>'}</ul></div></div></section>`;
 }
 function tCsv() {
   const q = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
@@ -118,6 +150,10 @@ document.addEventListener('click', e => {
     case 'add': pickFiles('teacher'); break;
     case 'open': tOpen(+d.v); break;
     case 'print': window.print(); break;
+    case 'pdf': savePdf(`Отчёт_адиабата_${safeName(TPDF) || 'студент'}.pdf`); break;
+    case 'folder-pick': tauri('pick_folder').then(d => { if (d) { FOLDER = d; store.set('lw3d-folder', d); render(); folderLoad(); } }).catch(e => toast(esc(String(e)), 'bad')); break;
+    case 'folder-load': folderLoad(); break;
+    case 'folder-clear': FOLDER = ''; store.set('lw3d-folder', ''); render(); break;
     case 'csv': saveFile(`Адиабата_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsv(), 'csv', 'Таблица для Excel'); break;
     case 'clear': if (confirm('Убрать все загруженные работы из списка? Сами файлы останутся на диске.')) { TROWS = []; tSave(); render(); } break;
   }
