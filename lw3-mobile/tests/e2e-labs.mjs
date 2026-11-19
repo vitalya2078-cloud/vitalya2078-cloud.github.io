@@ -77,9 +77,9 @@ const f2 = await finish(2, 'l2');
 /* ===================== ЛР 1 ===================== */
 await page.click('[data-m="lab"][data-v="1"]'); await admitAndCq('lw', 'admit');
 must(await st() === 'prep', 'ЛР 1: нет подготовки');
-for (const id of ['А', 'Б', 'Д']) await page.click(`[data-lw="puck"][data-v="${id}"]`);
-{ const v = await E(() => { const S = LWS; return { m: [1, 2, 3].map(j => lwPuck(S['p' + j]).m.toFixed(4)), x: String(Math.round(S.x01 + LW1.R)), y: String(Math.round(S.y01)) }; });
-  for (let j = 1; j <= 3; j++) await page.fill(`[data-k="m${j}"]`, v.m[j - 1].replace('.', ','));
+for (const id of ['А', 'Б']) await page.click(`[data-lw="puck"][data-v="${id}"]`);
+{ const v = await E(() => { const S = LWS; return { m: [1, 2].map(j => lwPuck(S['p' + j]).m.toFixed(4)), x: String(Math.round(S.x01 + LW1.R)), y: String(Math.round(S.y01)) }; });
+  for (let j = 1; j <= 2; j++) await page.fill(`[data-k="m${j}"]`, v.m[j - 1].replace('.', ','));
   await page.fill('[data-k="rx01"]', v.x); await page.fill('[data-k="ry01"]', v.y); await page.click('[data-lw="aim"]').catch(() => {});
   await page.click('[data-aim="p1"]'); await shot(page, 'l1-prep'); await page.click('[data-lw="prepCheck"]'); must(await E(() => LWS.prepOk), 'ЛР 1: подготовка не принята'); await page.click('[data-lw="next"]'); }
 async function l1Shoot(kind, j) {
@@ -92,14 +92,14 @@ async function l1Shoot(kind, j) {
   else for (const k of ['x1', 'y1', 'x2', 'y2']) await page.fill(`[data-k="c${k}"]`, String(Math.round(t[k])));
   await page.click('[data-lw="record"]'); await W(80);
 }
-for (let i = 0; i < 7; i++) { await l1Shoot('free'); if (!i) await shot(page, 'l1-free'); }
-must(await E(() => LWS.free.length) === 7, 'ЛР 1: не 7 выстрелов'); await page.click('[data-lw="next"]');
-for (const j of [2, 3]) {
+for (let i = 0; i < 3; i++) { await l1Shoot('free'); if (!i) await shot(page, 'l1-free'); }
+must(await E(() => LWS.free.length) === 3, 'ЛР 1: не 3 выстрела'); await page.click('[data-lw="next"]');
+for (const j of [2]) {
   const c = await E(j => LW1.circles[LWS.ex[j].circle - 1], j);
   await page.fill(`[data-k="rx0${j}"]`, String(c[0] + 15)); await page.fill(`[data-k="ry0${j}"]`, String(c[1])); await page.click(`[data-lw="placeCheck"]`);
   must(await E(j => LWS.ex[j].placeOk, j), `ЛР 1: тело ${j} не установлено`);
-  for (let i = 0; i < 7; i++) { await l1Shoot('coll', j); if (!i && j === 2) await shot(page, 'l1-coll'); }
-  must(await E(j => LWS.ex[j].rows.length, j) === 7, `ЛР 1: опыт ${j} — не 7 выстрелов`); await page.click('[data-lw="next"]');
+  for (let i = 0; i < 3; i++) { await l1Shoot('coll', j); if (!i && j === 2) await shot(page, 'l1-coll'); }
+  must(await E(j => LWS.ex[j].rows.length, j) === 3, `ЛР 1: опыт ${j} — не 3 выстрела`); await page.click('[data-lw="next"]');
 }
 must(await st() === 'proc', 'ЛР 1: нет обработки');
 { const keys = await E(() => Object.values(LW_TABLES).flat()), vals = await E(ks => { const O = lwCalcAll(); return Object.fromEntries(ks.map(k => { const [key, j] = k.split('@'), v = O[+j || 2][key]; return [k, (Math.abs(v) < 10 ? v.toFixed(4) : v.toFixed(2)).replace('.', ',')]; })); }, keys);

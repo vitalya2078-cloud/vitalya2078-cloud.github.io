@@ -2,8 +2,8 @@
    Практикум: лабораторные работы «как на занятии».
    ЛР № 1. Изучение закона сохранения импульса (шайбы на горизонтальном поле).
    Как на занятии: одна основная шайба (тело 1, ударяющее) и две шайбы-мишени разной массы (тела 2 и 3).
-   Шаги: допуск → подготовка → опыт 1 (свободное движение) → опыт 2 (удар по телу 2) → опыт 3 (удар по телу 3)
-         → обработка (таблицы 1а, 1б, 2–4) → выводы и контрольные вопросы → отчёт (PDF).
+   Шаги: допуск → подготовка → опыт 1 (свободное движение) → опыт 2 (удар по телу 2), по 3 опыта в серии
+         → обработка (таблицы 1–4) → выводы и контрольные вопросы → отчёт (PDF).
    Координаты ученик считывает сам по сетке и лупе; приложение их только проверяет.
    ===================================================================== */
 
@@ -15,13 +15,13 @@ const LW_LIST = [
 
 /* шапка бланка отчёта — общая для всех работ (бланк кафедры, конец методички) */
 const LAB_DEPT = 'Лаборатория кафедры физики и общетехнических дисциплин';
-/* ход работы — методичка, ЛР № 1, раздел 5 (п. 1–9); в программе тел-мишеней две: опыт 3 — то же с телом 3 */
+/* ход работы — методичка, ЛР № 1, раздел 5 (п. 1–9); по 3 опыта в серии, как во всех работах */
 const LW1_HOD = [
-  'Выбрать тела и записать их массы m₁, m₂ (и m₃) в табл. 1 — массы указаны на телах.',
+  'Выбрать два тела примерно одинаковой массы и записать m₁ и m₂ в табл. 1 (массы указаны на телах).',
   'Определить скорость тела 1 при свободном движении: взвести пружинный механизм, шайбу 1 вставить в направляющие до упора, записать её начальные координаты, произвести выстрел и занести в табл. 1 координату x крайней точки шайбы.',
-  'При тех же условиях повторить опыт ещё 6 раз, результаты занести в табл. 1; рассчитать среднее значение x̄ и расстояние l₀.',
+  'При тех же условиях повторить опыт ещё 2 раза, результаты занести в табл. 1; рассчитать среднее значение x̄ и расстояние l₀.',
   'Установить тело 1 в исходное положение, тело 2 — в одном из закрашенных кругов. Записать начальные координаты крайних точек второго тела, произвести выстрел и занести в табл. 1 координаты крайних точек тел.',
-  'При тех же условиях повторить опыт ещё 6 раз. Рассчитать средние значения, приращения координат Δx₁, Δy₁, Δx₂, Δy₂ и перемещения тел l₁ и l₂. (Опыт 3 — то же с телом 3.)',
+  'При тех же условиях повторить опыт ещё 2 раза. Рассчитать средние значения, приращения координат Δx₁, Δy₁, Δx₂, Δy₂ и перемещения тел l₁ и l₂.',
   'Рассчитать по формуле (9) величины, пропорциональные проекциям импульсов тел на оси координат до и после соударения, и занести результаты в табл. 2.',
   'Сравнить результаты и сделать выводы.',
   'Рассчитать величины, пропорциональные энергиям до и после соударения (формулы 10 и 11), и занести результаты в табл. 3.',
@@ -33,8 +33,8 @@ const LW1 = {
   field: { w: 500, h: 400 },     // рабочее поле, мм
   circles: [[75, 189], [78, 200], [75, 211]], // шайба 2 почти вплотную к шайбе 1 (как на установке) // «закрашенные круги» для тела 2
   lNom: [150, 185, 220, 255, 290],            // номинальный путь до остановки при положениях винта 1…5, мм
-  N: 7,                          // выстрелов в серии
-  steps: [['admit', 'Допуск'], ['prep', 'Подготовка'], ['free', 'Опыт 1'], ['coll2', 'Опыт 2'], ['coll3', 'Опыт 3'], ['proc', 'Обработка'], ['concl', 'Выводы'], ['report', 'Отчёт']]
+  N: 3,                          // выстрелов в серии (как во всех работах — по 3 опыта)
+  steps: [['admit', 'Допуск'], ['prep', 'Подготовка'], ['free', 'Опыт 1'], ['coll2', 'Опыт 2'], ['proc', 'Обработка'], ['concl', 'Выводы'], ['report', 'Отчёт']]
 };
 
 /* ---------- состояние (сохраняется в браузере) ---------- */
@@ -47,7 +47,7 @@ function lwFresh() {
     x01: +(44 + r() * 2).toFixed(2), y01: +(199.2 + r() * 1.6).toFixed(2), mu: +(.105 + r() * .03).toFixed(4),
     admit: {}, admitOk: false,
     p1: null, p2: null, p3: null, m1: '', m2: '', m3: '', rx01: '', ry01: '', prepOk: false,
-    screw: 3, free: [], cur: null,
+    screw: 1, free: [], cur: null,   // методичка, п. 2: пружинный механизм — в первом пазу
     ex: { 2: lwEx(), 3: lwEx() },        // опыты с телом 2 и с телом 3
     proc: {}, procOk: {},
     concl: '', cq: {}, cqOk: false,
@@ -56,7 +56,7 @@ function lwFresh() {
 }
 const lwEx = () => ({ circle: 2, place: null, rx: '', ry: '', placeOk: false, rows: [] });
 /* номер тела-мишени на текущем шаге: 2 или 3 (0 — мишени нет) */
-function lwTargetJ() { const st = LW1.steps[(LWS || lwLoad()).step][0]; return st === 'coll3' ? 3 : st === 'coll2' ? 2 : 0; }
+function lwTargetJ() { const st = LW1.steps[(LWS || lwLoad()).step][0]; return st === 'coll2' ? 2 : 0; }
 const LW_SUB = { 1: '₁', 2: '₂', 3: '₃' };
 function lwLoad() { if (LWS) return LWS; try { LWS = JSON.parse(localStorage.getItem(LW_KEY) || 'null'); } catch (e) { LWS = null; } if (!LWS || LWS.v !== 3) LWS = lwFresh(); return LWS; }
 function lwSave() { try { localStorage.setItem(LW_KEY, JSON.stringify(LWS)); } catch (e) {} }
@@ -258,9 +258,9 @@ function vLabWork() {
   const S = lwLoad(); const st = LW1.steps[S.step][0];
   frame('ЛР № 1 · Закон сохранения импульса', { back: true, sub: LW1.steps[S.step][1] });
   const chips = `<div class="lw-steps">${LW1.steps.map(([k, t], i) => `<button data-lw="go" data-v="${i}" class="${i === S.step ? 'on' : ''}${i < S.max || (i === S.max && st === 'report') ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><b>${i + 1}</b><span>${t}</span></button>`).join('')}</div>`;
-  const body = ({ admit: lwAdmit, prep: lwPrep, free: lwFreeStep, coll2: () => lwCollStep(2), coll3: () => lwCollStep(3), proc: lwProc, concl: lwConcl, report: lwReportStep })[st]();
+  const body = ({ admit: lwAdmit, prep: lwPrep, free: lwFreeStep, coll2: () => lwCollStep(2), proc: lwProc, concl: lwConcl, report: lwReportStep })[st]();
   setMain(`<div class="lw">${chips}${body}</div>`);
-  if (['prep', 'free', 'coll2', 'coll3'].includes(st)) { LWV.pos = null; lwDraw(); if (!lwDraw.ro && 'ResizeObserver' in window) lwDraw.ro = new ResizeObserver(() => lwDraw()); if (lwDraw.ro) { lwDraw.ro.disconnect(); lwDraw.ro.observe($('#lw-cv')); } }
+  if (['prep', 'free', 'coll2'].includes(st)) { LWV.pos = null; lwDraw(); if (!lwDraw.ro && 'ResizeObserver' in window) lwDraw.ro = new ResizeObserver(() => lwDraw()); if (lwDraw.ro) { lwDraw.ro.disconnect(); lwDraw.ro.observe($('#lw-cv')); } }
 }
 const lwField = (hint, ctl = '') => `<section class="lw-stage"><canvas id="lw-cv" aria-label="Рабочее поле установки"></canvas>
   <div class="lw-aim" role="group" aria-label="Наведение лупы"><button data-aim="p1">${ic('crosshair')}Шайба 1</button>${lwTargetJ() ? `<button data-aim="p2">${ic('crosshair')}Шайба ${lwTargetJ()}</button>` : ''}
@@ -278,7 +278,7 @@ const LW_TEXT = {
     <p>Если внешние силы есть, но их сумма в каком-то направлении равна нулю, сохраняется проекция импульса на это направление. Сила трения за короткое время удара мала по сравнению с силой взаимодействия, поэтому во время удара шайбы можно считать замкнутой системой.</p>
     <p><b>Упругий удар:</b> сохраняются импульс и кинетическая энергия. <b>Неупругий:</b> импульс сохраняется, часть энергии уходит на деформацию и нагрев. Коэффициент восстановления энергии k = E_кон/E_нач.</p>
     <p><b>Как измерить скорость без секундомера.</b> Шайба тормозится трением: работа силы трения равна изменению кинетической энергии, μmgl = mv²/2, откуда v = √(2μgl). Значит, импульс ∝ m√l, энергия ∝ m·l, а направление движения даёт отношение Δx/l, Δy/l.</p>`,
-  equip: `<p>Горизонтальное поле с координатной сеткой, набор шайб с указанной массой, ударный пружинный механизм с винтом для изменения силы удара, направляющие для шайбы 1, закрашенные круги для установки шайбы-мишени. Основная шайба (тело 1) по очереди ударяет две шайбы-мишени разной массы — тело 2 и тело 3.</p>`,
+  equip: `<p>Горизонтальное поле с координатной сеткой, набор шайб с указанной массой, ударный пружинный механизм с винтом для изменения силы удара, направляющие для шайбы 1, закрашенные круги для установки шайбы-мишени. Тело 1 из направляющих ударяет тело 2, установленное в закрашенном круге; тела примерно одинаковой массы.</p>`,
   safety: `<p>Работу начинают только с разрешения преподавателя. Перед выстрелом убедись, что шайба стоит в направляющих, а руки и посторонние предметы убраны с поля. Винт ударного механизма вращают плавно, не затягивая до упора. Шайбы не бросают и не толкают руками по полю — только ударным механизмом. При неисправности установки прекрати опыт и сообщи преподавателю.</p>`
 };
 const LW_ADMIT = [
@@ -287,7 +287,7 @@ const LW_ADMIT = [
   ['Почему в этой работе импульс шайбы пропорционален m√l?', 'Шайба тормозится трением, и её скорость v = √(2μgl)', ['Так записан закон Гука', 'Путь пропорционален квадрату массы', 'Скорость шайбы постоянна']],
   ['Какие величины в работе измеряют напрямую?', 'Координаты шайб до и после удара', ['Скорости шайб', 'Импульсы шайб', 'Силу удара']],
   ['Чему равен коэффициент восстановления энергии при абсолютно упругом ударе?', '1', ['0', '0,5', 'Больше 1']],
-  ['Сколько выстрелов нужно в каждой серии измерений?', '7', ['1', '3', '20']],
+  ['Сколько выстрелов нужно в каждой серии измерений?', '3', ['1', '7', '20']],
   ['Что нужно проверить перед каждым выстрелом?', 'Шайба 1 стоит в направляющих, а руки и посторонние предметы убраны с поля', ['Что винт затянут до упора', 'Что тело 2 снято с круга', 'Ничего, можно сразу стрелять']],
   ['Зачем в пределах одной серии не трогают винт ударного механизма?', 'Чтобы скорость тела 1 перед ударом во всех выстрелах была одинаковой', ['Чтобы не сломать пружину', 'Чтобы шайба не перевернулась', 'Так требует закон Гука']],
 ];
@@ -306,10 +306,10 @@ function lwShuf(seed, arr) { const a = arr.slice(); let s = seed * 9301 + 49297;
 
 /* 2. Подготовка */
 function lwPrep() {
-  const S = LWS, role = id => S.p1 === id ? 1 : S.p2 === id ? 2 : S.p3 === id ? 3 : 0;
+  const S = LWS, role = id => S.p1 === id ? 1 : S.p2 === id ? 2 : 0;
   const pk = LW1.pucks.map(p => { const r = role(p.id); return `<button data-lw="puck" data-v="${p.id}" class="${r ? 'p' + r : ''}"><b>${p.id}</b><small>${f1(p.m * 1000, 1)} г</small>${r ? `<i>тело ${r}</i>` : ''}</button>`; }).join('');
-  return `<section class="card"><b class="h">1. Выбери три шайбы</b><p class="mute small">Первое касание — основная шайба (тело 1, ударяющее). Второе и третье — шайбы-мишени разной массы (тела 2 и 3): с ними проведёшь опыты 2 и 3. Масса указана на шайбе. Чтобы разница была заметнее, бери мишени с непохожими массами.</p><div class="lw-pucks">${pk}</div>
-    <div class="lw-row three">${[1, 2, 3].map(j => { const pk = lwPuck(S['p' + j]); return `<label>m${LW_SUB[j]}, кг <small class="lw-who">${pk ? `тело ${j} — шайба ${pk.id}, ${f1(pk.m * 1000, 1)} г` : `тело ${j} — не выбрано`}</small>${lwIn('m' + j, S['m' + j], '0,0000')}</label>`; }).join('')}</div></section>
+  return `<section class="card"><b class="h">1. Выбери два тела</b><p class="mute small">По методичке — два тела примерно одинаковой массы (масса указана на шайбе). Первое касание — тело 1 (ударяющее, в направляющих), второе — тело 2 (мишень, ставится в закрашенный круг).</p><div class="lw-pucks">${pk}</div>
+    <div class="lw-row">${[1, 2].map(j => { const pk = lwPuck(S['p' + j]); return `<label>m${LW_SUB[j]}, кг <small class="lw-who">${pk ? `тело ${j} — шайба ${pk.id}, ${f1(pk.m * 1000, 1)} г` : `тело ${j} — не выбрано`}</small>${lwIn('m' + j, S['m' + j], '0,0000')}</label>`; }).join('')}</div></section>
     <section class="card"><b class="h">2. Начальные координаты тела 1</b><p class="mute small">Шайба 1 стоит в направляющих. Нажми «Шайба 1» под полем — лупа наведётся на красную метку её крайней точки (справа, по ходу движения). Запиши координаты с точностью до 1 мм в поля под установкой и нажми «Проверить».</p></section>
     ${lwField('', `<div class="lw-ctl-row">${lwCtlIn('rx01', 'x₀₁', S.rx01)}${lwCtlIn('ry01', 'y₀₁', S.ry01)}<button class="btn" data-lw="prepCheck">${ic('circle-check')} Проверить</button></div><p class="lw-msg" id="lw-msg"></p>${S.prepOk ? lwNext('К опыту 1') : ''}`)}`;
 }
@@ -318,9 +318,7 @@ function lwPrep() {
 function lwFreeStep() {
   const S = LWS, rows = S.free, n = rows.length, cur = S.cur && S.cur.kind === 'free';
   const tbl = `<table class="lw-tbl"><tr><th>№</th><th>x, мм</th></tr>${Array.from({ length: LW1.N }, (_, i) => `<tr class="${i === n && cur ? 'now' : ''}"><td>${i + 1}</td><td>${rows[i] ? f1(rows[i].r, 1) : i === n && cur ? '…' : ''}</td></tr>`).join('')}</table>`;
-  return `<section class="card lw-cond"><b class="h">Опыт 1. Свободное движение тела 1</b><p class="mute small">Тела 2 на поле нет. Сделай ${LW1.N} выстрелов при одном положении винта, после каждого запиши координату x остановки шайбы 1.</p>
-    <div class="lw-screw"><span>Винт ударного механизма</span><button class="lp-btn" data-lw="screw" data-d="-1" ${n ? 'disabled' : ''}>−</button><b>${S.screw}</b><button class="lp-btn" data-lw="screw" data-d="1" ${n ? 'disabled' : ''}>+</button></div>
-    ${n ? '<p class="mute small">Положение винта зафиксировано: все выстрелы — «при тех же условиях».</p>' : ''}</section>
+  return `<section class="card lw-cond"><b class="h">Опыт 1. Свободное движение тела 1</b><p class="mute small">Тела 2 на поле нет. Пружинный механизм взведён и зафиксирован в первом пазу. Сделай ${LW1.N} выстрела при тех же условиях, после каждого запиши координату x крайней точки шайбы 1.</p></section>
     ${lwField('', (cur ? `<div class="lw-ctl-row">${lwCtlIn('cx', `x (выстрел ${n + 1})`, S.cur.r ?? '')}<button class="btn" data-lw="record">${ic('pencil')} Записать</button></div>`
       : n < LW1.N ? `<button class="btn wide" data-lw="shoot" data-v="free">${ic('target')} Выстрел ${n + 1} из ${LW1.N}</button>` : lwNext('К опыту 2')) +
       `<p class="lw-msg" id="lw-msg">${cur ? 'Шайба остановилась. Нажми «Шайба 1» и сними x красной метки.' : ''}</p>`)}
@@ -364,13 +362,12 @@ function lwCalc(j = 2) {
   o.vals = vals; o.X = X;
   return o;
 }
-const lwCalcAll = () => ({ 2: lwCalc(2), 3: lwCalc(3) });
-/* ключ «x1m@3» — величина пары с телом 3; без «@» — пары с телом 2 (или общая для опыта 1) */
+const lwCalcAll = () => ({ 2: lwCalc(2) });
+/* ключ — величина пары «тело 1 + тело 2» (или опыта 1); суффикс «@j» оставлен для совместимости ( опыта 1) */
 const LW_TABLES = {
-  '1а': ['xm', 'x1m', 'y1m', 'x2m', 'y2m', 'dx', 'dx1', 'dy1', 'dx2', 'dy2', 'l0', 'l1', 'l2'],
-  '1б': ['x1m@3', 'y1m@3', 'x2m@3', 'y2m@3', 'dx1@3', 'dy1@3', 'dx2@3', 'dy2@3', 'l1@3', 'l2@3'],
-  2: ['px0', 'px1', 'py1', 'px1@3', 'py1@3'],
-  3: ['e0', 'e1', 'k', 'e1@3', 'k@3'],
+  1: ['xm', 'x1m', 'y1m', 'x2m', 'y2m', 'dx', 'dx1', 'dy1', 'dx2', 'dy2', 'l0', 'l1', 'l2'],
+  2: ['px0', 'px1', 'py1'],
+  3: ['e0', 'e1', 'k'],
   4: ['r_x1', 'r_y1', 'r_x2', 'r_y2', 'd_x01', 'd_y01', 'd_x02', 'd_y02', 'd_x1', 'd_y1', 'd_x2', 'd_y2', 'rel_x01', 'rel_y01', 'rel_x02', 'rel_y02', 'rel_x1', 'rel_y1', 'rel_x2', 'rel_y2', 'P']
 };
 function lwOk(full, user, O) {
@@ -383,37 +380,30 @@ function lwOk(full, user, O) {
   return Math.abs(user - e) <= Math.max(.11, Math.abs(e) * .002);
 }
 function lwProc() {
-  const S = LWS, O = lwCalcAll(), o = O[2], o3 = O[3], P = S.proc, cls = k => S.procOk[k] === true ? 'ok' : S.procOk[k] === false ? 'bad' : '';
+  const S = LWS, O = lwCalcAll(), o = O[2], P = S.proc, cls = k => S.procOk[k] === true ? 'ok' : S.procOk[k] === false ? 'bad' : '';
   const I = k => lwIn('p_' + k, P[k], '', cls(k)), mm = v => f1(v, 1), chk = t => `<button class="btn line wide mt" data-lw="pcheck" data-v="${t}">${ic('circle-check')} Проверить таблицу ${t}</button>`;
-  const t1 = `<section class="card"><b class="h">Таблица 1а. Свободное движение и удар по телу 2</b>
+  const t1 = `<section class="card"><b class="h">Таблица 1. Свободное движение и удар по телу 2</b>
     <p class="mute small">m₁ = ${f1(o.m1, 4)} кг, m₂ = ${f1(o.m2, 4)} кг; x₀₁ = ${mm(o.x01)}, y₀₁ = ${mm(o.y01)}, x₀₂ = ${mm(o.x02)}, y₀₂ = ${mm(o.y02)} мм. Ответы — с точностью до 0,1 мм.</p>
     <div class="lw-scroll"><table class="lw-tbl wide"><tr><th></th><th>своб. движение</th><th>x₁</th><th>y₁</th><th>x₂</th><th>y₂</th></tr>
     ${Array.from({ length: LW1.N }, (_, i) => `<tr><td>${i + 1}</td><td>${mm(o.X.x[i])}</td><td>${mm(o.X.x1[i])}</td><td>${mm(o.X.y1[i])}</td><td>${mm(o.X.x2[i])}</td><td>${mm(o.X.y2[i])}</td></tr>`).join('')}
     <tr class="sum"><td>Среднее</td><td>x̄ ${I('xm')}</td><td>x̄₁ ${I('x1m')}</td><td>ȳ₁ ${I('y1m')}</td><td>x̄₂ ${I('x2m')}</td><td>ȳ₂ ${I('y2m')}</td></tr>
     <tr class="sum"><td>Приращение Δ</td><td>Δx = x̄ − x₀₁ ${I('dx')}</td><td>Δx₁ = x̄₁ − x₀₁ ${I('dx1')}</td><td>Δy₁ = ȳ₁ − y₀₁ ${I('dy1')}</td><td>Δx₂ = x̄₂ − x₀₂ ${I('dx2')}</td><td>Δy₂ = ȳ₂ − y₀₂ ${I('dy2')}</td></tr>
-    <tr class="sum"><td>Расстояние</td><td>l₀ = Δx ${I('l0')}</td><td colspan="2">l₁ = √(Δx₁² + Δy₁²) ${I('l1')}</td><td colspan="2">l₂ = √(Δx₂² + Δy₂²) ${I('l2')}</td></tr></table></div>${chk('1а')}</section>`;
-  const t1b = `<section class="card"><b class="h">Таблица 1б. Удар по телу 3</b>
-    <p class="mute small">m₃ = ${f1(o3.m2, 4)} кг; x₀₃ = ${mm(o3.x02)}, y₀₃ = ${mm(o3.y02)} мм. Начальные координаты тела 1 и путь l₀ — те же, что в таблице 1а.</p>
-    <div class="lw-scroll"><table class="lw-tbl wide"><tr><th></th><th>x₁</th><th>y₁</th><th>x₃</th><th>y₃</th></tr>
-    ${Array.from({ length: LW1.N }, (_, i) => `<tr><td>${i + 1}</td><td>${mm(o3.X.x1[i])}</td><td>${mm(o3.X.y1[i])}</td><td>${mm(o3.X.x2[i])}</td><td>${mm(o3.X.y2[i])}</td></tr>`).join('')}
-    <tr class="sum"><td>Среднее</td><td>x̄₁ ${I('x1m@3')}</td><td>ȳ₁ ${I('y1m@3')}</td><td>x̄₃ ${I('x2m@3')}</td><td>ȳ₃ ${I('y2m@3')}</td></tr>
-    <tr class="sum"><td>Приращение Δ</td><td>Δx₁ = x̄₁ − x₀₁ ${I('dx1@3')}</td><td>Δy₁ = ȳ₁ − y₀₁ ${I('dy1@3')}</td><td>Δx₃ = x̄₃ − x₀₃ ${I('dx2@3')}</td><td>Δy₃ = ȳ₃ − y₀₃ ${I('dy2@3')}</td></tr>
-    <tr class="sum"><td>Расстояние</td><td colspan="2">l₁ = √(Δx₁² + Δy₁²) ${I('l1@3')}</td><td colspan="2">l₃ = √(Δx₃² + Δy₃²) ${I('l2@3')}</td></tr></table></div>${chk('1б')}</section>`;
+    <tr class="sum"><td>Расстояние</td><td>l₀ = Δx ${I('l0')}</td><td colspan="2">l₁ = √(Δx₁² + Δy₁²) ${I('l1')}</td><td colspan="2">l₂ = √(Δx₂² + Δy₂²) ${I('l2')}</td></tr></table></div>${chk(1)}</section>`;
   const t2 = `<section class="card"><b class="h">Таблица 2. Импульс (кг·мм^½)</b><p class="mute small">Импульс пропорционален m√l, его проекции — mΔx/√l и mΔy/√l. Δy бери со знаком: шайбы разлетаются в разные стороны, и сумма проекций по Y должна быть близка к нулю. До удара импульс один и тот же — тело 1 и винт не меняли.</p>
-    <div class="lw-scroll"><table class="lw-tbl wide"><tr><th></th><th>До удара</th><th>После удара по телу 2</th><th>После удара по телу 3</th></tr>
-    <tr><td>Вдоль X</td><td>m₁√l₀ ${I('px0')}</td><td>m₁Δx₁/√l₁ + m₂Δx₂/√l₂ ${I('px1')}</td><td>m₁Δx₁/√l₁ + m₃Δx₃/√l₃ ${I('px1@3')}</td></tr>
-    <tr><td>Вдоль Y</td><td>0</td><td>m₁Δy₁/√l₁ + m₂Δy₂/√l₂ ${I('py1')}</td><td>m₁Δy₁/√l₁ + m₃Δy₃/√l₃ ${I('py1@3')}</td></tr></table></div>${chk(2)}</section>`;
+    <div class="lw-scroll"><table class="lw-tbl wide"><tr><th></th><th>До удара</th><th>После удара</th></tr>
+    <tr><td>Вдоль X</td><td>m₁√l₀ ${I('px0')}</td><td>m₁Δx₁/√l₁ + m₂Δx₂/√l₂ ${I('px1')}</td></tr>
+    <tr><td>Вдоль Y</td><td>0</td><td>m₁Δy₁/√l₁ + m₂Δy₂/√l₂ ${I('py1')}</td></tr></table></div>${chk(2)}</section>`;
   const t3 = `<section class="card"><b class="h">Таблица 3. Энергия (кг·мм) и коэффициент восстановления</b><p class="mute small">Кинетическая энергия пропорциональна m·l (E = μmgl).</p>
-    <div class="lw-scroll"><table class="lw-tbl wide"><tr><th></th><th>До удара</th><th>После удара по телу 2</th><th>После удара по телу 3</th></tr>
-    <tr><td>Энергия</td><td>m₁l₀ ${I('e0')}</td><td>m₁l₁ + m₂l₂ ${I('e1')}</td><td>m₁l₁ + m₃l₃ ${I('e1@3')}</td></tr>
-    <tr><td>k</td><td>—</td><td>k₂ = (m₁l₁ + m₂l₂)/(m₁l₀) ${I('k')}</td><td>k₃ = (m₁l₁ + m₃l₃)/(m₁l₀) ${I('k@3')}</td></tr></table></div>${chk(3)}</section>`;
+    <div class="lw-scroll"><table class="lw-tbl wide"><tr><th></th><th>До удара</th><th>После удара</th></tr>
+    <tr><td>Энергия</td><td>m₁l₀ ${I('e0')}</td><td>m₁l₁ + m₂l₂ ${I('e1')}</td></tr>
+    <tr><td>Коэффициент восстановления</td><td>—</td><td>k = (m₁l₁ + m₂l₂)/(m₁l₀) ${I('k')}</td></tr></table></div>${chk(3)}</section>`;
   const rows4 = ['x01', 'y01', 'x02', 'y02', 'x1', 'y1', 'x2', 'y2'], lab = { x01: 'x₀₁', y01: 'y₀₁', x02: 'x₀₂', y02: 'y₀₂', x1: 'x₁', y1: 'y₁', x2: 'x₂', y2: 'y₂' };
   const t4 = `<section class="card"><b class="h">Таблица 4. Погрешности (опыт 2, удар по телу 2)</b><p class="mute small">По методичке погрешности оценивают для одного из упражнений. Систематическая Δs — цена деления, 1 мм. Случайная Δ = (x_max − x_min)/2 по серии из ${LW1.N} измерений (для однократных измерений — нет). Наибольшая Δ — бо́льшая из них; относительная δ = Δ/x̄·100.</p>
     <div class="lw-scroll"><table class="lw-tbl wide"><tr><th>Величина</th><th>Значение</th><th>Δs</th><th>Δ случ.</th><th>Δ наиб.</th><th>δ, %</th></tr>
     ${rows4.map(q => `<tr><td>${lab[q]}, мм</td><td>${mm(o.vals[q])}</td><td>1</td><td>${q.length === 2 ? I('r_' + q) : '—'}</td><td>${I('d_' + q)}</td><td>${I('rel_' + q)}</td></tr>`).join('')}</table></div>
     <div class="lw-row"><label>Доверительная вероятность P = 1 − (½)^(N−1), % ${I('P')}</label></div>${chk(4)}</section>`;
   const all = Object.keys(LW_TABLES).every(t => LW_TABLES[t].every(k => S.procOk[k] === true));
-  return t1 + t1b + t2 + t3 + t4 + `<p class="lw-msg" id="lw-msg"></p>${all ? lwNext('К выводам') : '<p class="mute small center">Когда все таблицы будут верны, откроются выводы.</p>'}`;
+  return t1 + t2 + t3 + t4 + `<p class="lw-msg" id="lw-msg"></p>${all ? lwNext('К выводам') : '<p class="mute small center">Когда все таблицы будут верны, откроются выводы.</p>'}`;
 }
 
 /* 6. Выводы и контрольные вопросы */
@@ -427,19 +417,14 @@ const LW_CQ = [
   ['От чего зависит направление движения тел после нецентрального удара?', 'От смещения линии удара относительно центров (прицельного расстояния) и масс тел', ['Только от цвета шайб', 'Только от силы удара', 'Ни от чего — всегда вдоль оси X']]
 ];
 function lwAutoConcl(O) {
-  const o = O[2], o3 = O[3], dP = q => Math.abs(q.px1 - q.px0) / q.px0 * 100;
+  const o = O[2], dP = Math.abs(o.px1 - o.px0) / o.px0 * 100;
   const relMax = Math.max(...['x01', 'y01', 'x02', 'y02', 'x1', 'y1', 'x2', 'y2'].map(q => o['rel_' + q]));
   // по методичке: погрешность импульса — не выше относительной погрешности наименее точно измеренной величины (табл. 4)
-  const okP = q => dP(q) <= relMax * 1.5;
-  const heavy = o3.m2 > o.m2 ? o3 : o, light = heavy === o ? o3 : o, g = v => f1(v * 1000, 1);
-  const cmp = heavy.l2 < light.l2
-    ? `Более тяжёлая мишень (тело ${heavy.j}, ${g(heavy.m2)} г) после удара прошла ${lwF(heavy.l2, 1)} мм, более лёгкая (тело ${light.j}, ${g(light.m2)} г) — ${lwF(light.l2, 1)} мм: при одном и том же импульсе тела 1 более массивная мишень получает меньшую скорость (путь пропорционален квадрату скорости).`
-    : `Мишени разной массы (${g(o.m2)} г и ${g(o.m2 === heavy.m2 ? light.m2 : heavy.m2)} г) прошли после удара ${lwF(o.l2, 1)} и ${lwF(o3.l2, 1)} мм; на результат заметно повлиял выбор круга (нецентральный удар).`;
-  return `Цель работы — проверить выполнение законов сохранения импульса и энергии при соударении шайб. Основная шайба (тело 1) ударяла по очереди две шайбы-мишени разной массы. ` +
-    `Проекция импульса на ось X до удара m₁√l₀ = ${lwF(o.px0, 3)} кг·мм^½; после удара по телу 2 — ${lwF(o.px1, 3)} (расхождение ${lwF(dP(o), 1)} %), после удара по телу 3 — ${lwF(o3.px1, 3)} (расхождение ${lwF(dP(o3), 1)} %). ` +
-    `Проекция на ось Y после удара ${lwF(o.py1, 3)} и ${lwF(o3.py1, 3)} кг·мм^½ при нуле до удара. ` +
-    `С учётом погрешности измерений (≈ ${lwF(relMax, 1)} %) закон сохранения импульса ${okP(o) && okP(o3) ? 'выполняется в обоих опытах' : 'выполняется хуже ожидаемого — вероятно, мешает трение во время удара и разброс силы удара'}. ` +
-    `Коэффициенты восстановления энергии k₂ = ${lwF(o.k, 2)}, k₃ = ${lwF(o3.k, 2)} < 1: удары не абсолютно упругие, часть кинетической энергии перешла во внутреннюю (деформация, нагрев). ${cmp} ` +
+  const okP = dP <= relMax * 1.5;
+  return `Цель работы — проверить выполнение законов сохранения импульса и энергии при соударении двух тел примерно одинаковой массы (m₁ = ${f1(o.m1 * 1000, 1)} г, m₂ = ${f1(o.m2 * 1000, 1)} г). ` +
+    `Проекция импульса на ось X до удара m₁√l₀ = ${lwF(o.px0, 3)} кг·мм^½, после удара — ${lwF(o.px1, 3)} кг·мм^½ (расхождение ${lwF(dP, 1)} %); проекция на ось Y после удара ${lwF(o.py1, 3)} кг·мм^½ при нуле до удара. ` +
+    `С учётом погрешности измерений (≈ ${lwF(relMax, 1)} %) закон сохранения импульса ${okP ? 'выполняется' : 'выполняется хуже ожидаемого — вероятно, мешает трение во время удара и разброс силы удара'}. ` +
+    `Коэффициент восстановления энергии k = ${lwF(o.k, 2)} < 1: удар не абсолютно упругий, часть кинетической энергии перешла во внутреннюю (деформация, нагрев). ` +
     `Наибольшая относительная погрешность измерения координат — ${lwF(relMax, 1)} %; точнее всего нужно измерять пути после удара (короткие отрезки), а точность начальных координат можно не повышать.`;
 }
 function lwConcl() {
@@ -467,11 +452,11 @@ function vLabWorkReport() {
 }
 /* отчёт по бланку кафедры: 4 листа А4 (без рамки сайта/программы) */
 function lwReportHtml() {
-  const S = lwLoad(), O = lwCalcAll(), o = O[2], o3 = O[3], mm = v => f1(v, 1), f3 = v => f1(v, 3), f4 = v => f1(v, 4), lab = { x01: 'x₀₁', y01: 'y₀₁', x02: 'x₀₂', y02: 'y₀₂', x1: 'x₁', y1: 'y₁', x2: 'x₂', y2: 'y₂' };
+  const S = lwLoad(), O = lwCalcAll(), o = O[2], mm = v => f1(v, 1), f3 = v => f1(v, 3), f4 = v => f1(v, 4), lab = { x01: 'x₀₁', y01: 'y₀₁', x02: 'x₀₂', y02: 'y₀₂', x1: 'x₁', y1: 'y₁', x2: 'x₂', y2: 'y₂' };
   const ln = v => `<span class="ul">${esc(v || '')}</span>`;
   const [dd, mon, yy] = String(S.date || '').split('.');
   const MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  const equip = [['Лабораторная установка (горизонтальное поле с координатной сеткой, ударный пружинный механизм)', '0–500 мм', '1 мм (цена деления)'], ['Набор тел (шайб) с указанной массой: тело 1 — основное, тела 2 и 3 — мишени', `${f1(o.m1 * 1000, 1)} г; ${f1(o.m2 * 1000, 1)} г; ${f1(o3.m2 * 1000, 1)} г`, '0,1 г']];
+  const equip = [['Лабораторная установка (горизонтальное поле с координатной сеткой, ударный пружинный механизм)', '0–500 мм', '1 мм (цена деления)'], ['Набор тел (шайб) с указанной массой: тело 1 и тело 2', `${f1(o.m1 * 1000, 1)} г; ${f1(o.m2 * 1000, 1)} г`, '0,1 г']];
   // 1 лист — титул и оборудование
   const p1 = `<section class="lwp"><p class="c b">${LAB_DEPT}</p><hr>
     <p class="row">Оценка ${ln('', '38%')} Подпись преподавателя ${ln('', '30%')}</p>
@@ -483,54 +468,48 @@ function lwReportHtml() {
     <p class="c b mt2">ОБОРУДОВАНИЕ И ПРИБОРЫ</p>
     <table><tr><th>№ п.п.</th><th>Наименование</th><th>Предел измерения</th><th>Погрешность измерения</th></tr>
     ${Array.from({ length: 10 }, (_, i) => `<tr><td>${equip[i] ? i + 1 : ''}</td><td class="l">${equip[i] ? esc(equip[i][0]) : '&nbsp;'}</td><td>${equip[i] ? esc(equip[i][1]) : ''}</td><td>${equip[i] ? esc(equip[i][2]) : ''}</td></tr>`).join('')}</table></section>`;
-  // 2 лист — схема и результаты измерений (таблица 1а — тело 2, таблица 1б — тело 3)
+  // 2 лист — схема и результаты измерений (таблица 1)
   const p2 = `<section class="lwp"><p class="c b">СХЕМА УСТАНОВКИ</p>${lwSchemeSvg()}
-    <p class="small">1 — основная шайба (ударяющее тело), 2, 3 — шайбы-мишени (по очереди в закрашенном круге); ударный пружинный механизм с винтом, направляющие; поле с координатной сеткой (цена деления 1 мм). Положение винта — ${S.screw}; тело 2 — в ${['нижнем', 'центральном', 'верхнем'][S.ex[2].circle - 1]} круге, тело 3 — в ${['нижнем', 'центральном', 'верхнем'][S.ex[3].circle - 1]}.</p><hr>
+    <p class="small">1 — тело 1 (ударяющее, в направляющих), 2 — тело 2 (в закрашенном круге); ударный пружинный механизм (взведён в первом пазу), направляющие; поле с координатной сеткой (цена деления 1 мм). Тело 2 — в ${['нижнем', 'центральном', 'верхнем'][S.ex[2].circle - 1]} круге.</p><hr>
     <p class="c b">РЕЗУЛЬТАТЫ ИЗМЕРЕНИЯ</p>
-    <p class="small">Таблица 1а. m₁ = ${f4(o.m1)} кг; m₂ = ${f4(o.m2)} кг; x₀₁ = ${mm(o.x01)} мм; y₀₁ = ${mm(o.y01)} мм; x₀₂ = ${mm(o.x02)} мм; y₀₂ = ${mm(o.y02)} мм</p>
+    <p class="small">Таблица 1. m₁ = ${f4(o.m1)} кг; m₂ = ${f4(o.m2)} кг; x₀₁ = ${mm(o.x01)} мм; y₀₁ = ${mm(o.y01)} мм; x₀₂ = ${mm(o.x02)} мм; y₀₂ = ${mm(o.y02)} мм</p>
     <table class="tight"><tr><th>№</th><th>x, мм<br><small>своб. движение</small></th><th>x₁, мм</th><th>y₁, мм</th><th>x₂, мм</th><th>y₂, мм</th></tr>
       ${Array.from({ length: LW1.N }, (_, i) => `<tr><td>${i + 1}</td><td>${mm(o.X.x[i])}</td><td>${mm(o.X.x1[i])}</td><td>${mm(o.X.y1[i])}</td><td>${mm(o.X.x2[i])}</td><td>${mm(o.X.y2[i])}</td></tr>`).join('')}
       <tr><td>Среднее</td><td>x̄ = ${mm(o.xm)}</td><td>x̄₁ = ${mm(o.x1m)}</td><td>ȳ₁ = ${mm(o.y1m)}</td><td>x̄₂ = ${mm(o.x2m)}</td><td>ȳ₂ = ${mm(o.y2m)}</td></tr>
       <tr><td>Приращение</td><td>Δx = ${mm(o.dx)}</td><td>Δx₁ = ${mm(o.dx1)}</td><td>Δy₁ = ${mm(o.dy1)}</td><td>Δx₂ = ${mm(o.dx2)}</td><td>Δy₂ = ${mm(o.dy2)}</td></tr>
       <tr><td>Расстояние</td><td>l₀ = ${mm(o.l0)}</td><td colspan="2">l₁ = ${mm(o.l1)}</td><td colspan="2">l₂ = ${mm(o.l2)}</td></tr></table>
-    <p class="small">Таблица 1б. m₃ = ${f4(o3.m2)} кг; x₀₃ = ${mm(o3.x02)} мм; y₀₃ = ${mm(o3.y02)} мм (тело 1 и l₀ — как в табл. 1а)</p>
-    <table class="tight"><tr><th>№</th><th>x₁, мм</th><th>y₁, мм</th><th>x₃, мм</th><th>y₃, мм</th></tr>
-      ${Array.from({ length: LW1.N }, (_, i) => `<tr><td>${i + 1}</td><td>${mm(o3.X.x1[i])}</td><td>${mm(o3.X.y1[i])}</td><td>${mm(o3.X.x2[i])}</td><td>${mm(o3.X.y2[i])}</td></tr>`).join('')}
-      <tr><td>Среднее</td><td>x̄₁ = ${mm(o3.x1m)}</td><td>ȳ₁ = ${mm(o3.y1m)}</td><td>x̄₃ = ${mm(o3.x2m)}</td><td>ȳ₃ = ${mm(o3.y2m)}</td></tr>
-      <tr><td>Приращение</td><td>Δx₁ = ${mm(o3.dx1)}</td><td>Δy₁ = ${mm(o3.dy1)}</td><td>Δx₃ = ${mm(o3.dx2)}</td><td>Δy₃ = ${mm(o3.dy2)}</td></tr>
-      <tr><td>Расстояние</td><td colspan="2">l₁ = ${mm(o3.l1)}</td><td colspan="2">l₃ = ${mm(o3.l2)}</td></tr></table>
     <p class="row sign">Подпись зав. кабинетом ${ln('', '40%')}</p></section>`;
   // 3 лист — формулы и вычисления
   const p3 = `<section class="lwp"><p class="c b">РАСЧЕТНЫЕ ФОРМУЛЫ ИСКОМЫХ ВЕЛИЧИН И ПОГРЕШНОСТЕЙ</p>
     <div class="fm"><p>v = √(2μgl) &nbsp;⇒&nbsp; p ∝ m√l; &nbsp; E = μmgl ∝ m·l</p>
     <p>l₀ = x̄ − x₀₁; &nbsp; l₁ = √(Δx₁² + Δy₁²); &nbsp; l₂ = √(Δx₂² + Δy₂²)</p>
-    <p>X: m₁√l₀ = m₁Δx₁/√l₁ + mⱼΔxⱼ/√lⱼ; &nbsp; Y: 0 = m₁Δy₁/√l₁ + mⱼΔyⱼ/√lⱼ &nbsp; (j = 2, 3 — тело-мишень)</p>
-    <p>kⱼ = (m₁l₁ + mⱼlⱼ) / (m₁l₀)</p>
+    <p>X: m₁√l₀ = m₁Δx₁/√l₁ + m₂Δx₂/√l₂; &nbsp; Y: 0 = m₁Δy₁/√l₁ + m₂Δy₂/√l₂</p>
+    <p>k = (m₁l₁ + m₂l₂) / (m₁l₀)</p>
     <p>Δ<sub>случ</sub> = (x<sub>max</sub> − x<sub>min</sub>)/2; &nbsp; Δ<sub>сист</sub> = цена деления; &nbsp; δ = Δ/x̄·100; &nbsp; P = 1 − (½)<sup>N−1</sup></p></div><hr>
     <p class="c b">ВЫЧИСЛЕНИЕ РЕЗУЛЬТАТОВ ИЗМЕРЕНИЯ И ПОГРЕШНОСТЕЙ</p>
-    <table><tr><th>Импульс, кг·мм^½</th><th>До удара</th><th>После удара по телу 2</th><th>После удара по телу 3</th></tr><tr><td>Вдоль X</td><td>m₁√l₀ = ${f4(o.m1)}·√${mm(o.l0)} = ${f3(o.px0)}</td><td>${f3(o.px1)}</td><td>${f3(o3.px1)}</td></tr><tr><td>Вдоль Y</td><td>0</td><td>${f3(o.py1)}</td><td>${f3(o3.py1)}</td></tr></table>
-    <table><tr><th>Энергия, кг·мм</th><th>До удара</th><th>После удара по телу 2</th><th>После удара по телу 3</th></tr><tr><td>m·l</td><td>${f3(o.e0)}</td><td>${f3(o.e1)}</td><td>${f3(o3.e1)}</td></tr><tr><td>Коэффициент восстановления</td><td>—</td><td>k₂ = ${f3(o.e1)} / ${f3(o.e0)} = ${f1(o.k, 2)}</td><td>k₃ = ${f3(o3.e1)} / ${f3(o3.e0)} = ${f1(o3.k, 2)}</td></tr></table>
+    <table><tr><th>Импульс, кг·мм^½</th><th>До удара</th><th>После удара</th></tr><tr><td>Вдоль X</td><td>m₁√l₀ = ${f4(o.m1)}·√${mm(o.l0)} = ${f3(o.px0)}</td><td>${f3(o.px1)}</td></tr><tr><td>Вдоль Y</td><td>0</td><td>${f3(o.py1)}</td></tr></table>
+    <table><tr><th>Энергия, кг·мм</th><th>До удара</th><th>После удара</th></tr><tr><td>m·l</td><td>${f3(o.e0)}</td><td>${f3(o.e1)}</td></tr><tr><td>Коэффициент восстановления</td><td>—</td><td>k = ${f3(o.e1)} / ${f3(o.e0)} = ${f1(o.k, 2)}</td></tr></table>
     <p class="small">Погрешности (табл. 4) — для опыта 2 (удар по телу 2).</p>
     <table><tr><th>Величина</th><th>Значение</th><th>Δ сист.</th><th>Δ случ.</th><th>Δ наиб.</th><th>δ, %</th></tr>
       ${Object.keys(lab).map(q => `<tr><td>${lab[q]}, мм</td><td>${mm(o.vals[q])}</td><td>1</td><td>${q.length === 2 ? mm(o['r_' + q]) : '—'}</td><td>${mm(o['d_' + q])}</td><td>${f1(o['rel_' + q], 2)}</td></tr>`).join('')}</table>
     <p class="small">Доверительная вероятность при N = ${LW1.N}: P = 1 − (½)^${LW1.N - 1} = ${f1(o.P, 1)} %.</p></section>`;
   // 4 лист — график и выводы
-  const p4 = `<section class="lwp"><p class="c b">ПОСТРОЕНИЕ ГРАФИКОВ</p>${lwGraphSvg(o, o3)}
-    <p class="small c">Перемещения шайб (средние по ${LW1.N} опытам): l₀ — тело 1 без мишени; l₁, l₂ — удар по телу 2; l₁′, l₃ — удар по телу 3.</p>
+  const p4 = `<section class="lwp"><p class="c b">ПОСТРОЕНИЕ ГРАФИКОВ</p>${lwGraphSvg(o)}
+    <p class="small c">Перемещения шайб (средние по ${LW1.N} опытам): l₀ — тело 1 без мишени; l₁, l₂ — тела 1 и 2 после удара.</p>
     <p class="c b mt2">ВЫВОДЫ ПО ПРОДЕЛАННОЙ РАБОТЕ</p><p class="concl">${esc(S.concl).replace(/\n/g, '<br>')}</p>
     <p class="row sign">Подпись исполнителя ${ln('', '45%')}</p></section>`;
   return p1 + p2 + p3 + p4;
 }
 /* График на миллиметровке бланка: векторы перемещений шайб */
-function lwGraphSvg(o, o3) {
-  const W = 520, x0 = 30, y0 = 150, mx = Math.max(o.l0, o.dx1, o.dx2, o3.dx1, o3.dx2, 1), my = Math.max(Math.abs(o.dy1), Math.abs(o.dy2), Math.abs(o3.dy1), Math.abs(o3.dy2), 1);
+function lwGraphSvg(o) {
+  const W = 520, x0 = 30, y0 = 150, mx = Math.max(o.l0, o.dx1, o.dx2, 1), my = Math.max(Math.abs(o.dy1), Math.abs(o.dy2), 1);
   const sc = Math.min((W - 50) / mx, 120 / my);
   const grid = Array.from({ length: 27 }, (_, i) => `<line x1="${10 + i * 20}" y1="10" x2="${10 + i * 20}" y2="290" stroke="#999" stroke-width=".5"/>`).join('') + Array.from({ length: 15 }, (_, i) => `<line x1="10" y1="${10 + i * 20}" x2="530" y2="${10 + i * 20}" stroke="#999" stroke-width=".5"/>`).join('');
   const arr = (dx, dy, col, t, dash) => { const X = x0 + dx * sc, Y = y0 - dy * sc; return `<line x1="${x0}" y1="${y0}" x2="${X}" y2="${Y}" stroke="${col}" stroke-width="2.4" ${dash ? 'stroke-dasharray="7 4"' : ''}/><circle cx="${X}" cy="${Y}" r="3.5" fill="${col}"/><text x="${X + 6}" y="${Y + (dy >= 0 ? -6 : 14)}" font-size="13" font-weight="700" fill="${col}">${t}</text>`; };
-  const legend = [['#000', 'l₀ — тело 1 без мишени', 1], ['#1f4fd8', 'l₁ — тело 1 (удар по 2)'], ['#c0392b', 'l₂ — тело 2'], ['#6b3fa0', 'l₁′ — тело 1 (удар по 3)'], ['#d68910', 'l₃ — тело 3']]
+  const legend = [['#000', 'l₀ — тело 1 без мишени', 1], ['#1f4fd8', 'l₁ — тело 1 после удара'], ['#c0392b', 'l₂ — тело 2 после удара']]
     .map(([c, t, d], i) => `<line x1="${40 + (i % 3) * 165}" y1="${308 + Math.floor(i / 3) * 16}" x2="${62 + (i % 3) * 165}" y2="${308 + Math.floor(i / 3) * 16}" stroke="${c}" stroke-width="2.4" ${d ? 'stroke-dasharray="6 3"' : ''}/><text x="${67 + (i % 3) * 165}" y="${312 + Math.floor(i / 3) * 16}" font-size="11">${t}</text>`).join('');
   return `<svg class="lwr-svg" viewBox="0 0 540 340">${grid}<line x1="${x0}" y1="${y0}" x2="530" y2="${y0}" stroke="#666" stroke-width=".8"/><line x1="${x0}" y1="10" x2="${x0}" y2="290" stroke="#000"/><text x="515" y="${y0 + 16}" font-size="12">x</text><text x="${x0 + 6}" y="22" font-size="12">y</text>
-    ${arr(o.l0, 0, '#000', 'l₀', true)}${arr(o.dx1, o.dy1, '#1f4fd8', 'l₁')}${arr(o.dx2, o.dy2, '#c0392b', 'l₂')}${arr(o3.dx1, o3.dy1, '#6b3fa0', 'l₁′')}${arr(o3.dx2, o3.dy2, '#d68910', 'l₃')}${legend}</svg>`;
+    ${arr(o.l0, 0, '#000', 'l₀', true)}${arr(o.dx1, o.dy1, '#1f4fd8', 'l₁')}${arr(o.dx2, o.dy2, '#c0392b', 'l₂')}${legend}</svg>`;
 }
 function lwSchemeSvg() {
   return `<svg class="lwr-svg scheme" viewBox="0 0 520 220" aria-hidden="true"><rect x="70" y="10" width="440" height="200" fill="none" stroke="#000"/>${Array.from({ length: 21 }, (_, i) => `<line x1="${70 + i * 22}" y1="10" x2="${70 + i * 22}" y2="210" stroke="#bbb" stroke-width=".6"/>`).join('')}${Array.from({ length: 10 }, (_, i) => `<line x1="70" y1="${10 + i * 22}" x2="510" y2="${10 + i * 22}" stroke="#bbb" stroke-width=".6"/>`).join('')}
@@ -562,15 +541,15 @@ document.addEventListener('click', e => {
     case 'admitCheck': { const n = LW_ADMIT.filter(([, a], i) => S.admit[i] === a).length; S.admitChecked = true; S.admitOk = n >= 6; lwSave(); render();
       toast(S.admitOk ? `Допуск сдан: ${n} из 8` : `Верно ${n} из 8 — нужно 6. Перечитай теорию и попробуй снова.`, S.admitOk ? '' : 'bad'); break; }
     case 'puck': {
-      const ks = ['p1', 'p2', 'p3'], has = ks.find(k => S[k] === d.v);
-      if (has) S[has] = null; else { const free = ks.find(k => !S[k]); if (free) S[free] = d.v; else { S.p1 = d.v; S.p2 = S.p3 = null; } }
+      const ks = ['p1', 'p2'], has = ks.find(k => S[k] === d.v);
+      if (has) S[has] = null; else { const free = ks.find(k => !S[k]); if (free) S[free] = d.v; else { S.p1 = d.v; S.p2 = null; } }
       S.prepOk = false; lwSave(); render(); break;
     }
     case 'prepCheck': {
-      if (!S.p1 || !S.p2 || !S.p3) { lwMsg('Выбери три шайбы: основную (тело 1) и две мишени (тела 2 и 3).', 1); break; }
-      const ms = [1, 2, 3].map(j => lwPuck(S['p' + j]).m);
-      if (Math.abs(ms[1] - ms[2]) < .0009) { lwMsg('Шайбы-мишени должны быть разной массы.', 1); break; }
-      const badM = [1, 2, 3].filter(j => Math.abs(lwNum(S['m' + j]) - ms[j - 1]) > .00006);
+      if (!S.p1 || !S.p2) { lwMsg('Выбери два тела: тело 1 (ударяющее) и тело 2 (мишень).', 1); break; }
+      const ms = [1, 2].map(j => lwPuck(S['p' + j]).m);
+      if (Math.abs(ms[0] - ms[1]) > .0025) { lwMsg('По методичке тела должны быть примерно одинаковой массы — выбери шайбы с разницей не больше 2,5 г.', 1); break; }
+      const badM = [1, 2].filter(j => Math.abs(lwNum(S['m' + j]) - ms[j - 1]) > .00006);
       if (badM.length) { lwMsg('Неверно записано: ' + badM.map(j => { const pk = lwPuck(S['p' + j]); return `m${LW_SUB[j]} (тело ${j} — шайба ${pk.id}, ${f1(pk.m * 1000, 1)} г)`; }).join('; ') + '. Масса в килограммах: граммы ÷ 1000, например 20,1 г = 0,0201 кг.', 1); break; }
       if (!(Math.abs(lwNum(S.rx01) - (S.x01 + LW1.R)) <= 1.2 && Math.abs(lwNum(S.ry01) - S.y01) <= 1.2)) { S.prepTries = (S.prepTries || 0) + 1; lwSave();
         lwMsg(S.prepTries >= 3 ? `Не совпадает. Подсказка: x₀₁ ≈ ${Math.round(S.x01 + LW1.R)} мм, y₀₁ ≈ ${Math.round(S.y01)} мм — найди это место в лупе.` : 'Координаты не совпадают с установкой. Наведи лупу на красную метку крайней точки шайбы 1 и посчитай миллиметровые деления.', 1); break; }

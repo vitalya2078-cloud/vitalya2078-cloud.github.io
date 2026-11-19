@@ -5,15 +5,15 @@
    ===================================================================== */
 let LAB = 3;
 const LABS = {
-  1: { no: 1, act: 'lw', short: 'Закон сохранения импульса', icon: 'target', steps: LW1.steps, live: ['prep', 'free', 'coll2', 'coll3'],
+  1: { no: 1, act: 'lw', short: 'Закон сохранения импульса', icon: 'target', steps: LW1.steps, live: ['prep', 'free', 'coll2'],
     key: id => workKey(id) + '-1', setKey(k) { LW_KEY = k; LWS = null; }, S: () => LWS, load: lwLoad, save: lwSave, swap(S) { const k = LWS; LWS = S; return () => { LWS = k; }; },
     admit: LW_ADMIT, cq: LW_CQ, text: LW_TEXT, hod: LW1_HOD, scheme: () => lwSchemeSvg(), report: () => lwReportHtml(),
     inp: (k, v, ph) => `<input class="lwi txt inp" data-k="${k}" value="${esc(v || '')}" placeholder="${ph}" autocomplete="off">`,
     ta: v => `<textarea class="lw-ta inp" data-k="concl" rows="14">${esc(v)}</textarea>`, autoConcl: () => lwAutoConcl(lwCalcAll()),
-    view: { prep: lwPrep, free: lwFreeStep, coll2: () => lwCollStep(2), coll3: () => lwCollStep(3), proc: lwProc },
+    view: { prep: lwPrep, free: lwFreeStep, coll2: () => lwCollStep(2), proc: lwProc },
     after(st) { if (this.live.includes(st)) { LWV.pos = null; lwDraw(); } },
-    result() { const O = lwCalcAll(); return `p: ${f1(O[2].px0, 3)} → ${f1(O[2].px1, 3)}; k₂ = ${f1(O[2].k, 2)}, k₃ = ${f1(O[3].k, 2)}`; },
-    nums() { const O = lwCalcAll(); return { px0: O[2].px0, px1: O[2].px1, px13: O[3].px1, k2: O[2].k, k3: O[3].k }; },
+    result() { const O = lwCalcAll(); return `p: ${f1(O[2].px0, 3)} → ${f1(O[2].px1, 3)} кг·мм^½; k = ${f1(O[2].k, 2)}`; },
+    nums() { const O = lwCalcAll(); return { px0: O[2].px0, px1: O[2].px1, py1: O[2].py1, k: O[2].k }; },
     sig: S => (S.free || []).map(r => r.r).join(';') },
   2: { no: 2, act: 'l2', short: 'Момент инерции (маятник Обербека)', icon: 'rotate-cw', steps: L2.steps, live: ['prep', 'exp1', 'exp2'],
     key: id => workKey(id) + '-2', setKey(k) { L2_KEY = k; L2S = null; }, S: () => L2S, load: l2Load, save: l2Save, swap(S) { const k = L2S; L2S = S; return () => { L2S = k; }; },
@@ -44,6 +44,6 @@ function labStatus(n, S) { const L = LABS[n]; if (!S) return 'не начата'
 /* ЛР 1 и ЛР 2: текущий пункт хода работы по шагу и записям */
 function hodNowLab() {
   const L = curLab(), S = L.S(); if (!S) return 0; const st = L.steps[S.step][0];
-  if (LAB === 1) return ({ prep: 1, free: S.free.length ? 3 : 2, coll2: (S.ex[2].rows.length ? 5 : 4), coll3: 5, proc: S.procOk.px0 ? 8 : 6, concl: 9 })[st] || 0;
+  if (LAB === 1) return ({ prep: 1, free: S.free.length ? 3 : 2, coll2: (S.ex[2].rows.length ? 5 : 4), proc: S.procOk.px0 ? 8 : 6, concl: 9 })[st] || 0;
   return ({ prep: 1, exp1: S.runs.length ? 3 : 2, exp2: S.ex2.length ? 5 : 4, proc: 6, concl: 8 })[st] || 0;
 }
