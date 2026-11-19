@@ -63,7 +63,7 @@ const L3PAL = {
   dark: { bg0: '#16263C', bg1: '#0E1A2B', grid: 'rgba(255,255,255,.025)', tb: ['#6A5A47', '#4A3D30', '#251E18'], tbEdge: 'rgba(255,230,200,.18)', vign: .35,
     lab: '#E7EDF6', lab2: '#C9D4E3', mol: 'rgba(215,232,250,.8)', glass: 'rgba(210,230,250,.8)', air: '220,235,255', ok: '#5AD3A0', bad: '#F2727E' },
   light: { bg0: '#F2F5F9', bg1: '#DCE3EC', grid: 'rgba(20,40,70,.05)', tb: ['#D2B48C', '#B08D63', '#86663F'], tbEdge: 'rgba(255,255,255,.6)', vign: .1,
-    lab: '#1C2430', lab2: '#4A5566', mol: 'rgba(60,92,135,.85)', glass: 'rgba(50,85,130,.7)', air: '80,110,150', ok: '#138A55', bad: '#C9303F' }
+    lab: '#1C2430', lab2: '#4A5566', mol: 'rgba(60,92,135,.85)', glass: 'rgba(50,85,130,.7)', air: '80,110,150', ok: '#138A55', bad: '#C9303F', veil: 'rgba(242,245,249,.45)' }
 };
 const L3D = { last: 0, mol: null, jet: [], ak: null, ak0: null };
 const l3BalloonPath = c => { c.beginPath(); c.moveTo(214, 128); c.lineTo(258, 128); c.lineTo(258, 146); c.bezierCurveTo(330, 160, 336, 200, 332, 410); c.lineTo(140, 410); c.bezierCurveTo(136, 200, 142, 160, 214, 146); c.closePath(); };
@@ -95,9 +95,11 @@ function l3Draw() {
   if (bg) {   // картинка во всю ширину; её кромка стола (доля высоты edge) — на основании приборов, y = 419
     const h = bg.naturalHeight * 580 / bg.naturalWidth, y0 = 419 - (L3_BG.edge ?? 1) * h;
     c.fillStyle = L3_BG.top || '#0F2237'; c.fillRect(0, 0, 580, 452);
-    if (y0 > 0) { g = c.createLinearGradient(0, y0 - 1, 0, y0 + 24); g.addColorStop(0, L3_BG.top || '#0F2237'); g.addColorStop(1, 'rgba(15,34,55,0)'); }
+    const top = L3_BG.top || '#0F2237', tr = top.length === 7 ? `rgba(${parseInt(top.slice(1, 3), 16)},${parseInt(top.slice(3, 5), 16)},${parseInt(top.slice(5, 7), 16)},0)` : 'rgba(0,0,0,0)';
+    if (y0 > 0) { g = c.createLinearGradient(0, y0 - 1, 0, y0 + 24); g.addColorStop(0, top); g.addColorStop(1, tr); }
     c.drawImage(bg, 0, y0, 580, h);
     if (y0 > 0) { c.fillStyle = g; c.fillRect(0, y0 - 1, 580, 25); }
+    if (P.veil) { c.fillStyle = P.veil; c.fillRect(0, 0, 580, 418); }   // светлый фон чуть бледнее, чтобы не спорил с подписями
   } else {
     g = c.createLinearGradient(0, 0, 0, 452); g.addColorStop(0, P.bg0); g.addColorStop(1, P.bg1); c.fillStyle = g; c.fillRect(0, 0, 580, 452);
     c.fillStyle = P.grid; for (let x = 0; x < 580; x += 24) c.fillRect(x, 0, 1, 452);
