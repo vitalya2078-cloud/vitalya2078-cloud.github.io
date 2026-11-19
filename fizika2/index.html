@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 135;
+  var embedded = 136;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1239,7 +1239,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 135;
+const F2_BUILD = 136;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -8395,13 +8395,30 @@ function l3Draw() {
   const shadow = (x, w) => { g = c.createRadialGradient(x, 419, 2, x, 419, w); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.save(); c.translate(x, 419); c.scale(1, .12); c.translate(-x, -419); c.fillStyle = g; c.beginPath(); c.arc(x, 419, w, 0, 7); c.fill(); c.restore(); };
   shadow(236, 120); shadow(110, 52); shadow(485, 48);
   // трубки (металл)
-  const pipe = (pts, w = 6) => { c.lineJoin = 'round'; c.lineCap = 'round'; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y));
-    c.strokeStyle = '#5E6B7C'; c.lineWidth = w + 2; c.stroke(); c.strokeStyle = '#A9B6C7'; c.lineWidth = w; c.stroke(); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.4; c.stroke(); c.lineCap = 'butt'; };
-  pipe([[46, 96], [470, 96], [470, 120]]); pipe([[110, 96], [110, 300]]); pipe([[236, 96], [236, 128]]);
+  // трубки (металл): отрезки с объёмным бликом; фитинги — после приборов, поверх стыков
+  const metal = (vert, a, b) => { g = vert ? c.createLinearGradient(a, 0, b, 0) : c.createLinearGradient(0, a, 0, b);   /* поперёк трубы */
+    [[0, '#4A5565'], [.22, '#AEBACA'], [.42, '#EEF3F9'], [.68, '#8C9AAD'], [1, '#424D5C']].forEach(([o, col]) => g.addColorStop(o, col)); return g; };
+  const seg = (x1, y1, x2, y2, w = 7) => { const v = x1 === x2, x = Math.min(x1, x2), y = Math.min(y1, y2);
+    c.fillStyle = v ? metal(true, x1 - w / 2, x1 + w / 2) : metal(false, y1 - w / 2, y1 + w / 2); v ? c.fillRect(x1 - w / 2, y, w, Math.abs(y2 - y1)) : c.fillRect(x, y1 - w / 2, Math.abs(x2 - x1), w);
+    c.fillStyle = 'rgba(20,28,40,.35)'; v ? (c.fillRect(x1 - w / 2 - .6, y, .8, Math.abs(y2 - y1)), c.fillRect(x1 + w / 2 - .2, y, .8, Math.abs(y2 - y1))) : (c.fillRect(x, y1 - w / 2 - .6, Math.abs(x2 - x1), .8), c.fillRect(x, y1 + w / 2 - .2, Math.abs(x2 - x1), .8)); };
+  seg(46, 96, 470, 96); seg(470, 96, 470, 122); seg(110, 96, 110, 300); seg(236, 96, 236, 128);
+  const sleeve = (x, y, vert, len = 10, w = 11) => { c.save(); c.translate(x, y); if (vert) c.rotate(Math.PI / 2);
+    c.fillStyle = metal(false, -w / 2, w / 2); c.beginPath(); c.roundRect ? c.roundRect(-len / 2, -w / 2, len, w, 2) : c.rect(-len / 2, -w / 2, len, w); c.fill();
+    c.fillStyle = 'rgba(25,32,45,.55)'; c.fillRect(-len / 2, -w / 2, 1.4, w); c.fillRect(len / 2 - 1.4, -w / 2, 1.4, w); c.strokeStyle = 'rgba(20,28,40,.5)'; c.lineWidth = .8; c.strokeRect(-len / 2, -w / 2, len, w); c.restore(); };
+  const fittings = () => {
+    sleeve(110, 99, true, 9, 11); sleeve(110, 96, false, 18, 12);            // тройник к крану K
+    sleeve(236, 99, true, 8, 11); sleeve(236, 96, false, 18, 12);            // тройник к пробке
+    g = c.createRadialGradient(468, 94, 1, 470, 96, 9); g.addColorStop(0, '#EEF3F9'); g.addColorStop(.6, '#9AA8BA'); g.addColorStop(1, '#4A5565');
+    c.fillStyle = g; c.beginPath(); c.arc(470, 96, 7.5, 0, 7); c.fill(); c.strokeStyle = 'rgba(20,28,40,.5)'; c.lineWidth = .8; c.stroke();   // уголок к манометру
+    sleeve(110, 284, true, 9, 11);                                            // муфта у компрессора
+    const clamp = (x, y, vert) => { c.save(); c.translate(x, y); if (vert) c.rotate(-Math.PI / 2);   // хомут, крепление к стене
+      c.fillStyle = '#2B3442'; c.fillRect(-2, -14, 4, 9); c.fillRect(-2.6, -6.5, 5.2, 13); c.fillStyle = '#7D8A9C'; c.beginPath(); c.arc(0, -13, 2.2, 0, 7); c.fill(); c.restore(); };
+    clamp(170, 96); clamp(360, 96); clamp(110, 160, true);
+  };
   // баллон Б: стекло, оттенок по температуре, молекулы воздуха
   const t = Math.max(-1, Math.min(1, V.th / .006));
   c.save(); l3BalloonPath(c);
-  g = c.createLinearGradient(140, 0, 332, 0); g.addColorStop(0, 'rgba(160,200,230,.16)'); g.addColorStop(.35, 'rgba(220,240,255,.26)'); g.addColorStop(1, 'rgba(120,160,200,.12)'); c.fillStyle = g; c.fill();
+  g = c.createLinearGradient(140, 0, 332, 0); g.addColorStop(0, 'rgba(170,205,235,.10)'); g.addColorStop(.3, 'rgba(225,240,255,.07)'); g.addColorStop(.7, 'rgba(200,225,250,.04)'); g.addColorStop(1, 'rgba(140,175,210,.10)');   /* стекло почти прозрачное: фон виден сквозь баллон */ c.fillStyle = g; c.fill();
   if (Math.abs(t) > .02) { c.fillStyle = t > 0 ? `rgba(255,120,70,${.26 * t})` : `rgba(90,170,255,${-.3 * t})`; c.fill(); }
   c.clip();
   const n = Math.max(24, Math.min(L3D.mol.length, Math.round(48 * (1 + ((V.m || 1) - 1) * 30))));
@@ -8435,6 +8452,7 @@ function l3Draw() {
   if (pumping) { c.fillStyle = 'rgba(90,211,160,.25)'; c.beginPath(); c.arc(136, 310, 10, 0, 7); c.fill(); }
   }
   c.restore();
+  fittings();
   c.font = '600 9px "Golos UI", system-ui'; c.fillStyle = P.lab2; c.textAlign = 'center'; c.fillText('компрессор', 110, sh ? 384 : 376);
   // краны: K — открыт горизонтально; K₀ — закрыт горизонтально (ручка поворачивается плавно)
   const sv = l3Spr('valve');
