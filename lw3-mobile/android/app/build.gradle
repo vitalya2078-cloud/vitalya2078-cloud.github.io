@@ -7,8 +7,8 @@ android {
         applicationId "io.github.vitalya2078.adiabata"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10500
-        versionName "1.5.0"
+        versionCode 10600
+        versionName "1.6.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +16,9 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    // подпись релиза: постоянный ключ из секретов CI (LW3_KEYSTORE — путь к файлу, LW3_KEYSTORE_PASS, LW3_KEY_ALIAS, LW3_KEY_PASS);
-    // без них — отладочный ключ (APK ставится, но обновление поверх версии с другим ключом потребует удаления)
+    // Подпись релиза. По умолчанию — открытый ключ приложения lw3-public.keystore (лежит в репозитории, пароль lw3-public):
+    // все сборки подписаны одним ключом, и новая версия ставится поверх старой без удаления.
+    // Для магазинов (RuStore, Google Play) — закрытый ключ из секретов CI: LW3_KEYSTORE (путь к файлу), LW3_KEYSTORE_PASS, LW3_KEY_ALIAS, LW3_KEY_PASS.
     def ks = System.getenv('LW3_KEYSTORE')
     signingConfigs {
         release {
@@ -26,12 +27,17 @@ android {
                 storePassword System.getenv('LW3_KEYSTORE_PASS')
                 keyAlias System.getenv('LW3_KEY_ALIAS')
                 keyPassword System.getenv('LW3_KEY_PASS') ?: System.getenv('LW3_KEYSTORE_PASS')
+            } else {
+                storeFile file('lw3-public.keystore')
+                storePassword 'lw3-public'
+                keyAlias 'lw3'
+                keyPassword 'lw3-public'
             }
         }
     }
     buildTypes {
         release {
-            signingConfig = (ks && file(ks).exists()) ? signingConfigs.release : signingConfigs.debug
+            signingConfig = signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

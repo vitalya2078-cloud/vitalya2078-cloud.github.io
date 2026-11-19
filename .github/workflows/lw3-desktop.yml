@@ -182,7 +182,7 @@ jobs:
         env:
           KS_B64: ${{ secrets.LW3_KEYSTORE_B64 }}
         run: |
-          if [ -n "$KS_B64" ]; then echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/lw3.jks"; echo "LW3_KEYSTORE=$RUNNER_TEMP/lw3.jks" >> "$GITHUB_ENV"; else echo "::warning::Секрет LW3_KEYSTORE_B64 не задан — APK подписан отладочным ключом"; fi
+          if [ -n "$KS_B64" ]; then echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/lw3.jks"; echo "LW3_KEYSTORE=$RUNNER_TEMP/lw3.jks" >> "$GITHUB_ENV"; else echo "Подпись: открытый ключ приложения (lw3-public.keystore)"; fi
       - name: Build APK
         working-directory: lw3-mobile/android
         env:
