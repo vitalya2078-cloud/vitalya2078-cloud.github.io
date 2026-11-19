@@ -48,7 +48,7 @@ version = meta['version']
 # фон установки (необязательно): assets/lab-bg.(webp|jpg|png) → dist/img/; без файла сцена рисует фон сама
 bg = next((f for f in ('lab-bg.webp', 'lab-bg.jpg', 'lab-bg.png') if os.path.exists(os.path.join(D, 'assets', f))), None)
 js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps(dict(json.loads(rd(os.path.join(D, 'assets', 'lab-bg.json'))) if os.path.exists(os.path.join(D, 'assets', 'lab-bg.json')) else {}, src='img/' + bg) if bg else None, ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'desktop.js', 'layout2.js', 'teacher.js')])
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'desktop.js', 'layout2.js', 'hod.js', 'teacher.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 

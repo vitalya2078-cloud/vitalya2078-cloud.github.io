@@ -49,6 +49,12 @@ try {
         const p1 = await page.evaluate(() => L3V.p); must(p1 > 10, 'пробел не включает компрессор: ' + p1);
         await page.waitForTimeout(300); must(await page.evaluate(() => !L3V.pump), 'компрессор не выключился');
         must(await page.locator('#d-chart').count() === 1 && await page.locator('.steps button').count() === 6, 'нет графика или шагов');
+        // ход работы: 13 пунктов методички, на накачке подсвечен п. 4, открывается и закрывается клавишей H
+        await page.keyboard.press('h'); await page.waitForTimeout(300);
+        must(await page.locator('#hod.open li').count() === 13, 'ход работы не открылся');
+        must((await page.locator('#hod li.cur i').innerText()) === '4', 'в ходе работы не подсвечен п. 4');
+        await shot(page, 'hod'); await page.keyboard.press('h'); await page.waitForTimeout(300);
+        must(!(await page.locator('#hod').getAttribute('class')).includes('open'), 'ход работы не закрылся');
       }
     }
   });
