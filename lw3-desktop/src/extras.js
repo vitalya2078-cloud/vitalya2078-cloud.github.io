@@ -9,7 +9,7 @@ const BG = { dark: null, light: null };
 function sceneTheme() { L3_THEME = isLight() ? 'light' : 'dark'; L3_BG = BG[L3_THEME]; if ($('#l3-cv')) l3Draw(); }
 function loadBg(cfg, key) { if (!cfg) return; const im = new Image(); im.onload = () => { BG[key] = Object.assign(im, { edge: cfg.edge, top: cfg.top }); sceneTheme(); }; im.src = cfg.src; }
 loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); sceneTheme();
-['compressor', 'valve', 'cork', 'stopwatch'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if ($('#l3-cv')) l3Draw(); }; im.src = `img/parts/${k}.webp`; });   // приборы-картинки
+['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); };   /* бутылка — другой контур: молекулы заново */ im.src = `img/parts/${k}.webp`; });   // приборы-картинки
 const _setTheme = setTheme;
 setTheme = function (t) { document.documentElement.dataset.theme = t; sceneTheme(); _setTheme(t); };
 

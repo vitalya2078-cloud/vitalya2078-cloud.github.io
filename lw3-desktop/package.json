@@ -1,7 +1,7 @@
 {
   "name": "lw3-adiabata",
   "private": true,
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "ЛР № 3 · Показатель адиабаты — программа для Windows (Tauri 2)",
   "scripts": {
     "build:ui": "python3 build.py",
