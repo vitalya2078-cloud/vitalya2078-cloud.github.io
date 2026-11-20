@@ -258,3 +258,53 @@
 .fz-nterms{margin:10px 8px 0; font-size:12.5px; color:var(--mute)}
 @media (max-width:1150px){ .fz-nview{grid-template-columns:1fr} .fz-ntoc{display:none} }
 .fz-nhead .row .btn{width:auto; flex:none}
+/* поиск */
+.fz-sbtn{margin-bottom:8px; border:1px solid var(--line) !important; background:var(--card2) !important}
+.fz-sbtn kbd{margin-left:auto; font-size:10px}
+.fz-app.mini .fz-sbtn kbd{display:none}
+#fz-sr{position:fixed; inset:0; z-index:60; display:flex; justify-content:center; align-items:flex-start; padding-top:11vh; background:rgba(8,10,14,.45); backdrop-filter:blur(3px)}
+#fz-sr[hidden]{display:none}
+.fz-srbox{width:min(680px, calc(100vw - 32px)); max-height:72vh; display:flex; flex-direction:column; border-radius:20px; background:var(--card); border:1px solid var(--line2); box-shadow:0 30px 80px rgba(0,0,0,.35); overflow:hidden}
+.fz-srin{display:flex; gap:12px; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line)} .fz-srin .ic{width:22px; height:22px; color:var(--acc)}
+.fz-srin input{flex:1; border:0; outline:0; background:none; color:var(--tx); font:500 17px var(--ui); user-select:text}
+#fz-srl{overflow:auto; padding:8px; flex:1}
+.fz-srg{margin:10px 10px 4px; font:800 11px var(--ui); letter-spacing:.07em; text-transform:uppercase; color:var(--mute)}
+.fz-sri{display:flex; gap:12px; align-items:center; width:100%; padding:10px 12px; border:0; border-radius:12px; background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer}
+.fz-sri > .ic:first-child{color:var(--mute); width:18px; height:18px} .fz-sri > .ic:last-child{opacity:0; color:var(--acc)}
+.fz-sri span{flex:1; min-width:0} .fz-sri b{display:block; font-size:14.5px; font-weight:600} .fz-sri small{display:block; color:var(--mute); font-size:12px}
+.fz-sri em{display:block; font-style:normal; color:var(--tx2); font-size:12.5px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-sri mark{background:var(--acc-soft); color:var(--acc); border-radius:3px; padding:0 2px}
+.fz-sri.on, .fz-sri:hover{background:var(--acc-soft)} .fz-sri.on > .ic:last-child{opacity:1} .fz-sri.on > .ic:first-child{color:var(--acc)}
+.fz-srhint{padding:16px 12px; color:var(--tx2); font-size:14px} .fz-srhint p{margin:0 0 12px}
+.fz-srchips{display:flex; flex-wrap:wrap; gap:8px} .fz-srchips button{padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--card2); color:var(--tx2); font:600 13px var(--ui); cursor:pointer} .fz-srchips button:hover{border-color:var(--acc); color:var(--acc)}
+.fz-srnone{padding:18px 12px; color:var(--mute)}
+.fz-srft{display:flex; gap:18px; padding:10px 18px; border-top:1px solid var(--line); color:var(--mute); font-size:12px} .fz-srft kbd{margin:0 3px 0 0}
+/* полезные блоки */
+.fz-widgets{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; align-items:start}
+.fz-w h2{display:flex; align-items:center; gap:8px; font-size:17px; margin:0} .fz-wh{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+.fz-wtag{font:700 11.5px var(--ui); color:var(--acc); background:var(--acc-soft); padding:3px 9px; border-radius:999px}
+.fz-wq{grid-column:span 2} .fz-wqt{color:var(--tx) !important; font-size:15.5px !important; font-weight:600; margin-bottom:12px !important}
+.fz-wqo{display:grid; grid-template-columns:1fr 1fr; gap:8px} .fz-wqo button{padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:500 14px var(--ui); text-align:left; cursor:pointer}
+.fz-wqo button:hover:not([disabled]){border-color:var(--acc)} .fz-wqo button.ok{background:var(--ok-soft); border-color:var(--ok); color:var(--ok)} .fz-wqo button.bad{background:var(--bad-soft); border-color:var(--bad); color:var(--bad)} .fz-wqo button[disabled]{cursor:default}
+.fz-wrow{margin-top:12px; gap:6px} .fz-wrow .btn{width:auto}
+.fz-fdf .tx.d{padding:18px 10px; border-radius:14px; background:var(--card2); text-align:center; font-size:19px; overflow-x:auto} .fz-fdh{margin:10px 0 8px !important; font-weight:600; color:var(--tx2) !important}
+.fz-fd .btn, .fz-w .tb-ic{width:auto}
+.fz-rp{display:grid; grid-template-columns:34px minmax(0,1fr) auto auto; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line)} .fz-rp:first-of-type{border-top:0}
+.fz-rp .fz-tn{width:32px; height:32px; border-radius:10px; font-size:14px} .fz-rp b{display:block; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-rp small{color:var(--mute); font-size:12px} .fz-rp .btn{width:auto; padding:6px 10px; min-height:0}
+.fz-cn{display:grid; gap:2px} .fz-cn div{display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:8px; align-items:baseline; padding:5px 0; border-top:1px solid var(--line); font-size:13px} .fz-cn div:first-child{border-top:0}
+.fz-cn i{font:italic 600 15px var(--serif); color:var(--acc)} .fz-cn span{color:var(--tx2)} .fz-cn b{font-weight:600; white-space:nowrap}
+.fz-ucc{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px} .fz-ucc button{padding:5px 10px; border-radius:999px; border:1px solid var(--line); background:none; color:var(--tx2); font:600 12.5px var(--ui); cursor:pointer} .fz-ucc button.on{background:var(--acc); border-color:var(--acc); color:var(--acc-tx)}
+.fz-ucr{display:grid; grid-template-columns:minmax(0,1fr) 140px; gap:8px; margin-top:8px}
+.fz-ucr input, .fz-ucr select, .fz-ucr output{height:42px; box-sizing:border-box; padding:0 12px; border-radius:12px; border:1px solid var(--line2); background:var(--card2); color:var(--tx); font:600 15px var(--ui); user-select:text}
+.fz-ucr output{display:flex; align-items:center; background:var(--acc-soft); border-color:transparent; color:var(--acc)}
+@media (max-width:1250px){ .fz-widgets{grid-template-columns:repeat(2, minmax(0,1fr))} }
+/* результаты: диаграмма */
+.fz-rsum{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-bottom:20px}
+.fz-chart{margin-bottom:8px} .fz-chart h2 .ic{width:20px; height:20px; color:var(--acc); vertical-align:-3px}
+.fz-cb{display:grid; grid-template-columns:minmax(0,280px) minmax(0,1fr) 40px 44px; gap:12px; align-items:center; padding:6px 4px; border-radius:8px} .fz-cb:hover{background:var(--card2)}
+.fz-cbl{font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--tx2)}
+.fz-cbt{position:relative; height:14px; border-radius:4px; background:var(--card2)} .fz-cbt i{position:absolute; left:0; top:0; bottom:0; border-radius:0 4px 4px 0; background:var(--acc)}
+.fz-cbt s{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--line2)} .fz-cb > b{text-align:right; font-size:14px}
+.fz-wcn{grid-column:1/-1} .fz-wcn .fz-cn{grid-template-columns:repeat(3, minmax(0,1fr)); column-gap:28px} .fz-wcn .fz-cn div:nth-child(-n+3){border-top:0}
+@media (max-width:1250px){ .fz-wcn .fz-cn{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-wq{grid-column:1/-1} }
+.fz-wqe{display:block; margin-top:6px; font-weight:400; color:var(--tx2)}
+.fz-cbt{background:var(--line)} .fz-sri mark{padding:0}

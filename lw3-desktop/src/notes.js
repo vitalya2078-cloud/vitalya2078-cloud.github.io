@@ -64,6 +64,7 @@ function noteView(x) {
 function noteScroll(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 /* после отрисовки раздела: формулы и переход к нужному разделу */
 function fzAfter() {
+  if (PAGE === 'main') texRender($('.fz-fd'));
   if (PAGE !== 'notes' || !NOTE) return;
   const root = $('.fz-note'); texRender(root);
   if (NOTE_SEC) { const s = NOTE_SEC; NOTE_SEC = ''; setTimeout(() => { const el = document.getElementById(s); if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('fz-hl'); setTimeout(() => el.classList.remove('fz-hl'), 2200); } }, 30); }

@@ -16,10 +16,11 @@ let NAVMINI = lsGet('fz-nav-mini', '0') === '1';
 const isNew = () => lsGet('fz-seen-ver', '') !== APP_VER;
 function vApp() {
   document.body.classList.add('noside', 'fzapp'); document.body.classList.remove('full'); ui.side.innerHTML = '';
-  const p = PROFILE, page = ({ main: pgMain, labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes })[PAGE] || pgMain, nw = isNew();
+  const p = PROFILE, page = ({ main: () => pgMain() + fzWidgets(), labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes })[PAGE] || pgMain, nw = isNew();
   const tip = t => NAVMINI ? ` title="${t}"` : '';
   ui.main.innerHTML = `<div class="fz-app ${NAVMINI ? 'mini' : ''}"><nav class="fz-nav">
       <button class="fz-brand ${nw ? 'new' : ''}" data-d="brand" title="На главную"><span class="logo">γ</span><span class="fz-bt"><b>Физпрактикум</b><small>${nw ? `<i class="fz-new">Новое в версии ${esc(APP_VER)}</i>` : 'ЧВВМУ им. П.С. Нахимова'}</small></span></button>
+      <button class="fz-ni fz-sbtn" data-d="search"${tip('Поиск (Ctrl+K)')}>${ic('search')}<span>Поиск</span><kbd>Ctrl K</kbd></button>
       ${NAV.map(([k, t, i]) => `<button class="fz-ni ${PAGE === k ? 'on' : ''}" data-d="page" data-v="${k}"${tip(t)}>${ic(i)}<span>${t}</span></button>`).join('')}
       <span class="fz-sp"></span>
       <button class="fz-ni" data-d="theme"${tip(isLight() ? 'Тёмная тема' : 'Светлая тема')}>${ic(isLight() ? 'moon' : 'sun')}<span>${isLight() ? 'Тёмная тема' : 'Светлая тема'}</span></button>
@@ -69,7 +70,7 @@ function pgMain() {
 }
 const pgLabs = () => pgHead('Лабораторные работы', 'Работы выполняются по методическим указаниям кафедры. Каждая сохраняется отдельно — можно продолжить позже.') + labCards('data-d');
 const pgTests = () => pgHead('Тесты и экзамены', 'Банк из 900 вопросов по 9 темам курса физики.') + testsHome().replace(/<button class="btn line" data-fz="self" data-v="(\d)">/g, (m, t) => `<button class="btn ghost" data-d="note" data-v="t${t}" title="Конспект темы">${ic('notebook-pen')} Конспект</button>` + m);
-const pgResults = () => pgHead('Мои результаты', 'Лабораторные работы и экзамены. Файл результата экзамена можно сохранить для преподавателя.') + resultsHtml('data-d');
+const pgResults = () => pgHead('Мои результаты', 'Лабораторные работы и экзамены. Файл результата экзамена можно сохранить для преподавателя.') + resChart() + resultsHtml('data-d');
 const KEYS = [['Ctrl', 'K', 'Поиск по программе'], ['Ctrl', 'B', 'Свернуть или развернуть меню'], ['', 'Enter', 'Следующий шаг, проверить ответ'], ['', '1 – 4', 'Выбор ответа в тесте'], ['', 'Esc', 'Закрыть окно']];
 const pgAbout = () => aboutHtml('data-d').replace(/<p class="fz-copy">/, `<div class="fz-ab-two">
     <section class="fz-ab-card"><p class="fz-ab-t">${ic('keyboard')} Клавиши</p>${KEYS.map(([m, k, t]) => `<div class="fz-key">${m ? `<kbd>${m}</kbd>+` : ''}<kbd>${k}</kbd><span>${t}</span></div>`).join('')}</section>

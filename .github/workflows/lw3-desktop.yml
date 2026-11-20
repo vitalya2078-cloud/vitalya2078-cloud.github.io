@@ -58,6 +58,7 @@ jobs:
           SHOTS=shots node lw3-desktop/tests/e2e.mjs
           SHOTS=shots node lw3-desktop/tests/e2e-labs.mjs
           node lw3-desktop/tests/notes-tex.mjs
+          node lw3-desktop/tests/e2e-ui.mjs
 
       - name: Full lab run in the Android interface (phone emulation)
         run: |
