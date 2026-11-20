@@ -65,7 +65,7 @@ cap_js_path = os.path.join(D, 'node_modules', '@capacitor', 'core', 'dist', 'cap
 if not os.path.exists(cap_js_path):
     raise SystemExit('нет %s — сначала: cd lw3-mobile && npm ci' % cap_js_path)
 cap_js = re.sub(r'//# sourceMappingURL=.*', '', rd(cap_js_path))
-js = '\n'.join([cap_js, 'const APP_VER = %s;' % json.dumps(version),
+js = '\n'.join([cap_js, 'const APP_VER = %s;' % json.dumps(version), 'const PWA = false;', 'const REPORT_CSS = %s;' % json.dumps(report_css, ensure_ascii=False),
                 'const LAB_BG = %s;' % json.dumps(bg_cfg('lab-bg.webp', 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg-light.webp', 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),

@@ -68,6 +68,15 @@ jobs:
           node lw3-mobile/tests/native-start.mjs
           SHOTS=shots node lw3-mobile/tests/e2e-labs.mjs
 
+      - name: iPhone web app (fizpraktikum/ on GitHub Pages)
+        run: |
+          python -m pip install --quiet pillow
+          python lw3-mobile/build_ios.py
+          git diff --exit-code -- fizpraktikum/index.html || { echo "::error::fizpraktikum/ устарела — запусти python3 lw3-mobile/build_ios.py и закоммить"; exit 1; }
+          python -m http.server 4200 > /tmp/lw3i.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4200/fizpraktikum/ >/dev/null && break; sleep 1; done
+          node lw3-mobile/tests/ios-pwa.mjs
+
       - name: Screenshots
         if: always()
         uses: actions/upload-artifact@v4

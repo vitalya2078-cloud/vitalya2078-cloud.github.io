@@ -8,6 +8,11 @@
    кнопка «Назад» (App). В обычном браузере то же работает через скачивание и window.print().
    ===================================================================== */
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+// iPhone / iPad: веб-приложение с экрана «Домой» (сборка build_ios.py, флаг PWA). Файлы — через меню «Поделиться» iOS.
+const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const STANDALONE = !!((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone);
+if (typeof PWA !== 'undefined' && PWA && !NATIVE && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === '127.0.0.1' || location.hostname === 'localhost'))
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 const PLUG = {};
 // доступ к нативным плагинам — через capacitor.js (@capacitor/core, встроен в страницу при сборке).
 // Любая ошибка здесь не должна мешать запуску: без плагина приложение работает, просто без этой функции.
@@ -72,7 +77,7 @@ function ensureMeta(S) {
   if (!S.fio && PROFILE) S.fio = PROFILE.fio;
   if (!S.group && PROFILE) S.group = PROFILE.group;
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
-  S.dx.device = 'android';
+  S.dx.device = IOS ? 'ios' : 'android';
 }
 function openProfile(p, intro = false, lab = 0) {   // студент → выбор работы (или сразу работа lab)
   PROFILE = p; L3S = null; LWS = null; L2S = null;
@@ -341,7 +346,7 @@ function showIntro(i) {
 
 /* ---------- файл работы, PDF ---------- */
 const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
-async function shareText(name, text, title) {
+async function shareText(name, text, title, type = 'application/octet-stream') {
   const FS = plug('Filesystem'), SH = plug('Share');
   if (FS && SH) {
     try {
@@ -349,7 +354,10 @@ async function shareText(name, text, title) {
       await SH.share({ title, text: title, files: [r.uri], dialogTitle: title }); return true;
     } catch (e) { if (/cancel/i.test(String(e && (e.message || e)))) return false; toast('Не удалось отправить файл: ' + esc(String(e && (e.message || e))), 'bad'); return false; }
   }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/octet-stream' })); a.download = name;
+  // браузер / iPhone: меню «Поделиться» с файлом (почта, мессенджеры, «Файлы»), иначе — скачивание
+  try { const file = new File([text], name, { type }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title }); return true; } }
+  catch (e) { if (e && e.name === 'AbortError') return false; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   toast(`${ic('circle-check')} Файл «${esc(name)}» сохранён в загрузки`); return true;
 }
@@ -362,8 +370,14 @@ async function printReport() {
   const L = curLab(), S = L.load(); $('#printroot').innerHTML = L.report();
   const PR = plug('Printer');
   if (PR) { try { await PR.print({ name: `Отчёт_ЛР${LAB}_${safeName(S.fio) || 'студент'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
+  // на iPhone в приложении с экрана «Домой» печать из страницы может не открываться — отчёт отдаётся файлом:
+  // его открывают в «Файлах» или Safari и оттуда печатают или сохраняют в PDF (меню «Поделиться» → «Напечатать»)
+  if (IOS && (STANDALONE || typeof window.print !== 'function')) { await shareText(`Отчёт_ЛР${LAB}_${safeName(S.fio) || 'студент'}.html`, reportFileHtml(L.report(), `Отчёт по ЛР № ${LAB}`), `Отчёт по ЛР № ${LAB}`, 'text/html'); return; }
   window.print();
 }
+const reportFileHtml = (body, title) => `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}</title>
+<style>body{margin:0; background:#fff; color:#000; font-family:"Times New Roman",serif} .lwr{display:block} ${typeof REPORT_CSS !== 'undefined' ? REPORT_CSS : ''}
+@page{size:A4; margin:12mm} .lwp{box-shadow:none; max-width:190mm; margin:0 auto 12mm} @media print{.lwp{margin:0; page-break-after:always; break-after:page} .lwp:last-child{page-break-after:auto}}</style></head><body><div class="lwr">${body}</div></body></html>`;
 const readFile = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(r.error); r.readAsText(f, 'utf-8'); });
 $('#file-in').addEventListener('change', async e => { const f = (e.target.files || [])[0]; if (f) continueFrom(await readFile(f)); });
 function continueFrom(text) {
