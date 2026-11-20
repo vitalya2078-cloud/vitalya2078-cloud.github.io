@@ -106,6 +106,9 @@ jobs:
 
       - name: Build interface
         run: python lw3-desktop/build.py
+        env:
+          FZ_TEACHER_PASS: ${{ secrets.FZ_TEACHER_PASS }}
+          FZ_REQUIRE_TEACHER_PASS: '1'
 
       - name: Build Windows app
         working-directory: lw3-desktop

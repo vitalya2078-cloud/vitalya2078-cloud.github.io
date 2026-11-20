@@ -24,6 +24,7 @@ function render() {
   if (SCREEN === 'home' || !PROFILE) return vHome();
   if (SCREEN === 'labs') return vApp();
   if (SCREEN === 'test') return vTest();
+  if (PROFILE) qApply(LAB, curLab().load());
   if (LAB !== 3) return vWorkLab();
   vWork();
 }
@@ -49,7 +50,7 @@ function ensureMeta(S) {
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
 }
 function openProfile(p, intro = false, lab = 0) {   // курсант → экран выбора работы (или сразу работа lab)
-  PROFILE = p; L3S = null; LWS = null; L2S = null; CH.pts = []; CH.marks = [];
+  PROFILE = p; L3S = null; LWS = null; L2S = null; CH.pts = []; CH.marks = []; tRecover();
   if (lab) openLab(lab); else { SCREEN = 'labs'; PAGE = 'main'; render(); ui.main.scrollTop = 0; }
   if (intro) showIntro(0);
 }

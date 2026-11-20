@@ -179,7 +179,7 @@ function leSummaryHtml(n, S) {
     ${sumBox('circle-check', 'Вывод', `<p>${s.concl}</p>`)}
     ${sumBox('rotate-cw', s.whyT || 'Откуда формула', `<p>${s.why}</p>`)}
     ${sumBox('file-text', 'Откуда расхождение', `<p>${s.err}</p>`)}
-    ${sumBox('graduation-cap', 'Могут спросить', sumQa(s.qs.map(i => i < 0 ? D.admit[-i - 1] : D.cq[i])))}</div>`;
+    ${sumBox('graduation-cap', 'Могут спросить', sumQa(s.qs.map(i => i < 0 ? D.admit[-i - 1] : D.cq[i]).filter(Boolean)))}</div>`;
 }
 
 /* ---------- регистрация в реестре работ ---------- */

@@ -117,7 +117,7 @@ function gAdmit(S, L) {
       <p class="mute">${S.admitOk ? 'Можно переходить к подготовке установки.' : 'Нужно не меньше 6 верных ответов из 8. Вернуться к любому вопросу — кнопки с номерами вверху.'}</p>
       <div class="qs-nav"><button class="btn ghost" data-d="aq" data-v="${N - 1}">${ic('chevron-left')} Назад</button><span></span>
       ${S.admitOk ? `<button class="btn" data-${L.act}="next" data-primary>К подготовке ${kbd('Enter')}</button>` : `<button class="btn" data-${L.act}="admitCheck" data-primary ${answered ? '' : 'disabled'}>${ic('circle-check')} Сдать допуск ${kbd('Enter')}</button>`}</div>`;
-  return gTop(S, L) + `<div class="qs"><div class="qs-main"><div class="qs-aim"><span class="kicker">Цель работы</span>${esc(labAim(L.no))}</div>${gDots(list, S, 'admit', AQ, S.admitChecked, 'aq')}<section class="qs-card">${body}</section></div>${gTheorySide(L)}</div>`;
+  return gTop(S, L) + `<div class="qs"><div class="qs-main"><div class="qs-aim"><span class="kicker">Цель работы</span>${esc(labAim(L.no))}</div>${qWaitBox(S, 'admit')}${gDots(list, S, 'admit', AQ, S.admitChecked, 'aq')}<section class="qs-card">${body}</section></div>${gTheorySide(L)}</div>`;
 }
 function gConcl(S, L) {
   if (!S.concl) { S.concl = L.autoConcl(); L.save(); }
@@ -131,7 +131,7 @@ function gConcl(S, L) {
   return gTop(S, L) + `<div class="pg"><div class="grid2 even">
     <section class="card sticky"><h2>${ic('pencil')} Выводы</h2><p class="mute small">Черновик собран по твоим результатам. Проверь и допиши своими словами — он попадёт в отчёт.</p>
       ${L.ta(S.concl)}<button class="btn line wide mt" data-${L.act}="reconcl">${ic('rotate-ccw')} Собрать черновик заново</button></section>
-    <section class="card"><h2>${ic('graduation-cap')} Контрольные вопросы <span class="pill ${S.cqOk ? 'ok' : ''}">${answered} из ${N}</span></h2>${gDots(list, S, 'cq', CQI, S.cqChecked, 'cqi')}<div class="qs-card flat">${q}</div></section></div></div>`;
+    <section class="card"><h2>${ic('graduation-cap')} Контрольные вопросы <span class="pill ${S.cqOk ? 'ok' : ''}">${answered} из ${N}</span></h2>${qWaitBox(S, 'cq')}${gDots(list, S, 'cq', CQI, S.cqChecked, 'cqi')}<div class="qs-card flat">${q}</div></section></div></div>`;
 }
 function gReport(S, L) {
   let res = ''; try { res = L.result(); } catch (e) {}

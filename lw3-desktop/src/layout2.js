@@ -93,7 +93,7 @@ function vAdmitStep(S) {
       ${S.admitOk ? `<button class="btn" data-l3="next" data-primary>К подготовке ${kbd('Enter')}</button>` : `<button class="btn" data-l3="admitCheck" data-primary ${answered ? '' : 'disabled'}>${ic('circle-check')} Сдать допуск ${kbd('Enter')}</button>`}</div>`;
   }
   return topbar(S) + `<div class="qs">
-    <div class="qs-main"><div class="qs-aim"><span class="kicker">Цель работы</span>${esc(L3_AIM())}</div>${dots}<section class="qs-card">${body}</section></div>
+    <div class="qs-main"><div class="qs-aim"><span class="kicker">Цель работы</span>${esc(L3_AIM())}</div>${qWaitBox(S, 'admit')}${dots}<section class="qs-card">${body}</section></div>
     <aside class="qs-side card"><div class="tabs">${[['theory', 'Теория и установка'], ['safety', 'Безопасность']].map(([k, t]) => `<button data-d="stab" data-v="${k}" class="${(TAB === 'safety' ? 'safety' : 'theory') === k ? 'on' : ''}">${t}</button>`).join('')}</div>
       <div class="read">${TAB === 'safety' ? L3_TEXT.safety : `${L3_TEXT.theory}<div class="paper-mini">${l3SchemeSvg()}</div>${L3_TEXT.equip}`}</div></aside>
   </div>`;

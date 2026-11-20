@@ -62,6 +62,14 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const testKey = id => workKey(id) + '-t';
 const tsLoad = () => (PROFILE ? store.get(testKey(PROFILE.id), null) : null) || { self: {}, att: [] };
 const tsSave = T => { if (PROFILE) store.set(testKey(PROFILE.id), T); };
+/* идущий экзамен сохраняется после каждого ответа: закрыть программу и начать заново, чтобы «переиграть», нельзя */
+const runKey = () => testKey(PROFILE.id) + '-run';
+const tRunSave = () => { if (PROFILE && TQ && TQ.kind === 'exam' && !TQ.done) store.set(runKey(), TQ); };
+function tRecover() {   // при входе: незавершённый экзамен засчитывается с теми ответами, что были даны
+  if (!PROFILE) return; const R = store.get(runKey(), null); if (!R || R.kind !== 'exam') return;
+  store.del(runKey()); TQ = R; tFinish(true); TQ = null;
+  toast('Предыдущий экзамен не был завершён — он засчитан с данными ответами.', 'bad');
+}
 
 /* ---------- сеанс теста: самопроверка или экзамен ---------- */
 let TQ = null;          // { kind: 'self'|'exam', topic: 1..9|'final', ids: [...], i, opts: {id: [...]}, ans: {id: {v, ok, t}}, start, qStart, deadline }
@@ -77,7 +85,7 @@ function tStart(kind, topic, onlyWrong) {
   const opts = {}; ids.forEach(id => { const q = BANK.byId[id]; opts[id] = /^Вариант \d$/.test(q.a) ? [q.a, ...q.x].sort() : shuffle([q.a, ...q.x]); });
   TQ = { kind, topic, onlyWrong: !!onlyWrong, ids, i: 0, opts, ans: {}, start: Date.now(), qStart: Date.now() };
   if (kind === 'exam') TQ.deadline = Date.now() + BANK.byId[ids[0]].time * 60000;
-  SCREEN = 'test'; render(); tTimer();
+  tRunSave(); SCREEN = 'test'; render(); tTimer();
 }
 const tCur = () => TQ && BANK.byId[TQ.ids[TQ.i]];
 function tAnswer(v) {
@@ -90,17 +98,18 @@ function tNext() {
   if (!TQ) return;
   if (TQ.i >= TQ.ids.length - 1) return tFinish();
   TQ.i++; TQ.qStart = Date.now(); if (TQ.kind === 'exam') TQ.deadline = Date.now() + tCur().time * 60000;
-  render(); tTimer();
+  tRunSave(); render(); tTimer();
 }
-function tFinish() {
-  clearInterval(tTimer.h); if (!TQ) return;
+function tFinish(aborted) {
+  clearInterval(tTimer.h); if (!TQ) return; if (PROFILE) store.del(runKey());
   if (TQ.kind === 'exam') {
     const n = TQ.ids.length, right = TQ.ids.filter(id => TQ.ans[id] && TQ.ans[id].ok).length, score = Math.round(right / n * 100);
-    const att = { id: Date.now().toString(36), kind: 'exam', topic: TQ.topic, date: new Date().toISOString(), n, right, score, grade: examGrade(score), spent: Math.round((Date.now() - TQ.start) / 1000),
+    const T0 = tsLoad(), no = T0.att.filter(a => a.topic === TQ.topic).length + 1;
+    const att = { id: Date.now().toString(36), kind: 'exam', topic: TQ.topic, no, aborted: !!aborted, date: new Date().toISOString(), n, right, score, grade: examGrade(score), spent: Math.round((Date.now() - TQ.start) / 1000),
       items: TQ.ids.map(id => ({ id, v: TQ.ans[id] ? TQ.ans[id].v : null, ok: !!(TQ.ans[id] && TQ.ans[id].ok), t: TQ.ans[id] ? TQ.ans[id].t : null })) };
     const T = tsLoad(); T.att.unshift(att); tsSave(T); TQ.result = att;
   } else TQ.result = { kind: 'self' };
-  TQ.done = true; render();
+  TQ.done = true; if (!aborted) render();
 }
 function tTimer() {
   clearInterval(tTimer.h); if (!TQ || TQ.kind !== 'exam' || TQ.done) return;
@@ -163,7 +172,7 @@ function testResult() {
       <div class="row center"><button class="btn" data-fz="back">${ic('chevron-left')} К тестам</button></div></div></div>`; }
   const wrong = r.items.filter(x => !x.ok);
   return `<div class="fz-qwrap"><div class="fz-qcard fz-res"><span class="fz-big g${r.grade}">${r.score}</span><h2>Оценка «${r.grade}» — ${GRADE_T[r.grade]}</h2>
-      <p class="mute">${esc(topicName(r.topic))}. Верно ${r.right} из ${r.n}. Время — ${Math.floor(r.spent / 60)} мин ${r.spent % 60} с.</p>
+      <p class="mute">${esc(topicName(r.topic))}, попытка ${r.no || 1}${r.aborted ? ' (прервана)' : ''}. Верно ${r.right} из ${r.n}. Время — ${Math.floor(r.spent / 60)} мин ${r.spent % 60} с.</p>
       <div class="row center"><button class="btn" data-fz="examfile" data-v="${r.id}">${ic('graduation-cap')} Файл результата для преподавателя</button><button class="btn line" data-fz="back">${ic('chevron-left')} К тестам</button></div></div>
     ${wrong.length ? `<p class="fz-h">Разбор ошибок (${wrong.length})</p>${wrong.map(x => { const q = BANK.byId[x.id]; return `<div class="fz-qcard fz-rev"><span class="fz-qid">№ ${q.id}</span>${qHtml(q)}
       <p class="fz-verdict bad">${x.v == null ? 'Нет ответа (время вышло)' : `Твой ответ: ${esc(x.v)}`}</p><p class="fz-verdict ok">Правильный ответ: <b>${esc(q.a)}</b></p>${explainHtml(q)}</div>`; }).join('')}` : ''}</div>`;
@@ -209,7 +218,7 @@ document.addEventListener('click', e => {
     case 'ans': tAnswer(d.v); break;
     case 'next': tNext(); break;
     case 'quit': if (!TQ) break;
-      if (TQ.kind === 'exam' && !TQ.done) { if (!confirm('Прервать экзамен? Неотвеченные вопросы будут засчитаны как неверные.')) break; return tFinish(); }
+      if (TQ.kind === 'exam' && !TQ.done) { if (!confirm('Прервать экзамен? Неотвеченные вопросы будут засчитаны как неверные.')) break; return tFinish(true); }
       if (TQ.kind === 'self' && !TQ.done && Object.keys(TQ.ans).length) return tFinish();
       TQ = null; clearInterval(tTimer.h); SCREEN = 'labs'; render(); break;
     case 'back': TQ = null; clearInterval(tTimer.h); SCREEN = 'labs'; if (typeof PAGE !== 'undefined') PAGE = 'tests'; render(); break;

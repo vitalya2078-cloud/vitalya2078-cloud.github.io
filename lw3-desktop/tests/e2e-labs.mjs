@@ -115,7 +115,22 @@ const f1 = await finish(1, 'lw');
 /* ===================== ЛР 4–8 (электричество и магнетизм) ===================== */
 const drv = leDriver(page, must, shot), fE = {};
 for (const n of [4, 5, 6, 7, 8]) {
-  await page.click(`[data-d="lab"][data-v="${n}"]`); await admitAndCq('le', 'admit');
+  await page.click(`[data-d="lab"][data-v="${n}"]`);
+  if (n === 4) {   // неудачный допуск: ответы не раскрываются, набор вопросов меняется, пауза 2 минуты
+    const before = await E(() => LES.admitSet.join(','));
+    const wrong = await E(() => curLab().admit.map(([, , x]) => x[0]));
+    for (let i = 0; i < wrong.length; i++) { await E(i => { AQ = i; render(); }, i); await page.click(`.qs-opts [data-q="${i}"][data-v="${wrong[i].replace(/"/g, '\\"')}"]`); await W(300); }
+    await E(n => { AQ = n; render(); }, wrong.length); await page.click('[data-le="admitCheck"]'); await W(200);
+    must(await E(() => !LES.admitChecked && !Object.keys(LES.admit).length && LES.admitWait > Date.now()), 'допуск: после неудачи ответы не сброшены или нет паузы');
+    must(await page.locator('.qs-dots .bad, .qs-opts .bad, .qs-opts .ok').count() === 0, 'допуск: после неудачи видно, какие ответы неверные');
+    must(await page.locator('#q-wait').count() === 1, 'допуск: нет таймера паузы'); await shot(page, 'l4-admit-wait');
+    must(await E(b => LES.admitSet.join(',') !== b, before), 'допуск: набор вопросов не сменился');
+    await page.click('[data-d="aq"][data-v="8"]').catch(() => {}); await E(n => { AQ = n; render(); }, 8);
+    await page.click('[data-le="admitCheck"]', { force: true }).catch(() => {}); await W(150);
+    must(await E(() => !LES.admitChecked), 'допуск: во время паузы можно сдавать');
+    await E(() => { LES.admitWait = 0; leSave(); render(); });
+  }
+  await admitAndCq('le', 'admit');
   must(await st() === 'prep', `ЛР ${n}: нет подготовки`); await shot(page, `l${n}-prep`);
   await drv.run(n);
   must(await st() === 'concl', `ЛР ${n}: нет выводов`); await shot(page, `l${n}-concl`);
@@ -130,12 +145,13 @@ await p2.goto(BASE, { waitUntil: 'networkidle' }); await p2.setInputFiles('#file
 must(await p2.evaluate(() => LAB === 2 && L2S.done && L2.steps[L2S.step][0] === 'report'), 'ЛР 2 из файла не восстановилась'); await ctx2.close();
 
 /* ===================== тесты: самопроверка и экзамен ===================== */
+const clickOpt = async v => { const i = await E(v => [...document.querySelectorAll('.fz-opt')].findIndex(b => b.dataset.v === v), v); must(i >= 0, 'нет варианта ' + v); await page.locator('.fz-opt').nth(i).click(); };
 page.on('dialog', d => d.accept());
 await page.click('[data-d="page"][data-v="tests"]'); await page.waitForSelector('.fz-topic'); await shot(page, 'tests');
 must(await page.locator('.fz-topic').count() === 9, 'в тестах не 9 тем');
 await page.click('[data-fz="self"][data-v="4"]'); await page.waitForSelector('.fz-opt');
-for (let i = 0; i < 3; i++) { const a = await E(() => tCur().a); await page.click(`.fz-opt[data-v="${a.replace(/"/g, '\\"')}"]`); must(await page.locator('.fz-verdict.ok').count() === 1, 'самопроверка: верный ответ не засчитан'); await page.click('[data-fz="next"]'); }
-{ const q = await E(() => ({ a: tCur().a, x: tCur().x[0] })); await page.click(`.fz-opt[data-v="${q.x.replace(/"/g, '\\"')}"]`); must(await page.locator('.fz-verdict.bad').count() === 1, 'самопроверка: неверный ответ не отмечен'); }
+for (let i = 0; i < 3; i++) { const a = await E(() => tCur().a); await clickOpt(a); must(await page.locator('.fz-verdict.ok').count() === 1, 'самопроверка: верный ответ не засчитан'); await page.click('[data-fz="next"]'); }
+{ const q = await E(() => ({ a: tCur().a, x: tCur().x[0] })); await clickOpt(q.x); must(await page.locator('.fz-verdict.bad').count() === 1, 'самопроверка: неверный ответ не отмечен'); }
 await page.click('[data-fz="quit"]'); await page.waitForSelector('.fz-res'); await page.click('[data-fz="back"]');
 must(await page.locator('[data-fz="selfw"][data-v="4"]').count() === 1, 'нет режима «Ошибки» после неверного ответа');
 await page.click('[data-fz="exam"][data-v="2"]'); await page.waitForSelector('#fz-timer'); await shot(page, 'exam');
@@ -143,7 +159,7 @@ must(await E(() => TQ.ids.length === 30 && new Set(TQ.ids).size === 30 && TQ.ids
 // время на вопрос вышло — вопрос не засчитан, сам переходит к следующему
 await E(() => { TQ.deadline = Date.now() - 1; }); await page.waitForFunction(() => TQ.i === 1, null, { timeout: 5000 });
 must(await E(() => TQ.ans[TQ.ids[0]].late && !TQ.ans[TQ.ids[0]].ok), 'экзамен: просроченный вопрос засчитан');
-for (let i = 1; i < 30; i++) { const a = await E(() => (TQ.i % 4 ? tCur().a : tCur().x[0])); await page.click(`.fz-opt[data-v="${a.replace(/"/g, '\\"')}"]`); }
+for (let i = 1; i < 30; i++) { const a = await E(() => (TQ.i % 4 ? tCur().a : tCur().x[0])); await clickOpt(a); }
 await page.waitForSelector('.fz-res'); await shot(page, 'exam-result');
 const ex = await E(() => tsLoad().att[0]); must(ex.n === 30 && ex.right === 22 && ex.score === 73 && ex.grade === 3, `экзамен: неверный подсчёт (${ex.right} верно, ${ex.score} баллов, «${ex.grade}»)`);
 const [dlx] = await Promise.all([page.waitForEvent('download'), page.click('[data-fz="examfile"]')]); const fx = path.join(SHOTS || '/tmp', 'exam.lw3'); await dlx.saveAs(fx);
@@ -153,7 +169,7 @@ await page.click('[data-fz="back"]'); await page.click('[data-d="page"][data-v="
 // преподаватель: вкладки ЛР, экзамены, подлинность, отчёт; сброс пароля курсанта
 await page.click('[data-d="home"]'); await page.click('[data-d="acc"]'); await page.fill('#au-pw', '0000'); await page.click('[data-d="login"]');
 must(await E(() => SCREEN === 'home'), 'вход с неверным паролем');
-await page.click('[data-d="teacher"]'); await page.fill('#tp1', '2026'); await page.fill('#tp2', '2026'); await page.click('[data-t="setpass"]');
+await page.click('[data-d="teacher"]'); await page.fill('#tp', 'test-teacher'); await page.click('[data-t="unlock"]'); await page.waitForFunction(() => SCREEN === 'teacher');
 await page.setInputFiles('#file-in', [f1, f2, ...Object.values(fE), fx]); await page.waitForFunction(() => TROWS.length === 8);
 await page.click('[data-t="tlab"][data-v="exam"]'); await W(150);
 must((await page.locator('table.tt tr.r').count()) === 1 && (await page.locator('table.tt').innerText()).includes('подлинный'), 'преподаватель: нет экзамена');
@@ -162,7 +178,7 @@ await page.click('[data-t="tlab"][data-v="acc"]'); await W(150); await page.clic
 must(await E(() => !acctHasPw(profiles()[0])), 'пароль не сброшен');
 await page.click('[data-t="back"]'); await page.click('[data-d="acc"]'); await page.fill('#au-n1', '5678'); await page.fill('#au-n2', '5678'); await page.click('[data-d="setpw"]');
 must(await E(() => SCREEN === 'labs' && acctCheck(PROFILE, '5678')), 'после сброса не задаётся новый пароль');
-await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]'); await page.fill('#tp', '2026'); await page.click('[data-t="unlock"]');
+await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]'); await page.fill('#tp', 'test-teacher'); await page.click('[data-t="unlock"]'); await page.waitForFunction(() => SCREEN === 'teacher');
 for (const n of [1, 2, 4, 5, 6, 7, 8]) {
   await page.click(`[data-t="tlab"][data-v="${n}"]`); await W(150);
   must((await page.locator('table.tt tr.r').count()) === 1 && (await page.locator('table.tt').innerText()).includes('подлинный'), `преподаватель: нет работы ЛР ${n}`);

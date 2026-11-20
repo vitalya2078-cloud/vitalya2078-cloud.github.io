@@ -55,11 +55,24 @@ bgl = next((f for f in ('lab-bg-light.webp', 'lab-bg-light.jpg', 'lab-bg-light.p
 def bg_cfg(f, meta):
     m = os.path.join(D, 'assets', meta)
     return dict(json.loads(rd(m)) if os.path.exists(m) else {}, src='img/' + f) if f else None
-js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
+# пароль кабинета преподавателя: только хеш PBKDF2-SHA256 (пароль — секрет сборки FZ_TEACHER_PASS, в репозитории его нет).
+# Для выпуска (FZ_REQUIRE_TEACHER_PASS=1) пароль обязателен; локальная и тестовая сборка без секрета берут пароль «test-teacher».
+def teacher_pw():
+    import hashlib, secrets
+    pw = os.environ.get('FZ_TEACHER_PASS', '')
+    if not pw:
+        if os.environ.get('FZ_REQUIRE_TEACHER_PASS') == '1':
+            raise SystemExit('нет пароля преподавателя: задайте секрет FZ_TEACHER_PASS в настройках репозитория')
+        pw = 'test-teacher'
+    salt = secrets.token_bytes(16); it = 150000
+    return {'salt': salt.hex(), 'it': it, 'hash': hashlib.pbkdf2_hmac('sha256', pw.encode('utf-8'), salt, it).hex()}
+
+
+js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const TEACHER_PW = %s;' % json.dumps(teacher_pw()), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'labs.js', 'teacher.js')])
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'qpool.js', 'labs.js', 'teacher.js', 'guard.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(D, 'src', 'app.css'))).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 

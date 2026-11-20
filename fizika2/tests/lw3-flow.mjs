@@ -12,6 +12,9 @@ export async function runLw3(page, { log = () => {}, beforeStep = async () => {}
   for (const [i, q] of admit.entries()) { await reveal('admit', i); await click(`[data-l3="admit"][data-q="${i}"][data-v="${q.x.replace(/"/g, '\\"')}"]`); }
   await reveal('admitCheck'); await click('[data-l3="admitCheck"]');
   if (await page.evaluate(() => L3S.admitOk)) throw new Error('допуск сдан с неверными ответами');
+  // в программе после неудачи набор вопросов меняется и включается пауза — для теста пауза снимается
+  await page.evaluate(() => { if (L3S.admitWait) { L3S.admitWait = 0; l3Save(); render(); } });
+  admit.splice(0, admit.length, ...await page.evaluate(() => L3_ADMIT.map(([, a, x]) => ({ a, x: x[0] }))));
   for (const [i, q] of admit.entries()) { await reveal('admit', i); await click(`[data-l3="admit"][data-q="${i}"][data-v="${q.a.replace(/"/g, '\\"')}"]`); }
   await reveal('admitCheck'); await click('[data-l3="admitCheck"]');
   if (!await page.evaluate(() => L3S.admitOk)) throw new Error('допуск не сдан с верными ответами');

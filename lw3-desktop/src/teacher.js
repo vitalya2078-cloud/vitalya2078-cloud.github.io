@@ -15,7 +15,7 @@ function tRow(r) {
   const consistent = !o || !r.d.summary || Math.abs(o.gm - r.d.summary.gm) < 1e-9;
   const demo = !!(S.demo || (S.dx && S.dx.demo));   // демо-прохождение — не работа курсанта
   const stage = demo ? 'демо' : done ? 'защищена' : L3.steps[Math.min(S.max || 0, L3.steps.length - 1)][1].toLowerCase();
-  const adm = L3_ADMIT.filter(([, a], i) => S.admit && S.admit[i] === a).length, cq = L3_CQ.filter(([, a], i) => S.cq && S.cq[i] === a).length;
+  const adm = qCount(3, S, 'admit'), cq = qCount(3, S, 'cq');
   return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', date: S.date || '', stage, done, runs, o, adm, cq, dx: S.dx || {}, auth: r.ok && consistent && !demo, demo, saved: r.d.saved };
 }
 async function teacherAdd(files) {
@@ -119,8 +119,8 @@ function tDetails(S, n = 3) {
   const qa = (list, ans) => list.map(([q, a], i) => `<li class="${ans && ans[i] === a ? 'ok' : 'bad'}">${ans && ans[i] === a ? '✓' : '✗'} ${esc(q)}${ans && ans[i] && ans[i] !== a ? `<small>ответ: ${esc(ans[i])}</small>` : ''}</li>`).join('');
   const pk = dx.pk || {}, pkTxt = Object.keys(pk).length ? Object.entries(pk).map(([k, n]) => `${PK_NAME[k] || k} — ${n}`).join(', ') : 'нет';
   return `<section class="tdet"><div class="tdet-row">${times}<span class="pill">всего: ${dur(end - at('admit'))}</span></div>
-    <div class="tdet-row mute small">Попытки: допуск — ${dx.admitTries || 0}, обработка — ${dx.procTries || 0}, защита — ${dx.cqTries || 0}. Ошибки в ячейках обработки: ${esc(pkTxt)}.</div>
-    <div class="grid2 even"><div><b>Допуск</b><ul class="tqa">${qa(LL.admit, S.admit)}</ul></div><div><b>Защита</b><ul class="tqa">${S.cqOk || Object.keys(S.cq || {}).length ? qa(LL.cq, S.cq) : '<li class="mute">ещё не проходил</li>'}</ul></div></div></section>`;
+    <div class="tdet-row mute small">Попытки: допуск — ${dx.admitTries || 0}${dx.fails && dx.fails.admit ? ` (неудачных — ${dx.fails.admit})` : ''}, обработка — ${dx.procTries || 0}, защита — ${dx.cqTries || 0}${dx.fails && dx.fails.cq ? ` (неудачных — ${dx.fails.cq})` : ''}. Ошибки в ячейках обработки: ${esc(pkTxt)}.</div>
+    <div class="grid2 even"><div><b>Допуск</b><ul class="tqa">${qa(S.admitSet ? qList(n, Object.assign({}, S), 'admit') : QORIG[n].admit, S.admit)}</ul></div><div><b>Защита</b><ul class="tqa">${S.cqOk || Object.keys(S.cq || {}).length ? qa(S.cqSet ? qList(n, Object.assign({}, S), 'cq') : QORIG[n].cq, S.cq) : '<li class="mute">ещё не проходил</li>'}</ul></div></div></section>`;
 }
 function tCsv() {
   const q = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
@@ -131,34 +131,42 @@ function tCsv() {
     r.dx.admitTries || 0, r.dx.procTries || 0, r.dx.cqTries || 0, r.demo ? 'ДЕМО' : r.auth ? 'подлинный' : 'ИЗМЕНЁН', dd[k].join(', ')].map(q).join(';'));
   return '﻿' + [head.map(q).join(';'), ...lines].join('\r\n');
 }
-/* ---------- пароль ---------- */
-const PASS_KEY = 'lw3d-tpass';
-const passHash = (salt, pwd) => sha256(salt + '|' + pwd);
+/* ---------- вход преподавателя ----------
+   Пароль кафедры задаётся при сборке программы (секрет FZ_TEACHER_PASS в настройках репозитория) — в программе только
+   его хеш PBKDF2-SHA256 (TEACHER_PW, подставляет build.py). Создать или сбросить пароль на компьютере нельзя.
+   После 5 неверных попыток подряд вход блокируется на 1 минуту. */
+const hexBytes = h => new Uint8Array(h.match(/../g).map(x => parseInt(x, 16)));
+async function teacherCheck(pw) {
+  try {
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: hexBytes(TEACHER_PW.salt), iterations: TEACHER_PW.it, hash: 'SHA-256' }, key, 256);
+    return hex(new Uint8Array(bits)) === TEACHER_PW.hash;
+  } catch (e) { return false; }
+}
+const TLOCK = { fails: 0, until: 0 };
 function vLock() {
   document.body.classList.add('noside'); ui.side.innerHTML = '';
-  const has = !!store.get(PASS_KEY, null);
-  ui.main.innerHTML = `<div class="lock"><div class="login-brand">${LOGO}<h1 style="font-size:24px">Режим преподавателя</h1>
-      <p>${has ? 'Введите пароль' : 'Придумайте пароль — он понадобится при каждом входе'}</p></div>
-    <div class="card">${has ? `<label class="field">Пароль<input type="password" id="tp" autocomplete="off"></label>
-        <button class="btn wide big mt" data-t="unlock">Войти ${kbd('Enter')}</button>`
-      : `<label class="field">Пароль<input type="password" id="tp1" autocomplete="off"></label><label class="field" style="margin-top:12px">Ещё раз<input type="password" id="tp2" autocomplete="off"></label>
-        <button class="btn wide big mt" data-t="setpass">Сохранить пароль ${kbd('Enter')}</button>`}
-      <p class="lw-msg bad" id="tp-msg"></p></div>
-    <div class="row mt"><button class="btn ghost" data-t="back">${ic('chevron-left')} Назад</button>${has ? '<span style="flex:1"></span><button class="btn ghost" data-t="forgot">Забыли пароль?</button>' : ''}</div></div>`;
-  setTimeout(() => { const f = $('#tp') || $('#tp1'); if (f) f.focus(); }, 0);
+  ui.main.innerHTML = `<div class="lock"><div class="login-brand">${LOGO}<h1 style="font-size:24px">Кабинет преподавателя</h1>
+      <p>Введите пароль кафедры</p></div>
+    <div class="card"><label class="field">Пароль<input type="password" id="tp" autocomplete="off"></label>
+      <button class="btn wide big mt" data-t="unlock">Войти ${kbd('Enter')}</button>
+      <p class="lw-msg bad" id="tp-msg"></p><p class="mute small">Пароль выдаёт кафедра. Создать или сбросить его в программе нельзя.</p></div>
+    <div class="row mt"><button class="btn ghost" data-t="back">${ic('chevron-left')} Назад</button></div></div>`;
+  setTimeout(() => { const f = $('#tp'); if (f) f.focus(); }, 0);
 }
 const lockMsg = t => { const m = $('#tp-msg'); if (m) m.textContent = t; };
-document.addEventListener('click', e => {
+document.addEventListener('click', async e => {
   const b = e.target.closest && e.target.closest('[data-t]'); if (!b || SCREEN !== 'lock') return;
   switch (b.dataset.t) {
     case 'back': SCREEN = 'home'; render(); break;
-    case 'setpass': { const a = $('#tp1').value, c = $('#tp2').value;
-      if (a.length < 4) { lockMsg('Пароль — не короче 4 символов.'); break; }
-      if (a !== c) { lockMsg('Пароли не совпадают.'); break; }
-      const salt = Math.random().toString(36).slice(2); store.set(PASS_KEY, { salt, hash: passHash(salt, a) }); SCREEN = 'teacher'; render(); toast('Пароль сохранён'); break; }
-    case 'unlock': { const pw = store.get(PASS_KEY, null), v = $('#tp').value;
-      if (pw && passHash(pw.salt, v) === pw.hash) { SCREEN = 'teacher'; render(); } else { lockMsg('Неверный пароль.'); $('#tp').select(); } break; }
-    case 'forgot': if (confirm('Сбросить пароль? Список загруженных работ тоже очистится (сами файлы на диске останутся).')) { store.del(PASS_KEY); TROWS = []; tSave(); render(); } break;
+    case 'unlock': {
+      if (Date.now() < TLOCK.until) { lockMsg(`Слишком много неверных попыток. Подождите ${Math.ceil((TLOCK.until - Date.now()) / 1000)} с.`); break; }
+      const v = $('#tp').value; b.disabled = true;
+      const ok = await teacherCheck(v); b.disabled = false;
+      if (ok) { TLOCK.fails = 0; SCREEN = 'teacher'; render(); break; }
+      TLOCK.fails++; if (TLOCK.fails >= 5) { TLOCK.fails = 0; TLOCK.until = Date.now() + 60000; }
+      lockMsg('Неверный пароль.'); const f = $('#tp'); if (f) f.select(); break;
+    }
   }
 });
 document.addEventListener('click', e => {
@@ -212,7 +220,7 @@ function vTeacherExam() {
       <div class="stat"><small>Подлинность</small><b style="color:${fake ? 'var(--bad)' : 'var(--ok)'}">${rows.length ? (fake ? `${fake} под вопросом` : 'всё в порядке') : '—'}</b></div></div>
     <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Курсант</th><th>Класс</th><th>Экзамен</th><th>Дата</th><th>Верно</th><th>Баллы</th><th>Оценка</th><th>Время</th><th>Подлинность</th></tr>
       ${rows.map((r, i) => `<tr class="r" data-t="open" data-v="${i}"><td><div style="display:flex; gap:10px; align-items:center">${ava(r.fio)}<b>${esc(r.fio)}</b></div></td><td>${esc(r.group)}</td>
-        <td>${esc(topicName(r.a.topic))}</td><td>${r.a.date ? new Date(r.a.date).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</td>
+        <td>${esc(topicName(r.a.topic))}${r.a.no > 1 ? ` <span class="pill warn">попытка ${r.a.no}</span>` : ''}${r.a.aborted ? ' <span class="pill bad">прерван</span>' : ''}</td><td>${r.a.date ? new Date(r.a.date).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</td>
         <td class="n">${r.a.right} из ${r.a.n}</td><td class="n"><b>${r.a.score}</b></td><td><span class="fz-best g${r.a.grade}">«${r.a.grade}»</span></td><td class="n">${Math.floor((r.a.spent || 0) / 60)} мин</td>
         <td>${r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`
       : '<p class="mute center" style="padding:30px">Файлов экзаменов пока нет.</p>'}</section>`;
@@ -244,7 +252,7 @@ function vTeacherAcc() {
 function tRowLab(r) {
   const n = r.d.lab, L = LABS[n], S = r.d.state, demo = !!(S.demo || (S.dx && S.dx.demo)), done = !!S.done;
   let res = ''; if (done) { try { res = withLabState(n, S, () => L.result()); } catch (e) { res = ''; } }
-  const adm = L.admit.filter(([, a], i) => S.admit && S.admit[i] === a).length, cq = L.cq.filter(([, a], i) => S.cq && S.cq[i] === a).length;
+  const adm = qCount(n, S, 'admit'), cq = qCount(n, S, 'cq');
   const stage = demo ? 'демо' : done ? 'защищена' : L.steps[Math.min(S.max || 0, L.steps.length - 1)][1].toLowerCase();
   return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', date: S.date || '', stage, done, res, adm, cq, dx: S.dx || {}, auth: r.ok && !demo, demo, sig: L.sig(S), n };
 }
