@@ -19,11 +19,13 @@ function katexLoad() {
   });
   return KATEX;
 }
+/* \\htmlClass — цвета в формулах (вычисляемая величина, постоянные); \\cst{...} — постоянная */
+const KX_OPT = d => ({ displayMode: d, throwOnError: false, strict: false, output: 'html', trust: c => c.command === '\\htmlClass', macros: { '\\cst': '\\htmlClass{fc}{#1}' } });
 async function texRender(root) {
   if (!root || !root.querySelector('.tx:not(.ok)')) return;
   const k = await katexLoad(); if (!k) return;
   root.querySelectorAll('.tx:not(.ok)').forEach(e => {
-    try { k.render(e.dataset.t, e, { displayMode: e.classList.contains('d'), throwOnError: false, strict: false, output: 'html' }); e.classList.add('ok'); } catch (x) {}
+    try { k.render(e.dataset.t, e, KX_OPT(e.classList.contains('d'))); e.classList.add('ok'); } catch (x) {}
   });
 }
 const nReadKey = () => 'fz-nread-' + (PROFILE ? PROFILE.id : '');
@@ -56,17 +58,18 @@ function noteView(x) {
       <button class="btn ghost fz-nback" data-d="notes">${ic('chevron-left')} Все конспекты</button>
       <div class="fz-nhead"><span class="fz-n">${nKind(x)}</span><h1>${esc(x.title)}</h1><div class="row">${acts}<span class="mute small">${ic('clock')} ${nMin(x)} мин чтения</span></div></div>
       ${x.video ? `<div class="fz-video"><video controls preload="metadata" poster="video/${x.id}.jpg" src="video/${x.id}.mp4"></video><p class="mute small">${ic('video')} Видеоурок по теме. Конкретные ответы на вопросы тестов в нём не разбираются — только теория.</p></div>` : ''}
+      <div class="fz-legend"><span class="tm">термин</span><span class="lw">закон, правило</span><span class="un">единица измерения</span><span class="wv">главная мысль</span><span class="fq">искомая величина</span><span class="fc">постоянная</span></div>
       <article class="fz-note">${x.html}</article>
       <div class="fz-nnav">${prev ? `<button class="fz-link" data-d="note" data-v="${prev.id}">${ic('chevron-left')}<span><small>${nKind(prev)}</small><b>${esc(prev.title)}</b></span></button>` : '<span></span>'}
         ${next ? `<button class="fz-link nx" data-d="note" data-v="${next.id}"><span><small>${nKind(next)}</small><b>${esc(next.title)}</b></span>${ic('chevron-right')}</button>` : '<span></span>'}</div>
-    </div><aside class="fz-ntoc"><b>Содержание</b>${toc}${x.terms.length ? `<p class="fz-nterms"><b>Термины</b> · ${x.terms.length}</p>` : ''}</aside></div>`;
+    </div><aside class="fz-ntoc"><b>Содержание</b>${toc}${(x.cheat || []).length ? `<b class="fz-csh">Шпаргалка</b>${x.cheat.map(c => `<button class="fz-cs" data-d="ntoc" data-v="${c.s}" title="${esc(c.h)}"><span class="tx" data-t="${esc(c.t)}"></span><small>${esc(c.h)}</small></button>`).join('')}` : ''}</aside></div>`;
 }
 function noteScroll(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 /* после отрисовки раздела: формулы и переход к нужному разделу */
 function fzAfter() {
   if (PAGE === 'main') texRender($('.fz-fd'));
   if (PAGE !== 'notes' || !NOTE) return;
-  const root = $('.fz-note'); texRender(root);
+  const root = $('.fz-nview'); texRender(root);
   if (NOTE_SEC) { const s = NOTE_SEC; NOTE_SEC = ''; setTimeout(() => { const el = document.getElementById(s); if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('fz-hl'); setTimeout(() => el.classList.remove('fz-hl'), 2200); } }, 30); }
 }
 function openNote(id, sec = '') { PAGE = 'notes'; NOTE = id; NOTE_SEC = sec; SCREEN = 'labs'; nMark(id); notesLoad().then(() => { render(); if (!sec) ui.main.scrollTop = 0; }); }

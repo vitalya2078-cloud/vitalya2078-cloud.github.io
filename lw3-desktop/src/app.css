@@ -356,3 +356,19 @@ img.logo.img{background:none; border-radius:0; object-fit:contain; filter:drop-s
 .fz-eula-ok{display:flex; gap:10px; align-items:flex-start; margin-top:4px; font-size:13.5px; color:var(--tx2); cursor:pointer}
 .fz-eula-ok input{width:18px; height:18px; margin:1px 0 0; accent-color:var(--acc); flex:none}
 .fz-lnk{border:0; padding:0; background:none; color:var(--acc); font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer}
+/* конспекты: смысловые цвета */
+:root, [data-theme="dark"]{--c-tm:#7FB2FF; --c-lw:#4ADE80; --c-un:#C4A5FF; --c-fc:#FF9C70; --c-wv:rgba(255,122,69,.75)}
+[data-theme="light"]{--c-tm:#1D4ED8; --c-lw:#15803D; --c-un:#7C3AED; --c-fc:#C2410C; --c-wv:rgba(228,87,27,.7)}
+.fz-note b.tm{color:var(--c-tm)} .fz-note b.lw{color:var(--c-lw)} .fz-note b.un{color:var(--c-un)} .fz-note b.lb{color:var(--tx)}
+.fz-note .wv{text-decoration:underline wavy var(--c-wv); text-decoration-thickness:1.5px; text-underline-offset:4px; text-decoration-skip-ink:none}
+.fz-note .fq, .fz-cs .fq{color:var(--c-tm)} .fz-note .fc, .fz-cs .fc{color:var(--c-fc)}
+.fz-legend{display:flex; flex-wrap:wrap; gap:8px 16px; margin:14px 2px 0; font-size:12.5px; color:var(--tx2)}
+.fz-legend span{display:inline-flex; align-items:center; gap:6px} .fz-legend span::before{content:''; width:10px; height:10px; border-radius:3px; background:currentColor}
+.fz-legend .tm{color:var(--c-tm)} .fz-legend .lw{color:var(--c-lw)} .fz-legend .un{color:var(--c-un)} .fz-legend .fq{color:var(--c-tm)} .fz-legend .fc{color:var(--c-fc)}
+.fz-legend .wv{color:var(--tx2); text-decoration:underline wavy var(--c-wv); text-underline-offset:4px} .fz-legend .wv::before, .fz-legend .fq::before{display:none}
+.fz-legend .fq{font-family:var(--serif); font-style:italic} .fz-legend .fc{font-family:var(--serif); font-style:italic} .fz-legend .fc::before{display:none}
+/* шпаргалка формул под оглавлением */
+.fz-csh{margin-top:14px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute)}
+.fz-cs{display:flex; flex-direction:column; gap:2px; align-items:flex-start; width:100%; padding:7px 8px; border:0; border-radius:8px; background:none; color:var(--tx); text-align:left; cursor:pointer; overflow:hidden}
+.fz-cs:hover{background:var(--card2)} .fz-cs .katex{font-size:1.08em} .fz-cs small{font:500 11.5px var(--ui); color:var(--mute)}
+.fz-cs .tx:not(.ok){font-family:var(--serif); font-size:12px}

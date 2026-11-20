@@ -11,7 +11,7 @@ for (const x of N.notes) {
   if (!x.secs.length) { console.log('нет разделов:', x.id); bad++; }
   for (const m of x.html.matchAll(/data-t="([^"]*)"/g)) {
     cnt++; const t = un(m[1]);
-    try { katex.renderToString(t, { throwOnError: true, strict: 'ignore' }); } catch (e) { bad++; console.log(x.id, '|', t, '|', e.message.split('\n')[0]); }
+    try { katex.renderToString(t, { throwOnError: true, strict: 'ignore', trust: c => c.command === '\\htmlClass', macros: { '\\cst': '\\htmlClass{fc}{#1}' } }); } catch (e) { bad++; console.log(x.id, '|', t, '|', e.message.split('\n')[0]); }
   }
 }
 console.log(`${N.notes.length} конспектов, ${cnt} формул, ошибок: ${bad}`);

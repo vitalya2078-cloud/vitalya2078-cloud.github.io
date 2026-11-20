@@ -27,9 +27,13 @@ def inline(s, terms):
         v = esc(v)
 
         def bold(m):
-            terms.append(re.sub(r'<[^>]+>', '', m.group(1)))
-            return '<b>%s</b>' % m.group(1)
+            t = re.sub(r'<[^>]+>', '', m.group(1))
+            if t.rstrip('.') in BOX:            # метка врезки «Определение.», «Закон.» — без цвета
+                return '<b class="lb">%s</b>' % m.group(1)
+            terms.append(t)
+            return '<b class="%s">%s</b>' % (bkind(t), m.group(1))
         v = re.sub(r'\*\*(.+?)\*\*', bold, v)
+        v = re.sub(r'__(.+?)__', r'<span class="wv">\1</span>', v)
         v = re.sub(r'(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])', r'<i>\1</i>', v)
         res.append(v)
     return ''.join(res)
@@ -41,6 +45,55 @@ def plain(s):
     return re.sub(r'\s+', ' ', s).strip()
 
 
+UNITS = set('''ньютон джоуль ватт паскаль кельвин моль герц кулон вольт ампер ом сименс фарад тесла вебер генри беккерель грей
+зиверт электронвольт килограмм метр секунда радиан бэр кюри рентген'''.split())
+LAW = re.compile(r'(закон|принцип|правил|уравнени|теорем|постулат|гипотез|формул[аы] |соотношени|условие|начало термодинамики|^первое начало|^второе начало|^третье начало)', re.I)
+
+
+def bkind(t):
+    w = t.lower().strip(' .,:')
+    if w in UNITS or any(w.startswith(u) and len(w) - len(u) <= 2 for u in UNITS if len(u) > 2):
+        return 'un'
+    if LAW.search(w):
+        return 'lw'
+    return 'tm'
+
+
+# цвет в выносных формулах: вычисляемая (левая) часть каждого равенства — \htmlClass{fq}, постоянные — \htmlClass{fc}
+CONST = [r'\varepsilon_0', r'\mu_0', r'\hbar', r'N_A', r'\lambda_C']
+
+
+def _segments(tex):
+    out, depth, cur, i = [], 0, '', 0
+    while i < len(tex):
+        ch = tex[i]
+        if ch == '{': depth += 1
+        elif ch == '}': depth -= 1
+        m = re.match(r'(,?\s*\\q?quad\s*)', tex[i:]) if depth == 0 else None
+        if m:
+            out.append(cur); out.append(m.group(1)); cur = ''; i += len(m.group(1)); continue
+        cur += ch; i += 1
+    out.append(cur)
+    return out
+
+
+def color_tex(tex):
+    for c in CONST:
+        tex = re.sub(r'(?<!\\htmlClass\{fc\}\{)' + re.escape(c) + r'(?![A-Za-z])', lambda m: r'\htmlClass{fc}{' + m.group(0) + '}', tex)
+    parts = _segments(tex)
+    for k in range(0, len(parts), 2):
+        seg = parts[k]; depth = 0
+        for j, ch in enumerate(seg):
+            if ch == '{': depth += 1
+            elif ch == '}': depth -= 1
+            elif depth == 0 and ch == '=' and j > 0:
+                left = seg[:j].rstrip()
+                if left.strip() and not re.search(r'\\(text|Rightarrow)', left) and '<' not in left and '>' not in left:
+                    parts[k] = r'\htmlClass{fq}{' + left + '} ' + seg[j:]
+                break
+    return ''.join(parts)
+
+
 BOX = {'Определение': 'def', 'Закон': 'law', 'Важно': 'warn', 'Пример': 'ex', 'Запомни': 'warn'}
 
 
@@ -48,7 +101,7 @@ def parse(path, nid):
     lines = open(path, encoding='utf-8').read().replace('\r', '').split('\n')
     assert lines[0].startswith('# '), path + ': первая строка — «# Заголовок»'
     title = lines[0][2:].strip()
-    terms, secs, idx = [], [], []
+    terms, secs, idx, cheat = [], [], [], []
     out, i, n = [], 1, len(lines)
     cur = {'id': '', 'h': title, 'text': []}
 
@@ -91,6 +144,9 @@ def parse(path, nid):
                 tex = '\n'.join(buf)
             tex = tex.strip()
             cur['text'].append('$' + tex + '$')
+            if len(tex) < 72 and (not cheat or cheat[-1]['s'] != (secs[-1]['id'] if secs else '')):
+                cheat.append({'s': secs[-1]['id'] if secs else '', 'h': secs[-1]['h'] if secs else title, 't': color_tex(tex)})
+            tex = color_tex(tex)
             out.append('<div class="tx d" data-t="%s">%s</div>' % (html.escape(tex, quote=True), esc(tex)))
             continue
         if st.startswith('>'):
@@ -144,7 +200,7 @@ def parse(path, nid):
         if k not in seen and len(t) < 80:
             seen.add(k)
             tl.append(t)
-    return {'id': nid, 'title': title, 'html': '\n'.join(out), 'secs': secs, 'idx': idx, 'terms': tl, 'words': words}
+    return {'id': nid, 'title': title, 'html': '\n'.join(out), 'secs': secs, 'idx': idx, 'terms': tl, 'words': words, 'cheat': cheat[:14]}
 
 
 def build(src_dir):
