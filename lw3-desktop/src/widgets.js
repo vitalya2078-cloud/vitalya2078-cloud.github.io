@@ -206,7 +206,7 @@ function resChart() {
     return `<div class="fz-cb" title="${esc(topicName(tp.id))}: ${b ? `лучший балл ${b.score}, оценка «${b.grade}»` : 'экзамен не сдавался'}"><span class="fz-cbl">${tp.id}. ${esc(tp.title)}</span><span class="fz-cbt">${b ? `<i style="width:${Math.max(b.score, 1)}%"></i>` : ''}<s style="left:60%"></s></span><b>${b ? b.score : '—'}</b>${b ? `<span class="fz-best g${b.grade}">«${b.grade}»</span>` : '<span></span>'}</div>`; }).join('');
   return `<div class="fz-rsum"><div class="fz-pst">${ic('graduation-cap')}<b>${ex.length}</b><span>экзаменов сдано</span></div><div class="fz-pst">${ic('layers')}<b>${n}<small> / 10</small></b><span>тем с экзаменом (с итоговым)</span></div>
     <div class="fz-pst">${ic('award')}<b>${avg}</b><span>средний балл</span></div><div class="fz-pst">${ic('trophy')}<b>${fin ? fin.score : '—'}</b><span>${fin ? `итоговый экзамен, «${fin.grade}»` : 'итоговый экзамен не сдавался'}</span></div></div>
-    <section class="fz-tile fz-chart"><h2>${ic('chart-column')} Лучший балл экзамена по темам</h2><p>Шкала 0–100; отметка — порог «3» (60 баллов).</p>${bars}</section>`;
+    <section class="fz-tile fz-chart"><h2>${ic('chart-column')} Лучший балл экзамена по темам</h2><p>Шкала от 0 до 100. Вертикальная черта показывает порог оценки «3» (60 баллов).</p>${bars}</section>`;
 }
 
 document.addEventListener('click', e => {

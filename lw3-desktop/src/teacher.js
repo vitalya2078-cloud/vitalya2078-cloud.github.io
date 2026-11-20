@@ -87,7 +87,7 @@ function vTeacher3() {
         <td class="n">${r.done ? `${r.cq}/8` : '—'}</td><td class="n">${r.dx.admitTries || 0} / ${r.dx.procTries || 0} / ${r.dx.cqTries || 0}</td>
         <td>${r.demo ? `<span class="pill warn">демо</span>` : r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`
       : '<p class="mute center" style="padding:30px">Пока пусто. Попроси курсантов сохранить работу (кнопка «Сохранить файл для преподавателя» или Ctrl+S) и собери файлы на флешку или в общую папку.</p>'}</section>
-    <p class="mute small mt">Подпись файла защищает от правки результата вручную (в Блокноте и т. п.). Файлы хранятся только на этом компьютере, пока ты их не очистишь.</p>`;
+    <p class="mute small mt">Цифровая подпись защищает результат от ручной правки. Файлы хранятся только на этом компьютере, пока вы не очистите список.</p>`;
 }
 function tStrip(fin) {
   const W = 1000, H = 120, lo = 1.25, hi = 1.55, X = g => 40 + (Math.max(lo, Math.min(hi, g)) - lo) / (hi - lo) * (W - 80);
@@ -366,5 +366,5 @@ function vTeacherFiles() {
     ${folderCard()}
     <div class="fz-pgrid mt"><section class="fz-tile"><h2>${ic('layers')} Загружено</h2>${TROWS.length ? `<div class="th-files">${by.map(([n, k]) => `<button data-t="tlab" data-v="${n}"><b>${k}</b><span>ЛР ${n}</span></button>`).join('')}${ne ? `<button data-t="tlab" data-v="exam"><b>${ne}</b><span>экзаменов</span></button>` : ''}</div>` : '<p>Файлов пока нет.</p>'}
         <p>Файлы хранятся только на этом компьютере, пока вы не очистите список. Повторный файл того же курсанта заменяет прежний.</p></section>
-      <section class="fz-tile"><h2>${ic('graduation-cap')} Демонстрация</h2><p>Полное прохождение ЛР 3 моделью: сводка и отчёт. В список группы не попадает — удобно показать курсантам, как оформляется работа.</p><button class="btn line" data-t="demo">${ic('play')} Демо-прохождение ЛР 3</button></section></div>`;
+      <section class="fz-tile"><h2>${ic('graduation-cap')} Демонстрация</h2><p>Программа сама выполняет ЛР 3 и показывает сводку и отчёт. В список группы это не попадает: удобно показать курсантам, как оформляется работа.</p><button class="btn line" data-t="demo">${ic('play')} Демо-прохождение ЛР 3</button></section></div>`;
 }
