@@ -30,6 +30,7 @@ must(await page.locator('.fz-ncard').count() === 17, 'конспектов не 
 await page.click('[data-d="note"][data-v="t2"]'); await page.waitForFunction(() => document.querySelectorAll('.fz-note .katex').length > 50, null, { timeout: 8000 });
 must(await page.locator('.fz-note .tx:not(.ok)').count() === 0, 'не все формулы нарисованы');
 must(await page.locator('.fz-ntoc .fz-tl').count() > 8, 'нет оглавления');
+must(await page.evaluate(async () => { const v = document.querySelector('.fz-video video'); if (!v) return false; if (v.readyState < 1) await new Promise(r => { v.onloadedmetadata = r; v.onerror = r; }); return v.duration > 240 && v.duration < 400 && !!v.poster; }), 'видеоурок темы не загружается');
 // поиск
 await page.keyboard.press('Control+k'); await W(200); must(await page.locator('#fz-sr:not([hidden])').count() === 1, 'Ctrl+K не открыл поиск');
 await page.keyboard.type('закон джоуля'); await W(300); must(await page.locator('.fz-sri').count() > 0, 'поиск ничего не нашёл');

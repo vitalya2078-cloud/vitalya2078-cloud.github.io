@@ -310,16 +310,21 @@ textarea.inp{min-height:220px; line-height:1.5; font-size:15px; resize:vertical}
 .lw-res{margin:10px 0 0; padding:10px 12px; border-radius:10px; background:rgba(90,211,160,.1); border:1px solid rgba(90,211,160,.4); font:700 16px var(--ui); color:var(--mint)}
 /* ===== «Физпрактикум»: меню, разделы, карточки работ, тесты, «О программе» — общее для компьютера и телефона ===== */
 .fz-app{display:grid; grid-template-columns:264px minmax(0,1fr); min-height:100vh}
-.fz-nav{position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:2px; padding:22px 14px 16px; background:var(--card); border-right:1px solid var(--line); overflow:auto}
-.fz-brand{display:flex; gap:12px; align-items:center; padding:0 8px 22px}
+.fz-app.mini{grid-template-columns:76px minmax(0,1fr)}
+.fz-nav{position:sticky; top:0; height:100vh; box-sizing:border-box; display:flex; flex-direction:column; gap:2px; padding:20px 14px 14px; background:color-mix(in srgb, var(--card) 90%, transparent); backdrop-filter:blur(18px); border-right:1px solid var(--line); overflow:auto; z-index:6}
+.fz-brand{display:flex; gap:12px; align-items:center; padding:6px 8px; margin:0 0 16px; border:0; border-radius:14px; background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer; position:relative}
+.fz-brand:hover{background:var(--card2)}
+.fz-bt{min-width:0}
+.fz-new{display:inline-block; margin-top:3px; padding:1px 8px; border-radius:999px; background:var(--acc); color:var(--acc-tx); font:800 9.5px/1.4 var(--ui); font-style:normal; letter-spacing:.05em; text-transform:uppercase}
 .fz-brand .logo{width:44px; height:44px; border-radius:13px; font-size:24px; flex:none}
-.fz-brand b{display:block; font-size:18px; line-height:1.2} .fz-brand small{display:block; color:var(--mute); font-size:11.5px; line-height:1.3; margin-top:2px}
+.fz-brand b{display:block; font-size:18px; line-height:1.2; white-space:nowrap} .fz-brand small{display:block; color:var(--mute); font-size:11.5px; line-height:1.3; margin-top:2px}
 .fz-nav a, .fz-nav button.fz-ni{display:flex; gap:12px; align-items:center; width:100%; padding:11px 12px; border:0; border-radius:12px; background:none; color:var(--tx2); font:600 14.5px var(--ui); text-align:left; cursor:pointer; text-decoration:none}
 .fz-nav .fz-ni .ic{width:20px; height:20px; flex:none; opacity:.85}
 .fz-nav .fz-ni:hover{background:var(--card2); color:var(--tx)}
 .fz-nav .fz-ni.on{background:var(--acc-soft); color:var(--acc)} .fz-nav .fz-ni.on .ic{opacity:1}
 .fz-nav .fz-sp{flex:1}
-.fz-me{display:flex; gap:10px; align-items:center; padding:12px 10px; margin-top:8px; border-top:1px solid var(--line)}
+.fz-me{display:flex; gap:10px; align-items:center; padding:12px 6px 2px; margin-top:8px; border-top:1px solid var(--line)}
+.fz-meb{border:0; padding:0; background:none; cursor:pointer; border-radius:10px} .fz-meb:hover .ava{box-shadow:0 0 0 2px var(--acc)}
 .fz-me div{min-width:0; flex:1} .fz-me b{display:block; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-me small{color:var(--mute); font-size:12px}
 .fz-page{padding:30px 40px 48px; max-width:1360px; width:100%; box-sizing:border-box}
 .fz-ph{display:flex; align-items:flex-end; gap:16px; margin-bottom:22px} .fz-ph div{flex:1}
@@ -465,6 +470,179 @@ textarea.inp{min-height:220px; line-height:1.5; font-size:15px; resize:vertical}
 .fz-test.fz-phone .fz-quit{width:auto; min-height:36px; padding:6px 8px; background:none; box-shadow:none; color:var(--acc); font-size:14px; border:0}
 .fz-test.fz-phone .fz-cnt{grid-column:2; font-size:12px; color:var(--mute)}
 
+/* ---------- меню свёрнуто до значков ---------- */
+.fz-app.mini .fz-nav{padding:20px 12px 14px; align-items:center}
+.fz-app.mini .fz-bt, .fz-app.mini .fz-ni span, .fz-app.mini .fz-me > div, .fz-app.mini .fz-me .tb-ic{display:none}
+.fz-app.mini .fz-brand{padding:4px; justify-content:center}
+.fz-app.mini .fz-brand.new::after{content:''; position:absolute; top:0; right:0; width:11px; height:11px; border-radius:50%; background:var(--acc); border:2px solid var(--card)}
+.fz-app.mini .fz-ni{justify-content:center; width:48px; padding:12px 0}
+.fz-app.mini .fz-me{justify-content:center; padding:12px 0 2px; width:100%}
+.fz-page{margin:0 auto}
+/* что нового */
+.fz-wn{display:flex; gap:16px; align-items:center; padding:16px 20px; margin-bottom:20px; border-radius:18px; background:linear-gradient(110deg, var(--acc-soft), color-mix(in srgb, var(--card) 92%, transparent)); border:1px solid var(--line)}
+.fz-wn > .ic{width:30px; height:30px; color:var(--acc)} .fz-wn div{flex:1; min-width:0} .fz-wn b{display:block; font-size:16px} .fz-wn span{color:var(--tx2); font-size:13.5px}
+.fz-news{display:grid; gap:10px; min-width:min(520px, 80vw)}
+.fz-nwi{display:flex; gap:14px; align-items:flex-start; padding:12px 14px; border-radius:14px; background:var(--card2)}
+.fz-nwi > .ic{width:22px; height:22px; color:var(--acc); margin-top:2px} .fz-nwi b{display:block; font-size:15px} .fz-nwi span{color:var(--tx2); font-size:13.5px; line-height:1.45}
+/* вход и регистрация: слева — о программе, справа — форма */
+.fz-login{padding:24px 0}
+.fz-lgrid{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(360px,440px); gap:64px; align-items:center; width:min(1120px, 100%)}
+.fz-lbrand{display:flex; gap:18px; align-items:center; margin-bottom:30px}
+.fz-lbrand .logo{width:72px; height:72px; border-radius:20px; font-size:44px}
+.fz-lbrand h1{margin:0; font:800 40px/1.1 "Golos UI"; letter-spacing:-.5px} .fz-lbrand p{margin:6px 0 0; color:var(--tx2); font-size:16px}
+.fz-lfeat{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px}
+.fz-lfeat > div{display:flex; gap:14px; padding:18px; border-radius:18px; background:color-mix(in srgb, var(--card) 84%, transparent); backdrop-filter:blur(10px); border:1px solid var(--line)}
+.fz-lfeat .ic{width:26px; height:26px; color:var(--acc); flex:none} .fz-lfeat b{display:block; font-size:15.5px; margin-bottom:4px} .fz-lfeat span{color:var(--tx2); font-size:13.5px; line-height:1.45}
+.fz-lhero .fz-org{text-align:left; margin-top:26px}
+.fz-ah{margin:0 0 14px; font-size:20px}
+.fz-login .login-box{width:100%}
+@media (max-width:980px){ .fz-lgrid{grid-template-columns:1fr; gap:24px; width:min(480px, 100%)} .fz-lfeat{display:none} .fz-lbrand{justify-content:center; margin-bottom:0} .fz-lhero .fz-org{display:none} }
+/* профиль */
+.fz-prof{display:grid; gap:20px}
+.fz-pid{display:flex; gap:22px; align-items:center}
+.ava.big{width:84px; height:84px; border-radius:24px; font-size:30px}
+.fz-pid h2{margin:0; font-size:24px} .fz-pid p{margin:4px 0 6px} .fz-pid small{color:var(--mute); font-size:13px} .fz-pid small .ic{width:15px; height:15px}
+.fz-pstats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px}
+.fz-pst{padding:18px; border-radius:18px; background:var(--card); border:1px solid var(--line)}
+.fz-pst .ic{width:22px; height:22px; color:var(--acc)} .fz-pst b{display:block; font-size:30px; line-height:1.1; margin-top:10px} .fz-pst b small{font-size:16px; color:var(--mute); font-weight:600} .fz-pst span{font-size:13px; color:var(--mute)}
+.fz-pgrid{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px; align-items:start}
+.fz-pcol{display:grid; gap:20px}
+.fz-tile h2 .ic{width:20px; height:20px; color:var(--acc); vertical-align:-3px; margin-right:4px}
+.fz-ptops{display:grid; gap:8px}
+.fz-ptop{display:grid; grid-template-columns:36px minmax(0,1fr) 64px 46px; gap:12px; align-items:center; padding:8px 4px}
+.fz-ptop .fz-tn{width:34px; height:34px; border-radius:10px; font-size:15px}
+.fz-ptop b{display:block; font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px} .fz-ptop small{color:var(--mute); font-size:12.5px; text-align:right}
+.fz-ptop .fz-best{text-align:center; padding:4px 6px}
+.fz-plabs{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px}
+.fz-plab{display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; border-radius:14px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:inherit; cursor:pointer}
+.fz-plab b{font-size:20px} .fz-plab small{font-size:11.5px; color:var(--mute)} .fz-plab:hover{border-color:var(--acc)}
+.fz-plab.done{background:var(--ok-soft); border-color:transparent} .fz-plab.done small{color:var(--ok)}
+.fz-plab.go{background:var(--acc-soft); border-color:transparent} .fz-plab.go small{color:var(--acc)}
+.fz-pact{display:flex; gap:12px; align-items:center; padding:10px 0; border-top:1px solid var(--line)} .fz-pact:first-of-type{border-top:0}
+.fz-pact > .ic{color:var(--mute)} .fz-pact div{flex:1; min-width:0} .fz-pact b{display:block; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-pact small{color:var(--mute); font-size:12px}
+.fz-pcards{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; align-items:start}
+.fz-pcards .fz-tile p{margin:0 0 12px}
+@media (max-width:1200px){ .fz-pstats{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-pgrid, .fz-pcards{grid-template-columns:1fr} }
+/* о программе */
+.fz-ab-links{display:flex; justify-content:center; gap:18px}
+.fz-legal{display:grid; gap:10px; max-width:640px; font-size:14px; line-height:1.55} .fz-legal p{margin:0}
+.fz-about{max-width:980px}
+.fz-ab-two{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px}
+.fz-ab-t .ic{width:18px; height:18px; color:var(--acc); margin-right:4px}
+.fz-key{display:flex; align-items:center; gap:6px; padding:6px 0; border-top:1px solid var(--line); font-size:14px} .fz-key:nth-child(2){border-top:0}
+.fz-key kbd{margin:0} .fz-key span{margin-left:10px; color:var(--tx2)}
+.fz-ab-ul{margin:0 0 14px; padding-left:20px; color:var(--tx2)} .fz-ab-ul li{margin:3px 0}
+/* конспекты */
+.fz-page.wide{max-width:1480px}
+.fz-ngrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px}
+.fz-ncard{display:flex; gap:14px; align-items:center; padding:14px; border-radius:18px; border:1px solid var(--line); background:var(--card); color:var(--tx); font:inherit; text-align:left; cursor:pointer; transition:border-color .15s, transform .15s}
+.fz-ncard:hover{border-color:var(--acc); transform:translateY(-1px)}
+.fz-ncard .fz-tn{width:52px; height:52px; border-radius:14px; font-size:22px; flex:none}
+.fz-ncard img{width:84px; height:56px; object-fit:cover; border-radius:10px; flex:none}
+.fz-nct{min-width:0; display:flex; flex-direction:column; gap:2px} .fz-nct small{color:var(--acc); font:800 11px var(--ui); letter-spacing:.04em; text-transform:uppercase} .fz-nct b{font-size:15px; line-height:1.3}
+.fz-ntags{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px} .fz-ntags i{font-style:normal; font-size:12px; color:var(--mute); display:inline-flex; gap:4px; align-items:center} .fz-ntags .ic{width:13px; height:13px} .fz-ntags i.ok{color:var(--ok)}
+.fz-nview{display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:36px; align-items:start}
+.fz-nmain{min-width:0; max-width:900px}
+.fz-nback{margin:0 0 10px -10px}
+.fz-nhead h1{margin:4px 0 12px; font-size:30px; letter-spacing:-.01em} .fz-nhead .row{gap:10px; align-items:center; flex-wrap:wrap} .fz-nhead .mute .ic{width:15px; height:15px}
+.fz-video{margin:20px 0 6px} .fz-video video{display:block; width:100%; aspect-ratio:16/9; border-radius:18px; background:#000; border:1px solid var(--line)} .fz-video p{margin:8px 2px 0} .fz-video .ic{width:15px; height:15px}
+.fz-note{margin-top:18px; padding:30px 36px 34px; border-radius:20px; background:var(--card); border:1px solid var(--line); font-size:16px; line-height:1.68; user-select:text; color:var(--tx)}
+.fz-note h2{font-size:22px; margin:30px 0 10px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px} .fz-note h2:first-child{margin-top:0; padding-top:0; border-top:0}
+.fz-note h3{font-size:17.5px; margin:22px 0 6px; scroll-margin-top:20px}
+.fz-note p{margin:0 0 12px} .fz-note ul, .fz-note ol{margin:0 0 12px; padding-left:24px} .fz-note li{margin:4px 0}
+.fz-note b{font-weight:700}
+.fz-note .tx.d{margin:12px 0 16px; padding:10px 14px; border-radius:12px; background:var(--card2); overflow-x:auto; text-align:center; font-size:17px}
+.fz-note .tx:not(.ok){font-family:var(--serif); font-style:italic}
+.fz-note .katex{font-size:1.08em}
+.fz-note .nb{margin:14px 0 16px; padding:12px 16px; border-radius:14px; border-left:4px solid var(--acc); background:var(--acc-soft)} .fz-note .nb p{margin:0}
+.fz-note .nb.law{border-color:var(--cold); background:color-mix(in srgb, var(--cold) 12%, transparent)}
+.fz-note .nb.warn{border-color:var(--warn); background:var(--warn-soft)}
+.fz-note .nb.ex{border-color:var(--ok); background:var(--ok-soft)}
+.fz-note .ntbl{overflow-x:auto; margin:10px 0 16px} .fz-note table{border-collapse:collapse; width:100%; font-size:14.5px} .fz-note th, .fz-note td{border:1px solid var(--line); padding:7px 10px; text-align:left} .fz-note th{background:var(--card2)}
+.fz-note .fz-hl{animation:fzhl 2.2s ease}
+@keyframes fzhl{0%, 40%{background:var(--acc-soft)} 100%{background:transparent}}
+.fz-nnav{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px} .fz-nnav .fz-link small{display:block; color:var(--mute); font-size:12px} .fz-nnav .nx{justify-content:flex-end; text-align:right}
+.fz-ntoc{position:sticky; top:24px; max-height:calc(100vh - 48px); overflow:auto; display:flex; flex-direction:column; gap:2px; padding:16px; border-radius:18px; background:color-mix(in srgb, var(--card) 90%, transparent); border:1px solid var(--line)}
+.fz-ntoc > b{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); margin-bottom:6px}
+.fz-tl{border:0; background:none; text-align:left; padding:6px 8px; border-radius:8px; color:var(--tx2); font:600 13.5px/1.35 var(--ui); cursor:pointer} .fz-tl:hover{background:var(--card2); color:var(--acc)} .fz-tl.l3{padding-left:20px; font-weight:500; font-size:13px; color:var(--mute)}
+.fz-nterms{margin:10px 8px 0; font-size:12.5px; color:var(--mute)}
+@media (max-width:1150px){ .fz-nview{grid-template-columns:1fr} .fz-ntoc{display:none} }
+.fz-nhead .row .btn{width:auto; flex:none}
+/* поиск */
+.fz-sbtn{margin-bottom:8px; border:1px solid var(--line) !important; background:var(--card2) !important}
+.fz-sbtn kbd{margin-left:auto; font-size:10px}
+.fz-app.mini .fz-sbtn kbd{display:none}
+#fz-sr{position:fixed; inset:0; z-index:60; display:flex; justify-content:center; align-items:flex-start; padding-top:11vh; background:rgba(8,10,14,.45); backdrop-filter:blur(3px)}
+#fz-sr[hidden]{display:none}
+.fz-srbox{width:min(680px, calc(100vw - 32px)); max-height:72vh; display:flex; flex-direction:column; border-radius:20px; background:var(--card); border:1px solid var(--line2); box-shadow:0 30px 80px rgba(0,0,0,.35); overflow:hidden}
+.fz-srin{display:flex; gap:12px; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line)} .fz-srin .ic{width:22px; height:22px; color:var(--acc)}
+.fz-srin input{flex:1; border:0; outline:0; background:none; color:var(--tx); font:500 17px var(--ui); user-select:text}
+#fz-srl{overflow:auto; padding:8px; flex:1}
+.fz-srg{margin:10px 10px 4px; font:800 11px var(--ui); letter-spacing:.07em; text-transform:uppercase; color:var(--mute)}
+.fz-sri{display:flex; gap:12px; align-items:center; width:100%; padding:10px 12px; border:0; border-radius:12px; background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer}
+.fz-sri > .ic:first-child{color:var(--mute); width:18px; height:18px} .fz-sri > .ic:last-child{opacity:0; color:var(--acc)}
+.fz-sri span{flex:1; min-width:0} .fz-sri b{display:block; font-size:14.5px; font-weight:600} .fz-sri small{display:block; color:var(--mute); font-size:12px}
+.fz-sri em{display:block; font-style:normal; color:var(--tx2); font-size:12.5px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-sri mark{background:var(--acc-soft); color:var(--acc); border-radius:3px; padding:0 2px}
+.fz-sri.on, .fz-sri:hover{background:var(--acc-soft)} .fz-sri.on > .ic:last-child{opacity:1} .fz-sri.on > .ic:first-child{color:var(--acc)}
+.fz-srhint{padding:16px 12px; color:var(--tx2); font-size:14px} .fz-srhint p{margin:0 0 12px}
+.fz-srchips{display:flex; flex-wrap:wrap; gap:8px} .fz-srchips button{padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--card2); color:var(--tx2); font:600 13px var(--ui); cursor:pointer} .fz-srchips button:hover{border-color:var(--acc); color:var(--acc)}
+.fz-srnone{padding:18px 12px; color:var(--mute)}
+.fz-srft{display:flex; gap:18px; padding:10px 18px; border-top:1px solid var(--line); color:var(--mute); font-size:12px} .fz-srft kbd{margin:0 3px 0 0}
+/* полезные блоки */
+.fz-widgets{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; align-items:start}
+.fz-w h2{display:flex; align-items:center; gap:8px; font-size:17px; margin:0} .fz-wh{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+.fz-wtag{font:700 11.5px var(--ui); color:var(--acc); background:var(--acc-soft); padding:3px 9px; border-radius:999px}
+.fz-wq{grid-column:span 2} .fz-wqt{color:var(--tx) !important; font-size:15.5px !important; font-weight:600; margin-bottom:12px !important}
+.fz-wqo{display:grid; grid-template-columns:1fr 1fr; gap:8px} .fz-wqo button{padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:500 14px var(--ui); text-align:left; cursor:pointer}
+.fz-wqo button:hover:not([disabled]){border-color:var(--acc)} .fz-wqo button.ok{background:var(--ok-soft); border-color:var(--ok); color:var(--ok)} .fz-wqo button.bad{background:var(--bad-soft); border-color:var(--bad); color:var(--bad)} .fz-wqo button[disabled]{cursor:default}
+.fz-wrow{margin-top:12px; gap:6px} .fz-wrow .btn{width:auto}
+.fz-fdf .tx.d{padding:18px 10px; border-radius:14px; background:var(--card2); text-align:center; font-size:19px; overflow-x:auto} .fz-fdh{margin:10px 0 8px !important; font-weight:600; color:var(--tx2) !important}
+.fz-fd .btn, .fz-w .tb-ic{width:auto}
+.fz-rp{display:grid; grid-template-columns:34px minmax(0,1fr) auto auto; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line)} .fz-rp:first-of-type{border-top:0}
+.fz-rp .fz-tn{width:32px; height:32px; border-radius:10px; font-size:14px} .fz-rp b{display:block; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-rp small{color:var(--mute); font-size:12px} .fz-rp .btn{width:auto; padding:6px 10px; min-height:0}
+.fz-cn{display:grid; gap:2px} .fz-cn div{display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:8px; align-items:baseline; padding:5px 0; border-top:1px solid var(--line); font-size:13px} .fz-cn div:first-child{border-top:0}
+.fz-cn i{font:italic 600 15px var(--serif); color:var(--acc)} .fz-cn span{color:var(--tx2)} .fz-cn b{font-weight:600; white-space:nowrap}
+.fz-ucc{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px} .fz-ucc button{padding:5px 10px; border-radius:999px; border:1px solid var(--line); background:none; color:var(--tx2); font:600 12.5px var(--ui); cursor:pointer} .fz-ucc button.on{background:var(--acc); border-color:var(--acc); color:var(--acc-tx)}
+.fz-ucr{display:grid; grid-template-columns:minmax(0,1fr) 140px; gap:8px; margin-top:8px}
+.fz-ucr input, .fz-ucr select, .fz-ucr output{height:42px; box-sizing:border-box; padding:0 12px; border-radius:12px; border:1px solid var(--line2); background:var(--card2); color:var(--tx); font:600 15px var(--ui); user-select:text}
+.fz-ucr output{display:flex; align-items:center; background:var(--acc-soft); border-color:transparent; color:var(--acc)}
+@media (max-width:1250px){ .fz-widgets{grid-template-columns:repeat(2, minmax(0,1fr))} }
+/* результаты: диаграмма */
+.fz-rsum{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-bottom:20px}
+.fz-chart{margin-bottom:8px} .fz-chart h2 .ic{width:20px; height:20px; color:var(--acc); vertical-align:-3px}
+.fz-cb{display:grid; grid-template-columns:minmax(0,280px) minmax(0,1fr) 40px 44px; gap:12px; align-items:center; padding:6px 4px; border-radius:8px} .fz-cb:hover{background:var(--card2)}
+.fz-cbl{font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--tx2)}
+.fz-cbt{position:relative; height:14px; border-radius:4px; background:var(--card2)} .fz-cbt i{position:absolute; left:0; top:0; bottom:0; border-radius:0 4px 4px 0; background:var(--acc)}
+.fz-cbt s{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--line2)} .fz-cb > b{text-align:right; font-size:14px}
+.fz-wcn{grid-column:1/-1} .fz-wcn .fz-cn{grid-template-columns:repeat(3, minmax(0,1fr)); column-gap:28px} .fz-wcn .fz-cn div:nth-child(-n+3){border-top:0}
+@media (max-width:1250px){ .fz-wcn .fz-cn{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-wq{grid-column:1/-1} }
+.fz-wqe{display:block; margin-top:6px; font-weight:400; color:var(--tx2)}
+.fz-cbt{background:var(--line)} .fz-sri mark{padding:0}
+/* кабинет преподавателя */
+.tch .fz-brand{cursor:default} .tch .fz-brand:hover{background:none}
+.fz-cnt-b{margin-left:auto; font:700 11.5px var(--ui); font-style:normal; padding:1px 8px; border-radius:999px; background:var(--card2); color:var(--mute)} .fz-ni.on .fz-cnt-b{background:var(--acc); color:var(--acc-tx)}
+.fz-app.mini .fz-cnt-b{display:none}
+.tpage .head{display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; margin-bottom:20px} .tpage .head h1{margin:2px 0 4px; font-size:28px} .tpage .head p{margin:0}
+.tpage .head .btn{width:auto}
+.tpage .ttabs{margin-top:12px} .mb{margin-bottom:14px}
+.tpage .stats{margin:0 0 16px}
+.th-steps{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:20px} .th-steps .fz-tile{position:relative} .th-steps .ic{width:26px; height:26px; color:var(--acc)} .th-steps b{display:block; margin:10px 0 4px; font-size:15.5px} .th-steps p{margin:0}
+.th-no{position:absolute; right:18px; top:16px; font:800 28px var(--ui); color:var(--line2)}
+.th-labs{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px}
+.th-lab{display:flex; gap:12px; align-items:center; padding:12px; border-radius:16px; border:1px solid var(--line); background:var(--card); color:var(--tx); font:inherit; text-align:left; cursor:pointer} .th-lab:hover{border-color:var(--acc)}
+.th-lab img{width:76px; height:52px; object-fit:cover; border-radius:10px; flex:none} .th-lab > span{min-width:0; flex:1; display:flex; flex-direction:column; gap:2px}
+.th-lab small{color:var(--acc); font:800 11px var(--ui); text-transform:uppercase} .th-lab b{font-size:13.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .th-lab i{font-style:normal; font-size:12px; color:var(--mute)} .th-lab .fz-bar{margin-top:4px}
+.th-row{display:flex; gap:12px; align-items:center; width:100%; padding:9px 6px; border:0; border-top:1px solid var(--line); background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer; border-radius:0} .th-row:first-of-type{border-top:0}
+.th-row:hover{background:var(--card2)} .th-row b{display:block; font-size:14px} .th-row small{color:var(--mute); font-size:12.5px} .th-row > .ic:last-child{color:var(--mute)}
+.th-files{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px} .th-files button{display:flex; flex-direction:column; align-items:center; min-width:76px; padding:10px; border-radius:14px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:inherit; cursor:pointer} .th-files b{font-size:22px} .th-files span{font-size:12px; color:var(--mute)} .th-files button:hover{border-color:var(--acc)}
+.tj td, .tj th{white-space:nowrap} .tj th.c{text-align:center}
+.tj-c{text-align:center; font:700 12px var(--ui)} .tj-c .ic{width:16px; height:16px}
+.tj-c.ok{color:var(--ok); background:var(--ok-soft)} .tj-c.go{color:var(--warn); background:var(--warn-soft)} .tj-c.bad{color:var(--bad); background:var(--bad-soft)} .tj-c.none{color:var(--mute)}
+.tj-note{width:200px; height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:13px var(--ui); user-select:text}
+@media (max-width:1200px){ .th-steps{grid-template-columns:repeat(2, minmax(0,1fr))} }
+.th-row > span:not(.ava){flex:1; min-width:0} .th-row span.ava{flex:none}
+.tpage .head > div:has(.ttabs){flex:1 1 100%}
+
 @media print{
   @page{size:A4; margin:12mm}
   html,body{background:#fff !important; min-height:0}
@@ -488,7 +666,7 @@ textarea.inp{min-height:220px; line-height:1.5; font-size:15px; resize:vertical}
 var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.ExceptionCode||(e.ExceptionCode={})).Unimplemented="UNIMPLEMENTED",t.Unavailable="UNAVAILABLE";class n extends Error{constructor(e,t,n){super(e),this.message=e,this.code=t,this.data=n}}const s=t=>{const s=t.CapacitorCustomPlatform||null,r=t.Capacitor||{},i=r.Plugins=r.Plugins||{},a=()=>null!==s?s.name:(e=>{var t,n;return(null==e?void 0:e.androidBridge)?"android":(null===(n=null===(t=null==e?void 0:e.webkit)||void 0===t?void 0:t.messageHandlers)||void 0===n?void 0:n.bridge)?"ios":"web"})(t),o=e=>{var t;return null===(t=r.PluginHeaders)||void 0===t?void 0:t.find(t=>t.name===e)},c=new Map;return r.convertFileSrc||(r.convertFileSrc=e=>e),r.getPlatform=a,r.handleError=e=>t.console.error(e),r.isNativePlatform=()=>"web"!==a(),r.isPluginAvailable=e=>{const t=c.get(e);return!!(null==t?void 0:t.platforms.has(a()))||!!o(e)},r.registerPlugin=(t,l={})=>{const d=c.get(t);if(d)return console.warn(`Capacitor plugin "${t}" already registered. Cannot register plugins twice.`),d.proxy;const u=a(),p=o(t);let m;const h=i=>{let a;const o=(...o)=>{const c=(async()=>(!m&&u in l?m=m="function"==typeof l[u]?await l[u]():l[u]:null!==s&&!m&&"web"in l&&(m=m="function"==typeof l.web?await l.web():l.web),m))().then(s=>{const c=((s,i)=>{var a,o;if(!p){if(s)return null===(o=s[i])||void 0===o?void 0:o.bind(s);throw new n(`"${t}" plugin is not implemented on ${u}`,e.ExceptionCode.Unimplemented)}{const e=null==p?void 0:p.methods.find(e=>i===e.name);if(e)return"promise"===e.rtype?e=>r.nativePromise(t,i.toString(),e):(e,n)=>r.nativeCallback(t,i.toString(),e,n);if(s)return null===(a=s[i])||void 0===a?void 0:a.bind(s)}})(s,i);if(c){const e=c(...o);return a=null==e?void 0:e.remove,e}throw new n(`"${t}.${i}()" is not implemented on ${u}`,e.ExceptionCode.Unimplemented)});return"addListener"===i&&(c.remove=async()=>a()),c};return o.toString=()=>`${i.toString()}() { [capacitor code] }`,Object.defineProperty(o,"name",{value:i,writable:!1,configurable:!1}),o},w=h("addListener"),g=h("removeListener"),v=(e,t)=>{const n=w({eventName:e},t),s=async()=>{const s=await n;g({eventName:e,callbackId:s},t)},r=new Promise(e=>n.then(()=>e({remove:s})));return r.remove=async()=>{console.warn("Using addListener() without 'await' is deprecated."),await s()},r},y=new Proxy({},{get(e,t){switch(t){case"$$typeof":return;case"toJSON":return()=>({});case"addListener":return p?v:w;case"removeListener":return g;default:return h(t)}}});return i[t]=y,c.set(t,{name:t,proxy:y,platforms:new Set([...Object.keys(l),...p?[u]:[]])}),y},r.Exception=n,r.DEBUG=!!r.DEBUG,r.isLoggingEnabled=!!r.isLoggingEnabled,r},r=(e=>e.Capacitor=s(e))("undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"undefined"!=typeof window?window:"undefined"!=typeof global?global:{}),i=r.registerPlugin;class a{constructor(){this.listeners={},this.retainedEventArguments={},this.windowListeners={}}addListener(e,t){let n=!1;this.listeners[e]||(this.listeners[e]=[],n=!0),this.listeners[e].push(t);const s=this.windowListeners[e];s&&!s.registered&&this.addWindowListener(s),n&&this.sendRetainedArgumentsForEvent(e);return Promise.resolve({remove:async()=>this.removeListener(e,t)})}async removeAllListeners(){this.listeners={};for(const e in this.windowListeners)this.removeWindowListener(this.windowListeners[e]);this.windowListeners={}}notifyListeners(e,t,n){const s=this.listeners[e];if(s)s.forEach(e=>e(t));else if(n){let n=this.retainedEventArguments[e];n||(n=[]),n.push(t),this.retainedEventArguments[e]=n}}hasListeners(e){var t;return!!(null===(t=this.listeners[e])||void 0===t?void 0:t.length)}registerWindowListener(e,t){this.windowListeners[t]={registered:!1,windowEventName:e,pluginEventName:t,handler:e=>{this.notifyListeners(t,e)}}}unimplemented(t="not implemented"){return new r.Exception(t,e.ExceptionCode.Unimplemented)}unavailable(t="not available"){return new r.Exception(t,e.ExceptionCode.Unavailable)}async removeListener(e,t){const n=this.listeners[e];if(!n)return;const s=n.indexOf(t);-1!==s&&this.listeners[e].splice(s,1),this.listeners[e].length||this.removeWindowListener(this.windowListeners[e])}addWindowListener(e){window.addEventListener(e.windowEventName,e.handler),e.registered=!0}removeWindowListener(e){e&&(window.removeEventListener(e.windowEventName,e.handler),e.registered=!1)}sendRetainedArgumentsForEvent(e){const t=this.retainedEventArguments[e];t&&(delete this.retainedEventArguments[e],t.forEach(t=>{this.notifyListeners(e,t)}))}}const o=i("WebView"),c=e=>encodeURIComponent(e).replace(/%(2[346B]|5E|60|7C)/g,decodeURIComponent).replace(/[()]/g,escape),l=e=>e.replace(/(%[\dA-F]{2})+/gi,decodeURIComponent);class d extends a{async getCookies(){const e=document.cookie,t={};return e.split(";").forEach(e=>{if(e.length<=0)return;let[n,s]=e.replace(/=/,"CAP_COOKIE").split("CAP_COOKIE");n=l(n).trim(),s=l(s).trim(),t[n]=s}),t}async setCookie(e){try{const t=c(e.key),n=c(e.value),s=e.expires?`; expires=${e.expires.replace("expires=","")}`:"",r=(e.path||"/").replace("path=",""),i=null!=e.url&&e.url.length>0?`domain=${e.url}`:"";document.cookie=`${t}=${n||""}${s}; path=${r}; ${i};`}catch(e){return Promise.reject(e)}}async deleteCookie(e){try{document.cookie=`${e.key}=; Max-Age=0`}catch(e){return Promise.reject(e)}}async clearCookies(){try{const e=document.cookie.split(";")||[];for(const t of e)document.cookie=t.replace(/^ +/,"").replace(/=.*/,`=;expires=${(new Date).toUTCString()};path=/`)}catch(e){return Promise.reject(e)}}async clearAllCookies(){try{await this.clearCookies()}catch(e){return Promise.reject(e)}}}const u=i("CapacitorCookies",{web:()=>new d}),p=(e,t={})=>{const n=Object.assign({method:e.method||"GET",headers:e.headers},t),s=((e={})=>{const t=Object.keys(e);return Object.keys(e).map(e=>e.toLocaleLowerCase()).reduce((n,s,r)=>(n[s]=e[t[r]],n),{})})(e.headers)["content-type"]||"";if("string"==typeof e.data)n.body=e.data;else if(s.includes("application/x-www-form-urlencoded")){const t=new URLSearchParams;for(const[n,s]of Object.entries(e.data||{}))t.set(n,s);n.body=t.toString()}else if(s.includes("multipart/form-data")||e.data instanceof FormData){const t=new FormData;if(e.data instanceof FormData)e.data.forEach((e,n)=>{t.append(n,e)});else for(const n of Object.keys(e.data))t.append(n,e.data[n]);n.body=t;const s=new Headers(n.headers);s.delete("content-type"),n.headers=s}else(s.includes("application/json")||"object"==typeof e.data)&&(n.body=JSON.stringify(e.data));return n};class m extends a{async request(e){const t=p(e,e.webFetchExtra),n=((e,t=!0)=>e?Object.entries(e).reduce((e,n)=>{const[s,r]=n;let i,a;return Array.isArray(r)?(a="",r.forEach(e=>{i=t?encodeURIComponent(e):e,a+=`${s}=${i}&`}),a.slice(0,-1)):(i=t?encodeURIComponent(r):r,a=`${s}=${i}`),`${e}&${a}`},"").substr(1):null)(e.params,e.shouldEncodeUrlParams),s=n?`${e.url}?${n}`:e.url,r=await fetch(s,t),i=r.headers.get("content-type")||"";let a,o,{responseType:c="text"}=r.ok?e:{};switch(i.includes("application/json")&&(c="json"),c){case"arraybuffer":case"blob":o=await r.blob(),a=await(async e=>new Promise((t,n)=>{const s=new FileReader;s.onload=()=>{const e=s.result;t(e.indexOf(",")>=0?e.split(",")[1]:e)},s.onerror=e=>n(e),s.readAsDataURL(e)}))(o);break;case"json":a=await r.json();break;default:a=await r.text()}const l={};return r.headers.forEach((e,t)=>{l[t]=e}),{data:a,headers:l,status:r.status,url:r.url}}async get(e){return this.request(Object.assign(Object.assign({},e),{method:"GET"}))}async post(e){return this.request(Object.assign(Object.assign({},e),{method:"POST"}))}async put(e){return this.request(Object.assign(Object.assign({},e),{method:"PUT"}))}async patch(e){return this.request(Object.assign(Object.assign({},e),{method:"PATCH"}))}async delete(e){return this.request(Object.assign(Object.assign({},e),{method:"DELETE"}))}}const h=i("CapacitorHttp",{web:()=>new m});var w,g;e.SystemBarsStyle=void 0,(w=e.SystemBarsStyle||(e.SystemBarsStyle={})).Dark="DARK",w.Light="LIGHT",w.Default="DEFAULT",e.SystemBarType=void 0,(g=e.SystemBarType||(e.SystemBarType={})).StatusBar="StatusBar",g.NavigationBar="NavigationBar";class v extends a{async setStyle(){this.unavailable("not available for web")}async setAnimation(){this.unavailable("not available for web")}async show(){this.unavailable("not available for web")}async hide(){this.unavailable("not available for web")}}const y=i("SystemBars",{web:()=>new v});return e.Capacitor=r,e.CapacitorCookies=u,e.CapacitorException=n,e.CapacitorHttp=h,e.SystemBars=y,e.WebPlugin=a,e.WebView=o,e.buildRequestInit=p,e.registerPlugin=i,Object.defineProperty(e,"__esModule",{value:!0}),e}({});
 
 
-const APP_VER = "2.2.0";
+const APP_VER = "2.3.0";
 const PWA = true;
 const REPORT_CSS = ".lwr-tools{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap}\n.lwr{display:grid; gap:16px}\n.lwp{background:#fff; color:#111; font:14px/1.45 \"Times New Roman\", \"STIX Two Text\", serif; padding:28px 30px; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.35); max-width:800px; margin:0 auto; width:100%; box-sizing:border-box}\n.lwp .c{text-align:center}.lwp .b{font-weight:700}.lwp .mt2{margin-top:22px}.lwp hr{border:0; border-top:1px solid #000; margin:10px 0}\n.lwp .row{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px; margin:10px 0}\n.lwp .ul{display:inline-block; border-bottom:1px solid #000; padding:0 4px; min-height:1.2em; flex:1 1 40%}\n.lwp .ul.s{flex:0 0 3.2em; text-align:center}.lwp .ul.m{flex:0 0 9em; text-align:center}\n.lwp table{width:100%; border-collapse:collapse; margin:8px 0; font-size:12.5px}\n.lwp th,.lwp td{border:1px solid #000; padding:4px 5px; text-align:center}.lwp td.l{text-align:left}\n.lwp .small{font-size:12.5px}.lwp .fm p{margin:4px 0; font-style:italic}.lwp .concl{min-height:120px; white-space:normal}\n.lwp .sign{margin-top:28px}\n.lwr-svg{display:block; width:100%; height:auto; margin:6px 0}\n.lwp table.tight{font-size:11.5px; margin:5px 0}.lwp table.tight th,.lwp table.tight td{padding:2px 4px}\n.lwp p.small{margin:4px 0}\n.lwp .lwr-svg.scheme{width:62%; margin:2px auto}\n.seg{display:flex; background:var(--bg2); border-radius:14px; padding:4px; gap:2px}\n.seg button{flex:1; border:0; background:none; padding:9px 4px; border-radius:11px; font:600 13.5px var(--ui); color:var(--mute)}\n.seg button[aria-pressed=\"true\"]{background:var(--card2); color:var(--text)}\n.lp-btn{width:52px;height:46px;flex:0 0 52px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--text);font:600 24px/1 var(--ui);touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:transform .08s,background .15s}\n.lp-btn:active{transform:scale(.94);background:#25315a}\n.lw-pucks{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin:10px 0}\n.lw-pucks button{display:grid; justify-items:center; gap:2px; padding:10px 2px; border-radius:14px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text)}\n.lw-pucks button b{font-size:18px}.lw-pucks button small{color:var(--mute); font-size:12px}.lw-pucks button i{font-style:normal; font-size:10.5px; font-weight:700}\n.lw-pucks button.p1{border-color:#6C8CFF; background:rgba(108,140,255,.15)}.lw-pucks button.p1 i{color:#9DB2FF}\n.lw-pucks button.p2{border-color:#FF7A59; background:rgba(255,122,89,.15)}.lw-pucks button.p2 i{color:#FFB199}\n.lw-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px}.lw-row label{flex:1 1 130px; display:grid; gap:5px; font-size:13px; color:var(--mute)}\n.lwi{width:100%; min-width:0; box-sizing:border-box; padding:9px 10px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:600 15px var(--ui); font-variant-numeric:tabular-nums}\n.lwi:focus{outline:none; border-color:var(--blue)} .lwi.ok{border-color:var(--mint); background:rgba(61,214,160,.08)} .lwi.bad{border-color:var(--pink); background:rgba(255,107,139,.08)}\n.lw-ta{width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:500 14.5px/1.5 var(--ui); resize:vertical}\n.lw-stage{position:sticky; top:0; z-index:5; background:var(--bg); padding-bottom:4px}\n#lw-cv{display:block; width:min(100%, calc(52vh * 580 / 440)); margin:0 auto; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid var(--line); touch-action:none; cursor:crosshair}\n.lw-hint{margin:6px 2px 0; font-size:12.5px; color:var(--mute); display:flex; gap:6px; align-items:center}.lw-hint .ic{width:15px; height:15px; flex:none}\n.lw-screw{display:flex; align-items:center; gap:10px; margin-top:10px}.lw-screw span{flex:1; font-size:14px; color:var(--mute)}.lw-screw b{font:800 22px var(--ui); min-width:24px; text-align:center}\n.lw-screw .lp-btn{width:46px; height:42px; flex:0 0 46px}\n.lw-scroll{overflow-x:auto}\n.lw-tbl{width:100%; border-collapse:collapse; font-size:13.5px; font-variant-numeric:tabular-nums}\n.lw-tbl th{font:600 12px var(--ui); color:var(--mute); text-align:left; padding:6px 6px; border-bottom:1px solid var(--line)}\n.lw-tbl td{padding:6px; border-bottom:1px solid var(--line); vertical-align:top}\n.lw-tbl tr.now td{background:rgba(108,140,255,.08)} .lw-tbl tr.sum td{font-size:12px; color:var(--mute)}\n.lw-tbl tr.sum .lwi{margin-top:4px; font-size:14px}\n.lw-tbl.wide{min-width:620px}\n.lw-tbl td .lwi{padding:6px 7px; font-size:14px}\n.lw-aim{display:flex; gap:6px; margin-top:8px; align-items:stretch}\n.lw-aim button{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:0 12px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--text); font:600 14px var(--ui); touch-action:manipulation}\n.lw-aim > button{flex:1 1 0; min-width:0; white-space:nowrap}\n.lw-aim > button .ic{width:17px; height:17px; color:#E5484D}\n.lw-aim button:active{background:var(--card2)}\n.lw-arrows{display:grid; grid-template-columns:repeat(4,44px); gap:4px}\n.lw-arrows button{padding:0}\n.lw-arrows .ic{width:20px; height:20px}\n.lw-row.three label{flex:1 1 90px}\n.lw-pucks button.p3{border-color:#C46A45; background:rgba(196,106,69,.16)}.lw-pucks button.p3 i{color:#F0A27F}\n.lw-who{display:block; font-size:11.5px; color:var(--gold); line-height:1.3}\n.lw-ctl{margin-top:8px; display:grid; gap:6px}\n.lw-ctl-row{display:flex; gap:6px; align-items:flex-end}\n.lw-ctl-row label{flex:1 1 0; min-width:0; display:grid; gap:3px; font-size:12px; font-weight:600; color:var(--mute)}\n.lw-ctl-row .lwi{min-height:44px; padding:6px 10px; font-size:16px}\n.lw-ctl-row .btn{flex:0 0 auto; min-height:44px; padding:0 14px; font-size:14.5px}\n.lw-ctl-row.four label{flex:1 1 0}\n.lw-ctl .btn.wide{min-height:46px; margin:0}\n.lw-ctl .lw-msg{margin:0; font-size:13px; min-height:0}\n.lw-ctl .lw-msg:empty{display:none}\n.lw-stage + .lw-hint{margin-top:0}\n#l2-cv{display:block; width:min(100%, calc(52vh * 580 / 452)); margin:0 auto; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid var(--line)}\n.l2-cal{display:block; width:100%; aspect-ratio:580/200; height:auto; margin:10px 0 4px; border-radius:12px; border:1px solid var(--line)}\n.lw-res{margin:10px 0 0; padding:10px 12px; border-radius:10px; background:rgba(90,211,160,.1); border:1px solid rgba(90,211,160,.4); font:700 16px var(--ui); color:var(--mint)}";
 const LAB_BG = {"edge": 0.8984, "top": "#0F2237", "note": "edge — кромка стола на картинке, доля высоты (строка 920 из 1024); top — цвет полосы над картинкой", "src": "img/lab-bg.webp"};
@@ -2424,7 +2602,7 @@ function leSummaryHtml(n, S) {
     ${sumBox('circle-check', 'Вывод', `<p>${s.concl}</p>`)}
     ${sumBox('rotate-cw', s.whyT || 'Откуда формула', `<p>${s.why}</p>`)}
     ${sumBox('file-text', 'Откуда расхождение', `<p>${s.err}</p>`)}
-    ${sumBox('graduation-cap', 'Могут спросить', sumQa(s.qs.map(i => i < 0 ? D.admit[-i - 1] : D.cq[i])))}</div>`;
+    ${sumBox('graduation-cap', 'Могут спросить', sumQa(s.qs.map(i => i < 0 ? D.admit[-i - 1] : D.cq[i]).filter(Boolean)))}</div>`;
 }
 
 /* ---------- регистрация в реестре работ ---------- */
@@ -3414,6 +3592,14 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const testKey = id => workKey(id) + '-t';
 const tsLoad = () => (PROFILE ? store.get(testKey(PROFILE.id), null) : null) || { self: {}, att: [] };
 const tsSave = T => { if (PROFILE) store.set(testKey(PROFILE.id), T); };
+/* идущий экзамен сохраняется после каждого ответа: закрыть программу и начать заново, чтобы «переиграть», нельзя */
+const runKey = () => testKey(PROFILE.id) + '-run';
+const tRunSave = () => { if (PROFILE && TQ && TQ.kind === 'exam' && !TQ.done) store.set(runKey(), TQ); };
+function tRecover() {   // при входе: незавершённый экзамен засчитывается с теми ответами, что были даны
+  if (!PROFILE) return; const R = store.get(runKey(), null); if (!R || R.kind !== 'exam') return;
+  store.del(runKey()); TQ = R; tFinish(true); TQ = null;
+  toast('Предыдущий экзамен не был завершён — он засчитан с данными ответами.', 'bad');
+}
 
 /* ---------- сеанс теста: самопроверка или экзамен ---------- */
 let TQ = null;          // { kind: 'self'|'exam', topic: 1..9|'final', ids: [...], i, opts: {id: [...]}, ans: {id: {v, ok, t}}, start, qStart, deadline }
@@ -3429,7 +3615,7 @@ function tStart(kind, topic, onlyWrong) {
   const opts = {}; ids.forEach(id => { const q = BANK.byId[id]; opts[id] = /^Вариант \d$/.test(q.a) ? [q.a, ...q.x].sort() : shuffle([q.a, ...q.x]); });
   TQ = { kind, topic, onlyWrong: !!onlyWrong, ids, i: 0, opts, ans: {}, start: Date.now(), qStart: Date.now() };
   if (kind === 'exam') TQ.deadline = Date.now() + BANK.byId[ids[0]].time * 60000;
-  SCREEN = 'test'; render(); tTimer();
+  tRunSave(); SCREEN = 'test'; render(); tTimer();
 }
 const tCur = () => TQ && BANK.byId[TQ.ids[TQ.i]];
 function tAnswer(v) {
@@ -3442,17 +3628,18 @@ function tNext() {
   if (!TQ) return;
   if (TQ.i >= TQ.ids.length - 1) return tFinish();
   TQ.i++; TQ.qStart = Date.now(); if (TQ.kind === 'exam') TQ.deadline = Date.now() + tCur().time * 60000;
-  render(); tTimer();
+  tRunSave(); render(); tTimer();
 }
-function tFinish() {
-  clearInterval(tTimer.h); if (!TQ) return;
+function tFinish(aborted) {
+  clearInterval(tTimer.h); if (!TQ) return; if (PROFILE) store.del(runKey());
   if (TQ.kind === 'exam') {
     const n = TQ.ids.length, right = TQ.ids.filter(id => TQ.ans[id] && TQ.ans[id].ok).length, score = Math.round(right / n * 100);
-    const att = { id: Date.now().toString(36), kind: 'exam', topic: TQ.topic, date: new Date().toISOString(), n, right, score, grade: examGrade(score), spent: Math.round((Date.now() - TQ.start) / 1000),
+    const T0 = tsLoad(), no = T0.att.filter(a => a.topic === TQ.topic).length + 1;
+    const att = { id: Date.now().toString(36), kind: 'exam', topic: TQ.topic, no, aborted: !!aborted, date: new Date().toISOString(), n, right, score, grade: examGrade(score), spent: Math.round((Date.now() - TQ.start) / 1000),
       items: TQ.ids.map(id => ({ id, v: TQ.ans[id] ? TQ.ans[id].v : null, ok: !!(TQ.ans[id] && TQ.ans[id].ok), t: TQ.ans[id] ? TQ.ans[id].t : null })) };
     const T = tsLoad(); T.att.unshift(att); tsSave(T); TQ.result = att;
   } else TQ.result = { kind: 'self' };
-  TQ.done = true; render();
+  TQ.done = true; if (!aborted) render();
 }
 function tTimer() {
   clearInterval(tTimer.h); if (!TQ || TQ.kind !== 'exam' || TQ.done) return;
@@ -3515,7 +3702,7 @@ function testResult() {
       <div class="row center"><button class="btn" data-fz="back">${ic('chevron-left')} К тестам</button></div></div></div>`; }
   const wrong = r.items.filter(x => !x.ok);
   return `<div class="fz-qwrap"><div class="fz-qcard fz-res"><span class="fz-big g${r.grade}">${r.score}</span><h2>Оценка «${r.grade}» — ${GRADE_T[r.grade]}</h2>
-      <p class="mute">${esc(topicName(r.topic))}. Верно ${r.right} из ${r.n}. Время — ${Math.floor(r.spent / 60)} мин ${r.spent % 60} с.</p>
+      <p class="mute">${esc(topicName(r.topic))}, попытка ${r.no || 1}${r.aborted ? ' (прервана)' : ''}. Верно ${r.right} из ${r.n}. Время — ${Math.floor(r.spent / 60)} мин ${r.spent % 60} с.</p>
       <div class="row center"><button class="btn" data-fz="examfile" data-v="${r.id}">${ic('graduation-cap')} Файл результата для преподавателя</button><button class="btn line" data-fz="back">${ic('chevron-left')} К тестам</button></div></div>
     ${wrong.length ? `<p class="fz-h">Разбор ошибок (${wrong.length})</p>${wrong.map(x => { const q = BANK.byId[x.id]; return `<div class="fz-qcard fz-rev"><span class="fz-qid">№ ${q.id}</span>${qHtml(q)}
       <p class="fz-verdict bad">${x.v == null ? 'Нет ответа (время вышло)' : `Твой ответ: ${esc(x.v)}`}</p><p class="fz-verdict ok">Правильный ответ: <b>${esc(q.a)}</b></p>${explainHtml(q)}</div>`; }).join('')}` : ''}</div>`;
@@ -3541,13 +3728,16 @@ function aboutHtml(attr) {
   return `<div class="fz-about">
     <div class="fz-ab-head"><span class="logo big">γ</span><div><h1>${APP_NAME}</h1><p>Виртуальный лабораторный практикум по физике</p><span class="fz-ver">Версия ${esc(APP_VER)}</span></div></div>
     <section class="fz-ab-card"><p class="fz-ab-org">${esc(ORG.school)}</p><p class="fz-ab-dept">${esc(ORG.dept)}</p>
-      <p>Программа предназначена для выполнения лабораторных работ по физике в виртуальной лаборатории, подготовки к допуску и защите, а также для самопроверки и экзамена по курсу физики.</p>
-      <div class="fz-ab-grid"><div><b>8</b><span>лабораторных работ по методическим указаниям кафедры</span></div><div><b>900</b><span>вопросов по 9 темам курса</span></div><div><b>3</b><span>режима тестов: самопроверка, экзамен по теме, итоговый экзамен</span></div></div></section>
-    <section class="fz-ab-card"><p class="fz-ab-t">Данные и конфиденциальность</p><p>Учётные записи, результаты работ и тестов хранятся только на этом устройстве и никуда не передаются. Пароль хранится в виде хеша. Результаты передаются преподавателю файлами, защищёнными подписью от изменения.</p></section>
-    <section class="fz-ab-card"><p class="fz-ab-t">Использованные материалы</p><p>Шрифты Golos UI и STIX Two — SIL Open Font License 1.1. Значки Lucide — лицензия ISC.</p></section>
+      <p>В «Физпрактикуме» курсанты выполняют лабораторные работы по физике в виртуальной лаборатории, готовятся к допуску и защите, повторяют теорию по конспектам и сдают тесты по курсу.</p>
+      <div class="fz-ab-grid"><div><b>8</b><span>лабораторных работ</span></div><div><b>9</b><span>тем курса с конспектами</span></div><div><b>900</b><span>вопросов для самопроверки и экзаменов</span></div></div></section>
     <p class="fz-copy">${esc(ORG.copy)}</p>
-    <button class="fz-devs" data-fz="devs">Разработчики</button></div>`;
+    <div class="fz-ab-links"><button class="fz-devs" data-fz="devs">Разработчики</button><button class="fz-devs" data-fz="legal">Правовая информация</button></div></div>`;
 }
+const legalHtml = () => `<div class="fz-legal">
+  <p><b>Правообладатель.</b> ${esc(ORG.copy)}</p>
+  <p><b>Назначение.</b> Программа предназначена для учебного процесса ${esc(ORG.school)}. Методические материалы, вопросы тестов и конспекты принадлежат кафедре и используются только в учебных целях.</p>
+  <p><b>Данные.</b> Учётные записи, результаты лабораторных работ и тестов хранятся только на этом компьютере и никуда не передаются. Пароль хранится в виде хеша. Преподавателю результаты передаются файлами с цифровой подписью, которая обнаруживает любые изменения.</p>
+  <p><b>Сторонние компоненты.</b> Шрифты Golos UI и STIX Two — SIL Open Font License 1.1. Значки Lucide — лицензия ISC.${typeof katexLoad === 'function' ? ' Отображение формул KaTeX — лицензия MIT. Озвучка видеоуроков — синтезатор речи Piper (лицензия MIT).' : ''}</p></div>`;
 const devsHtml = () => `<div class="fz-devlist"><p class="mute">${esc(ORG.devsNote[0].toUpperCase() + ORG.devsNote.slice(1))}</p>${ORG.devs.map(d => `<div class="fz-dev">${ava(d.split(' ').slice(-2, -1)[0] || d)}<b>${esc(d)}</b></div>`).join('')}<p class="mute small">${esc(ORG.dept)}, ${esc(ORG.school)}</p></div>`;
 
 /* ---------- действия ---------- */
@@ -3561,12 +3751,13 @@ document.addEventListener('click', e => {
     case 'ans': tAnswer(d.v); break;
     case 'next': tNext(); break;
     case 'quit': if (!TQ) break;
-      if (TQ.kind === 'exam' && !TQ.done) { if (!confirm('Прервать экзамен? Неотвеченные вопросы будут засчитаны как неверные.')) break; return tFinish(); }
+      if (TQ.kind === 'exam' && !TQ.done) { if (!confirm('Прервать экзамен? Неотвеченные вопросы будут засчитаны как неверные.')) break; return tFinish(true); }
       if (TQ.kind === 'self' && !TQ.done && Object.keys(TQ.ans).length) return tFinish();
       TQ = null; clearInterval(tTimer.h); SCREEN = 'labs'; render(); break;
     case 'back': TQ = null; clearInterval(tTimer.h); SCREEN = 'labs'; if (typeof PAGE !== 'undefined') PAGE = 'tests'; render(); break;
     case 'examfile': { const a = tsLoad().att.find(x => x.id === d.v); if (a) fzSaveExam(a); break; }
     case 'devs': fzModal('Разработчики', devsHtml()); break;
+    case 'legal': fzModal('Правовая информация', legalHtml()); break;
   }
 });
 bankLoad();
@@ -3654,7 +3845,7 @@ function ensureMeta(S) {
   S.dx.device = IOS ? 'ios' : 'android';
 }
 function openProfile(p, intro = false, lab = 0) {   // курсант → выбор работы (или сразу работа lab)
-  PROFILE = p; L3S = null; LWS = null; L2S = null;
+  PROFILE = p; L3S = null; LWS = null; L2S = null; tRecover();
   if (lab) mOpenLab(lab); else { SCREEN = 'labs'; PAGE = 'main'; render(); scrollTo(0, 0); }
   if (intro) showIntro(0);
 }

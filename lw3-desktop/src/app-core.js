@@ -207,7 +207,7 @@ const legalHtml = () => `<div class="fz-legal">
   <p><b>Правообладатель.</b> ${esc(ORG.copy)}</p>
   <p><b>Назначение.</b> Программа предназначена для учебного процесса ${esc(ORG.school)}. Методические материалы, вопросы тестов и конспекты принадлежат кафедре и используются только в учебных целях.</p>
   <p><b>Данные.</b> Учётные записи, результаты лабораторных работ и тестов хранятся только на этом компьютере и никуда не передаются. Пароль хранится в виде хеша. Преподавателю результаты передаются файлами с цифровой подписью, которая обнаруживает любые изменения.</p>
-  <p><b>Сторонние компоненты.</b> Шрифты Golos UI и STIX Two — SIL Open Font License 1.1. Значки Lucide — лицензия ISC. Отображение формул KaTeX — лицензия MIT.</p></div>`;
+  <p><b>Сторонние компоненты.</b> Шрифты Golos UI и STIX Two — SIL Open Font License 1.1. Значки Lucide — лицензия ISC.${typeof katexLoad === 'function' ? ' Отображение формул KaTeX — лицензия MIT. Озвучка видеоуроков — синтезатор речи Piper (лицензия MIT).' : ''}</p></div>`;
 const devsHtml = () => `<div class="fz-devlist"><p class="mute">${esc(ORG.devsNote[0].toUpperCase() + ORG.devsNote.slice(1))}</p>${ORG.devs.map(d => `<div class="fz-dev">${ava(d.split(' ').slice(-2, -1)[0] || d)}<b>${esc(d)}</b></div>`).join('')}<p class="mute small">${esc(ORG.dept)}, ${esc(ORG.school)}</p></div>`;
 
 /* ---------- действия ---------- */

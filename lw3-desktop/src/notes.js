@@ -55,7 +55,7 @@ function noteView(x) {
   return `<div class="fz-nview"><div class="fz-nmain">
       <button class="btn ghost fz-nback" data-d="notes">${ic('chevron-left')} Все конспекты</button>
       <div class="fz-nhead"><span class="fz-n">${nKind(x)}</span><h1>${esc(x.title)}</h1><div class="row">${acts}<span class="mute small">${ic('clock')} ${nMin(x)} мин чтения</span></div></div>
-      ${x.video ? `<div class="fz-video"><video controls preload="metadata" src="video/${x.id}.mp4"></video><p class="mute small">${ic('video')} Видеоурок по теме. Конкретные ответы на вопросы тестов в нём не разбираются — только теория.</p></div>` : ''}
+      ${x.video ? `<div class="fz-video"><video controls preload="metadata" poster="video/${x.id}.jpg" src="video/${x.id}.mp4"></video><p class="mute small">${ic('video')} Видеоурок по теме. Конкретные ответы на вопросы тестов в нём не разбираются — только теория.</p></div>` : ''}
       <article class="fz-note">${x.html}</article>
       <div class="fz-nnav">${prev ? `<button class="fz-link" data-d="note" data-v="${prev.id}">${ic('chevron-left')}<span><small>${nKind(prev)}</small><b>${esc(prev.title)}</b></span></button>` : '<span></span>'}
         ${next ? `<button class="fz-link nx" data-d="note" data-v="${next.id}"><span><small>${nKind(next)}</small><b>${esc(next.title)}</b></span>${ic('chevron-right')}</button>` : '<span></span>'}</div>
