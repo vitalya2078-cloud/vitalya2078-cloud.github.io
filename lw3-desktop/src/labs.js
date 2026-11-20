@@ -9,14 +9,14 @@
    Меню прижато к левому краю; кнопкой внизу меню или Ctrl+B оно сворачивается до значков (выбор запоминается).
    Клик по названию программы — на главную. Пока курсант не открыл «Что нового» этой версии, у названия метка «Новое». */
 let PAGE = 'main';
-const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторные работы', 'flask-conical'], ['tests', 'Тесты и экзамены', 'graduation-cap'], ['results', 'Мои результаты', 'trophy'], ['profile', 'Профиль', 'user'], ['about', 'О программе', 'book-open']];
+const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторные работы', 'flask-conical'], ['tests', 'Тесты и экзамены', 'graduation-cap'], ['notes', 'Конспекты', 'notebook-pen'], ['results', 'Мои результаты', 'trophy'], ['profile', 'Профиль', 'user'], ['about', 'О программе', 'book-open']];
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 let NAVMINI = lsGet('fz-nav-mini', '0') === '1';
 const isNew = () => lsGet('fz-seen-ver', '') !== APP_VER;
 function vApp() {
   document.body.classList.add('noside', 'fzapp'); document.body.classList.remove('full'); ui.side.innerHTML = '';
-  const p = PROFILE, page = ({ main: pgMain, labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout })[PAGE] || pgMain, nw = isNew();
+  const p = PROFILE, page = ({ main: pgMain, labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes })[PAGE] || pgMain, nw = isNew();
   const tip = t => NAVMINI ? ` title="${t}"` : '';
   ui.main.innerHTML = `<div class="fz-app ${NAVMINI ? 'mini' : ''}"><nav class="fz-nav">
       <button class="fz-brand ${nw ? 'new' : ''}" data-d="brand" title="На главную"><span class="logo">γ</span><span class="fz-bt"><b>Физпрактикум</b><small>${nw ? `<i class="fz-new">Новое в версии ${esc(APP_VER)}</i>` : 'ЧВВМУ им. П.С. Нахимова'}</small></span></button>
@@ -25,7 +25,8 @@ function vApp() {
       <button class="fz-ni" data-d="theme"${tip(isLight() ? 'Тёмная тема' : 'Светлая тема')}>${ic(isLight() ? 'moon' : 'sun')}<span>${isLight() ? 'Тёмная тема' : 'Светлая тема'}</span></button>
       <button class="fz-ni" data-d="navmini" title="${NAVMINI ? 'Развернуть меню' : 'Свернуть меню'} (Ctrl+B)">${ic(NAVMINI ? 'panel-left-open' : 'panel-left-close')}<span>Свернуть меню</span></button>
       <div class="fz-me"><button class="fz-meb" data-d="page" data-v="profile" title="Профиль">${ava(p.fio)}</button><div><b>${esc(p.fio)}</b><small>${esc(p.group ? p.group + ' класс' : '')}</small></div><button class="tb-ic" data-d="home" title="Выйти">${ic('log-out')}</button></div>
-    </nav><main class="fz-page">${page()}</main></div>`;
+    </nav><main class="fz-page ${PAGE === 'notes' && NOTE ? 'wide' : ''}">${page()}</main></div>`;
+  fzAfter();
 }
 const fzNav = () => { NAVMINI = !NAVMINI; lsSet('fz-nav-mini', NAVMINI ? '1' : '0'); const a = $('.fz-app'); if (a) render(); };
 /* что нового в версии: показывается на главной, пока не прочитано */
@@ -67,7 +68,7 @@ function pgMain() {
       <button class="fz-link" data-d="import">${ic('file-text')}<span><b>Открыть файл работы</b><small>Продолжить работу с другого компьютера</small></span></button></div>`;
 }
 const pgLabs = () => pgHead('Лабораторные работы', 'Работы выполняются по методическим указаниям кафедры. Каждая сохраняется отдельно — можно продолжить позже.') + labCards('data-d');
-const pgTests = () => pgHead('Тесты и экзамены', 'Банк из 900 вопросов по 9 темам курса физики.') + testsHome();
+const pgTests = () => pgHead('Тесты и экзамены', 'Банк из 900 вопросов по 9 темам курса физики.') + testsHome().replace(/<button class="btn line" data-fz="self" data-v="(\d)">/g, (m, t) => `<button class="btn ghost" data-d="note" data-v="t${t}" title="Конспект темы">${ic('notebook-pen')} Конспект</button>` + m);
 const pgResults = () => pgHead('Мои результаты', 'Лабораторные работы и экзамены. Файл результата экзамена можно сохранить для преподавателя.') + resultsHtml('data-d');
 const KEYS = [['Ctrl', 'K', 'Поиск по программе'], ['Ctrl', 'B', 'Свернуть или развернуть меню'], ['', 'Enter', 'Следующий шаг, проверить ответ'], ['', '1 – 4', 'Выбор ответа в тесте'], ['', 'Esc', 'Закрыть окно']];
 const pgAbout = () => aboutHtml('data-d').replace(/<p class="fz-copy">/, `<div class="fz-ab-two">
@@ -113,8 +114,8 @@ const pfMsg = t => { const m = $('#pf-msg'); if (m) m.textContent = t; };
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-d]'); if (!b || !PROFILE) return; const d = b.dataset;
   switch (d.d) {
-    case 'page': PAGE = d.v; SCREEN = 'labs'; render(); ui.main.scrollTop = 0; break;
-    case 'brand': PAGE = 'main'; SCREEN = 'labs'; render(); ui.main.scrollTop = 0; break;
+    case 'page': PAGE = d.v; NOTE = ''; SCREEN = 'labs'; render(); ui.main.scrollTop = 0; break;
+    case 'brand': PAGE = 'main'; NOTE = ''; SCREEN = 'labs'; render(); ui.main.scrollTop = 0; break;
     case 'navmini': fzNav(); break;
     case 'news': fzNews(); break;
     case 'pf-save': { const fio = $('#pf-fio').value.trim(), group = $('#pf-group').value.trim();
