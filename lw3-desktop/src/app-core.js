@@ -198,13 +198,16 @@ function aboutHtml(attr) {
   return `<div class="fz-about">
     <div class="fz-ab-head"><span class="logo big">γ</span><div><h1>${APP_NAME}</h1><p>Виртуальный лабораторный практикум по физике</p><span class="fz-ver">Версия ${esc(APP_VER)}</span></div></div>
     <section class="fz-ab-card"><p class="fz-ab-org">${esc(ORG.school)}</p><p class="fz-ab-dept">${esc(ORG.dept)}</p>
-      <p>Программа предназначена для выполнения лабораторных работ по физике в виртуальной лаборатории, подготовки к допуску и защите, а также для самопроверки и экзамена по курсу физики.</p>
-      <div class="fz-ab-grid"><div><b>8</b><span>лабораторных работ по методическим указаниям кафедры</span></div><div><b>900</b><span>вопросов по 9 темам курса</span></div><div><b>3</b><span>режима тестов: самопроверка, экзамен по теме, итоговый экзамен</span></div></div></section>
-    <section class="fz-ab-card"><p class="fz-ab-t">Данные и конфиденциальность</p><p>Учётные записи, результаты работ и тестов хранятся только на этом устройстве и никуда не передаются. Пароль хранится в виде хеша. Результаты передаются преподавателю файлами, защищёнными подписью от изменения.</p></section>
-    <section class="fz-ab-card"><p class="fz-ab-t">Использованные материалы</p><p>Шрифты Golos UI и STIX Two — SIL Open Font License 1.1. Значки Lucide — лицензия ISC.</p></section>
+      <p>В «Физпрактикуме» курсанты выполняют лабораторные работы по физике в виртуальной лаборатории, готовятся к допуску и защите, повторяют теорию по конспектам и сдают тесты по курсу.</p>
+      <div class="fz-ab-grid"><div><b>8</b><span>лабораторных работ</span></div><div><b>9</b><span>тем курса с конспектами</span></div><div><b>900</b><span>вопросов для самопроверки и экзаменов</span></div></div></section>
     <p class="fz-copy">${esc(ORG.copy)}</p>
-    <button class="fz-devs" data-fz="devs">Разработчики</button></div>`;
+    <div class="fz-ab-links"><button class="fz-devs" data-fz="devs">Разработчики</button><button class="fz-devs" data-fz="legal">Правовая информация</button></div></div>`;
 }
+const legalHtml = () => `<div class="fz-legal">
+  <p><b>Правообладатель.</b> ${esc(ORG.copy)}</p>
+  <p><b>Назначение.</b> Программа предназначена для учебного процесса ${esc(ORG.school)}. Методические материалы, вопросы тестов и конспекты принадлежат кафедре и используются только в учебных целях.</p>
+  <p><b>Данные.</b> Учётные записи, результаты лабораторных работ и тестов хранятся только на этом компьютере и никуда не передаются. Пароль хранится в виде хеша. Преподавателю результаты передаются файлами с цифровой подписью, которая обнаруживает любые изменения.</p>
+  <p><b>Сторонние компоненты.</b> Шрифты Golos UI и STIX Two — SIL Open Font License 1.1. Значки Lucide — лицензия ISC. Отображение формул KaTeX — лицензия MIT.</p></div>`;
 const devsHtml = () => `<div class="fz-devlist"><p class="mute">${esc(ORG.devsNote[0].toUpperCase() + ORG.devsNote.slice(1))}</p>${ORG.devs.map(d => `<div class="fz-dev">${ava(d.split(' ').slice(-2, -1)[0] || d)}<b>${esc(d)}</b></div>`).join('')}<p class="mute small">${esc(ORG.dept)}, ${esc(ORG.school)}</p></div>`;
 
 /* ---------- действия ---------- */
@@ -224,6 +227,7 @@ document.addEventListener('click', e => {
     case 'back': TQ = null; clearInterval(tTimer.h); SCREEN = 'labs'; if (typeof PAGE !== 'undefined') PAGE = 'tests'; render(); break;
     case 'examfile': { const a = tsLoad().att.find(x => x.id === d.v); if (a) fzSaveExam(a); break; }
     case 'devs': fzModal('Разработчики', devsHtml()); break;
+    case 'legal': fzModal('Правовая информация', legalHtml()); break;
   }
 });
 bankLoad();

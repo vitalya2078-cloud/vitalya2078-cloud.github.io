@@ -1,15 +1,20 @@
 /* ===== «Физпрактикум»: меню, разделы, карточки работ, тесты, «О программе» — общее для компьютера и телефона ===== */
 .fz-app{display:grid; grid-template-columns:264px minmax(0,1fr); min-height:100vh}
-.fz-nav{position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:2px; padding:22px 14px 16px; background:var(--card); border-right:1px solid var(--line); overflow:auto}
-.fz-brand{display:flex; gap:12px; align-items:center; padding:0 8px 22px}
+.fz-app.mini{grid-template-columns:76px minmax(0,1fr)}
+.fz-nav{position:sticky; top:0; height:100vh; box-sizing:border-box; display:flex; flex-direction:column; gap:2px; padding:20px 14px 14px; background:color-mix(in srgb, var(--card) 90%, transparent); backdrop-filter:blur(18px); border-right:1px solid var(--line); overflow:auto; z-index:6}
+.fz-brand{display:flex; gap:12px; align-items:center; padding:6px 8px; margin:0 0 16px; border:0; border-radius:14px; background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer; position:relative}
+.fz-brand:hover{background:var(--card2)}
+.fz-bt{min-width:0}
+.fz-new{display:inline-block; margin-top:3px; padding:1px 8px; border-radius:999px; background:var(--acc); color:var(--acc-tx); font:800 9.5px/1.4 var(--ui); font-style:normal; letter-spacing:.05em; text-transform:uppercase}
 .fz-brand .logo{width:44px; height:44px; border-radius:13px; font-size:24px; flex:none}
-.fz-brand b{display:block; font-size:18px; line-height:1.2} .fz-brand small{display:block; color:var(--mute); font-size:11.5px; line-height:1.3; margin-top:2px}
+.fz-brand b{display:block; font-size:18px; line-height:1.2; white-space:nowrap} .fz-brand small{display:block; color:var(--mute); font-size:11.5px; line-height:1.3; margin-top:2px}
 .fz-nav a, .fz-nav button.fz-ni{display:flex; gap:12px; align-items:center; width:100%; padding:11px 12px; border:0; border-radius:12px; background:none; color:var(--tx2); font:600 14.5px var(--ui); text-align:left; cursor:pointer; text-decoration:none}
 .fz-nav .fz-ni .ic{width:20px; height:20px; flex:none; opacity:.85}
 .fz-nav .fz-ni:hover{background:var(--card2); color:var(--tx)}
 .fz-nav .fz-ni.on{background:var(--acc-soft); color:var(--acc)} .fz-nav .fz-ni.on .ic{opacity:1}
 .fz-nav .fz-sp{flex:1}
-.fz-me{display:flex; gap:10px; align-items:center; padding:12px 10px; margin-top:8px; border-top:1px solid var(--line)}
+.fz-me{display:flex; gap:10px; align-items:center; padding:12px 6px 2px; margin-top:8px; border-top:1px solid var(--line)}
+.fz-meb{border:0; padding:0; background:none; cursor:pointer; border-radius:10px} .fz-meb:hover .ava{box-shadow:0 0 0 2px var(--acc)}
 .fz-me div{min-width:0; flex:1} .fz-me b{display:block; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-me small{color:var(--mute); font-size:12px}
 .fz-page{padding:30px 40px 48px; max-width:1360px; width:100%; box-sizing:border-box}
 .fz-ph{display:flex; align-items:flex-end; gap:16px; margin-bottom:22px} .fz-ph div{flex:1}
@@ -154,3 +159,66 @@
 .fz-test.fz-phone .fz-thead{display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; column-gap:6px; row-gap:2px}
 .fz-test.fz-phone .fz-quit{width:auto; min-height:36px; padding:6px 8px; background:none; box-shadow:none; color:var(--acc); font-size:14px; border:0}
 .fz-test.fz-phone .fz-cnt{grid-column:2; font-size:12px; color:var(--mute)}
+
+/* ---------- меню свёрнуто до значков ---------- */
+.fz-app.mini .fz-nav{padding:20px 12px 14px; align-items:center}
+.fz-app.mini .fz-bt, .fz-app.mini .fz-ni span, .fz-app.mini .fz-me > div, .fz-app.mini .fz-me .tb-ic{display:none}
+.fz-app.mini .fz-brand{padding:4px; justify-content:center}
+.fz-app.mini .fz-brand.new::after{content:''; position:absolute; top:0; right:0; width:11px; height:11px; border-radius:50%; background:var(--acc); border:2px solid var(--card)}
+.fz-app.mini .fz-ni{justify-content:center; width:48px; padding:12px 0}
+.fz-app.mini .fz-me{justify-content:center; padding:12px 0 2px; width:100%}
+.fz-page{margin:0 auto}
+/* что нового */
+.fz-wn{display:flex; gap:16px; align-items:center; padding:16px 20px; margin-bottom:20px; border-radius:18px; background:linear-gradient(110deg, var(--acc-soft), color-mix(in srgb, var(--card) 92%, transparent)); border:1px solid var(--line)}
+.fz-wn > .ic{width:30px; height:30px; color:var(--acc)} .fz-wn div{flex:1; min-width:0} .fz-wn b{display:block; font-size:16px} .fz-wn span{color:var(--tx2); font-size:13.5px}
+.fz-news{display:grid; gap:10px; min-width:min(520px, 80vw)}
+.fz-nwi{display:flex; gap:14px; align-items:flex-start; padding:12px 14px; border-radius:14px; background:var(--card2)}
+.fz-nwi > .ic{width:22px; height:22px; color:var(--acc); margin-top:2px} .fz-nwi b{display:block; font-size:15px} .fz-nwi span{color:var(--tx2); font-size:13.5px; line-height:1.45}
+/* вход и регистрация: слева — о программе, справа — форма */
+.fz-login{padding:24px 0}
+.fz-lgrid{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(360px,440px); gap:64px; align-items:center; width:min(1120px, 100%)}
+.fz-lbrand{display:flex; gap:18px; align-items:center; margin-bottom:30px}
+.fz-lbrand .logo{width:72px; height:72px; border-radius:20px; font-size:44px}
+.fz-lbrand h1{margin:0; font:800 40px/1.1 "Golos UI"; letter-spacing:-.5px} .fz-lbrand p{margin:6px 0 0; color:var(--tx2); font-size:16px}
+.fz-lfeat{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px}
+.fz-lfeat > div{display:flex; gap:14px; padding:18px; border-radius:18px; background:color-mix(in srgb, var(--card) 84%, transparent); backdrop-filter:blur(10px); border:1px solid var(--line)}
+.fz-lfeat .ic{width:26px; height:26px; color:var(--acc); flex:none} .fz-lfeat b{display:block; font-size:15.5px; margin-bottom:4px} .fz-lfeat span{color:var(--tx2); font-size:13.5px; line-height:1.45}
+.fz-lhero .fz-org{text-align:left; margin-top:26px}
+.fz-ah{margin:0 0 14px; font-size:20px}
+.fz-login .login-box{width:100%}
+@media (max-width:980px){ .fz-lgrid{grid-template-columns:1fr; gap:24px; width:min(480px, 100%)} .fz-lfeat{display:none} .fz-lbrand{justify-content:center; margin-bottom:0} .fz-lhero .fz-org{display:none} }
+/* профиль */
+.fz-prof{display:grid; gap:20px}
+.fz-pid{display:flex; gap:22px; align-items:center}
+.ava.big{width:84px; height:84px; border-radius:24px; font-size:30px}
+.fz-pid h2{margin:0; font-size:24px} .fz-pid p{margin:4px 0 6px} .fz-pid small{color:var(--mute); font-size:13px} .fz-pid small .ic{width:15px; height:15px}
+.fz-pstats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px}
+.fz-pst{padding:18px; border-radius:18px; background:var(--card); border:1px solid var(--line)}
+.fz-pst .ic{width:22px; height:22px; color:var(--acc)} .fz-pst b{display:block; font-size:30px; line-height:1.1; margin-top:10px} .fz-pst b small{font-size:16px; color:var(--mute); font-weight:600} .fz-pst span{font-size:13px; color:var(--mute)}
+.fz-pgrid{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px; align-items:start}
+.fz-pcol{display:grid; gap:20px}
+.fz-tile h2 .ic{width:20px; height:20px; color:var(--acc); vertical-align:-3px; margin-right:4px}
+.fz-ptops{display:grid; gap:8px}
+.fz-ptop{display:grid; grid-template-columns:36px minmax(0,1fr) 64px 46px; gap:12px; align-items:center; padding:8px 4px}
+.fz-ptop .fz-tn{width:34px; height:34px; border-radius:10px; font-size:15px}
+.fz-ptop b{display:block; font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px} .fz-ptop small{color:var(--mute); font-size:12.5px; text-align:right}
+.fz-ptop .fz-best{text-align:center; padding:4px 6px}
+.fz-plabs{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px}
+.fz-plab{display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; border-radius:14px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:inherit; cursor:pointer}
+.fz-plab b{font-size:20px} .fz-plab small{font-size:11.5px; color:var(--mute)} .fz-plab:hover{border-color:var(--acc)}
+.fz-plab.done{background:var(--ok-soft); border-color:transparent} .fz-plab.done small{color:var(--ok)}
+.fz-plab.go{background:var(--acc-soft); border-color:transparent} .fz-plab.go small{color:var(--acc)}
+.fz-pact{display:flex; gap:12px; align-items:center; padding:10px 0; border-top:1px solid var(--line)} .fz-pact:first-of-type{border-top:0}
+.fz-pact > .ic{color:var(--mute)} .fz-pact div{flex:1; min-width:0} .fz-pact b{display:block; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-pact small{color:var(--mute); font-size:12px}
+.fz-pcards{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; align-items:start}
+.fz-pcards .fz-tile p{margin:0 0 12px}
+@media (max-width:1200px){ .fz-pstats{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-pgrid, .fz-pcards{grid-template-columns:1fr} }
+/* о программе */
+.fz-ab-links{display:flex; justify-content:center; gap:18px}
+.fz-legal{display:grid; gap:10px; max-width:640px; font-size:14px; line-height:1.55} .fz-legal p{margin:0}
+.fz-about{max-width:980px}
+.fz-ab-two{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px}
+.fz-ab-t .ic{width:18px; height:18px; color:var(--acc); margin-right:4px}
+.fz-key{display:flex; align-items:center; gap:6px; padding:6px 0; border-top:1px solid var(--line); font-size:14px} .fz-key:nth-child(2){border-top:0}
+.fz-key kbd{margin:0} .fz-key span{margin-left:10px; color:var(--tx2)}
+.fz-ab-ul{margin:0 0 14px; padding-left:20px; color:var(--tx2)} .fz-ab-ul li{margin:3px 0}

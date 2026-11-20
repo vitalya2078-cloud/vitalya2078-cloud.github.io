@@ -18,7 +18,7 @@ const store = {
 function toast(html, kind = '') { const box = $('#toasts'); while (box.children.length >= 3) box.firstChild.remove(); const t = document.createElement('div'); t.className = 'toast ' + kind; t.innerHTML = html; $('#toasts').appendChild(t); setTimeout(() => t.classList.add('out'), 3200); setTimeout(() => t.remove(), 3700); }
 function addXP() { toast(`${ic('award')} Работа защищена. Сохрани файл результата для преподавателя на шаге «Отчёт».`); }
 function render() {
-  document.body.classList.remove('full');
+  document.body.classList.remove('full', 'fzapp');
   if (SCREEN === 'lock') return vLock();
   if (SCREEN === 'teacher') return vTeacher();
   if (SCREEN === 'home' || !PROFILE) return vHome();
@@ -31,7 +31,7 @@ function render() {
 const LOGO = '<span class="logo">γ</span>';
 const isLight = () => document.documentElement.dataset.theme === 'light';
 function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem('lw3d-theme', t); } catch (e) {} render(); }
-const themeBtn = () => `<button class="btn ghost" data-d="theme">${ic('sparkles')} ${isLight() ? 'Тёмная тема' : 'Светлая тема'}</button>`;
+const themeBtn = () => `<button class="btn ghost" data-d="theme">${ic(isLight() ? 'moon' : 'sun')} ${isLight() ? 'Тёмная тема' : 'Светлая тема'}</button>`;
 
 /* ---------- профили курсантов ---------- */
 const PKEY = 'lw3d-profiles';
@@ -76,13 +76,22 @@ function vHome() {
       <label class="field">Класс<input id="np-group" placeholder="103" autocomplete="off"></label>${pwField('np-pw', 'Пароль', 'new-password')}${pwField('np-pw2', 'Пароль ещё раз', 'new-password')}
       <button class="btn wide big mt" data-d="register" data-primary>Зарегистрироваться ${kbd('Enter')}</button>
       <p class="mute small">Учётная запись и результаты хранятся только на этом компьютере.</p></div>`;
-  ui.main.innerHTML = `<div class="login">
+  const feat = [['flask-conical', '8 лабораторных работ', 'По методическим указаниям кафедры: допуск, опыты, обработка результатов, отчёт и защита.'],
+    ['graduation-cap', '900 вопросов по 9 темам', 'Самопроверка с разбором, экзамены по темам и итоговый экзамен по 100-балльной шкале.'],
+    ['notebook-pen', 'Конспекты и видеоуроки', 'Определения, законы и формулы по каждой теме курса физики.'],
+    ['shield-check', 'Результаты для преподавателя', 'Отчёты и результаты экзаменов сохраняются в файлы, защищённые от изменения.']];
+  ui.main.innerHTML = `<div class="login fz-login">
     <div class="corner tr">${themeBtn()}</div>
-    <div class="login-box fz-auth">
-      <div class="login-brand">${LOGO}<h1>Физпрактикум</h1><p>Виртуальный лабораторный практикум по физике</p></div>
-      <div class="card"><div class="fz-seg"><button data-d="atab" data-v="in" class="${AUTH === 'in' ? 'on' : ''}">Вход</button><button data-d="atab" data-v="up" class="${AUTH === 'up' ? 'on' : ''}">Регистрация</button></div>
-        ${AUTH === 'in' ? login : reg}<p class="fz-msg" id="au-msg"></p></div>
-      <p class="fz-org">${esc(ORG.school)}<br>${esc(ORG.dept)}</p>
+    <div class="fz-lgrid">
+      <section class="fz-lhero">
+        <div class="fz-lbrand">${LOGO}<div><h1>Физпрактикум</h1><p>Виртуальный лабораторный практикум по физике</p></div></div>
+        <div class="fz-lfeat">${feat.map(([i, t, d]) => `<div>${ic(i)}<div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div>
+        <p class="fz-org">${esc(ORG.school)}<br>${esc(ORG.dept)}</p>
+      </section>
+      <div class="login-box fz-auth">
+        <div class="card"><h2 class="fz-ah">${AUTH === 'in' ? 'Вход в программу' : 'Новая учётная запись'}</h2><div class="fz-seg"><button data-d="atab" data-v="in" class="${AUTH === 'in' ? 'on' : ''}">Вход</button><button data-d="atab" data-v="up" class="${AUTH === 'up' ? 'on' : ''}">Регистрация</button></div>
+          ${AUTH === 'in' ? login : reg}<p class="fz-msg" id="au-msg"></p></div>
+      </div>
     </div>
     <div class="corner bl">Версия ${esc(APP_VER)}${UPD ? ` · <button class="btn ghost" data-d="upd" style="color:var(--acc)">${ic('sparkles')} Вышла версия ${esc(UPD.v)} — скачать</button>` : ''}</div>
     <div class="corner br"><button class="btn ghost" data-d="import">${ic('file-text')} Открыть файл работы</button><button class="btn ghost" data-d="teacher">${ic('lock')} Преподаватель</button></div>

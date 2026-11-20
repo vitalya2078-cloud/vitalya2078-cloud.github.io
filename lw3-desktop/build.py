@@ -71,7 +71,7 @@ def teacher_pw():
 js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const TEACHER_PW = %s;' % json.dumps(teacher_pw()), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
-                'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, core] +
+                'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, rd(os.path.join(D, 'src', 'icons-x.js')), core] +
                [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'qpool.js', 'labs.js', 'teacher.js', 'guard.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(D, 'src', 'app.css'))).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
@@ -89,6 +89,8 @@ for f in (bg, bgl, 'lab-bg2.webp', 'lab-bg2-light.webp'):
         os.makedirs(os.path.join(DIST, 'img'), exist_ok=True)
         shutil.copy2(os.path.join(D, 'assets', f), os.path.join(DIST, 'img', f))
 # приборы установки (необязательно): assets/parts/*.webp → dist/img/parts/; без файла прибор рисуется кодом
+# общий фон страниц (assets/bg/light.webp, dark.webp) → dist/img/bg
+shutil.copytree(os.path.join(D, 'assets', 'bg'), os.path.join(DIST, 'img', 'bg'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src-*'))
 # обложки лабораторных (assets/covers) и банк вопросов (bank/bank.json + bank/img) — в dist
 COV = os.path.join(D, 'assets', 'covers')
 if os.path.isdir(COV):
