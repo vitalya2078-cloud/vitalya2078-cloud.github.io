@@ -400,3 +400,14 @@ body.drw #app{margin-right:460px}
 #fz-drw .fz-note{margin:0; padding:18px 20px 30px; border:0; border-radius:0; font-size:14.5px}
 #fz-drw .fz-note h2{font-size:18px} #fz-drw .fz-note h3{font-size:15.5px}
 .fz-wtag{white-space:nowrap}
+/* плеер видеоурока в рамке-доске: проём 1322×744 при картинке 1586×1050 */
+.fz-board{position:relative; width:100%; aspect-ratio:1586/1050; filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
+.fz-board video{position:absolute; left:8.323%; top:13.714%; width:83.354%; height:70.857%; aspect-ratio:auto; border:0; border-radius:0; background:#000; object-fit:contain}
+.fz-bframe{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; user-select:none}
+.fz-chap{margin-top:14px; padding:14px 16px; border-radius:16px; background:var(--card); border:1px solid var(--line)}
+.fz-chap > b{display:flex; gap:8px; align-items:center; font-size:14px; margin-bottom:8px} .fz-chap > b .ic{width:17px; height:17px; color:var(--acc)}
+.fz-chap > div{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:2px 14px}
+.fz-chap button{display:flex; gap:10px; align-items:baseline; padding:6px 8px; border:0; border-radius:8px; background:none; color:var(--tx2); font:500 13.5px var(--ui); text-align:left; cursor:pointer}
+.fz-chap button:hover{background:var(--card2); color:var(--acc)} .fz-chap i{font-style:normal; font-variant-numeric:tabular-nums; color:var(--acc); font-weight:700; min-width:36px}
+.fz-chap > div{grid-auto-flow:column}
+.fz-cs{overflow-x:auto; overflow-y:hidden; padding:8px 8px 6px} .fz-cs .tx{display:block; line-height:1.9; padding:2px 0} .fz-cs .katex{line-height:1.6}

@@ -28,6 +28,8 @@ async function texRender(root) {
     try { k.render(e.dataset.t, e, KX_OPT(e.classList.contains('d'))); e.classList.add('ok'); } catch (x) {}
   });
 }
+/* в программе Windows видео идёт через свой протокол fzv с перемоткой (Range); в браузере — обычный файл */
+const vsrc = id => (IS_TAURI ? 'http://fzv.localhost/video/' : 'video/') + id + '.mp4';
 const nReadKey = () => 'fz-nread-' + (PROFILE ? PROFILE.id : '');
 const nRead = () => store.get(nReadKey(), {});
 const nMark = id => { if (!PROFILE) return; const R = nRead(); R[id] = Date.now(); store.set(nReadKey(), R); };
@@ -57,7 +59,8 @@ function noteView(x) {
   return `<div class="fz-nview"><div class="fz-nmain">
       <button class="btn ghost fz-nback" data-d="notes">${ic('chevron-left')} Все конспекты</button>
       <div class="fz-nhead"><span class="fz-n">${nKind(x)}</span><h1>${esc(x.title)}</h1><div class="row">${acts}<span class="mute small">${ic('clock')} ${nMin(x)} мин чтения</span></div></div>
-      ${x.video ? `<div class="fz-video"><video controls preload="metadata" poster="video/${x.id}.jpg" src="video/${x.id}.mp4"></video><p class="mute small">${ic('video')} Видеоурок по теме. Конкретные ответы на вопросы тестов в нём не разбираются — только теория.</p></div>` : ''}
+      ${x.video ? `<div class="fz-video"><div class="fz-board"><video controls preload="metadata" poster="video/${x.id}.jpg" src="${vsrc(x.id)}"></video><img class="fz-bframe" src="img/frame/board.webp" alt=""></div>
+        ${(x.chapters || []).length ? `<div class="fz-chap"><b>${ic('video')} Видеоурок: главы</b><div style="grid-template-rows:repeat(${Math.ceil(x.chapters.length / 2)}, auto)">${x.chapters.map(([t, h]) => `<button data-d="vchap" data-v="${t}"><i>${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}</i><span>${esc(h)}</span></button>`).join('')}</div></div>` : ''}</div>` : ''}
       <div class="fz-legend"><span class="tm">термин</span><span class="lw">закон, правило</span><span class="un">единица измерения</span><span class="wv">главная мысль</span><span class="fq">искомая величина</span><span class="fc">постоянная</span></div>
       <article class="fz-note">${x.html}</article>
       <div class="fz-nnav">${prev ? `<button class="fz-link" data-d="note" data-v="${prev.id}">${ic('chevron-left')}<span><small>${nKind(prev)}</small><b>${esc(prev.title)}</b></span></button>` : '<span></span>'}
@@ -78,6 +81,7 @@ document.addEventListener('click', e => {
     case 'notes': PAGE = 'notes'; NOTE = ''; render(); ui.main.scrollTop = 0; break;
     case 'note': openNote(d.v); break;
     case 'ntoc': noteScroll(d.v); break;
+    case 'vchap': { const v = $('.fz-board video'); if (v) { v.currentTime = +d.v; v.play().catch(() => {}); v.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } break; }
   }
 });
 notesLoad();

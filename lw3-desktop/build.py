@@ -99,8 +99,10 @@ import notes_md
 os.makedirs(os.path.join(DIST, 'notes'), exist_ok=True)
 with open(os.path.join(DIST, 'notes', 'notes.json'), 'w', encoding='utf-8') as fh:
     NOTES = notes_md.build(os.path.join(D, 'notes'))
+    CH = json.load(open(os.path.join(D, 'assets', 'video', 'chapters.json'), encoding='utf-8')) if os.path.exists(os.path.join(D, 'assets', 'video', 'chapters.json')) else {}
     for x in NOTES['notes']:
         x['video'] = os.path.exists(os.path.join(D, 'assets', 'video', x['id'] + '.mp4'))
+        x['chapters'] = CH.get(x['id'], [])
     import textfix
     fh.write(textfix.fix(json.dumps(NOTES, ensure_ascii=False, separators=(',', ':'))))
 shutil.copytree(os.path.join(D, 'vendor', 'katex'), os.path.join(DIST, 'katex'), dirs_exist_ok=True)
@@ -108,6 +110,8 @@ if os.path.isdir(os.path.join(D, 'assets', 'video')):
     shutil.copytree(os.path.join(D, 'assets', 'video'), os.path.join(DIST, 'video'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src*', '*.txt', '*.json'))
 # иконка программы для интерфейса (assets/brand → dist/img/brand)
 shutil.copytree(os.path.join(D, 'assets', 'brand'), os.path.join(DIST, 'img', 'brand'), dirs_exist_ok=True)
+# рамка-доска вокруг плеера видеоуроков (assets/frame → dist/img/frame)
+shutil.copytree(os.path.join(D, 'assets', 'frame'), os.path.join(DIST, 'img', 'frame'), dirs_exist_ok=True)
 # общий фон страниц (assets/bg/light.webp, dark.webp) → dist/img/bg
 shutil.copytree(os.path.join(D, 'assets', 'bg'), os.path.join(DIST, 'img', 'bg'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src-*'))
 # обложки лабораторных (assets/covers) и банк вопросов (bank/bank.json + bank/img) — в dist
