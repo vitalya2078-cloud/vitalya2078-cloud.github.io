@@ -20,7 +20,7 @@ const fmt = (v, d) => v.toFixed(d).replace('.', ',');
 const st = () => E(() => curLab().steps[curLab().S().step][0]);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await page.click('[data-d="register"]'); await page.click('[data-d="intro-skip"]');
+await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await page.check('#np-eula'); await page.click('[data-d="register"]'); await page.click('[data-d="intro-skip"]');
 await page.click('[data-d="page"][data-v="labs"]');
 must(await page.locator('.fz-card').count() === 8, 'на главном экране не 8 работ'); await shot(page, 'labs');
 

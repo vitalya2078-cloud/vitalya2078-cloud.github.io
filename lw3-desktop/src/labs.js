@@ -13,13 +13,12 @@ const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторн
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 let NAVMINI = lsGet('fz-nav-mini', '0') === '1';
-const isNew = () => lsGet('fz-seen-ver', '') !== APP_VER;
 function vApp() {
   document.body.classList.add('noside', 'fzapp'); document.body.classList.remove('full'); ui.side.innerHTML = '';
-  const p = PROFILE, page = ({ main: () => pgMain() + fzWidgets(), labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes })[PAGE] || pgMain, nw = isNew();
+  const p = PROFILE, page = ({ main: () => pgMain() + fzWidgets(), labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes })[PAGE] || pgMain;
   const tip = t => NAVMINI ? ` title="${t}"` : '';
   ui.main.innerHTML = `<div class="fz-app ${NAVMINI ? 'mini' : ''}"><nav class="fz-nav">
-      <button class="fz-brand ${nw ? 'new' : ''}" data-d="brand" title="На главную"><span class="logo">γ</span><span class="fz-bt"><b>Физпрактикум</b><small>${nw ? `<i class="fz-new">Новое в версии ${esc(APP_VER)}</i>` : 'ЧВВМУ им. П.С. Нахимова'}</small></span></button>
+      <button class="fz-brand" data-d="brand" title="На главную">${LOGO}<span class="fz-bt"><b>Физпрактикум</b><small>ЧВВМУ им. П.С. Нахимова</small></span></button>
       <button class="fz-ni fz-sbtn" data-d="search"${tip('Поиск (Ctrl+K)')}>${ic('search')}<span>Поиск</span><kbd>Ctrl K</kbd></button>
       ${NAV.map(([k, t, i]) => `<button class="fz-ni ${PAGE === k ? 'on' : ''}" data-d="page" data-v="${k}"${tip(t)}>${ic(i)}<span>${t}</span></button>`).join('')}
       <span class="fz-sp"></span>
@@ -30,17 +29,6 @@ function vApp() {
   fzAfter();
 }
 const fzNav = () => { NAVMINI = !NAVMINI; lsSet('fz-nav-mini', NAVMINI ? '1' : '0'); const a = $('.fz-app'); if (a) render(); };
-/* что нового в версии: показывается на главной, пока не прочитано */
-const WHATSNEW = [
-  ['panel-left-close', 'Новое меню', 'Меню слева сворачивается до значков — кнопка внизу меню или Ctrl+B.'],
-  ['search', 'Поиск', 'Поиск по темам, конспектам, лабораторным работам и терминам — Ctrl+K.'],
-  ['notebook-pen', 'Конспекты и видеоуроки', 'Конспекты по 9 темам курса и 8 лабораторным работам: определения, законы, формулы. К каждой теме — видеоурок.'],
-  ['user', 'Профиль', 'Статистика по работам, темам и экзаменам в одном месте.'],
-  ['shield-check', 'Честная сдача', 'Допуск и защита: после неудачи вопросы меняются, новая попытка — через 2 минуты. Незавершённый экзамен засчитывается.'],
-  ['school', 'Кабинет преподавателя', 'Новое меню, список курсантов, проверка работ и журнал.'],
-];
-const newsHtml = () => `<div class="fz-news">${WHATSNEW.map(([i, t, d]) => `<div class="fz-nwi">${ic(i)}<div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div>`;
-function fzNews() { lsSet('fz-seen-ver', APP_VER); fzModal(`Что нового в версии ${esc(APP_VER)}`, newsHtml()); if (SCREEN === 'labs') render(); }
 document.addEventListener('keydown', e => {
   if (SCREEN !== 'labs' || !PROFILE || !(e.ctrlKey || e.metaKey) || e.altKey) return;
   if (e.code === 'KeyB') { e.preventDefault(); fzNav(); }
@@ -57,7 +45,6 @@ function pgMain() {
   const name = PROFILE.fio.split(/\s+/).slice(1).join(' ') || PROFILE.fio;
   const S = n ? labState(n, PROFILE.id) : null;
   return pgHead(`Здравствуйте, ${esc(name)}!`, `${esc(PROFILE.group ? PROFILE.group + ' класс · ' : '')}${new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}`) +
-    (isNew() ? `<section class="fz-wn">${ic('party-popper')}<div><b>Что нового в версии ${esc(APP_VER)}</b><span>${WHATSNEW.map(w => w[1]).join(' · ')}</span></div><button class="btn line" data-d="news">Подробнее</button></section>` : '') +
     `<div class="fz-hero"><section class="fz-tile">${n ? `<div class="fz-cont"><img src="${cover(n)}" alt=""><div><span class="fz-n">${S && S.max ? 'Продолжить' : 'Следующая работа'}</span><h2>ЛР № ${n}. ${esc(labTitle(n))}</h2>
         <p>${S && S.max ? esc(labStatus(n, S)) : 'Работа ещё не начата.'}</p><button class="btn" data-d="lab" data-v="${n}">${S && S.max ? 'Продолжить работу' : 'Начать работу'} ${ic('chevron-right')}</button></div></div>`
       : `<h2>Все лабораторные работы защищены</h2><p>Отличная работа! Результаты — в разделе «Мои результаты».</p><button class="btn" data-d="page" data-v="results">Мои результаты</button>`}</section>
@@ -71,11 +58,7 @@ function pgMain() {
 const pgLabs = () => pgHead('Лабораторные работы', 'Работы выполняются по методическим указаниям кафедры. Каждая сохраняется отдельно — можно продолжить позже.') + labCards('data-d');
 const pgTests = () => pgHead('Тесты и экзамены', 'Банк из 900 вопросов по 9 темам курса физики.') + testsHome().replace(/<button class="btn line" data-fz="self" data-v="(\d)">/g, (m, t) => `<button class="btn ghost" data-d="note" data-v="t${t}" title="Конспект темы">${ic('notebook-pen')} Конспект</button>` + m);
 const pgResults = () => pgHead('Мои результаты', 'Лабораторные работы и экзамены. Файл результата экзамена можно сохранить для преподавателя.') + resChart() + resultsHtml('data-d');
-const KEYS = [['Ctrl', 'K', 'Поиск по программе'], ['Ctrl', 'B', 'Свернуть или развернуть меню'], ['', 'Enter', 'Следующий шаг, проверить ответ'], ['', '1 – 4', 'Выбор ответа в тесте'], ['', 'Esc', 'Закрыть окно']];
-const pgAbout = () => aboutHtml('data-d').replace(/<p class="fz-copy">/, `<div class="fz-ab-two">
-    <section class="fz-ab-card"><p class="fz-ab-t">${ic('keyboard')} Клавиши</p>${KEYS.map(([m, k, t]) => `<div class="fz-key">${m ? `<kbd>${m}</kbd>+` : ''}<kbd>${k}</kbd><span>${t}</span></div>`).join('')}</section>
-    <section class="fz-ab-card"><p class="fz-ab-t">${ic('party-popper')} Что нового в версии ${esc(APP_VER)}</p><ul class="fz-ab-ul">${WHATSNEW.map(w => `<li>${w[1]}</li>`).join('')}</ul><button class="btn line" data-d="news">Подробнее</button></section>
-  </div><p class="fz-copy">`);
+const pgAbout = () => aboutHtml('data-d');
 function pgProfile() {
   const p = PROFILE, T = tsLoad(), ex = T.att.filter(a => a.kind === 'exam'), nl = labNums().length;
   const st = labNums().map(n => [n, labState(n, p.id)]), done = st.filter(([, S]) => S && S.done).length, started = st.filter(([, S]) => S && (S.max || S.done)).length;
@@ -118,7 +101,6 @@ document.addEventListener('click', e => {
     case 'page': PAGE = d.v; NOTE = ''; SCREEN = 'labs'; render(); ui.main.scrollTop = 0; break;
     case 'brand': PAGE = 'main'; NOTE = ''; SCREEN = 'labs'; render(); ui.main.scrollTop = 0; break;
     case 'navmini': fzNav(); break;
-    case 'news': fzNews(); break;
     case 'pf-save': { const fio = $('#pf-fio').value.trim(), group = $('#pf-group').value.trim();
       if (fio.split(/\s+/).length < 2) { toast('Впиши фамилию и инициалы.', 'bad'); break; }
       const list = profiles(), p = list.find(x => x.id === PROFILE.id); p.fio = fio; p.group = group; store.set(PKEY, list); PROFILE = p; render(); toast('Сохранено'); break; }
@@ -142,7 +124,7 @@ let CQI = 0;   // текущий вопрос защиты (по одному)
 function gTop(S, L) {
   const fin = L.steps[S.max][0] === 'report';
   return `<header class="tb">
-    <div class="tb-brand"><button class="tb-ic" data-d="labs" title="К списку работ">${ic('chevron-left')}</button><span class="logo">γ</span><b>ЛР ${L.no}<small>${esc(L.short)}</small></b></div>
+    <div class="tb-brand"><button class="tb-ic" data-d="labs" title="К списку работ">${ic('chevron-left')}</button>${LOGO}<b>ЛР ${L.no}<small>${esc(L.short)}</small></b></div>
     <nav class="tb-steps${L.steps.length > 7 || L.steps.map(x => x[1]).join('').length > 58 ? ' many' : ''}">${L.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
       return `<button data-${L.act}="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i><span>${t}</span></button>`; }).join('<s></s>')}</nav>
     <div class="tb-act">

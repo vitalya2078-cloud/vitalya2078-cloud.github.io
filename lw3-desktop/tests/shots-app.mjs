@@ -9,7 +9,7 @@ const errors = []; page.on('pageerror', e => errors.push(e.message)); page.on('c
 const shot = n => page.screenshot({ path: path.join(SHOTS, `app-${n}.png`) });
 const W = ms => page.waitForTimeout(ms);
 await page.goto(BASE, { waitUntil: 'networkidle' }); await shot('1-register');
-await page.fill('#np-fio', 'Кравченко Виктор Андреевич'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234');
+await page.fill('#np-fio', 'Кравченко Виктор Андреевич'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await page.check('#np-eula');
 await page.click('[data-d="register"]'); await W(300); await page.keyboard.press('Escape'); await W(200); await shot('2-main');
 for (const p of ['labs', 'tests', 'results', 'profile', 'about']) { await page.click(`[data-d="page"][data-v="${p}"]`); await W(400); await shot('3-' + p); }
 await page.click('[data-fz="devs"]'); await W(200); await shot('4-devs'); await page.keyboard.press('Escape');

@@ -68,13 +68,17 @@ def teacher_pw():
     return {'salt': salt.hex(), 'it': it, 'hash': hashlib.pbkdf2_hmac('sha256', pw.encode('utf-8'), salt, it).hex()}
 
 
-js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const TEACHER_PW = %s;' % json.dumps(teacher_pw()), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
+js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const TEACHER_PW = %s;' % json.dumps(teacher_pw()), 'const EULA_TXT = %s;' % json.dumps(open(os.path.join(D, 'src-tauri', 'license.txt'), encoding='utf-8-sig').read(), ensure_ascii=False), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, rd(os.path.join(D, 'src', 'icons-x.js')), core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'qpool.js', 'labs.js', 'notes.js', 'widgets.js', 'teacher.js', 'guard.js')])
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'qpool.js', 'labs.js', 'notes.js', 'widgets.js', 'about-win.js', 'teacher.js', 'guard.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(D, 'src', 'app.css'))).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
+# тексты Windows-версии: обращение на «Вы», дефис вместо длинного тире (исходники общие с сайтом и телефоном не меняются)
+sys.path.insert(0, D)
+import textfix
+html = textfix.fix(html)
 
 if os.path.exists(DIST):
     shutil.rmtree(DIST)
@@ -97,10 +101,13 @@ with open(os.path.join(DIST, 'notes', 'notes.json'), 'w', encoding='utf-8') as f
     NOTES = notes_md.build(os.path.join(D, 'notes'))
     for x in NOTES['notes']:
         x['video'] = os.path.exists(os.path.join(D, 'assets', 'video', x['id'] + '.mp4'))
-    json.dump(NOTES, fh, ensure_ascii=False, separators=(',', ':'))
+    import textfix
+    fh.write(textfix.fix(json.dumps(NOTES, ensure_ascii=False, separators=(',', ':'))))
 shutil.copytree(os.path.join(D, 'vendor', 'katex'), os.path.join(DIST, 'katex'), dirs_exist_ok=True)
 if os.path.isdir(os.path.join(D, 'assets', 'video')):
     shutil.copytree(os.path.join(D, 'assets', 'video'), os.path.join(DIST, 'video'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src*', '*.txt', '*.json'))
+# иконка программы для интерфейса (assets/brand → dist/img/brand)
+shutil.copytree(os.path.join(D, 'assets', 'brand'), os.path.join(DIST, 'img', 'brand'), dirs_exist_ok=True)
 # общий фон страниц (assets/bg/light.webp, dark.webp) → dist/img/bg
 shutil.copytree(os.path.join(D, 'assets', 'bg'), os.path.join(DIST, 'img', 'bg'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src-*'))
 # обложки лабораторных (assets/covers) и банк вопросов (bank/bank.json + bank/img) — в dist

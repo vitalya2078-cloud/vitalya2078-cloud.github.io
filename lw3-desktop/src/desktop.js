@@ -28,7 +28,7 @@ function render() {
   if (LAB !== 3) return vWorkLab();
   vWork();
 }
-const LOGO = '<span class="logo">γ</span>';
+const LOGO = '<img class="logo img" src="img/brand/icon-128.png" alt="">';
 const isLight = () => document.documentElement.dataset.theme === 'light';
 function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem('lw3d-theme', t); } catch (e) {} render(); }
 const themeBtn = () => `<button class="btn ghost" data-d="theme">${ic(isLight() ? 'moon' : 'sun')} ${isLight() ? 'Тёмная тема' : 'Светлая тема'}</button>`;
@@ -40,6 +40,8 @@ const workKey = id => 'lw3d-w-' + id;
 const initials = fio => String(fio || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
 const hue = s => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
 const ava = (fio, size = '') => `<span class="ava ${size}" style="background:hsl(${hue(fio)} 70% 68%)">${esc(initials(fio))}</span>`;
+/* отметка о принятии лицензионного соглашения (редакция и дата) */
+function acctEula(id) { const list = profiles(), p = list.find(x => x.id === id); if (!p) return; p.eula = { v: '1.0', at: new Date().toISOString() }; store.set(PKEY, list); }
 function addProfile(fio, group) {
   const p = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), fio: fio.trim(), group: group.trim(), created: new Date().toISOString() };
   store.set(PKEY, [p, ...profiles()]); return p;
@@ -74,6 +76,7 @@ function vHome() {
         : `<p class="mute small">${sel.pwReset ? 'Пароль сброшен преподавателем.' : 'У этой учётной записи ещё нет пароля.'} Придумай новый:</p>${pwField('au-n1', 'Новый пароль', 'new-password')}${pwField('au-n2', 'Ещё раз', 'new-password')}<button class="btn wide big mt" data-d="setpw" data-primary>Сохранить и войти ${kbd('Enter')}</button>`) : ''}`;
   const reg = `<div style="display:grid; gap:12px"><label class="field">ФИО<input id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off"></label>
       <label class="field">Класс<input id="np-group" placeholder="103" autocomplete="off"></label>${pwField('np-pw', 'Пароль', 'new-password')}${pwField('np-pw2', 'Пароль ещё раз', 'new-password')}
+      <label class="fz-eula-ok"><input type="checkbox" id="np-eula"><span>Я принимаю условия <button type="button" class="fz-lnk" data-fz="eula">лицензионного соглашения</button></span></label>
       <button class="btn wide big mt" data-d="register" data-primary>Зарегистрироваться ${kbd('Enter')}</button>
       <p class="mute small">Учётная запись и результаты хранятся только на этом компьютере.</p></div>`;
   const feat = [['flask-conical', '8 лабораторных работ', 'По методическим указаниям кафедры: допуск, опыты, обработка результатов, отчёт и защита.'],
@@ -386,7 +389,8 @@ document.addEventListener('click', e => {
     case 'register': {
       const fio = $('#np-fio').value.trim(), group = $('#np-group').value.trim(), pw = $('#np-pw').value, pw2 = $('#np-pw2').value, err = acctValidate(fio, group, pw, pw2);
       if (err) { auMsg(err); break; }
-      const p = acctSetPw(addProfile(fio, group).id, pw); openProfile(p, true); break;
+      if (!$('#np-eula').checked) { auMsg('Чтобы продолжить, примите условия лицензионного соглашения.'); break; }
+      const p = acctSetPw(addProfile(fio, group).id, pw); acctEula(p.id); openProfile(p, true); break;
     }
     case 'import': pickFiles('continue'); break;
     case 'teacher': SCREEN = 'lock'; render(); break;

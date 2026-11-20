@@ -24,7 +24,9 @@ function qApply(n, S) {
   if (fresh) LABS[n].save();   // набор попытки сохраняется сразу — при повторном открытии он тот же
 }
 /* число верных ответов по сохранённому состоянию (для преподавателя: у каждого курсанта свой набор) */
-function qCount(n, S, kind) { if (!S || !QORIG[n]) return 0; const list = S[kind + 'Set'] ? qList(n, Object.assign({}, S), kind) : QORIG[n][kind]; return list.filter(([, a], i) => S[kind] && S[kind][i] === a).length; }
+/* ответы, сохранённые прежней версией (длинное тире вместо дефиса), считаются совпавшими */
+const qEq = (x, y) => x != null && String(x).replace(/\u2014/g, '-') === String(y).replace(/\u2014/g, '-');
+function qCount(n, S, kind) { if (!S || !QORIG[n]) return 0; const list = S[kind + 'Set'] ? qList(n, Object.assign({}, S), kind) : QORIG[n][kind]; return list.filter(([, a], i) => S[kind] && qEq(S[kind][i], a)).length; }
 const qTotal = (n, S, kind) => (S && S[kind + 'Set'] ? S[kind + 'Set'].length : QORIG[n][kind].length);
 const qWaitLeft = (S, kind) => Math.max(0, ((S && S[kind + 'Wait']) || 0) - Date.now());
 const qWaitText = ms => { const s = Math.ceil(ms / 1000); return s >= 60 ? `${Math.floor(s / 60)} мин ${String(s % 60).padStart(2, '0')} с` : `${s} с`; };

@@ -9,7 +9,9 @@ const W = ms => page.waitForTimeout(ms);
 await page.goto(BASE, { waitUntil: 'networkidle' });
 must(await page.locator('.fz-lfeat > div').count() === 4, 'на экране входа нет блока о программе');
 await page.fill('#np-fio', 'Проверкин Пётр Петрович'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234');
-await page.click('[data-d="register"]'); await W(400); await page.keyboard.press('Escape'); await W(800);
+await page.click('[data-d="register"]'); await W(200); must(await page.evaluate(() => SCREEN === 'home' && !profiles().length), 'регистрация прошла без согласия с лицензионным соглашением');
+await page.click('.fz-eula-ok [data-fz="eula"]'); await W(200); must((await page.locator('.fz-eula h4').count()) >= 8, 'нет текста лицензионного соглашения'); await page.keyboard.press('Escape'); await W(150);
+await page.check('#np-eula'); await page.click('[data-d="register"]'); await W(400); await page.keyboard.press('Escape'); await W(800);
 // главная: блоки, вопрос дня, перевод единиц
 must(await page.locator('.fz-widgets .fz-w').count() >= 5, 'на главной нет полезных блоков');
 await page.click('.fz-wqo button >> nth=0'); await W(200); must(await page.locator('.fz-wq .fz-verdict').count() === 1, 'вопрос дня не проверяется');
@@ -22,8 +24,8 @@ await page.click('[data-d="navmini"]'); await W(200); must(await page.locator('.
 // «Что нового» и клик по названию
 await page.click('[data-d="page"][data-v="profile"]'); await W(200); must(await page.locator('.fz-pstats .fz-pst').count() === 4, 'профиль без статистики');
 await page.click('[data-d="brand"]'); await W(200); must(await page.evaluate(() => PAGE === 'main'), 'клик по названию не ведёт на главную');
-await page.click('[data-d="news"]'); await W(200); must(await page.locator('.fz-news .fz-nwi').count() >= 4, 'нет окна «Что нового»'); await page.keyboard.press('Escape'); await W(200);
-must(await page.locator('.fz-new').count() === 0, 'метка «Новое» не исчезла после просмотра');
+must(await page.locator('.fz-new, [data-d="news"]').count() === 0, 'остался блок «Что нового»');
+must(await page.evaluate(() => profiles()[0].eula && profiles()[0].eula.v === '1.0'), 'не записано принятие соглашения');
 // конспекты: 17 штук, формулы рисуются, оглавление
 await page.click('[data-d="page"][data-v="notes"]'); await W(400);
 must(await page.locator('.fz-ncard').count() === 17, 'конспектов не 17');

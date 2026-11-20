@@ -116,7 +116,7 @@ function tDetails(S, n = 3) {
   const at = k => t[k] ? new Date(t[k]).getTime() : NaN, end = dx.finished ? new Date(dx.finished).getTime() : NaN;
   const dur = ms => !Number.isFinite(ms) || ms < 0 ? '—' : ms < 60000 ? '< 1 мин' : ms < 3600000 ? `${Math.round(ms / 60000)} мин` : `${Math.floor(ms / 3600000)} ч ${Math.round(ms % 3600000 / 60000)} мин`;
   const times = keys.slice(0, NS).map((k, i) => `<span class="pill">${LL.steps[i][1]}: ${dur((i < NS - 1 ? at(keys[i + 1]) : end) - at(k))}</span>`).join(' ');
-  const qa = (list, ans) => list.map(([q, a], i) => `<li class="${ans && ans[i] === a ? 'ok' : 'bad'}">${ans && ans[i] === a ? '✓' : '✗'} ${esc(q)}${ans && ans[i] && ans[i] !== a ? `<small>ответ: ${esc(ans[i])}</small>` : ''}</li>`).join('');
+  const qa = (list, ans) => list.map(([q, a], i) => `<li class="${ans && qEq(ans[i], a) ? 'ok' : 'bad'}">${ans && qEq(ans[i], a) ? '✓' : '✗'} ${esc(q)}${ans && ans[i] && !qEq(ans[i], a) ? `<small>ответ: ${esc(ans[i])}</small>` : ''}</li>`).join('');
   const pk = dx.pk || {}, pkTxt = Object.keys(pk).length ? Object.entries(pk).map(([k, n]) => `${PK_NAME[k] || k} — ${n}`).join(', ') : 'нет';
   return `<section class="tdet"><div class="tdet-row">${times}<span class="pill">всего: ${dur(end - at('admit'))}</span></div>
     <div class="tdet-row mute small">Попытки: допуск — ${dx.admitTries || 0}${dx.fails && dx.fails.admit ? ` (неудачных — ${dx.fails.admit})` : ''}, обработка — ${dx.procTries || 0}, защита — ${dx.cqTries || 0}${dx.fails && dx.fails.cq ? ` (неудачных — ${dx.fails.cq})` : ''}. Ошибки в ячейках обработки: ${esc(pkTxt)}.</div>
@@ -291,7 +291,7 @@ function tShell(inner) {
   const cur = typeof TLAB === 'number' ? 'labs' : TLAB, tip = t => NAVMINI ? ` title="${t}"` : '';
   const cnt = { labs: TROWS.filter(r => r.d.lab !== 'exam').length, exam: tLabRows('exam').length, acc: profiles().length };
   return `<div class="fz-app tch ${NAVMINI ? 'mini' : ''}"><nav class="fz-nav">
-      <div class="fz-brand"><span class="logo">γ</span><span class="fz-bt"><b>Физпрактикум</b><small>Кабинет преподавателя</small></span></div>
+      <div class="fz-brand">${LOGO}<span class="fz-bt"><b>Физпрактикум</b><small>Кабинет преподавателя</small></span></div>
       ${TNAV.map(([k, t, i]) => `<button class="fz-ni ${cur === k ? 'on' : ''}" data-t="tlab" data-v="${k}"${tip(t)}>${ic(i)}<span>${t}</span>${cnt[k] ? `<em class="fz-cnt-b">${cnt[k]}</em>` : ''}</button>`).join('')}
       <span class="fz-sp"></span>
       <button class="fz-ni" data-t="theme"${tip(isLight() ? 'Тёмная тема' : 'Светлая тема')}>${ic(isLight() ? 'moon' : 'sun')}<span>${isLight() ? 'Тёмная тема' : 'Светлая тема'}</span></button>
