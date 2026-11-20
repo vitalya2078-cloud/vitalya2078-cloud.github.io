@@ -147,7 +147,7 @@ function l2Draw() {
       const len = mm % 10 ? (mm % 5 ? 14 : 22) : 34; c.lineWidth = mm % 10 ? 1 : 1.8; c.beginPath(); c.moveTo(X0, y); c.lineTo(X0 + len, y); c.stroke();
       if (mm % 10 === 0) { c.font = '700 14px "Golos UI", system-ui'; c.fillText(mm / 10, X0 + 40, y); } }
     c.fillStyle = 'rgba(75,85,104,.85)'; c.fillRect(X0 + W - 40, Y0, 40, H / 2); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.beginPath(); c.moveTo(X0, Y0 + H / 2); c.lineTo(X0 + W, Y0 + H / 2); c.stroke();
-    c.restore(); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(X0, Y0, W, H); c.fillStyle = '#F2B544'; c.font = '700 10px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('ЛУПА: линейка, см', X0, Y0 - 18); c.fillText('1 деление = 1 мм', X0, Y0 - 6);
+    c.restore(); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(X0, Y0, W, H); c.fillStyle = '#F2B544'; c.font = '700 10px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('Лупа: линейка, см', X0, Y0 - 18); c.fillText('1 деление = 1 мм', X0, Y0 - 6);
     c.fillStyle = '#C9D4E3'; c.font = '600 9px "Golos UI", system-ui'; c.fillText('груз', X0 + W - 36, Y0 + H / 2 - 8);
     c.strokeStyle = 'rgba(242,181,68,.6)'; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(X0 + W, Y0 + H / 2); c.lineTo(gx - 13, yAt(h)); c.stroke(); c.setLineDash([]);
   }

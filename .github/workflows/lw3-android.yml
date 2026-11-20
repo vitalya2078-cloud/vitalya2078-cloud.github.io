@@ -1,8 +1,8 @@
 name: ЛР 3 — только приложение для Android
 
 # Правка только в lw3-mobile: проверка и сборка одного APK, без программ для Windows и Linux.
-# На main готовый APK заменяет файл Pokazatel-adiabaty.apk в последнем релизе — прямая ссылка
-# .../releases/latest/download/Pokazatel-adiabaty.apk сразу отдаёт новую версию, остальные файлы релиза не меняются.
+# На main готовый APK заменяет файл Fizpraktikum.apk в последнем релизе — прямая ссылка
+# .../releases/latest/download/Fizpraktikum.apk сразу отдаёт новую версию, остальные файлы релиза не меняются.
 # Когда меняется общий код (lw3-desktop, fizika2), APK собирается в основной сборке вместе со всем релизом.
 on:
   push:
@@ -68,11 +68,11 @@ jobs:
       - name: Collect APK
         run: |
           mkdir -p out
-          cp lw3-mobile/android/app/build/outputs/apk/release/app-release.apk out/Pokazatel-adiabaty.apk
+          cp lw3-mobile/android/app/build/outputs/apk/release/app-release.apk out/Fizpraktikum.apk
           ls -la out
       - uses: actions/upload-artifact@v4
         with:
-          name: Pokazatel-adiabaty-android
+          name: Fizpraktikum-android
           path: |
             out/*
             shots/*.png
@@ -83,5 +83,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
-          gh release upload "$tag" out/Pokazatel-adiabaty.apk --clobber --repo "$GITHUB_REPOSITORY"
+          gh release upload "$tag" out/Fizpraktikum.apk --clobber --repo "$GITHUB_REPOSITORY"
           echo "APK обновлён в релизе $tag"

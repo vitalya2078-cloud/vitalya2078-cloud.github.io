@@ -29,7 +29,7 @@ document.addEventListener('keydown', e => {
 }, true);
 
 /* ---------- PDF одной кнопкой (WebView2); иначе — окно печати ---------- */
-const pdfName = S => `Отчёт_ЛР${LAB}_${safeName(S && S.fio) || 'студент'}.pdf`;
+const pdfName = S => `Отчёт_ЛР${LAB}_${safeName(S && S.fio) || 'курсант'}.pdf`;
 async function savePdf(name) {
   if (IS_TAURI) {
     try { const p = await tauri('save_pdf', { name }); if (p) toast(`${ic('circle-check')} PDF сохранён: ${esc(p)}`); return; }
@@ -41,7 +41,7 @@ async function savePdf(name) {
 /* ---------- общая папка для сдачи работ ---------- */
 let FOLDER = store.get('lw3d-folder', ''), FOLDER_FIXED = false;
 if (IS_TAURI) tauri('app_config').then(t => { if (!t) return; try { const c = JSON.parse(t); if (c.folder) { FOLDER = String(c.folder); FOLDER_FIXED = true; render(); } } catch (e) {} }).catch(() => {});
-const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
+const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'курсант'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
 async function submitWork(auto) {
   const L = curLab(), S = L.load(); ensureMeta(S); const l3Save = () => L.save();
   if (IS_TAURI && FOLDER) {

@@ -15,7 +15,7 @@ leRegister(7, (() => {
     hidden() { const rr = Math.random, N = 2200 + Math.round(rr() * 70) * 10; const Ic = Math.sqrt(8 * Ua * (l * l + d * d) / EM) / (MU0 * r * N) * 1000 * (.985 + rr() * .03);
       return { N, Ic: +Ic.toFixed(2), ia0: +(1.25 + rr() * .3).toFixed(3), ia1: +(.012 + rr() * .01).toFixed(4), w: +(5.5 + rr() * 1.5).toFixed(2) }; },
     rig0: () => ({ on: false, I: 0 }),
-    exps: [{ id: 'curve', tab: 'Измерения', need: PTS.length, title: 'Сбросовая характеристика (п. 3–4)', tableTitle: 'Таблица 1. Измерения',
+    exps: [{ id: 'curve', tab: 'Измерения', need: PTS.length, title: 'Сбросовая характеристика', tableTitle: 'Таблица 1. Измерения',
       desc: () => 'Включи «Сеть». Кнопками источника «0…+15 В» установи ток в соленоиде I = 110 мА (мультиметр 5) и запиши анодный ток Iа (мультиметр 2). Затем увеличивай I на 10 мА до 180 мА и каждый раз записывай I и Iа.',
       cols: [{ k: 'I', label: 'I, мА', ph: '0', tol: .051, d: 1, err: 'I — перепиши показание мультиметра 5 (мА)' }, { k: 'ia', label: 'Iа, мА', th: 'I<sub>а</sub>, мА', ph: '0,000', tol: .0011, d: 3, err: 'Iа — перепиши показание мультиметра 2 (мА, три знака)' }],
       ctl: S => `<div class="lw-ctl-row">${leB('power', S.rig.on ? `${ic('circle-check')} «Сеть»: включено` : 'Включить «Сеть»', '', S.rig.on ? '' : 'line')}</div>${leKnob('I', 'Ток соленоида', leFix(S.rig.on ? S.rig.I : 0, 0) + ' мА', [1, 10], !S.rig.on)}`,
@@ -29,7 +29,7 @@ leRegister(7, (() => {
       if (c === 'I') R.I = Math.max(0, Math.min(200, R.I + +v));
     },
     prep: {
-      view: S => leCard('Параметры магнетрона', `<p class="mute small">Цепь собрана по монтажной схеме (п. 1). Запиши параметры магнетрона из таблицы 1 и число витков соленоида N с таблички миниблока «Магнетрон» (зависит от установки).</p>
+      view: S => leCard('Параметры магнетрона', `<p class="mute small">Цепь собрана по монтажной схеме. Запиши параметры магнетрона из таблицы 1 и число витков соленоида N с таблички миниблока «Магнетрон» (зависит от установки).</p>
         <div class="lw-row three"><label>d, мм ${leIn('pd', S.inp.pd, '0')}</label><label>l, мм ${leIn('pl', S.inp.pl, '0')}</label><label>r, мм ${leIn('pr', S.inp.pr, '0')}</label></div>
         <div class="lw-row"><label>Uа, В ${leIn('pU', S.inp.pU, '0')}</label><label>N, витков ${leIn('pN', S.inp.pN, '0')}</label></div>`),
       ctl: () => '<p class="mute small">Табличка — на миниблоке «Магнетрон» (на рисунке).</p>',

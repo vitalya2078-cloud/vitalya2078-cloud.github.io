@@ -127,7 +127,7 @@ function lwDraw() {
     lwScene(c, mapZ, Z, true);
     c.strokeStyle = 'rgba(255,194,75,.9)'; c.lineWidth = 1; c.beginPath(); c.moveTo(X0 + L / 2, Y0); c.lineTo(X0 + L / 2, Y0 + L); c.moveTo(X0, Y0 + L / 2); c.lineTo(X0 + L, Y0 + L / 2); c.stroke();
     c.restore(); c.strokeStyle = '#FFC24B'; c.lineWidth = 2; c.strokeRect(X0, Y0, L, L);
-    c.font = '700 11px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillStyle = 'rgba(11,21,36,.82)'; c.fillRect(X0 + 1, Y0 + L - 24, L - 2, 23); c.fillStyle = '#F2B544'; c.fillText('ЛУПА · 1 деление = 1 мм', X0 + 8, Y0 + L - 8);
+    c.font = '700 11px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillStyle = 'rgba(11,21,36,.82)'; c.fillRect(X0 + 1, Y0 + L - 24, L - 2, 23); c.fillStyle = '#F2B544'; c.fillText('Лупа · 1 деление = 1 мм', X0 + 8, Y0 + L - 8);
     const [px, py] = map(lx, ly); c.strokeStyle = '#FFC24B'; c.lineWidth = 1.5; c.strokeRect(px - 9 * k, py - 9 * k, 18 * k, 18 * k);
   }
 }

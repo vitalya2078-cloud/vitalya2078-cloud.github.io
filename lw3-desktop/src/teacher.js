@@ -1,6 +1,6 @@
 /* =====================================================================
    Режим преподавателя (под паролем): открыть файлы работ (.lw3) группы, сводная таблица,
-   проверка подлинности, отчёт любого студента, выгрузка в Excel (CSV).
+   проверка подлинности, отчёт любого курсанта, выгрузка в Excel (CSV).
    ===================================================================== */
 const TKEY = 'lw3d-teacher';
 let TROWS = store.get(TKEY, []);          // [{ name, ok, d }] — работы всех лабораторных; d.lab — номер работы
@@ -13,7 +13,7 @@ function tRow(r) {
   let o = null; if (runs.length === L3.N) { const keep = L3S; L3S = S; try { o = l3Calc(); } finally { L3S = keep; } }
   // проверка: γ из таблицы совпадает с записанной сводкой
   const consistent = !o || !r.d.summary || Math.abs(o.gm - r.d.summary.gm) < 1e-9;
-  const demo = !!(S.demo || (S.dx && S.dx.demo));   // демо-прохождение — не работа студента
+  const demo = !!(S.demo || (S.dx && S.dx.demo));   // демо-прохождение — не работа курсанта
   const stage = demo ? 'демо' : done ? 'защищена' : L3.steps[Math.min(S.max || 0, L3.steps.length - 1)][1].toLowerCase();
   const adm = L3_ADMIT.filter(([, a], i) => S.admit && S.admit[i] === a).length, cq = L3_CQ.filter(([, a], i) => S.cq && S.cq[i] === a).length;
   return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', date: S.date || '', stage, done, runs, o, adm, cq, dx: S.dx || {}, auth: r.ok && consistent && !demo, demo, saved: r.d.saved };
@@ -27,8 +27,8 @@ function teacherAddTexts(list, quiet) {
   for (const { name, text } of list) {
     const r = unpackResult(text);
     if (r.err) { bad++; continue; }
-    const kf = x => (x.d.state.fio || '') + '|' + (x.d.state.group || '') + '|' + (x.d.lab || 3), key = kf(r);
-    TROWS = TROWS.filter(x => kf(x) !== key); TLAB = r.d.lab || 3;   // повторный файл того же студента заменяет прежний
+    const kf = x => (x.d.state.fio || '') + '|' + (x.d.state.group || '') + '|' + (x.d.lab || 3) + (x.d.kind === 'exam' ? '|' + x.d.state.exam.id : ''), key = kf(r);
+    TROWS = TROWS.filter(x => kf(x) !== key); TLAB = r.d.lab || 3;   // повторный файл того же курсанта (той же попытки экзамена) заменяет прежний
     TROWS.push({ name, ok: r.ok, d: r.d }); added++;
   }
   TROWS.sort((a, b) => String(a.d.state.fio).localeCompare(String(b.d.state.fio), 'ru'));
@@ -41,14 +41,14 @@ async function folderLoad() {
   catch (e) { toast(`Папка недоступна: ${esc(String(e))}`, 'bad'); }
 }
 function folderCard() {
-  if (!IS_TAURI) return `<section class="card mt folder"><b>${ic('layers')} Папка класса для сдачи работ</b><p class="mute small">Доступно в программе для Windows: студенты сдают работу в общую папку, а вы загружаете все работы одной кнопкой.</p></section>`;
+  if (!IS_TAURI) return `<section class="card mt folder"><b>${ic('layers')} Папка класса для сдачи работ</b><p class="mute small">Доступно в программе для Windows: курсанты сдают работу в общую папку, а вы загружаете все работы одной кнопкой.</p></section>`;
   return `<section class="card mt folder"><div class="folder-row"><div><b>${ic('layers')} Папка класса для сдачи работ</b>
-      <p class="mute small">${FOLDER ? esc(FOLDER) : 'Не выбрана. Выберите общую сетевую папку класса — после защиты работа студента сама сохранится туда.'}${FOLDER_FIXED ? ' · задана в файле adiabata.json рядом с программой' : ''}</p></div>
+      <p class="mute small">${FOLDER ? esc(FOLDER) : 'Не выбрана. Выберите общую сетевую папку класса — после защиты работа курсанта сама сохранится туда.'}${FOLDER_FIXED ? ' · задана в файле adiabata.json рядом с программой' : ''}</p></div>
       ${FOLDER ? `<button class="btn" data-t="folder-load">${ic('rotate-cw')} Загрузить работы из папки</button>` : ''}
       ${FOLDER_FIXED ? '' : `<button class="btn line" data-t="folder-pick">${ic('layers')} ${FOLDER ? 'Другая папка' : 'Выбрать папку'}</button>${FOLDER ? `<button class="btn ghost" data-t="folder-clear">${ic('x')}</button>` : ''}`}</div>
     <p class="mute small">Папка запоминается на этом компьютере. Чтобы задать её сразу для всех компьютеров класса, положите рядом с программой файл <b>adiabata.json</b> с текстом <code>{"folder": "\\\\сервер\\папка"}</code>.</p></section>`;
 }
-/* совпадающие измерения у разных студентов: ≥ 2 одинаковых пары h₁/h₂ из 3 → вероятно, списано */
+/* совпадающие измерения у разных курсантов: ≥ 2 одинаковых пары h₁/h₂ из 3 → вероятно, списано */
 function tDups(rows) {
   const d = rows.map(() => []);
   for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) {
@@ -61,6 +61,8 @@ function tDups(rows) {
 function vTeacher() {
   document.body.classList.add('noside'); ui.side.innerHTML = '';
   TVIEW = TROWS.filter(r => (r.d.lab || 3) === TLAB);
+  if (TLAB === 'exam') return vTeacherExam();
+  if (TLAB === 'acc') return vTeacherAcc();
   if (TLAB !== 3) return vTeacherLab();
   const rows = TVIEW.map(tRow), fin = rows.filter(r => r.o), gms = fin.map(r => r.o.gm), dups = tDups(rows);
   const mean = gms.length ? gms.reduce((s, x) => s + x, 0) / gms.length : NaN, fake = rows.filter((r, i) => !r.auth || dups[i].length).length;
@@ -71,20 +73,20 @@ function vTeacher() {
       <button class="btn line" data-t="clear" ${rows.length ? '' : 'disabled'}>${ic('trash-2')} Очистить</button>
       <button class="btn" data-t="add">${ic('plus')} Добавить файлы</button></div>
     ${folderCard()}
-    <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы <b>.lw3</b>, которые сохранили студенты, или нажми, чтобы выбрать.</div>
+    <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы <b>.lw3</b>, которые сохранили курсанты, или нажми, чтобы выбрать.</div>
     <div class="stats">
       <div class="stat"><small>Работ</small><b>${rows.length}</b></div>
       <div class="stat"><small>Защищено</small><b style="color:var(--ok)">${rows.filter(r => r.done).length}</b></div>
       <div class="stat"><small>Средний ⟨γ⟩ группы</small><b>${gms.length ? nf(mean, 3) : '—'}</b></div>
       <div class="stat"><small>Подлинность</small><b style="color:${fake ? 'var(--bad)' : 'var(--ok)'}">${rows.length ? (fake ? `${fake} под вопросом` : 'всё в порядке') : '—'}</b></div></div>
     ${gms.length ? `<section class="card"><h2>${ic('target')} ⟨γ⟩ по студентам <span class="pill">теория γ = 1,40</span></h2>${tStrip(fin)}</section>` : ''}
-    <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Студент</th><th>Класс</th><th>Дата</th><th>Этап</th><th>Допуск</th><th>h₁ / h₂, мм</th><th>⟨γ⟩ ± ⟨Δγ⟩</th><th>ε, %</th><th>Защита</th><th>Попытки<br>доп. / обр. / защ.</th><th>Файл</th></tr>
+    <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Курсант</th><th>Класс</th><th>Дата</th><th>Этап</th><th>Допуск</th><th>h₁ / h₂, мм</th><th>⟨γ⟩ ± ⟨Δγ⟩</th><th>ε, %</th><th>Защита</th><th>Попытки<br>доп. / обр. / защ.</th><th>Файл</th></tr>
       ${rows.map((r, i) => `<tr class="r" data-t="open" data-v="${i}"><td><div style="display:flex; gap:10px; align-items:center">${ava(r.fio)}<div><b>${esc(r.fio)}</b>${r.dx.device === 'android' ? ' <span class="pill">с телефона</span>' : r.dx.device === 'ios' ? ' <span class="pill">с iPhone</span>' : ''}${dups[i].length ? `<small class="dup">${ic('circle-x')} измерения совпадают: ${esc(dups[i].join(', '))}</small>` : ''}</div></div></td><td>${esc(r.group)}</td><td>${esc(r.date)}</td>
         <td><span class="pill ${r.done ? 'ok' : 'warn'}">${esc(r.stage)}</span></td><td class="n">${r.adm}/8</td>
         <td>${r.runs.map(x => `${x.h1}/${x.h2}`).join(' · ') || '—'}</td><td class="n"><b>${r.o ? esc(l3Res(r.o)) : '—'}</b></td><td class="n">${r.o ? nf(r.o.e, 1) : '—'}</td>
         <td class="n">${r.done ? `${r.cq}/8` : '—'}</td><td class="n">${r.dx.admitTries || 0} / ${r.dx.procTries || 0} / ${r.dx.cqTries || 0}</td>
         <td>${r.demo ? `<span class="pill warn">демо</span>` : r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`
-      : '<p class="mute center" style="padding:30px">Пока пусто. Попроси студентов сохранить работу (кнопка «Сохранить файл для преподавателя» или Ctrl+S) и собери файлы на флешку или в общую папку.</p>'}</section>
+      : '<p class="mute center" style="padding:30px">Пока пусто. Попроси курсантов сохранить работу (кнопка «Сохранить файл для преподавателя» или Ctrl+S) и собери файлы на флешку или в общую папку.</p>'}</section>
     <p class="mute small mt">Подпись файла защищает от правки результата вручную (в Блокноте и т. п.). Файлы хранятся только на этом компьютере, пока ты их не очистишь.</p>`;
 }
 function tStrip(fin) {
@@ -99,7 +101,7 @@ function tStrip(fin) {
   </svg>`;
 }
 function tOpen(i) {
-  const r = TVIEW[i]; if (!r) return; if ((r.d.lab || 3) !== 3) return tOpenLab(r); const row = tRow(r);
+  const r = TVIEW[i]; if (!r) return; if (r.d.lab === 'exam') return tOpenExam(r); if ((r.d.lab || 3) !== 3) return tOpenLab(r); const row = tRow(r);
   const keep = L3S; L3S = r.d.state; let html; try { html = row.runs.length === L3.N && r.d.state.concl ? l3ReportHtml() : ''; } finally { L3S = keep; }
   $('#printroot').innerHTML = html; TPDF = row.fio;
   modal(`${esc(row.fio)} · ${esc(row.group)}`, `${row.auth ? '' : `<p class="pill bad" style="margin-bottom:12px">${ic('circle-x')} Файл изменён после сохранения в программе — результат не подтверждён</p>`}
@@ -167,12 +169,14 @@ document.addEventListener('click', e => {
     case 'open': tOpen(+d.v); break;
     case 'demo': teacherDemo(); break;
     case 'print': window.print(); break;
-    case 'pdf': savePdf(`Отчёт_адиабата_${safeName(TPDF) || 'студент'}.pdf`); break;
+    case 'pdf': savePdf(`Отчёт_ЛР3_${safeName(TPDF) || 'курсант'}.pdf`); break;
     case 'folder-pick': tauri('pick_folder').then(d => { if (d) { FOLDER = d; store.set('lw3d-folder', d); render(); folderLoad(); } }).catch(e => toast(esc(String(e)), 'bad')); break;
     case 'folder-load': folderLoad(); break;
     case 'folder-clear': FOLDER = ''; store.set('lw3d-folder', ''); render(); break;
-    case 'tlab': TLAB = +d.v; render(); break;
-    case 'csv': if (TLAB !== 3) { saveFile(`ЛР${TLAB}_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsvLab(), 'csv', 'Таблица для Excel'); break; } saveFile(`Адиабата_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsv(), 'csv', 'Таблица для Excel'); break;
+    case 'tlab': TLAB = /^\d+$/.test(d.v) ? +d.v : d.v; render(); break;
+    case 'pwreset': { const p = profiles().find(x => x.id === d.v); if (p && confirm(`Сбросить пароль курсанта «${p.fio}»? При следующем входе он задаст новый пароль. Работы и результаты сохранятся.`)) { acctResetPw(p.id); render(); toast('Пароль сброшен'); } break; }
+    case 'csv': if (TLAB === 'exam') { saveFile(`Экзамены_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsvExam(), 'csv', 'Таблица для Excel'); break; }
+      if (TLAB !== 3) { saveFile(`ЛР${TLAB}_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsvLab(), 'csv', 'Таблица для Excel'); break; } saveFile(`Адиабата_результаты_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`, tCsv(), 'csv', 'Таблица для Excel'); break;
     case 'clear': if (confirm('Убрать все загруженные работы из списка? Сами файлы останутся на диске.')) { TROWS = []; tSave(); render(); } break;
   }
 });
@@ -184,8 +188,58 @@ render();
 
 /* ---------- ЛР 1 и ЛР 2 ---------- */
 function tTabs() {
+  const ke = TROWS.filter(r => r.d.lab === 'exam').length;
   return `<div class="ttabs">${labNums().map(n => { const k = TROWS.filter(r => (r.d.lab || 3) === n).length;
-    return `<button data-t="tlab" data-v="${n}" class="${TLAB === n ? 'on' : ''}">ЛР ${n}${k ? ` <small>${k}</small>` : ''}</button>`; }).join('')}</div>`;
+    return `<button data-t="tlab" data-v="${n}" class="${TLAB === n ? 'on' : ''}">ЛР ${n}${k ? ` <small>${k}</small>` : ''}</button>`; }).join('')}
+    <button data-t="tlab" data-v="exam" class="${TLAB === 'exam' ? 'on' : ''}">Экзамены${ke ? ` <small>${ke}</small>` : ''}</button>
+    <button data-t="tlab" data-v="acc" class="${TLAB === 'acc' ? 'on' : ''}">Курсанты</button></div>`;
+}
+/* ---------- экзамены (файлы результата из раздела «Тесты») ---------- */
+function tRowExam(r) {
+  const a = r.d.state.exam || {}, S = r.d.state;
+  return { fio: S.fio || r.d.student.fio || '—', group: S.group || r.d.student.group || '', a, auth: r.ok && !!r.d.summary && r.d.summary.score === a.score };
+}
+function vTeacherExam() {
+  const rows = TVIEW.map(tRowExam), fake = rows.filter(r => !r.auth).length;
+  const avg = rows.length ? Math.round(rows.reduce((s, r) => s + (r.a.score || 0), 0) / rows.length) : 0;
+  ui.main.innerHTML = `<div class="head"><h1>Результаты группы</h1>${tTabs()}<div class="sp"></div>${themeBtn()}
+      <button class="btn line" data-t="back">${ic('chevron-left')} Выйти</button>
+      <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
+      <button class="btn" data-t="add">${ic('plus')} Добавить файлы</button></div>
+    ${folderCard()}
+    <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы результатов экзаменов, которые сохранили курсанты, или нажми, чтобы выбрать.</div>
+    <div class="stats"><div class="stat"><small>Экзаменов</small><b>${rows.length}</b></div><div class="stat"><small>Средний балл</small><b>${rows.length ? avg : '—'}</b></div>
+      <div class="stat"><small>Подлинность</small><b style="color:${fake ? 'var(--bad)' : 'var(--ok)'}">${rows.length ? (fake ? `${fake} под вопросом` : 'всё в порядке') : '—'}</b></div></div>
+    <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Курсант</th><th>Класс</th><th>Экзамен</th><th>Дата</th><th>Верно</th><th>Баллы</th><th>Оценка</th><th>Время</th><th>Подлинность</th></tr>
+      ${rows.map((r, i) => `<tr class="r" data-t="open" data-v="${i}"><td><div style="display:flex; gap:10px; align-items:center">${ava(r.fio)}<b>${esc(r.fio)}</b></div></td><td>${esc(r.group)}</td>
+        <td>${esc(topicName(r.a.topic))}</td><td>${r.a.date ? new Date(r.a.date).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</td>
+        <td class="n">${r.a.right} из ${r.a.n}</td><td class="n"><b>${r.a.score}</b></td><td><span class="fz-best g${r.a.grade}">«${r.a.grade}»</span></td><td class="n">${Math.floor((r.a.spent || 0) / 60)} мин</td>
+        <td>${r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`
+      : '<p class="mute center" style="padding:30px">Файлов экзаменов пока нет.</p>'}</section>`;
+}
+function tOpenExam(r) {
+  const row = tRowExam(r), a = row.a;
+  const items = (a.items || []).map((x, k) => { const q = BANK && BANK.byId[x.id];
+    return `<tr><td class="n">${k + 1}</td><td>№ ${esc(x.id)}</td><td>${q ? esc(q.t.slice(0, 120)) + (q.t.length > 120 ? '…' : '') : ''}</td><td>${x.v == null ? '<span class="mute">нет ответа</span>' : esc(x.v)}</td><td>${x.ok ? `<span class="pill ok">верно</span>` : `<span class="pill bad">неверно</span>`}</td><td class="n">${x.t != null ? x.t + ' с' : ''}</td></tr>`; }).join('');
+  modal(`${esc(row.fio)} · ${esc(row.group)} · ${esc(topicName(a.topic))}`, `${row.auth ? '' : `<p class="pill bad" style="margin-bottom:12px">${ic('circle-x')} Файл изменён после сохранения в программе — результат не подтверждён</p>`}
+    <div class="stats"><div class="stat"><small>Баллы</small><b>${a.score}</b></div><div class="stat"><small>Оценка</small><b>«${a.grade}» ${GRADE_T[a.grade] || ''}</b></div><div class="stat"><small>Верно</small><b>${a.right} из ${a.n}</b></div></div>
+    <table class="tt mt"><tr><th>№</th><th>Вопрос</th><th>Текст</th><th>Ответ курсанта</th><th></th><th>Время</th></tr>${items}</table>`);
+}
+function tCsvExam() {
+  const q = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const head = ['ФИО', 'Класс', 'Экзамен', 'Дата', 'Верно', 'Вопросов', 'Баллы', 'Оценка', 'Время, мин', 'Подлинность'];
+  const lines = TVIEW.map(tRowExam).map(r => [r.fio, r.group, topicName(r.a.topic), r.a.date ? new Date(r.a.date).toLocaleString('ru-RU') : '', r.a.right, r.a.n, r.a.score, r.a.grade, Math.round((r.a.spent || 0) / 60), r.auth ? 'подлинный' : 'ИЗМЕНЁН'].map(q).join(';'));
+  return '\ufeff' + [head.map(q).join(';'), ...lines].join('\r\n');
+}
+/* ---------- курсанты на этом компьютере: сброс пароля ---------- */
+function vTeacherAcc() {
+  const ps = profiles();
+  ui.main.innerHTML = `<div class="head"><h1>Курсанты на этом компьютере</h1>${tTabs()}<div class="sp"></div>${themeBtn()}<button class="btn line" data-t="back">${ic('chevron-left')} Выйти</button></div>
+    <p class="mute">Учётные записи хранятся только на этом компьютере. Если курсант забыл пароль — сбросьте его: при следующем входе курсант задаст новый. Работы и результаты при этом сохраняются.</p>
+    <section class="card mt" style="padding:0; overflow:hidden">${ps.length ? `<table class="tt"><tr><th>Курсант</th><th>Класс</th><th>Зарегистрирован</th><th>Пароль</th><th></th></tr>
+      ${ps.map(p => `<tr><td><div style="display:flex; gap:10px; align-items:center">${ava(p.fio)}<b>${esc(p.fio)}</b></div></td><td>${esc(p.group || '')}</td><td>${p.created ? new Date(p.created).toLocaleDateString('ru-RU') : ''}</td>
+        <td>${acctHasPw(p) ? '<span class="pill ok">задан</span>' : `<span class="pill warn">${p.pwReset ? 'сброшен' : 'не задан'}</span>`}</td><td>${acctHasPw(p) ? `<button class="btn line" data-t="pwreset" data-v="${p.id}">${ic('rotate-ccw')} Сбросить пароль</button>` : ''}</td></tr>`).join('')}</table>`
+      : '<p class="mute center" style="padding:30px">На этом компьютере нет учётных записей курсантов.</p>'}</section>`;
 }
 function tRowLab(r) {
   const n = r.d.lab, L = LABS[n], S = r.d.state, demo = !!(S.demo || (S.dx && S.dx.demo)), done = !!S.done;
@@ -201,10 +255,10 @@ function vTeacherLab() {
       <button class="btn line" data-t="csv" ${rows.length ? '' : 'disabled'}>${ic('grid-3x3')} В Excel (CSV)</button>
       <button class="btn" data-t="add">${ic('plus')} Добавить файлы</button></div>
     ${folderCard()}
-    <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы работ, которые сохранили студенты, или нажми, чтобы выбрать.</div>
+    <div class="drop mt" data-t="add">${ic('file-text')} Перетащи сюда файлы работ, которые сохранили курсанты, или нажми, чтобы выбрать.</div>
     <div class="stats"><div class="stat"><small>Работ — ЛР ${TLAB}</small><b>${rows.length}</b></div><div class="stat"><small>Защищено</small><b style="color:var(--ok)">${rows.filter(r => r.done).length}</b></div>
       <div class="stat"><small>Подлинность</small><b style="color:${fake ? 'var(--bad)' : 'var(--ok)'}">${rows.length ? (fake ? `${fake} под вопросом` : 'всё в порядке') : '—'}</b></div></div>
-    <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Студент</th><th>Класс</th><th>Дата</th><th>Этап</th><th>Допуск</th><th>Результат</th><th>Защита</th><th>Попытки<br>доп. / обр. / защ.</th><th>Файл</th></tr>
+    <section class="card mt" style="padding:0; overflow:hidden">${rows.length ? `<table class="tt"><tr><th>Курсант</th><th>Класс</th><th>Дата</th><th>Этап</th><th>Допуск</th><th>Результат</th><th>Защита</th><th>Попытки<br>доп. / обр. / защ.</th><th>Файл</th></tr>
       ${rows.map((r, i) => `<tr class="r" data-t="open" data-v="${i}"><td><div style="display:flex; gap:10px; align-items:center">${ava(r.fio)}<div><b>${esc(r.fio)}</b>${r.dx.device === 'android' ? ' <span class="pill">с телефона</span>' : r.dx.device === 'ios' ? ' <span class="pill">с iPhone</span>' : ''}${dups[i].length ? `<small class="dup">${ic('circle-x')} измерения совпадают: ${esc(dups[i].join(', '))}</small>` : ''}</div></div></td><td>${esc(r.group)}</td><td>${esc(r.date)}</td>
         <td><span class="pill ${r.done ? 'ok' : 'warn'}">${esc(r.stage)}</span></td><td class="n">${r.adm}/8</td><td><b>${esc(r.res || '—')}</b></td><td class="n">${r.done ? `${r.cq}/${LABS[r.n].cq.length}` : '—'}</td>
         <td class="n">${r.dx.admitTries || 0} / ${r.dx.procTries || 0} / ${r.dx.cqTries || 0}</td><td>${r.demo ? '<span class="pill warn">демо</span>' : r.auth ? `<span class="pill ok">${ic('circle-check')} подлинный</span>` : `<span class="pill bad">${ic('circle-x')} изменён</span>`}</td></tr>`).join('')}</table>`

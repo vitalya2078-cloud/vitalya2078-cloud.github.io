@@ -47,7 +47,7 @@ html = html[:m.end()] + HEAD + html[m.end():]
 if os.path.exists(OUT):
     shutil.rmtree(OUT)
 os.makedirs(os.path.join(OUT, 'icons'))
-for sub in ('img', 'fonts'):
+for sub in ('img', 'fonts', 'bank'):
     if os.path.isdir(os.path.join(WWW, sub)):
         shutil.copytree(os.path.join(WWW, sub), os.path.join(OUT, sub))
 with open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8') as f:

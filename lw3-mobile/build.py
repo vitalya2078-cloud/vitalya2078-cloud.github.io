@@ -71,9 +71,9 @@ js = '\n'.join([cap_js, 'const APP_VER = %s;' % json.dumps(version), 'const PWA 
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False),
                 helpers, rd(os.path.join(SITE, 'icons.js')), rd(os.path.join(SITE, 'lw3-core.js')), hod] +
-               [rd(os.path.join(DESK, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js')] +
+               [rd(os.path.join(DESK, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js')] +
                [rd(os.path.join(D, 'src', f)) for f in ('mobile.js', 'mlabs.js')])
-html = (rd(os.path.join(D, 'src', 'mobile.html')).replace('/*{{FONTS}}*/', fonts).replace('/*{{REPORT_CSS}}*/', report_css)
+html = (rd(os.path.join(D, 'src', 'mobile.html')).replace('/*{{FONTS}}*/', fonts).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(DESK, 'src', 'app.css')))
         .replace('{{JS}}', js.replace('</script', '<\\/script')))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 
@@ -82,7 +82,7 @@ if os.path.exists(WWW):
 os.makedirs(WWW)
 with open(os.path.join(WWW, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(html)
-for sub in ('fonts', 'img'):
+for sub in ('fonts', 'img', 'bank'):
     src = os.path.join(DESK, 'dist', sub)
     if os.path.isdir(src):
         shutil.copytree(src, os.path.join(WWW, sub))

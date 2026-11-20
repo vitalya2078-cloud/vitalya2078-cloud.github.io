@@ -14,7 +14,7 @@
 /* Android OTA bootstrap: use the last downloaded interface, but fall back if it fails to start. */
 (function () {
   if (!/FizikaApp/.test(navigator.userAgent)) return;
-  var embedded = 144;
+  var embedded = 145;
   try {
     var n = localStorage.getItem('f2-app-build'), h = localStorage.getItem('f2-app-html');
     if (!n || +n <= embedded || !h || h.indexOf('const F2_BUILD = ' + n + ';') < 0 || localStorage.getItem('f2-app-bad') === n) return;
@@ -1239,7 +1239,7 @@ body{background:var(--bg)}
 <div id="toasts"></div>
 <div id="sheet" hidden></div>
 <script>
-const F2_BUILD = 144;
+const F2_BUILD = 145;
 const F2_IN_APP = /FizikaApp/.test(navigator.userAgent);
 const VOICE = {"ch1-l1": {"dur": 55.54, "starts": [0, 7.52, 19.96, 34.26, 44.51]}, "ch1-l2": {"dur": 39.98, "starts": [0, 8.7, 18.77, 29.33]}, "ch1-l3": {"dur": 41.79, "starts": [0, 8.31, 17.68, 26.54]}, "ch1-l4": {"dur": 44.62, "starts": [0, 6.29, 15.14, 26.0, 36.77]}};
 /* ---------- Учебник: структура по курсу физики Т. И. Трофимовой (7 частей, 33 главы, 275 §) ----------
@@ -7362,7 +7362,7 @@ function lwDraw() {
     lwScene(c, mapZ, Z, true);
     c.strokeStyle = 'rgba(255,194,75,.9)'; c.lineWidth = 1; c.beginPath(); c.moveTo(X0 + L / 2, Y0); c.lineTo(X0 + L / 2, Y0 + L); c.moveTo(X0, Y0 + L / 2); c.lineTo(X0 + L, Y0 + L / 2); c.stroke();
     c.restore(); c.strokeStyle = '#FFC24B'; c.lineWidth = 2; c.strokeRect(X0, Y0, L, L);
-    c.font = '700 11px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillStyle = 'rgba(11,21,36,.82)'; c.fillRect(X0 + 1, Y0 + L - 24, L - 2, 23); c.fillStyle = '#F2B544'; c.fillText('ЛУПА · 1 деление = 1 мм', X0 + 8, Y0 + L - 8);
+    c.font = '700 11px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillStyle = 'rgba(11,21,36,.82)'; c.fillRect(X0 + 1, Y0 + L - 24, L - 2, 23); c.fillStyle = '#F2B544'; c.fillText('Лупа · 1 деление = 1 мм', X0 + 8, Y0 + L - 8);
     const [px, py] = map(lx, ly); c.strokeStyle = '#FFC24B'; c.lineWidth = 1.5; c.strokeRect(px - 9 * k, py - 9 * k, 18 * k, 18 * k);
   }
 }
@@ -7991,7 +7991,7 @@ function l2Draw() {
       const len = mm % 10 ? (mm % 5 ? 14 : 22) : 34; c.lineWidth = mm % 10 ? 1 : 1.8; c.beginPath(); c.moveTo(X0, y); c.lineTo(X0 + len, y); c.stroke();
       if (mm % 10 === 0) { c.font = '700 14px "Golos UI", system-ui'; c.fillText(mm / 10, X0 + 40, y); } }
     c.fillStyle = 'rgba(75,85,104,.85)'; c.fillRect(X0 + W - 40, Y0, 40, H / 2); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.beginPath(); c.moveTo(X0, Y0 + H / 2); c.lineTo(X0 + W, Y0 + H / 2); c.stroke();
-    c.restore(); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(X0, Y0, W, H); c.fillStyle = '#F2B544'; c.font = '700 10px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('ЛУПА: линейка, см', X0, Y0 - 18); c.fillText('1 деление = 1 мм', X0, Y0 - 6);
+    c.restore(); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(X0, Y0, W, H); c.fillStyle = '#F2B544'; c.font = '700 10px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('Лупа: линейка, см', X0, Y0 - 18); c.fillText('1 деление = 1 мм', X0, Y0 - 6);
     c.fillStyle = '#C9D4E3'; c.font = '600 9px "Golos UI", system-ui'; c.fillText('груз', X0 + W - 36, Y0 + H / 2 - 8);
     c.strokeStyle = 'rgba(242,181,68,.6)'; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(X0 + W, Y0 + H / 2); c.lineTo(gx - 13, yAt(h)); c.stroke(); c.setLineDash([]);
   }

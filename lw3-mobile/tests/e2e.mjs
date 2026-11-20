@@ -20,12 +20,12 @@ const noOverflow = async name => must(await E(() => document.documentElement.scr
 
 await page.goto(BASE, { waitUntil: 'networkidle' }); await shot(page, 'home'); await noOverflow('вход');
 must(await E(() => document.documentElement.dataset.theme === 'light'), 'по умолчанию не светлая тема');
-await page.fill('#np-fio', 'Петрова Анна Сергеевна'); await page.fill('#np-group', '11 Б'); await tap('[data-m="new"]');
+await page.fill('#np-fio', 'Петрова Анна Сергеевна'); await page.fill('#np-group', '11 Б'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await tap('[data-m="register"]');
 must(await page.locator('#sheet .slide').isVisible(), 'нет знакомства'); await shot(page, 'intro');
 for (let i = 0; i < 3; i++) await tap('[data-m="intro-next"]');
 must(await page.locator('#sheet').isHidden(), 'знакомство не закрылось');
 must(await E(() => SCREEN === 'labs'), 'после входа нет выбора работы'); await shot(page, 'labs');
-await tap('[data-m="lab"][data-v="3"]');
+await tap('#dock [data-m="page"][data-v="labs"]'); await tap('[data-m="lab"][data-v="3"]');
 
 // 1. допуск: вопросы по одному, после ответа — сам следующий
 const A = await E(() => L3_ADMIT.map(([, a]) => a)); await shot(page, 'admit');

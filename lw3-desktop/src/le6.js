@@ -17,7 +17,7 @@ leRegister(6, (() => {
     aim: 'Экспериментально определить горизонтальную составляющую и полную напряжённость магнитного поля Земли на данной широте.',
     hidden() { const r = Math.random; return { Hg: +(16.5 + r() * 3).toFixed(2) }; },
     rig0: () => { const r = Math.random, s = r() < .5 ? -1 : 1; return { rot: +(s * (24 + r() * 30)).toFixed(1), on: false, I: 0, pol: 1, seen: {} }; },
-    exps: [{ id: 'meas', tab: 'Измерения', need: 3, title: 'Измерения (п. 3–8)', tableTitle: 'Таблица 1. Измерения',
+    exps: [{ id: 'meas', tab: 'Измерения', need: 3, title: 'Измерения', tableTitle: 'Таблица 1. Измерения',
       desc: () => 'Включи источник, установи ток по таблице (0,1; 0,2; 0,3 А). Прочитай по компасу угол отклонения стрелки φ<sub>пр</sub>, затем переключателем поменяй направление тока и прочитай φ<sub>лев</sub>. Углы — в целых градусах по шкале компаса (лупа у кончика стрелки: 1 деление = 1°).',
       cols: [{ k: 'I', label: 'I, А', ph: '0,00', tol: .0051, d: 2, err: 'I — перепиши показание амперметра блока питания' }, { k: 'fr', label: 'φпр, °', th: 'φ<sub>пр</sub>, °', ph: '0', tol: 1.01, d: 0, err: 'φпр — прочитай угол стрелки по шкале (до 1°) при прямом направлении тока' }, { k: 'fl', label: 'φлев, °', th: 'φ<sub>лев</sub>, °', ph: '0', tol: 1.01, d: 0, err: 'φлев — прочитай угол после смены полярности' }],
       ctl: S => `<div class="lw-ctl-row">${leB('power', S.rig.on ? `${ic('circle-check')} Источник включён` : 'Включить источник', '', S.rig.on ? '' : 'line')}${leB('pol', `Переключатель: ${S.rig.pol > 0 ? 'прямо' : 'обратно'} ⇄`, '', 'line', !S.rig.on)}</div>${leKnob('I', 'Ток в кольцах', leFix(S.rig.on ? S.rig.I : 0, 2) + ' А', [.01, .1], !S.rig.on)}`,
@@ -35,7 +35,7 @@ leRegister(6, (() => {
       if (c === 'pol') { R.pol = -R.pol; if (R.I > 0) R.seen[R.pol > 0 ? 'r' : 'l'] = true; }
     },
     prep: {
-      view: S => leCard('1. Установка в плоскость магнитного меридиана', `<p class="mute small">Тока нет. Поворачивай кольца Гельмгольца, пока магнитная стрелка не окажется в плоскости витков — на «0» шкалы компаса, указывая на N и S (п. 2).</p>`)
+      view: S => leCard('1. Установка в плоскость магнитного меридиана', `<p class="mute small">Тока нет. Поворачивай кольца Гельмгольца, пока магнитная стрелка не окажется в плоскости витков — на «0» шкалы компаса, указывая на N и S.</p>`)
         + leCard('2. Параметры установки', `<p class="mute small">Запиши параметры (табличка на установке): радиус катушки R, общее число витков N, расстояние между центрами колец L.</p><div class="lw-row three"><label>R, м ${leIn('pR', S.inp.pR, '0,00')}</label><label>N, витков ${leIn('pN', S.inp.pN, '0')}</label><label>L, м ${leIn('pL', S.inp.pL, '0,00')}</label></div>`),
       ctl: S => leKnob('rot', 'Поворот колец', '', [1, 5]),
       check(S) { const bad = [];
@@ -76,7 +76,7 @@ leRegister(6, (() => {
         c.lineWidth = t % 5 ? 1.2 : 2; c.beginPath(); c.moveTo(x, LY); c.lineTo(x, LY + len); c.stroke(); if (t % 5 === 0) { c.font = `${t % 10 ? 600 : 800} ${t % 10 ? 12 : 14}px "Golos UI", system-ui`; c.fillText(t, x, LY + 28); } }
       c.strokeStyle = '#D93A3A'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(LX + LW / 2, LY); c.lineTo(LX + LW / 2, LY + LH); c.stroke(); c.restore();
       c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(LX, LY, LW, LH);
-      leText(c, `ЛУПА у кончика стрелки: 1 деление = 1°${a > .5 ? ' (вправо)' : a < -.5 ? ' (влево)' : ''}`, LX + LW / 2, LY + LH + 12, { size: 10, color: leAcc(), weight: 700 });
+      leText(c, `Лупа у кончика стрелки: 1 деление = 1°${a > .5 ? ' (вправо)' : a < -.5 ? ' (влево)' : ''}`, LX + LW / 2, LY + LH + 12, { size: 10, color: leAcc(), weight: 700 });
     },
     hodNow(S, st) { const k = (S.rows.meas || []).length; return ({ prep: S.prepOk ? 2 : 1, meas: k >= 3 ? 9 : S.rig.on ? (S.rig.seen.r ? 7 : 6) : 3, proc: 11, concl: 12 })[st] || 0; },
     calc(S) {

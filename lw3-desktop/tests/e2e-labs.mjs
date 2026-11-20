@@ -20,8 +20,9 @@ const fmt = (v, d) => v.toFixed(d).replace('.', ',');
 const st = () => E(() => curLab().steps[curLab().S().step][0]);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '11 В'); await page.click('[data-d="new"]'); await page.click('[data-d="intro-skip"]');
-must(await page.locator('.labc').count() === 8, 'на главном экране не 8 работ'); await shot(page, 'labs');
+await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await page.click('[data-d="register"]'); await page.click('[data-d="intro-skip"]');
+await page.click('[data-d="page"][data-v="labs"]');
+must(await page.locator('.fz-card').count() === 8, 'на главном экране не 8 работ'); await shot(page, 'labs');
 
 async function admitAndCq(act, key) {
   const list = await E(k => curLab()[k].map(([, a]) => a), key);
@@ -123,14 +124,45 @@ for (const n of [4, 5, 6, 7, 8]) {
 }
 
 /* главный экран: обе работы защищены, ЛР 3 не тронута; файл ЛР 2 открывается для продолжения на «другом компьютере» */
-must((await page.locator('.labc.done').count()) === 7, 'на главном экране не отмечены защищённые работы'); await shot(page, 'labs-done');
+must((await page.locator('.fz-card.done').count()) === 7, 'на главном экране не отмечены защищённые работы'); await shot(page, 'labs-done');
 const ctx2 = await b.newContext({ viewport: { width: 1366, height: 768 } }); const p2 = await ctx2.newPage(); p2.on('pageerror', e => errors.push(e.message));
 await p2.goto(BASE, { waitUntil: 'networkidle' }); await p2.setInputFiles('#file-in', f2); await p2.waitForFunction(() => SCREEN === 'work');
 must(await p2.evaluate(() => LAB === 2 && L2S.done && L2.steps[L2S.step][0] === 'report'), 'ЛР 2 из файла не восстановилась'); await ctx2.close();
 
-// преподаватель: вкладки ЛР 1 / ЛР 2, подлинность, отчёт
-await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]'); await page.fill('#tp1', '2026'); await page.fill('#tp2', '2026'); await page.click('[data-t="setpass"]');
-await page.setInputFiles('#file-in', [f1, f2, ...Object.values(fE)]); await page.waitForFunction(() => TROWS.length === 7);
+/* ===================== тесты: самопроверка и экзамен ===================== */
+page.on('dialog', d => d.accept());
+await page.click('[data-d="page"][data-v="tests"]'); await page.waitForSelector('.fz-topic'); await shot(page, 'tests');
+must(await page.locator('.fz-topic').count() === 9, 'в тестах не 9 тем');
+await page.click('[data-fz="self"][data-v="4"]'); await page.waitForSelector('.fz-opt');
+for (let i = 0; i < 3; i++) { const a = await E(() => tCur().a); await page.click(`.fz-opt[data-v="${a.replace(/"/g, '\\"')}"]`); must(await page.locator('.fz-verdict.ok').count() === 1, 'самопроверка: верный ответ не засчитан'); await page.click('[data-fz="next"]'); }
+{ const q = await E(() => ({ a: tCur().a, x: tCur().x[0] })); await page.click(`.fz-opt[data-v="${q.x.replace(/"/g, '\\"')}"]`); must(await page.locator('.fz-verdict.bad').count() === 1, 'самопроверка: неверный ответ не отмечен'); }
+await page.click('[data-fz="quit"]'); await page.waitForSelector('.fz-res'); await page.click('[data-fz="back"]');
+must(await page.locator('[data-fz="selfw"][data-v="4"]').count() === 1, 'нет режима «Ошибки» после неверного ответа');
+await page.click('[data-fz="exam"][data-v="2"]'); await page.waitForSelector('#fz-timer'); await shot(page, 'exam');
+must(await E(() => TQ.ids.length === 30 && new Set(TQ.ids).size === 30 && TQ.ids.every(id => id.startsWith('2.'))), 'экзамен: не 30 разных вопросов темы');
+// время на вопрос вышло — вопрос не засчитан, сам переходит к следующему
+await E(() => { TQ.deadline = Date.now() - 1; }); await page.waitForFunction(() => TQ.i === 1, null, { timeout: 5000 });
+must(await E(() => TQ.ans[TQ.ids[0]].late && !TQ.ans[TQ.ids[0]].ok), 'экзамен: просроченный вопрос засчитан');
+for (let i = 1; i < 30; i++) { const a = await E(() => (TQ.i % 4 ? tCur().a : tCur().x[0])); await page.click(`.fz-opt[data-v="${a.replace(/"/g, '\\"')}"]`); }
+await page.waitForSelector('.fz-res'); await shot(page, 'exam-result');
+const ex = await E(() => tsLoad().att[0]); must(ex.n === 30 && ex.right === 22 && ex.score === 73 && ex.grade === 3, `экзамен: неверный подсчёт (${ex.right} верно, ${ex.score} баллов, «${ex.grade}»)`);
+const [dlx] = await Promise.all([page.waitForEvent('download'), page.click('[data-fz="examfile"]')]); const fx = path.join(SHOTS || '/tmp', 'exam.lw3'); await dlx.saveAs(fx);
+must(JSON.parse(fs.readFileSync(fx, 'utf8')).kind === 'exam', 'файл экзамена неверный');
+await page.click('[data-fz="back"]'); await page.click('[data-d="page"][data-v="results"]'); must((await page.locator('.fz-tbl').nth(1).innerText()).includes("73"), 'экзамен не попал в «Мои результаты»');
+
+// преподаватель: вкладки ЛР, экзамены, подлинность, отчёт; сброс пароля курсанта
+await page.click('[data-d="home"]'); await page.click('[data-d="acc"]'); await page.fill('#au-pw', '0000'); await page.click('[data-d="login"]');
+must(await E(() => SCREEN === 'home'), 'вход с неверным паролем');
+await page.click('[data-d="teacher"]'); await page.fill('#tp1', '2026'); await page.fill('#tp2', '2026'); await page.click('[data-t="setpass"]');
+await page.setInputFiles('#file-in', [f1, f2, ...Object.values(fE), fx]); await page.waitForFunction(() => TROWS.length === 8);
+await page.click('[data-t="tlab"][data-v="exam"]'); await W(150);
+must((await page.locator('table.tt tr.r').count()) === 1 && (await page.locator('table.tt').innerText()).includes('подлинный'), 'преподаватель: нет экзамена');
+await page.click('table.tt tr.r'); await W(150); must(await page.locator('#modal table.tt tr').count() === 31, 'преподаватель: нет разбора экзамена'); await shot(page, 'teacher-exam'); await page.keyboard.press('Escape');
+await page.click('[data-t="tlab"][data-v="acc"]'); await W(150); await page.click('[data-t="pwreset"]'); await W(150);
+must(await E(() => !acctHasPw(profiles()[0])), 'пароль не сброшен');
+await page.click('[data-t="back"]'); await page.click('[data-d="acc"]'); await page.fill('#au-n1', '5678'); await page.fill('#au-n2', '5678'); await page.click('[data-d="setpw"]');
+must(await E(() => SCREEN === 'labs' && acctCheck(PROFILE, '5678')), 'после сброса не задаётся новый пароль');
+await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]'); await page.fill('#tp', '2026'); await page.click('[data-t="unlock"]');
 for (const n of [1, 2, 4, 5, 6, 7, 8]) {
   await page.click(`[data-t="tlab"][data-v="${n}"]`); await W(150);
   must((await page.locator('table.tt tr.r').count()) === 1 && (await page.locator('table.tt').innerText()).includes('подлинный'), `преподаватель: нет работы ЛР ${n}`);
@@ -138,5 +170,5 @@ for (const n of [1, 2, 4, 5, 6, 7, 8]) {
   await shot(page, `teacher-l${n}`); await page.keyboard.press('Escape');
 }
 if (errors.length) throw new Error('ошибки в браузере: ' + errors.join(' | '));
-console.log('PASS: Физпрактикум — выбор работы, ЛР 1, 2, 4–8 целиком: допуск, подготовка, опыты, обработка, защита, сводка, отчёт, файл работы, продолжение из файла, режим преподавателя по работам.');
+console.log('PASS: Физпрактикум — выбор работы, ЛР 1, 2, 4–8 целиком, тесты (самопроверка, экзамен с таймером), учётные записи с паролем: допуск, подготовка, опыты, обработка, защита, сводка, отчёт, файл работы, продолжение из файла, режим преподавателя по работам.');
 await b.close();

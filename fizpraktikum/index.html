@@ -308,6 +308,163 @@ textarea.inp{min-height:220px; line-height:1.5; font-size:15px; resize:vertical}
 #l2-cv{display:block; width:min(100%, calc(52vh * 580 / 452)); margin:0 auto; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid var(--line)}
 .l2-cal{display:block; width:100%; aspect-ratio:580/200; height:auto; margin:10px 0 4px; border-radius:12px; border:1px solid var(--line)}
 .lw-res{margin:10px 0 0; padding:10px 12px; border-radius:10px; background:rgba(90,211,160,.1); border:1px solid rgba(90,211,160,.4); font:700 16px var(--ui); color:var(--mint)}
+/* ===== «Физпрактикум»: меню, разделы, карточки работ, тесты, «О программе» — общее для компьютера и телефона ===== */
+.fz-app{display:grid; grid-template-columns:264px minmax(0,1fr); min-height:100vh}
+.fz-nav{position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:2px; padding:22px 14px 16px; background:var(--card); border-right:1px solid var(--line); overflow:auto}
+.fz-brand{display:flex; gap:12px; align-items:center; padding:0 8px 22px}
+.fz-brand .logo{width:44px; height:44px; border-radius:13px; font-size:24px; flex:none}
+.fz-brand b{display:block; font-size:18px; line-height:1.2} .fz-brand small{display:block; color:var(--mute); font-size:11.5px; line-height:1.3; margin-top:2px}
+.fz-nav a, .fz-nav button.fz-ni{display:flex; gap:12px; align-items:center; width:100%; padding:11px 12px; border:0; border-radius:12px; background:none; color:var(--tx2); font:600 14.5px var(--ui); text-align:left; cursor:pointer; text-decoration:none}
+.fz-nav .fz-ni .ic{width:20px; height:20px; flex:none; opacity:.85}
+.fz-nav .fz-ni:hover{background:var(--card2); color:var(--tx)}
+.fz-nav .fz-ni.on{background:var(--acc-soft); color:var(--acc)} .fz-nav .fz-ni.on .ic{opacity:1}
+.fz-nav .fz-sp{flex:1}
+.fz-me{display:flex; gap:10px; align-items:center; padding:12px 10px; margin-top:8px; border-top:1px solid var(--line)}
+.fz-me div{min-width:0; flex:1} .fz-me b{display:block; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-me small{color:var(--mute); font-size:12px}
+.fz-page{padding:30px 40px 48px; max-width:1360px; width:100%; box-sizing:border-box}
+.fz-ph{display:flex; align-items:flex-end; gap:16px; margin-bottom:22px} .fz-ph div{flex:1}
+.fz-ph h1{margin:0; font-size:28px; letter-spacing:-.01em} .fz-ph p{margin:6px 0 0; color:var(--mute); font-size:14.5px}
+.fz-h{margin:28px 2px 12px; font:800 12px var(--ui); letter-spacing:.08em; text-transform:uppercase; color:var(--mute)}
+/* карточки работ */
+.fz-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px}
+.fz-card{display:flex; flex-direction:column; padding:0; border:1px solid var(--line); border-radius:20px; background:var(--card); overflow:hidden; text-align:left; cursor:pointer; color:var(--tx); font:inherit; box-shadow:0 1px 2px rgba(20,30,60,.05); transition:transform .15s, box-shadow .15s, border-color .15s}
+.fz-card:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(20,30,60,.10); border-color:var(--line2)}
+.fz-cov{position:relative; display:block; aspect-ratio:16/10; background:linear-gradient(135deg, var(--card2), var(--bg2)); overflow:hidden}
+.fz-cov img{display:block; width:100%; height:100%; object-fit:cover}
+.fz-cov.nocov img{display:none}
+.fz-sec{position:absolute; left:12px; top:12px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,.88); color:#1B2A4A; font:700 11.5px var(--ui); backdrop-filter:blur(4px)}
+.fz-ok{position:absolute; right:12px; top:12px; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--ok); color:#fff} .fz-ok .ic{width:18px; height:18px}
+.fz-body{display:flex; flex-direction:column; gap:6px; padding:14px 16px 16px; flex:1}
+.fz-n{font:800 11.5px var(--ui); letter-spacing:.04em; text-transform:uppercase; color:var(--acc)}
+.fz-card.done .fz-n{color:var(--ok)}
+.fz-body b{font-size:16px; line-height:1.3}
+.fz-st{font-size:13px; color:var(--mute)} .fz-res{font-size:13px; font-weight:700; color:var(--ok)}
+.fz-bar{display:block; height:6px; border-radius:3px; background:var(--card2); overflow:hidden; margin-top:auto} .fz-bar i{display:block; height:100%; background:var(--acc); border-radius:3px}
+.fz-card.done .fz-bar i{background:var(--ok)}
+/* главная */
+.fz-hero{display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:20px}
+.fz-tile{padding:22px; border-radius:20px; background:var(--card); border:1px solid var(--line)}
+.fz-tile h2{margin:0 0 6px; font-size:19px} .fz-tile p{margin:0 0 14px; color:var(--mute); font-size:14px; line-height:1.45}
+.fz-cont{display:grid; grid-template-columns:160px minmax(0,1fr); gap:18px; align-items:center}
+.fz-cont img{width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:14px}
+.fz-stats{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px}
+.fz-stat{padding:14px; border-radius:16px; background:var(--card2)} .fz-stat b{display:block; font-size:26px; line-height:1.1} .fz-stat span{font-size:12.5px; color:var(--mute)}
+.fz-links{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin-top:20px}
+.fz-link{display:flex; gap:14px; align-items:center; padding:18px; border-radius:18px; border:1px solid var(--line); background:var(--card); cursor:pointer; text-align:left; color:var(--tx); font:inherit}
+.fz-link:hover{border-color:var(--acc)} .fz-link .ic{width:26px; height:26px; color:var(--acc); flex:none} .fz-link b{display:block; font-size:15.5px} .fz-link small{color:var(--mute); font-size:13px}
+/* тесты: список тем */
+.fz-final{display:flex; gap:20px; align-items:center; padding:22px 24px; border-radius:20px; background:linear-gradient(120deg, var(--acc-soft), var(--card)); border:1px solid var(--line)}
+.fz-final div{flex:1} .fz-final b{display:block; font-size:20px; margin:4px 0} .fz-final p{margin:0 0 8px; color:var(--tx2); font-size:14px; line-height:1.45}
+.fz-topics{display:grid; gap:10px}
+.fz-topic{display:grid; grid-template-columns:44px minmax(0,1fr) auto auto; gap:16px; align-items:center; padding:14px 16px; border-radius:16px; background:var(--card); border:1px solid var(--line)}
+.fz-tn{width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:var(--acc-soft); color:var(--acc); font:800 17px var(--ui)}
+.fz-tt b{display:block; font-size:15px} .fz-tt small{display:block; color:var(--mute); font-size:12.5px; margin:2px 0 6px} .fz-tt .fz-bar{max-width:260px}
+.fz-tb{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+.fz-best{display:inline-block; padding:4px 10px; border-radius:999px; font:700 12.5px var(--ui); background:var(--card2); color:var(--tx2); white-space:nowrap}
+.fz-best.g5, .fz-best.g4{background:var(--ok-soft); color:var(--ok)} .fz-best.g3{background:var(--warn-soft); color:var(--warn)} .fz-best.g2{background:var(--bad-soft); color:var(--bad)} .fz-best.none{color:var(--mute); font-weight:600}
+/* тесты: вопрос */
+.fz-test{min-height:100vh; background:var(--bg)}
+.fz-thead{display:flex; gap:14px; align-items:center; padding:14px 28px; background:var(--card); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5}
+.fz-ttl{flex:1; min-width:0} .fz-ttl b{display:block; font-size:16px} .fz-ttl small{color:var(--mute); font-size:12.5px}
+.fz-cnt{font:700 13.5px var(--ui); color:var(--tx2); white-space:nowrap}
+.fz-prog{height:4px; background:var(--card2)} .fz-prog i{display:block; height:100%; background:var(--acc); transition:width .3s}
+.fz-qwrap{max-width:860px; margin:0 auto; padding:26px 20px 60px; display:grid; gap:14px}
+.fz-qcard{position:relative; padding:24px 26px; border-radius:20px; background:var(--card); border:1px solid var(--line)}
+.fz-qid{position:absolute; right:18px; top:14px; font:700 12px var(--ui); color:var(--mute)}
+.fz-q{font-size:17.5px; line-height:1.5; font-weight:600; padding-right:46px}
+.fz-qimg{margin:14px 0 4px; padding:10px; border-radius:14px; background:#fff; border:1px solid var(--line); text-align:center}
+.fz-qimg img{max-width:100%; max-height:340px; object-fit:contain}
+.fz-opts{display:grid; gap:10px; margin-top:18px}
+.fz-opt{display:flex; gap:12px; align-items:center; width:100%; padding:13px 14px; border-radius:14px; border:1.5px solid var(--line2); background:var(--bg); color:var(--tx); font:500 15.5px/1.4 var(--ui); text-align:left; cursor:pointer}
+.fz-opt:hover:not([disabled]){border-color:var(--acc); background:var(--acc-soft)}
+.fz-opt .lt{flex:none; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; background:var(--card2); font-weight:800; font-size:13.5px}
+.fz-opt.ok{border-color:var(--ok); background:var(--ok-soft)} .fz-opt.ok .lt{background:var(--ok); color:#fff}
+.fz-opt.bad{border-color:var(--bad); background:var(--bad-soft)} .fz-opt.bad .lt{background:var(--bad); color:#fff}
+.fz-opt.dim{opacity:.55} .fz-opt[disabled]{cursor:default}
+.fz-verdict{margin:16px 0 0; padding:12px 14px; border-radius:12px; font-weight:600; display:flex; gap:8px; align-items:flex-start}
+.fz-verdict .ic{width:20px; height:20px; flex:none} .fz-verdict.ok{background:var(--ok-soft); color:var(--ok)} .fz-verdict.bad{background:var(--bad-soft); color:var(--bad)}
+.fz-expl{margin-top:12px; padding:14px 16px; border-radius:14px; background:var(--card2); font-size:14.5px; line-height:1.55; color:var(--tx2)} .fz-expl p{margin:0 0 8px} .fz-expl p:last-child{margin:0} .fz-expl b{color:var(--tx)}
+.fz-disp{color:var(--warn) !important; display:flex; gap:8px} .fz-disp .ic{width:18px; height:18px; flex:none; margin-top:2px}
+.fz-next{margin-top:16px; width:100%}
+.fz-timerbox{display:grid; gap:8px; padding:14px 18px; border-radius:16px; background:var(--card); border:1px solid var(--line); font-size:14.5px}
+.fz-timerbox .ic{width:18px; height:18px; vertical-align:-3px} .fz-timerbox b{font-size:18px; font-variant-numeric:tabular-nums}
+.fz-tb2{display:block; height:8px; border-radius:4px; background:var(--card2); overflow:hidden} .fz-tb2 i{display:block; height:100%; background:var(--ok); border-radius:4px; transition:width .25s linear}
+.fz-tb2.low i{background:var(--bad)}
+.fz-res{text-align:center; display:grid; gap:6px; justify-items:center; padding:34px 26px}
+.fz-res h2{margin:4px 0 0} .fz-res p{margin:0 0 14px; max-width:560px}
+.fz-big{font:800 56px/1 var(--ui); color:var(--acc)} .fz-big.g5, .fz-big.g4{color:var(--ok)} .fz-big.g3{color:var(--warn)} .fz-big.g2{color:var(--bad)}
+.fz-rev .fz-verdict{margin-top:10px}
+.row.center{justify-content:center; flex-wrap:wrap; gap:10px}
+/* таблицы результатов */
+.fz-tbl{border-radius:16px; border:1px solid var(--line); background:var(--card); overflow:auto}
+.fz-tbl table{width:100%; border-collapse:collapse; font-size:14px} .fz-tbl th{font:700 12px var(--ui); color:var(--mute); text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--card2)}
+.fz-tbl td{padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:middle} .fz-tbl tr:last-child td{border-bottom:0}
+/* профиль */
+.fz-form{display:grid; gap:12px; max-width:440px}
+.fz-form .field input{width:100%}
+.fz-pcards{display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; align-items:start}
+/* о программе */
+.fz-about{max-width:780px; display:grid; gap:16px}
+.fz-ab-head{display:flex; gap:18px; align-items:center; padding:6px 0 8px}
+.fz-ab-head .logo.big{width:72px; height:72px; border-radius:20px; font-size:40px}
+.fz-ab-head h1{margin:0; font-size:30px} .fz-ab-head p{margin:4px 0 6px; color:var(--tx2)}
+.fz-ver{display:inline-block; padding:3px 10px; border-radius:999px; background:var(--card2); color:var(--mute); font:600 12.5px var(--ui)}
+.fz-ab-card{padding:20px 22px; border-radius:18px; background:var(--card); border:1px solid var(--line); line-height:1.55; font-size:14.5px}
+.fz-ab-card p{margin:0 0 8px} .fz-ab-card p:last-child{margin:0}
+.fz-ab-org{font:800 13px var(--ui); letter-spacing:.06em; text-transform:uppercase; color:var(--tx)} .fz-ab-dept{color:var(--acc); font-weight:700}
+.fz-ab-t{font-weight:800}
+.fz-ab-grid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; margin-top:14px}
+.fz-ab-grid div{padding:14px; border-radius:14px; background:var(--card2)} .fz-ab-grid b{display:block; font-size:24px; color:var(--acc)} .fz-ab-grid span{font-size:12.5px; color:var(--mute); line-height:1.35}
+.fz-copy{margin:8px 0 0; padding-top:16px; border-top:1px solid var(--line); text-align:center; font-size:13.5px; color:var(--tx2); line-height:1.5}
+.fz-devs{justify-self:center; border:0; background:none; color:var(--mute); font:500 13px var(--ui); cursor:pointer; text-decoration:underline; text-decoration-color:var(--line2); text-underline-offset:3px; padding:4px 8px}
+.fz-devs:hover{color:var(--tx2)}
+.fz-devlist{display:grid; gap:12px; min-width:min(380px, 80vw)} .fz-dev{display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:14px; background:var(--card2)} .fz-dev b{font-size:15px}
+/* вход и регистрация */
+.fz-auth{width:min(460px, 100%)}
+.fz-seg{display:grid; grid-template-columns:1fr 1fr; padding:4px; border-radius:14px; background:var(--card2); margin-bottom:16px}
+.fz-seg button{border:0; background:none; padding:10px; border-radius:11px; font:700 14px var(--ui); color:var(--mute); cursor:pointer}
+.fz-seg button.on{background:var(--card); color:var(--tx); box-shadow:0 1px 3px rgba(20,30,60,.10)}
+.fz-acc{display:grid; gap:8px; max-height:300px; overflow:auto; margin-bottom:12px}
+.fz-acc button{display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:14px; border:1.5px solid var(--line); background:var(--card); text-align:left; cursor:pointer; color:var(--tx); font:inherit}
+.fz-acc button.on{border-color:var(--acc); background:var(--acc-soft)} .fz-acc b{display:block; font-size:14.5px} .fz-acc small{color:var(--mute); font-size:12.5px}
+.fz-org{margin-top:14px; text-align:center; font-size:12.5px; color:var(--mute); line-height:1.45}
+.fz-msg{min-height:1.3em; margin:8px 2px 0; font-size:13.5px; color:var(--bad)}
+@media (max-width:1100px){ .fz-hero{grid-template-columns:1fr} .fz-topic{grid-template-columns:44px minmax(0,1fr); } .fz-topic .fz-best, .fz-topic .fz-tb{grid-column:2; justify-self:start} }
+.fz-res h2{color:var(--tx)}
+/* ---------- телефон (Android, iPhone) ---------- */
+.fz-mpage{display:grid; gap:14px; padding-bottom:12px}
+.fz-mpage > .card{margin:0}
+.fz-tabs{display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:2px; padding:6px; border-radius:22px; background:var(--card); box-shadow:0 6px 24px rgba(20,30,60,.14); border:1px solid var(--line)}
+.fz-tabs button{display:grid; justify-items:center; gap:3px; padding:7px 2px; border:0; border-radius:16px; background:none; color:var(--mute); font:700 11px var(--ui)}
+.fz-tabs button .ic{width:22px; height:22px} .fz-tabs button.on{color:var(--acc); background:var(--acc-soft)}
+.fz-mcont{display:grid; grid-template-columns:104px minmax(0,1fr) 20px; gap:12px; align-items:center; width:100%; padding:10px; border-radius:18px; border:1px solid var(--line); background:var(--card); text-align:left; color:var(--tx); font:inherit}
+.fz-mcont img{width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:12px}
+.fz-mcont small{display:block; font:800 11px var(--ui); text-transform:uppercase; letter-spacing:.04em; color:var(--acc)} .fz-mcont b{display:block; font-size:14.5px; line-height:1.3; margin:2px 0} .fz-mcont em{font-style:normal; font-size:12.5px; color:var(--mute)}
+.fz-mcont > .ic{color:var(--mute)}
+.fz-test.fz-phone .fz-thead{padding:calc(var(--st, 0px) + 8px) 12px 10px; gap:8px}
+.fz-test.fz-phone .fz-thead .btn{padding:8px 10px; min-height:0}
+@media (max-width:700px){
+  .fz-grid{grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
+  .fz-card{border-radius:16px} .fz-body{padding:10px 11px 12px; gap:4px} .fz-body b{font-size:13.5px} .fz-st, .fz-res{font-size:11.5px} .fz-n{font-size:10px}
+  .fz-sec{left:8px; top:8px; font-size:10.5px; padding:3px 8px} .fz-ok{width:24px; height:24px; right:8px; top:8px}
+  .fz-final{flex-direction:column; align-items:stretch; padding:18px} .fz-final b{font-size:18px}
+  .fz-topic{grid-template-columns:40px minmax(0,1fr); gap:12px; padding:12px} .fz-topic .fz-best, .fz-topic .fz-tb{grid-column:1 / -1; justify-self:stretch}
+  .fz-tb{justify-content:stretch} .fz-tb .btn{flex:1 1 0; padding-left:8px; padding-right:8px}
+  .fz-stats{gap:8px} .fz-stat{padding:12px 10px} .fz-stat b{font-size:22px}
+  .fz-links{grid-template-columns:1fr; margin-top:0}
+  .fz-qwrap{padding:14px 12px 40px} .fz-qcard{padding:18px 16px; border-radius:18px} .fz-q{font-size:16px; padding-right:40px} .fz-opt{font-size:15px; padding:12px}
+  .fz-cnt{font-size:12px} .fz-ttl b{font-size:15px}
+  .fz-ab-grid{grid-template-columns:1fr} .fz-ab-head h1{font-size:26px} .fz-ab-head .logo.big{width:60px; height:60px; font-size:32px}
+  .fz-tbl{font-size:13px} .fz-tbl td, .fz-tbl th{padding:8px 10px}
+}
+.fz-short{display:none}
+@media (max-width:700px){ .fz-long{display:none} .fz-short{display:inline} }
+.fz-verdict{display:block} .fz-verdict .ic{display:inline-block; vertical-align:-4px; margin-right:6px}
+.fz-thead .btn{width:auto; flex:none}
+.fz-test.fz-phone .fz-thead{display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; column-gap:6px; row-gap:2px}
+.fz-test.fz-phone .fz-quit{width:auto; min-height:36px; padding:6px 8px; background:none; box-shadow:none; color:var(--acc); font-size:14px; border:0}
+.fz-test.fz-phone .fz-cnt{grid-column:2; font-size:12px; color:var(--mute)}
+
 @media print{
   @page{size:A4; margin:12mm}
   html,body{background:#fff !important; min-height:0}
@@ -331,7 +488,7 @@ textarea.inp{min-height:220px; line-height:1.5; font-size:15px; resize:vertical}
 var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.ExceptionCode||(e.ExceptionCode={})).Unimplemented="UNIMPLEMENTED",t.Unavailable="UNAVAILABLE";class n extends Error{constructor(e,t,n){super(e),this.message=e,this.code=t,this.data=n}}const s=t=>{const s=t.CapacitorCustomPlatform||null,r=t.Capacitor||{},i=r.Plugins=r.Plugins||{},a=()=>null!==s?s.name:(e=>{var t,n;return(null==e?void 0:e.androidBridge)?"android":(null===(n=null===(t=null==e?void 0:e.webkit)||void 0===t?void 0:t.messageHandlers)||void 0===n?void 0:n.bridge)?"ios":"web"})(t),o=e=>{var t;return null===(t=r.PluginHeaders)||void 0===t?void 0:t.find(t=>t.name===e)},c=new Map;return r.convertFileSrc||(r.convertFileSrc=e=>e),r.getPlatform=a,r.handleError=e=>t.console.error(e),r.isNativePlatform=()=>"web"!==a(),r.isPluginAvailable=e=>{const t=c.get(e);return!!(null==t?void 0:t.platforms.has(a()))||!!o(e)},r.registerPlugin=(t,l={})=>{const d=c.get(t);if(d)return console.warn(`Capacitor plugin "${t}" already registered. Cannot register plugins twice.`),d.proxy;const u=a(),p=o(t);let m;const h=i=>{let a;const o=(...o)=>{const c=(async()=>(!m&&u in l?m=m="function"==typeof l[u]?await l[u]():l[u]:null!==s&&!m&&"web"in l&&(m=m="function"==typeof l.web?await l.web():l.web),m))().then(s=>{const c=((s,i)=>{var a,o;if(!p){if(s)return null===(o=s[i])||void 0===o?void 0:o.bind(s);throw new n(`"${t}" plugin is not implemented on ${u}`,e.ExceptionCode.Unimplemented)}{const e=null==p?void 0:p.methods.find(e=>i===e.name);if(e)return"promise"===e.rtype?e=>r.nativePromise(t,i.toString(),e):(e,n)=>r.nativeCallback(t,i.toString(),e,n);if(s)return null===(a=s[i])||void 0===a?void 0:a.bind(s)}})(s,i);if(c){const e=c(...o);return a=null==e?void 0:e.remove,e}throw new n(`"${t}.${i}()" is not implemented on ${u}`,e.ExceptionCode.Unimplemented)});return"addListener"===i&&(c.remove=async()=>a()),c};return o.toString=()=>`${i.toString()}() { [capacitor code] }`,Object.defineProperty(o,"name",{value:i,writable:!1,configurable:!1}),o},w=h("addListener"),g=h("removeListener"),v=(e,t)=>{const n=w({eventName:e},t),s=async()=>{const s=await n;g({eventName:e,callbackId:s},t)},r=new Promise(e=>n.then(()=>e({remove:s})));return r.remove=async()=>{console.warn("Using addListener() without 'await' is deprecated."),await s()},r},y=new Proxy({},{get(e,t){switch(t){case"$$typeof":return;case"toJSON":return()=>({});case"addListener":return p?v:w;case"removeListener":return g;default:return h(t)}}});return i[t]=y,c.set(t,{name:t,proxy:y,platforms:new Set([...Object.keys(l),...p?[u]:[]])}),y},r.Exception=n,r.DEBUG=!!r.DEBUG,r.isLoggingEnabled=!!r.isLoggingEnabled,r},r=(e=>e.Capacitor=s(e))("undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"undefined"!=typeof window?window:"undefined"!=typeof global?global:{}),i=r.registerPlugin;class a{constructor(){this.listeners={},this.retainedEventArguments={},this.windowListeners={}}addListener(e,t){let n=!1;this.listeners[e]||(this.listeners[e]=[],n=!0),this.listeners[e].push(t);const s=this.windowListeners[e];s&&!s.registered&&this.addWindowListener(s),n&&this.sendRetainedArgumentsForEvent(e);return Promise.resolve({remove:async()=>this.removeListener(e,t)})}async removeAllListeners(){this.listeners={};for(const e in this.windowListeners)this.removeWindowListener(this.windowListeners[e]);this.windowListeners={}}notifyListeners(e,t,n){const s=this.listeners[e];if(s)s.forEach(e=>e(t));else if(n){let n=this.retainedEventArguments[e];n||(n=[]),n.push(t),this.retainedEventArguments[e]=n}}hasListeners(e){var t;return!!(null===(t=this.listeners[e])||void 0===t?void 0:t.length)}registerWindowListener(e,t){this.windowListeners[t]={registered:!1,windowEventName:e,pluginEventName:t,handler:e=>{this.notifyListeners(t,e)}}}unimplemented(t="not implemented"){return new r.Exception(t,e.ExceptionCode.Unimplemented)}unavailable(t="not available"){return new r.Exception(t,e.ExceptionCode.Unavailable)}async removeListener(e,t){const n=this.listeners[e];if(!n)return;const s=n.indexOf(t);-1!==s&&this.listeners[e].splice(s,1),this.listeners[e].length||this.removeWindowListener(this.windowListeners[e])}addWindowListener(e){window.addEventListener(e.windowEventName,e.handler),e.registered=!0}removeWindowListener(e){e&&(window.removeEventListener(e.windowEventName,e.handler),e.registered=!1)}sendRetainedArgumentsForEvent(e){const t=this.retainedEventArguments[e];t&&(delete this.retainedEventArguments[e],t.forEach(t=>{this.notifyListeners(e,t)}))}}const o=i("WebView"),c=e=>encodeURIComponent(e).replace(/%(2[346B]|5E|60|7C)/g,decodeURIComponent).replace(/[()]/g,escape),l=e=>e.replace(/(%[\dA-F]{2})+/gi,decodeURIComponent);class d extends a{async getCookies(){const e=document.cookie,t={};return e.split(";").forEach(e=>{if(e.length<=0)return;let[n,s]=e.replace(/=/,"CAP_COOKIE").split("CAP_COOKIE");n=l(n).trim(),s=l(s).trim(),t[n]=s}),t}async setCookie(e){try{const t=c(e.key),n=c(e.value),s=e.expires?`; expires=${e.expires.replace("expires=","")}`:"",r=(e.path||"/").replace("path=",""),i=null!=e.url&&e.url.length>0?`domain=${e.url}`:"";document.cookie=`${t}=${n||""}${s}; path=${r}; ${i};`}catch(e){return Promise.reject(e)}}async deleteCookie(e){try{document.cookie=`${e.key}=; Max-Age=0`}catch(e){return Promise.reject(e)}}async clearCookies(){try{const e=document.cookie.split(";")||[];for(const t of e)document.cookie=t.replace(/^ +/,"").replace(/=.*/,`=;expires=${(new Date).toUTCString()};path=/`)}catch(e){return Promise.reject(e)}}async clearAllCookies(){try{await this.clearCookies()}catch(e){return Promise.reject(e)}}}const u=i("CapacitorCookies",{web:()=>new d}),p=(e,t={})=>{const n=Object.assign({method:e.method||"GET",headers:e.headers},t),s=((e={})=>{const t=Object.keys(e);return Object.keys(e).map(e=>e.toLocaleLowerCase()).reduce((n,s,r)=>(n[s]=e[t[r]],n),{})})(e.headers)["content-type"]||"";if("string"==typeof e.data)n.body=e.data;else if(s.includes("application/x-www-form-urlencoded")){const t=new URLSearchParams;for(const[n,s]of Object.entries(e.data||{}))t.set(n,s);n.body=t.toString()}else if(s.includes("multipart/form-data")||e.data instanceof FormData){const t=new FormData;if(e.data instanceof FormData)e.data.forEach((e,n)=>{t.append(n,e)});else for(const n of Object.keys(e.data))t.append(n,e.data[n]);n.body=t;const s=new Headers(n.headers);s.delete("content-type"),n.headers=s}else(s.includes("application/json")||"object"==typeof e.data)&&(n.body=JSON.stringify(e.data));return n};class m extends a{async request(e){const t=p(e,e.webFetchExtra),n=((e,t=!0)=>e?Object.entries(e).reduce((e,n)=>{const[s,r]=n;let i,a;return Array.isArray(r)?(a="",r.forEach(e=>{i=t?encodeURIComponent(e):e,a+=`${s}=${i}&`}),a.slice(0,-1)):(i=t?encodeURIComponent(r):r,a=`${s}=${i}`),`${e}&${a}`},"").substr(1):null)(e.params,e.shouldEncodeUrlParams),s=n?`${e.url}?${n}`:e.url,r=await fetch(s,t),i=r.headers.get("content-type")||"";let a,o,{responseType:c="text"}=r.ok?e:{};switch(i.includes("application/json")&&(c="json"),c){case"arraybuffer":case"blob":o=await r.blob(),a=await(async e=>new Promise((t,n)=>{const s=new FileReader;s.onload=()=>{const e=s.result;t(e.indexOf(",")>=0?e.split(",")[1]:e)},s.onerror=e=>n(e),s.readAsDataURL(e)}))(o);break;case"json":a=await r.json();break;default:a=await r.text()}const l={};return r.headers.forEach((e,t)=>{l[t]=e}),{data:a,headers:l,status:r.status,url:r.url}}async get(e){return this.request(Object.assign(Object.assign({},e),{method:"GET"}))}async post(e){return this.request(Object.assign(Object.assign({},e),{method:"POST"}))}async put(e){return this.request(Object.assign(Object.assign({},e),{method:"PUT"}))}async patch(e){return this.request(Object.assign(Object.assign({},e),{method:"PATCH"}))}async delete(e){return this.request(Object.assign(Object.assign({},e),{method:"DELETE"}))}}const h=i("CapacitorHttp",{web:()=>new m});var w,g;e.SystemBarsStyle=void 0,(w=e.SystemBarsStyle||(e.SystemBarsStyle={})).Dark="DARK",w.Light="LIGHT",w.Default="DEFAULT",e.SystemBarType=void 0,(g=e.SystemBarType||(e.SystemBarType={})).StatusBar="StatusBar",g.NavigationBar="NavigationBar";class v extends a{async setStyle(){this.unavailable("not available for web")}async setAnimation(){this.unavailable("not available for web")}async show(){this.unavailable("not available for web")}async hide(){this.unavailable("not available for web")}}const y=i("SystemBars",{web:()=>new v});return e.Capacitor=r,e.CapacitorCookies=u,e.CapacitorException=n,e.CapacitorHttp=h,e.SystemBars=y,e.WebPlugin=a,e.WebView=o,e.buildRequestInit=p,e.registerPlugin=i,Object.defineProperty(e,"__esModule",{value:!0}),e}({});
 
 
-const APP_VER = "2.1.0";
+const APP_VER = "2.2.0";
 const PWA = true;
 const REPORT_CSS = ".lwr-tools{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap}\n.lwr{display:grid; gap:16px}\n.lwp{background:#fff; color:#111; font:14px/1.45 \"Times New Roman\", \"STIX Two Text\", serif; padding:28px 30px; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.35); max-width:800px; margin:0 auto; width:100%; box-sizing:border-box}\n.lwp .c{text-align:center}.lwp .b{font-weight:700}.lwp .mt2{margin-top:22px}.lwp hr{border:0; border-top:1px solid #000; margin:10px 0}\n.lwp .row{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px; margin:10px 0}\n.lwp .ul{display:inline-block; border-bottom:1px solid #000; padding:0 4px; min-height:1.2em; flex:1 1 40%}\n.lwp .ul.s{flex:0 0 3.2em; text-align:center}.lwp .ul.m{flex:0 0 9em; text-align:center}\n.lwp table{width:100%; border-collapse:collapse; margin:8px 0; font-size:12.5px}\n.lwp th,.lwp td{border:1px solid #000; padding:4px 5px; text-align:center}.lwp td.l{text-align:left}\n.lwp .small{font-size:12.5px}.lwp .fm p{margin:4px 0; font-style:italic}.lwp .concl{min-height:120px; white-space:normal}\n.lwp .sign{margin-top:28px}\n.lwr-svg{display:block; width:100%; height:auto; margin:6px 0}\n.lwp table.tight{font-size:11.5px; margin:5px 0}.lwp table.tight th,.lwp table.tight td{padding:2px 4px}\n.lwp p.small{margin:4px 0}\n.lwp .lwr-svg.scheme{width:62%; margin:2px auto}\n.seg{display:flex; background:var(--bg2); border-radius:14px; padding:4px; gap:2px}\n.seg button{flex:1; border:0; background:none; padding:9px 4px; border-radius:11px; font:600 13.5px var(--ui); color:var(--mute)}\n.seg button[aria-pressed=\"true\"]{background:var(--card2); color:var(--text)}\n.lp-btn{width:52px;height:46px;flex:0 0 52px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--text);font:600 24px/1 var(--ui);touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:transform .08s,background .15s}\n.lp-btn:active{transform:scale(.94);background:#25315a}\n.lw-pucks{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin:10px 0}\n.lw-pucks button{display:grid; justify-items:center; gap:2px; padding:10px 2px; border-radius:14px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text)}\n.lw-pucks button b{font-size:18px}.lw-pucks button small{color:var(--mute); font-size:12px}.lw-pucks button i{font-style:normal; font-size:10.5px; font-weight:700}\n.lw-pucks button.p1{border-color:#6C8CFF; background:rgba(108,140,255,.15)}.lw-pucks button.p1 i{color:#9DB2FF}\n.lw-pucks button.p2{border-color:#FF7A59; background:rgba(255,122,89,.15)}.lw-pucks button.p2 i{color:#FFB199}\n.lw-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px}.lw-row label{flex:1 1 130px; display:grid; gap:5px; font-size:13px; color:var(--mute)}\n.lwi{width:100%; min-width:0; box-sizing:border-box; padding:9px 10px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:600 15px var(--ui); font-variant-numeric:tabular-nums}\n.lwi:focus{outline:none; border-color:var(--blue)} .lwi.ok{border-color:var(--mint); background:rgba(61,214,160,.08)} .lwi.bad{border-color:var(--pink); background:rgba(255,107,139,.08)}\n.lw-ta{width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg2); color:var(--text); font:500 14.5px/1.5 var(--ui); resize:vertical}\n.lw-stage{position:sticky; top:0; z-index:5; background:var(--bg); padding-bottom:4px}\n#lw-cv{display:block; width:min(100%, calc(52vh * 580 / 440)); margin:0 auto; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid var(--line); touch-action:none; cursor:crosshair}\n.lw-hint{margin:6px 2px 0; font-size:12.5px; color:var(--mute); display:flex; gap:6px; align-items:center}.lw-hint .ic{width:15px; height:15px; flex:none}\n.lw-screw{display:flex; align-items:center; gap:10px; margin-top:10px}.lw-screw span{flex:1; font-size:14px; color:var(--mute)}.lw-screw b{font:800 22px var(--ui); min-width:24px; text-align:center}\n.lw-screw .lp-btn{width:46px; height:42px; flex:0 0 46px}\n.lw-scroll{overflow-x:auto}\n.lw-tbl{width:100%; border-collapse:collapse; font-size:13.5px; font-variant-numeric:tabular-nums}\n.lw-tbl th{font:600 12px var(--ui); color:var(--mute); text-align:left; padding:6px 6px; border-bottom:1px solid var(--line)}\n.lw-tbl td{padding:6px; border-bottom:1px solid var(--line); vertical-align:top}\n.lw-tbl tr.now td{background:rgba(108,140,255,.08)} .lw-tbl tr.sum td{font-size:12px; color:var(--mute)}\n.lw-tbl tr.sum .lwi{margin-top:4px; font-size:14px}\n.lw-tbl.wide{min-width:620px}\n.lw-tbl td .lwi{padding:6px 7px; font-size:14px}\n.lw-aim{display:flex; gap:6px; margin-top:8px; align-items:stretch}\n.lw-aim button{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:0 12px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--text); font:600 14px var(--ui); touch-action:manipulation}\n.lw-aim > button{flex:1 1 0; min-width:0; white-space:nowrap}\n.lw-aim > button .ic{width:17px; height:17px; color:#E5484D}\n.lw-aim button:active{background:var(--card2)}\n.lw-arrows{display:grid; grid-template-columns:repeat(4,44px); gap:4px}\n.lw-arrows button{padding:0}\n.lw-arrows .ic{width:20px; height:20px}\n.lw-row.three label{flex:1 1 90px}\n.lw-pucks button.p3{border-color:#C46A45; background:rgba(196,106,69,.16)}.lw-pucks button.p3 i{color:#F0A27F}\n.lw-who{display:block; font-size:11.5px; color:var(--gold); line-height:1.3}\n.lw-ctl{margin-top:8px; display:grid; gap:6px}\n.lw-ctl-row{display:flex; gap:6px; align-items:flex-end}\n.lw-ctl-row label{flex:1 1 0; min-width:0; display:grid; gap:3px; font-size:12px; font-weight:600; color:var(--mute)}\n.lw-ctl-row .lwi{min-height:44px; padding:6px 10px; font-size:16px}\n.lw-ctl-row .btn{flex:0 0 auto; min-height:44px; padding:0 14px; font-size:14.5px}\n.lw-ctl-row.four label{flex:1 1 0}\n.lw-ctl .btn.wide{min-height:46px; margin:0}\n.lw-ctl .lw-msg{margin:0; font-size:13px; min-height:0}\n.lw-ctl .lw-msg:empty{display:none}\n.lw-stage + .lw-hint{margin-top:0}\n#l2-cv{display:block; width:min(100%, calc(52vh * 580 / 452)); margin:0 auto; aspect-ratio:580/452; height:auto; border-radius:16px; border:1px solid var(--line)}\n.l2-cal{display:block; width:100%; aspect-ratio:580/200; height:auto; margin:10px 0 4px; border-radius:12px; border:1px solid var(--line)}\n.lw-res{margin:10px 0 0; padding:10px 12px; border-radius:10px; background:rgba(90,211,160,.1); border:1px solid rgba(90,211,160,.4); font:700 16px var(--ui); color:var(--mint)}";
 const LAB_BG = {"edge": 0.8984, "top": "#0F2237", "note": "edge — кромка стола на картинке, доля высоты (строка 920 из 1024); top — цвет полосы над картинкой", "src": "img/lab-bg.webp"};
@@ -470,7 +627,7 @@ function lwDraw() {
     lwScene(c, mapZ, Z, true);
     c.strokeStyle = 'rgba(255,194,75,.9)'; c.lineWidth = 1; c.beginPath(); c.moveTo(X0 + L / 2, Y0); c.lineTo(X0 + L / 2, Y0 + L); c.moveTo(X0, Y0 + L / 2); c.lineTo(X0 + L, Y0 + L / 2); c.stroke();
     c.restore(); c.strokeStyle = '#FFC24B'; c.lineWidth = 2; c.strokeRect(X0, Y0, L, L);
-    c.font = '700 11px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillStyle = 'rgba(11,21,36,.82)'; c.fillRect(X0 + 1, Y0 + L - 24, L - 2, 23); c.fillStyle = '#F2B544'; c.fillText('ЛУПА · 1 деление = 1 мм', X0 + 8, Y0 + L - 8);
+    c.font = '700 11px "Golos UI", system-ui'; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillStyle = 'rgba(11,21,36,.82)'; c.fillRect(X0 + 1, Y0 + L - 24, L - 2, 23); c.fillStyle = '#F2B544'; c.fillText('Лупа · 1 деление = 1 мм', X0 + 8, Y0 + L - 8);
     const [px, py] = map(lx, ly); c.strokeStyle = '#FFC24B'; c.lineWidth = 1.5; c.strokeRect(px - 9 * k, py - 9 * k, 18 * k, 18 * k);
   }
 }
@@ -1099,7 +1256,7 @@ function l2Draw() {
       const len = mm % 10 ? (mm % 5 ? 14 : 22) : 34; c.lineWidth = mm % 10 ? 1 : 1.8; c.beginPath(); c.moveTo(X0, y); c.lineTo(X0 + len, y); c.stroke();
       if (mm % 10 === 0) { c.font = '700 14px "Golos UI", system-ui'; c.fillText(mm / 10, X0 + 40, y); } }
     c.fillStyle = 'rgba(75,85,104,.85)'; c.fillRect(X0 + W - 40, Y0, 40, H / 2); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.beginPath(); c.moveTo(X0, Y0 + H / 2); c.lineTo(X0 + W, Y0 + H / 2); c.stroke();
-    c.restore(); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(X0, Y0, W, H); c.fillStyle = '#F2B544'; c.font = '700 10px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('ЛУПА: линейка, см', X0, Y0 - 18); c.fillText('1 деление = 1 мм', X0, Y0 - 6);
+    c.restore(); c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(X0, Y0, W, H); c.fillStyle = '#F2B544'; c.font = '700 10px "Golos UI", system-ui'; c.textAlign = 'left'; c.fillText('Лупа: линейка, см', X0, Y0 - 18); c.fillText('1 деление = 1 мм', X0, Y0 - 6);
     c.fillStyle = '#C9D4E3'; c.font = '600 9px "Golos UI", system-ui'; c.fillText('груз', X0 + W - 36, Y0 + H / 2 - 8);
     c.strokeStyle = 'rgba(242,181,68,.6)'; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(X0 + W, Y0 + H / 2); c.lineTo(gx - 13, yAt(h)); c.stroke(); c.setLineDash([]);
   }
@@ -1921,8 +2078,8 @@ function packResult() {
   return JSON.stringify(Object.assign({}, body, { sig: hmac256(SIG_KEY, JSON.stringify(body)) }));
 }
 function unpackResult(text) {
-  let d; try { d = JSON.parse(text); } catch (e) { return { err: 'это не файл работы «Показатель адиабаты»' }; }
-  if (!d || d.format !== RESULT_FORMAT || !d.state) return { err: 'это не файл работы «Показатель адиабаты»' };
+  let d; try { d = JSON.parse(text); } catch (e) { return { err: 'это не файл результата «Физпрактикума»' }; }
+  if (!d || d.format !== RESULT_FORMAT || !d.state) return { err: 'это не файл результата «Физпрактикума»' };
   const { sig, ...body } = d;
   const ok = typeof sig === 'string' && sig === hmac256(SIG_KEY, JSON.stringify(body));
   if (!body.lab) body.lab = 3;
@@ -1967,7 +2124,7 @@ function procHint(k, u, o, S, n) {
 }
 const PK_NAME = { g1: 'γ₁', g2: 'γ₂', g3: 'γ₃', gm: '⟨γ⟩', dg: '⟨Δγ⟩', eg: 'ε_γ', gT: 'γ_T', e: 'ε' };
 
-/* Сводка «Что рассказать на защите» по работе студента. Общий файл для Windows/Linux и Android. */
+/* Сводка «Что рассказать на защите» по работе курсанта. Общий файл для Windows/Linux и Android. */
 const fx = (v, d = 3) => Number.isFinite(v) ? v.toFixed(d).replace('.', ',') : '—';
 function withState(S, fn) { const keep = L3S; L3S = S; try { return fn(); } finally { L3S = keep; } }
 
@@ -1975,7 +2132,7 @@ function l3SummaryHtml(S) {
   const o = withState(S, l3Calc), hi = o.gm > o.gT, agree = Math.abs(o.gm - o.gT) <= 2 * o.dg;
   const qa = [L3_CQ[0], L3_CQ[2], L3_ADMIT[4], L3_CQ[6], L3_CQ[7]];
   return `<div class="sum">
-    ${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+    ${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     <section><h3>${ic('target')} Что делали</h3>
       <p>Методом Клемана — Дезорма определяли показатель адиабаты воздуха γ = C<sub>p</sub>/C<sub>v</sub>.
       Накачали воздух в баллон и подождали минуту, пока он остынет до комнатной температуры, — записали <b>h₁</b>.
@@ -2008,7 +2165,7 @@ const sumQa = list => `<ul class="sum-qa">${list.map(([q, a]) => `<li><b>${esc(q
 function lwSummaryHtml(S) {
   const keep = LWS; LWS = S; let O; try { O = lwCalcAll(); } finally { LWS = keep; }
   const o = O[2], dP = Math.abs(o.px1 - o.px0) / o.px0 * 100, g = v => f1(v * 1000, 1);
-  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     ${sumBox('target', 'Что делали', `<p>Проверяли законы сохранения импульса и энергии при соударении двух тел примерно одинаковой массы: тело 1 (${g(o.m1)} г) и тело 2 (${g(o.m2)} г). Пружинный механизм — в первом пазу. Опыт 1 — свободное движение тела 1, опыт 2 — удар по телу 2 в закрашенном круге, по ${LW1.N} выстрела. Скорость не измеряли: шайба тормозится трением, поэтому v = √(2μgl), импульс пропорционален m√l, энергия — m·l. По сетке снимали координаты крайних точек шайб.</p>`)}
     ${sumBox('grid-3x3', 'Мои результаты', `<table class="tt sum-t"><tr><th></th><th>до удара</th><th>после удара</th></tr>
       <tr><td>импульс по X, кг·мм^½</td><td class="n">${f1(o.px0, 3)}</td><td class="n">${f1(o.px1, 3)}</td></tr>
@@ -2023,7 +2180,7 @@ function lwSummaryHtml(S) {
 function l2SummaryHtml(S) {
   const keep = L2S; L2S = S; let o; try { o = l2Calc(); } finally { L2S = keep; }
   const a = o.a, far = S.l2 > S.l1;
-  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     ${sumBox('target', 'Что делали', `<p>Определяли момент инерции маятника Обербека динамическим методом. Груз на нити, намотанной на шкив радиусом r = ${S.rr} м, опускался с высоты h = ${S.rh} м; секундомер мерил время t. По a = 2h/t² находили угловое ускорение ε = 2h/(rt²), момент инерции J = mr²(gt²/(2h) − 1) и момент силы M = Jε. Массу груза увеличивали ${a.length} раза, затем переставили цилиндры (l = ${S.rl1} → ${S.rl2} м).</p>`)}
     ${sumBox('grid-3x3', 'Мои измерения', `<table class="tt sum-t"><tr><th>Пуск</th><th>m, кг</th><th>t, с</th><th>ε, рад/с²</th><th>J, кг·м²</th></tr>
       ${a.map((x, i) => `<tr><td>${i + 1}</td><td class="n">${l2Fix(x.m, 3)}</td><td class="n">${l2Fix(x.t, 3)}</td><td class="n">${l2Sig(x.e, 3)}</td><td class="n"><b>${l2Sig(x.J, 3)}</b></td></tr>`).join('')}
@@ -2088,7 +2245,7 @@ function hodNowLab() {
 
 /* =====================================================================
    «Физпрактикум»: ЛР 4–8 (электричество и магнетизм) — общий движок.
-   Как в ЛР 1–3: допуск → подготовка установки → опыты (студент сам настраивает приборы,
+   Как в ЛР 1–3: допуск → подготовка установки → опыты (курсант сам настраивает приборы,
    читает показания и записывает их; программа сверяет записи с тем, что показывали приборы)
    → обработка (таблицы проверяются) → выводы и защита → отчёт по бланку кафедры.
    Описания работ по методичке — labs-e-defs.js (LE[4] … LE[8]).
@@ -2223,7 +2380,7 @@ function leReportHtml(n) {
   const equip = D.equip(S);
   const p1 = `<section class="lwp"><p class="c b">${LAB_DEPT}</p><hr>
     <p class="row">Оценка ${ln('')} Подпись преподавателя ${ln('')}</p>
-    <p class="row">Курсант (студент) ${ln(S.fio)} Класс <span class="ul s">${esc(S.group || '')}</span></p>
+    <p class="row">Курсант (курсант) ${ln(S.fio)} Класс <span class="ul s">${esc(S.group || '')}</span></p>
     <p class="row">Дата выполнения «<span class="ul s">${esc(dd || '')}</span>» <span class="ul m">${MON[(+mon || 1) - 1]}</span> 20<span class="ul s">${esc((yy || '').slice(2))}</span> г.</p>
     <p class="c mt2">ОТЧЕТ<br>по лабораторной работе № <span class="ul s">${n}</span></p>
     <p class="row">Наименование ${ln(D.title)}</p>
@@ -2261,7 +2418,7 @@ const leTbl = (head, rows, cls = 'tight') => `<table class="${cls}"><tr>${head.m
 /* ---------- сводка «что рассказать на защите» ---------- */
 function leSummaryHtml(n, S) {
   const D = LE[n], keep = LES; LES = S; let o, s; try { o = D.calc(S); s = D.sum(S, o); } finally { LES = keep; }
-  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     ${sumBox('target', 'Что делали', `<p>${s.what}</p>`)}
     ${sumBox('grid-3x3', 'Мои результаты', s.res)}
     ${sumBox('circle-check', 'Вывод', `<p>${s.concl}</p>`)}
@@ -2377,7 +2534,7 @@ leRegister(4, (() => {
       const R = S.rig, p = S.p;
       if (c === 'power') { R.on = !R.on; if (!R.on) { R.chg = false; R.ui = 0; R.fresh = false; } return; }
       if (!R.on) return 'Сначала включи питание кнопкой «Сеть».';
-      if (c === 'U') { if (st !== 'prep') return 'Напряжение зарядки менять нельзя: все измерения — при одном и том же U (п. 6, 8).'; R.U = Math.max(0, Math.min(15, +(R.U + +v).toFixed(2))); R.chg = false; return; }
+      if (c === 'U') { if (st !== 'prep') return 'Напряжение зарядки менять нельзя: все измерения — при одном и том же U.'; R.U = Math.max(0, Math.min(15, +(R.U + +v).toFixed(2))); R.chg = false; return; }
       if (c === 'conn') { R.conn = v; R.sw = 'A'; R.rst = true; R.chg = true; R.ui = 0; R.fresh = false; R.cm = false; return; }
       if (c === 'cm') { R.cm = true; return; }
       if (c === 'rst') { R.rst = !R.rst; if (R.rst) { R.ui = 0; if (R.fresh) { R.fresh = false; return 'Ключ 5 замкнут — интегратор сброшен, показание пропало. Измерение нужно повторить.'; } } return; }
@@ -2391,8 +2548,8 @@ leRegister(4, (() => {
       }
     },
     prep: {
-      view: S => leCard('1. Схема для эталонного конденсатора', `<p class="mute small">Цепь собрана по монтажной схеме для Cэ (п. 1). Значение эталонной ёмкости написано на миниблоке — запиши его в мкФ.</p><div class="lw-row"><label>Cэ, мкФ ${leIn('pCe', S.inp.pCe, '0,00')}</label></div>`)
-        + leCard('2. Питание и напряжение зарядки', `<p class="mute small">Включи кнопкой «Сеть» блок генераторов и мультиметры (п. 2–3). Кнопками источника «0…+15 В» установи напряжение зарядки в пределах 3–4 В по мультиметру 9 (предел 20 В) и запиши его (п. 4.3–4.4). Дальше оно не меняется.</p><div class="lw-row"><label>U, В ${leIn('pU', S.inp.pU, '0,00')}</label></div>`),
+      view: S => leCard('1. Схема для эталонного конденсатора', `<p class="mute small">Цепь собрана по монтажной схеме для Cэ. Значение эталонной ёмкости написано на миниблоке — запиши его в мкФ.</p><div class="lw-row"><label>Cэ, мкФ ${leIn('pCe', S.inp.pCe, '0,00')}</label></div>`)
+        + leCard('2. Питание и напряжение зарядки', `<p class="mute small">Включи кнопкой «Сеть» блок генераторов и мультиметры. Кнопками источника «0…+15 В» установи напряжение зарядки в пределах 3–4 В по мультиметру 9 (предел 20 В) и запиши его. Дальше оно не меняется.</p><div class="lw-row"><label>U, В ${leIn('pU', S.inp.pU, '0,00')}</label></div>`),
       ctl: S => `<div class="lw-ctl-row">${leB('power', S.rig.on ? `${ic('circle-check')} «Сеть»: включено` : 'Включить «Сеть»', '', S.rig.on ? '' : 'line')}</div>${leKnob('U', 'Источник 0…+15 В', leFix(S.rig.U, 2) + ' В', [.01, .1, 1], !S.rig.on)}`,
       check(S) { const bad = [], R = S.rig;
         if (!(Math.abs(lwNum(S.inp.pCe) - S.p.Ce) <= .005)) bad.push('Cэ — посмотри надпись на миниблоке эталонного конденсатора');
@@ -2570,14 +2727,14 @@ leRegister(5, (() => {
     hidden() { const r = Math.random, m = [4, 5, 6][Math.floor(r() * 3)]; return { mat: m, rho: +(MATS[m][1] * (.985 + r() * .03)).toFixed(4), d: .2, ohm: 1 + .003 * lwGauss(), kv: 1 + .002 * lwGauss(), L: 0 }; },
     rig0: () => ({ on: false, E: 0, L: .6, mode: 'tech' }),
     exps: [
-      { id: 'tech', tab: 'Технический метод', need: 3, title: 'Технический метод (п. 1–5)', tableTitle: 'Таблица 1. Технический метод',
+      { id: 'tech', tab: 'Технический метод', need: 3, title: 'Технический метод', tableTitle: 'Таблица 1. Технический метод',
         desc: S => `Кнопками источника «0…15 В» установи ток I ≈ 10 мА (амперметр 3), запиши I и U (вольтметр 2). Затем увеличивай ток примерно на 10 мА: всего три измерения — около 10, 20 и 30 мА. Сопротивление амперметра R<sub>A</sub> = ${leFix(RA, 1)} Ом.`,
         cols: [{ k: 'I', label: 'I, мА', ph: '0,0', tol: .051, d: 1, err: 'I — перепиши показание амперметра (мА, один знак после запятой)' }, { k: 'U', label: 'U, В', ph: '0,00', tol: .0051, d: 2, err: 'U — перепиши показание вольтметра (В, два знака)' }],
         ctl: S => `<div class="lw-ctl-row">${leB('power', S.rig.on ? `${ic('circle-check')} «Сеть»: включено` : 'Включить «Сеть»', '', S.rig.on ? '' : 'line')}</div>${leKnob('E', 'Источник 0…15 В', leFix(S.rig.E, 2) + ' В', [.01, .1, 1], !S.rig.on)}`,
         hint: (S, k) => `Установи ток около ${TARGET[k]} мА и запиши показания приборов.`,
         ready: S => { const k = (S.rows.tech || []).length, I = amps(S); if (!S.rig.on) return 'Включи питание кнопкой «Сеть».'; return Math.abs(I - TARGET[k]) <= 1.5 ? null : `Установи ток около ${TARGET[k]} мА (сейчас ${leFix(I, 1)} мА).`; },
         truth: S => ({ I: +amps(S).toFixed(1), U: +(S.rig.E * S.p.kv).toFixed(2) }) },
-      { id: 'ohm', tab: 'Омметр', need: 1, title: 'Измерение омметром (п. 6–8)', tableTitle: 'Омметр',
+      { id: 'ohm', tab: 'Омметр', need: 1, title: 'Измерение омметром', tableTitle: 'Омметр',
         desc: () => 'Выключи источник и подключи омметр к миниблоку «Сопротивление проводника» (мультиметр: режим Ω, предел 200 Ом, входы COM и VΩ). Запиши показание R.',
         cols: [{ k: 'R', label: 'R, Ом', ph: '0,0', tol: .051, d: 1, err: 'R — перепиши показание омметра (Ом, один знак)' }],
         ctl: S => `<div class="lw-ctl-row">${leB('ohm', S.rig.mode === 'ohm' ? `${ic('circle-check')} Омметр подключён` : 'Выключить источник и подключить омметр', '', S.rig.mode === 'ohm' ? '' : 'line')}</div>`,
@@ -2729,7 +2886,7 @@ leRegister(6, (() => {
     aim: 'Экспериментально определить горизонтальную составляющую и полную напряжённость магнитного поля Земли на данной широте.',
     hidden() { const r = Math.random; return { Hg: +(16.5 + r() * 3).toFixed(2) }; },
     rig0: () => { const r = Math.random, s = r() < .5 ? -1 : 1; return { rot: +(s * (24 + r() * 30)).toFixed(1), on: false, I: 0, pol: 1, seen: {} }; },
-    exps: [{ id: 'meas', tab: 'Измерения', need: 3, title: 'Измерения (п. 3–8)', tableTitle: 'Таблица 1. Измерения',
+    exps: [{ id: 'meas', tab: 'Измерения', need: 3, title: 'Измерения', tableTitle: 'Таблица 1. Измерения',
       desc: () => 'Включи источник, установи ток по таблице (0,1; 0,2; 0,3 А). Прочитай по компасу угол отклонения стрелки φ<sub>пр</sub>, затем переключателем поменяй направление тока и прочитай φ<sub>лев</sub>. Углы — в целых градусах по шкале компаса (лупа у кончика стрелки: 1 деление = 1°).',
       cols: [{ k: 'I', label: 'I, А', ph: '0,00', tol: .0051, d: 2, err: 'I — перепиши показание амперметра блока питания' }, { k: 'fr', label: 'φпр, °', th: 'φ<sub>пр</sub>, °', ph: '0', tol: 1.01, d: 0, err: 'φпр — прочитай угол стрелки по шкале (до 1°) при прямом направлении тока' }, { k: 'fl', label: 'φлев, °', th: 'φ<sub>лев</sub>, °', ph: '0', tol: 1.01, d: 0, err: 'φлев — прочитай угол после смены полярности' }],
       ctl: S => `<div class="lw-ctl-row">${leB('power', S.rig.on ? `${ic('circle-check')} Источник включён` : 'Включить источник', '', S.rig.on ? '' : 'line')}${leB('pol', `Переключатель: ${S.rig.pol > 0 ? 'прямо' : 'обратно'} ⇄`, '', 'line', !S.rig.on)}</div>${leKnob('I', 'Ток в кольцах', leFix(S.rig.on ? S.rig.I : 0, 2) + ' А', [.01, .1], !S.rig.on)}`,
@@ -2747,7 +2904,7 @@ leRegister(6, (() => {
       if (c === 'pol') { R.pol = -R.pol; if (R.I > 0) R.seen[R.pol > 0 ? 'r' : 'l'] = true; }
     },
     prep: {
-      view: S => leCard('1. Установка в плоскость магнитного меридиана', `<p class="mute small">Тока нет. Поворачивай кольца Гельмгольца, пока магнитная стрелка не окажется в плоскости витков — на «0» шкалы компаса, указывая на N и S (п. 2).</p>`)
+      view: S => leCard('1. Установка в плоскость магнитного меридиана', `<p class="mute small">Тока нет. Поворачивай кольца Гельмгольца, пока магнитная стрелка не окажется в плоскости витков — на «0» шкалы компаса, указывая на N и S.</p>`)
         + leCard('2. Параметры установки', `<p class="mute small">Запиши параметры (табличка на установке): радиус катушки R, общее число витков N, расстояние между центрами колец L.</p><div class="lw-row three"><label>R, м ${leIn('pR', S.inp.pR, '0,00')}</label><label>N, витков ${leIn('pN', S.inp.pN, '0')}</label><label>L, м ${leIn('pL', S.inp.pL, '0,00')}</label></div>`),
       ctl: S => leKnob('rot', 'Поворот колец', '', [1, 5]),
       check(S) { const bad = [];
@@ -2788,7 +2945,7 @@ leRegister(6, (() => {
         c.lineWidth = t % 5 ? 1.2 : 2; c.beginPath(); c.moveTo(x, LY); c.lineTo(x, LY + len); c.stroke(); if (t % 5 === 0) { c.font = `${t % 10 ? 600 : 800} ${t % 10 ? 12 : 14}px "Golos UI", system-ui`; c.fillText(t, x, LY + 28); } }
       c.strokeStyle = '#D93A3A'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(LX + LW / 2, LY); c.lineTo(LX + LW / 2, LY + LH); c.stroke(); c.restore();
       c.strokeStyle = '#F2B544'; c.lineWidth = 2; c.strokeRect(LX, LY, LW, LH);
-      leText(c, `ЛУПА у кончика стрелки: 1 деление = 1°${a > .5 ? ' (вправо)' : a < -.5 ? ' (влево)' : ''}`, LX + LW / 2, LY + LH + 12, { size: 10, color: leAcc(), weight: 700 });
+      leText(c, `Лупа у кончика стрелки: 1 деление = 1°${a > .5 ? ' (вправо)' : a < -.5 ? ' (влево)' : ''}`, LX + LW / 2, LY + LH + 12, { size: 10, color: leAcc(), weight: 700 });
     },
     hodNow(S, st) { const k = (S.rows.meas || []).length; return ({ prep: S.prepOk ? 2 : 1, meas: k >= 3 ? 9 : S.rig.on ? (S.rig.seen.r ? 7 : 6) : 3, proc: 11, concl: 12 })[st] || 0; },
     calc(S) {
@@ -2902,7 +3059,7 @@ leRegister(7, (() => {
     hidden() { const rr = Math.random, N = 2200 + Math.round(rr() * 70) * 10; const Ic = Math.sqrt(8 * Ua * (l * l + d * d) / EM) / (MU0 * r * N) * 1000 * (.985 + rr() * .03);
       return { N, Ic: +Ic.toFixed(2), ia0: +(1.25 + rr() * .3).toFixed(3), ia1: +(.012 + rr() * .01).toFixed(4), w: +(5.5 + rr() * 1.5).toFixed(2) }; },
     rig0: () => ({ on: false, I: 0 }),
-    exps: [{ id: 'curve', tab: 'Измерения', need: PTS.length, title: 'Сбросовая характеристика (п. 3–4)', tableTitle: 'Таблица 1. Измерения',
+    exps: [{ id: 'curve', tab: 'Измерения', need: PTS.length, title: 'Сбросовая характеристика', tableTitle: 'Таблица 1. Измерения',
       desc: () => 'Включи «Сеть». Кнопками источника «0…+15 В» установи ток в соленоиде I = 110 мА (мультиметр 5) и запиши анодный ток Iа (мультиметр 2). Затем увеличивай I на 10 мА до 180 мА и каждый раз записывай I и Iа.',
       cols: [{ k: 'I', label: 'I, мА', ph: '0', tol: .051, d: 1, err: 'I — перепиши показание мультиметра 5 (мА)' }, { k: 'ia', label: 'Iа, мА', th: 'I<sub>а</sub>, мА', ph: '0,000', tol: .0011, d: 3, err: 'Iа — перепиши показание мультиметра 2 (мА, три знака)' }],
       ctl: S => `<div class="lw-ctl-row">${leB('power', S.rig.on ? `${ic('circle-check')} «Сеть»: включено` : 'Включить «Сеть»', '', S.rig.on ? '' : 'line')}</div>${leKnob('I', 'Ток соленоида', leFix(S.rig.on ? S.rig.I : 0, 0) + ' мА', [1, 10], !S.rig.on)}`,
@@ -2916,7 +3073,7 @@ leRegister(7, (() => {
       if (c === 'I') R.I = Math.max(0, Math.min(200, R.I + +v));
     },
     prep: {
-      view: S => leCard('Параметры магнетрона', `<p class="mute small">Цепь собрана по монтажной схеме (п. 1). Запиши параметры магнетрона из таблицы 1 и число витков соленоида N с таблички миниблока «Магнетрон» (зависит от установки).</p>
+      view: S => leCard('Параметры магнетрона', `<p class="mute small">Цепь собрана по монтажной схеме. Запиши параметры магнетрона из таблицы 1 и число витков соленоида N с таблички миниблока «Магнетрон» (зависит от установки).</p>
         <div class="lw-row three"><label>d, мм ${leIn('pd', S.inp.pd, '0')}</label><label>l, мм ${leIn('pl', S.inp.pl, '0')}</label><label>r, мм ${leIn('pr', S.inp.pr, '0')}</label></div>
         <div class="lw-row"><label>Uа, В ${leIn('pU', S.inp.pU, '0')}</label><label>N, витков ${leIn('pN', S.inp.pN, '0')}</label></div>`),
       ctl: () => '<p class="mute small">Табличка — на миниблоке «Магнетрон» (на рисунке).</p>',
@@ -3076,7 +3233,7 @@ leRegister(8, (() => {
     aim: 'Определить индуктивность соленоида; исследовать зависимость индуктивности соленоида без сердечника и с сердечником из ферромагнетика от величины тока.',
     hidden() { const r = Math.random; return { L0: +(.0095 + r() * .003).toFixed(5), Rc: +(14 + r() * 4).toFixed(1), mu0: +(3.8 + r() * .6).toFixed(3), mu1: +(.09 + r() * .05).toFixed(4), kv: 1 + .002 * lwGauss() }; },
     rig0: () => ({ on: false, f: 1.0, E: 0, core: false }),
-    exps: [exp('nocore', 'Без сердечника', 'Катушка без сердечника (п. 1–3)', false), exp('core', 'С сердечником', 'Катушка с ферромагнитным сердечником (п. 4–5)', true)],
+    exps: [exp('nocore', 'Без сердечника', 'Катушка без сердечника', false), exp('core', 'С сердечником', 'Катушка с ферромагнитным сердечником', true)],
     act(S, c, v, st) {
       const R = S.rig;
       if (c === 'power') { R.on = !R.on; if (R.on) { R.f = 1.0; R.E = 0; } return R.on ? '«Исходная установка»: частота 1,0 кГц, уровень 0. Установи 2 кГц.' : undefined; }
@@ -3086,7 +3243,7 @@ leRegister(8, (() => {
       if (c === 'E') { R.E = Math.max(0, Math.min(15, +(R.E + +v).toFixed(2))); }
     },
     prep: {
-      view: () => leCard('Генератор и приборы', `<p class="mute small">Катушка L без сердечника подключена (п. 1). Включи кнопками «Сеть» блок генераторов и мультиметры; после «Исходной установки» кнопками «0,2–20 кГц» установи частоту тока 2 кГц. Пределы: вольтметр ~200 В (показывает в мВ), амперметр ~20 мА.</p>`),
+      view: () => leCard('Генератор и приборы', `<p class="mute small">Катушка L без сердечника подключена. Включи кнопками «Сеть» блок генераторов и мультиметры; после «Исходной установки» кнопками «0,2–20 кГц» установи частоту тока 2 кГц. Пределы: вольтметр ~200 В (показывает в мВ), амперметр ~20 мА.</p>`),
       ctl: S => leCtl8(S),
       check(S) { const bad = []; if (!S.rig.on) bad.push('питание не включено'); else if (Math.abs(S.rig.f - NU) > .001) bad.push('частота должна быть 2,0 кГц'); return bad; }
     },
@@ -3194,7 +3351,228 @@ leRegister(8, (() => {
 })());
 
 /* =====================================================================
-   «Показатель адиабаты» для Android — оболочка под телефон.
+   «Физпрактикум»: общее ядро программы для компьютера, Android и iPhone.
+   Учётные записи (ФИО, класс, пароль — хранится только хеш с солью, данные только на устройстве),
+   тесты по банку вопросов (bank/bank.json: 9 тем × 100 вопросов) — самопроверка, экзамен по теме,
+   итоговый экзамен; раздел «О программе». Экраны строит оболочка (desktop.js / mobile.js) из этих блоков.
+   Действия — data-fz. Ждёт от оболочки: store, profiles, PKEY, workKey, PROFILE, render, toast, ic, esc,
+   SCREEN, sha256/hmac256 (sha256.js), SIG_KEY/RESULT_FORMAT (result.js), fzModal(title, html) — окно оболочки.
+   ===================================================================== */
+const APP_NAME = 'Физпрактикум';
+const ORG = { copy: '© 2026 ЧВВМУ им. П.С. Нахимова, кафедра физики и общетехнических дисциплин, к.т.н., доцент Жидкова Е.Ю.',
+  school: 'Черноморское высшее военно-морское училище имени П.С. Нахимова', dept: 'Кафедра физики и общетехнических дисциплин',
+  devs: ['гв. ст. м-с Кравченко В.А.', 'ст. м-с Соколов В.В.', 'ефр. Шевченко А.В.'], devsNote: 'курсанты 103 класса 1 факультета' };
+
+/* ---------- учётные записи ---------- */
+const pwHash = (salt, pw) => { let h = sha256(salt + '|' + pw); for (let i = 0; i < 1200; i++) h = sha256(h + salt); return h; };
+const acctHasPw = p => !!(p && p.hash);
+function acctSetPw(id, pw) {
+  const list = profiles(), p = list.find(x => x.id === id); if (!p) return null;
+  p.salt = Math.random().toString(36).slice(2) + Date.now().toString(36); p.hash = pwHash(p.salt, pw); delete p.pwReset;
+  store.set(PKEY, list); return p;
+}
+const acctCheck = (p, pw) => !!p && acctHasPw(p) && pwHash(p.salt, pw) === p.hash;
+function acctResetPw(id) { const list = profiles(), p = list.find(x => x.id === id); if (!p) return; delete p.hash; delete p.salt; p.pwReset = new Date().toISOString(); store.set(PKEY, list); }
+function acctValidate(fio, group, pw, pw2) {
+  if (fio.trim().split(/\s+/).length < 2 || fio.trim().length < 5) return 'Впиши фамилию и инициалы или ФИО полностью, например: Иванов И. И.';
+  if (!group.trim()) return 'Укажи класс (учебную группу).';
+  if (pw.length < 4) return 'Пароль — не короче 4 символов.';
+  if (pw !== pw2) return 'Пароли не совпадают.';
+  if (profiles().some(x => x.fio.toLowerCase() === fio.trim().toLowerCase() && (x.group || '').toLowerCase() === group.trim().toLowerCase())) return 'Такой курсант уже зарегистрирован на этом устройстве — войди в свою учётную запись.';
+  return '';
+}
+
+/* ---------- обложки и разделы лабораторных ---------- */
+const LAB_SEC = { 1: 'Механика', 2: 'Механика', 3: 'Термодинамика', 4: 'Электричество', 5: 'Электричество', 6: 'Магнетизм', 7: 'Магнетизм', 8: 'Магнетизм' };
+const cover = n => `img/covers/c${n}.webp`;
+function labCards(attr) {
+  return `<div class="fz-grid">${labNums().map(n => {
+    const L = LABS[n], S = PROFILE ? labState(n, PROFILE.id) : null, N = L.steps.length, at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), N) : 0;
+    let res = ''; if (S && S.done) { try { res = withLabState(n, S, () => L.result()); } catch (e) { res = ''; } }
+    const st = !S || !(S.max || S.done) ? 'Не начата' : S.done ? 'Защищена' : `Шаг ${(S.max || 0) + 1} из ${N}: ${L.steps[Math.min(S.max || 0, N - 1)][1].toLowerCase()}`;
+    return `<button class="fz-card ${S && S.done ? 'done' : ''}" ${attr}="lab" data-v="${n}">
+      <span class="fz-cov"><img src="${cover(n)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('nocov')"><span class="fz-sec">${LAB_SEC[n]}</span>${S && S.done ? `<span class="fz-ok">${ic('circle-check')}</span>` : ''}</span>
+      <span class="fz-body"><span class="fz-n"><span class="fz-long">Лабораторная работа</span><span class="fz-short">ЛР</span> № ${n}</span><b>${esc(labTitle(n))}</b>
+      <span class="fz-st">${esc(st)}</span>${res ? `<span class="fz-res">${esc(res)}</span>` : ''}
+      <span class="fz-bar"><i style="width:${Math.round(at / N * 100)}%"></i></span></span></button>`; }).join('')}</div>`;
+}
+
+/* ---------- банк вопросов ---------- */
+let BANK = null, BANK_ERR = '';
+async function bankLoad() {
+  if (BANK) return BANK;
+  try { const r = await fetch('bank/bank.json'); BANK = await r.json(); BANK.byId = {}; BANK.q.forEach(q => { BANK.byId[q.id] = q; }); }
+  catch (e) { BANK_ERR = 'Не удалось загрузить банк вопросов.'; }
+  return BANK;
+}
+const bankTopic = t => BANK ? BANK.q.filter(q => q.id.split('.')[0] === String(t) && !q.broken) : [];
+const TOPIC_SHORT = { 1: 'Механика', 2: 'Электростатика и постоянный ток', 3: 'Электромагнетизм', 4: 'Молекулярная физика и термодинамика', 5: 'Колебания и волны', 6: 'Волновая оптика', 7: 'Квантовая физика', 8: 'Физика твёрдого тела', 9: 'Ядерная физика' };
+const EXAM_N = 30;
+const examGrade = s => (s >= 90 ? 5 : s >= 75 ? 4 : s >= 60 ? 3 : 2);
+const GRADE_T = { 5: 'отлично', 4: 'хорошо', 3: 'удовлетворительно', 2: 'неудовлетворительно' };
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const testKey = id => workKey(id) + '-t';
+const tsLoad = () => (PROFILE ? store.get(testKey(PROFILE.id), null) : null) || { self: {}, att: [] };
+const tsSave = T => { if (PROFILE) store.set(testKey(PROFILE.id), T); };
+
+/* ---------- сеанс теста: самопроверка или экзамен ---------- */
+let TQ = null;          // { kind: 'self'|'exam', topic: 1..9|'final', ids: [...], i, opts: {id: [...]}, ans: {id: {v, ok, t}}, start, qStart, deadline }
+function tStart(kind, topic, onlyWrong) {
+  if (!BANK) return toast('Банк вопросов ещё загружается — попробуй через секунду.', 'bad');
+  const T = tsLoad(); let ids;
+  if (kind === 'exam' && topic === 'final') {
+    const per = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(t => shuffle(bankTopic(t)).map(q => q.id));
+    ids = per.flatMap(l => l.slice(0, 3)); const extra = shuffle(per.flatMap(l => l.slice(3))).slice(0, EXAM_N - ids.length); ids = shuffle(ids.concat(extra));
+  } else if (kind === 'exam') ids = shuffle(bankTopic(topic).map(q => q.id)).slice(0, EXAM_N);
+  else { let pool = bankTopic(topic).map(q => q.id); if (onlyWrong) pool = pool.filter(id => T.self[id] === 0); if (!pool.length) return toast(onlyWrong ? 'Ошибок по этой теме нет — всё решено верно.' : 'В теме нет вопросов.', onlyWrong ? '' : 'bad');
+    const fresh = pool.filter(id => T.self[id] == null), rest = pool.filter(id => T.self[id] != null); ids = shuffle(fresh).concat(shuffle(rest)); }
+  const opts = {}; ids.forEach(id => { const q = BANK.byId[id]; opts[id] = /^Вариант \d$/.test(q.a) ? [q.a, ...q.x].sort() : shuffle([q.a, ...q.x]); });
+  TQ = { kind, topic, onlyWrong: !!onlyWrong, ids, i: 0, opts, ans: {}, start: Date.now(), qStart: Date.now() };
+  if (kind === 'exam') TQ.deadline = Date.now() + BANK.byId[ids[0]].time * 60000;
+  SCREEN = 'test'; render(); tTimer();
+}
+const tCur = () => TQ && BANK.byId[TQ.ids[TQ.i]];
+function tAnswer(v) {
+  const q = tCur(); if (!q || TQ.ans[q.id]) return;
+  const ok = v === q.a; TQ.ans[q.id] = { v, ok, t: Math.round((Date.now() - TQ.qStart) / 1000) };
+  if (TQ.kind === 'self') { const T = tsLoad(); T.self[q.id] = ok ? 1 : 0; tsSave(T); render(); }
+  else tNext();
+}
+function tNext() {
+  if (!TQ) return;
+  if (TQ.i >= TQ.ids.length - 1) return tFinish();
+  TQ.i++; TQ.qStart = Date.now(); if (TQ.kind === 'exam') TQ.deadline = Date.now() + tCur().time * 60000;
+  render(); tTimer();
+}
+function tFinish() {
+  clearInterval(tTimer.h); if (!TQ) return;
+  if (TQ.kind === 'exam') {
+    const n = TQ.ids.length, right = TQ.ids.filter(id => TQ.ans[id] && TQ.ans[id].ok).length, score = Math.round(right / n * 100);
+    const att = { id: Date.now().toString(36), kind: 'exam', topic: TQ.topic, date: new Date().toISOString(), n, right, score, grade: examGrade(score), spent: Math.round((Date.now() - TQ.start) / 1000),
+      items: TQ.ids.map(id => ({ id, v: TQ.ans[id] ? TQ.ans[id].v : null, ok: !!(TQ.ans[id] && TQ.ans[id].ok), t: TQ.ans[id] ? TQ.ans[id].t : null })) };
+    const T = tsLoad(); T.att.unshift(att); tsSave(T); TQ.result = att;
+  } else TQ.result = { kind: 'self' };
+  TQ.done = true; render();
+}
+function tTimer() {
+  clearInterval(tTimer.h); if (!TQ || TQ.kind !== 'exam' || TQ.done) return;
+  const tick = () => { if (!TQ || TQ.done || SCREEN !== 'test') return clearInterval(tTimer.h);
+    const left = Math.max(0, TQ.deadline - Date.now()), q = tCur(), all = q.time * 60000, el = document.getElementById('fz-timer'), bar = document.getElementById('fz-tbar');
+    if (el) el.textContent = `${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
+    if (bar) { bar.style.width = (left / all * 100) + '%'; bar.parentNode.classList.toggle('low', left < 20000); }
+    if (left <= 0) { TQ.ans[q.id] = { v: null, ok: false, t: q.time * 60, late: true }; toast('Время на вопрос вышло — ответ не засчитан.', 'bad'); tNext(); } };
+  tick(); tTimer.h = setInterval(tick, 250);
+}
+const topicName = t => (t === 'final' ? 'Итоговый экзамен (все темы)' : `Тема ${t}. ${BANK ? BANK.topics[t - 1].title : TOPIC_SHORT[t]}`);
+
+/* ---------- экраны тестов (общие блоки) ---------- */
+function testsHome() {
+  if (!BANK) { bankLoad().then(() => { if (SCREEN === 'labs' && (typeof PAGE === 'undefined' || PAGE === 'tests')) render(); }); return `<p class="mute">${BANK_ERR || 'Загрузка банка вопросов…'}</p>`; }
+  const T = tsLoad(), best = t => T.att.filter(a => a.topic === t).reduce((m, a) => (m && m.score >= a.score ? m : a), null);
+  const fin = best('final');
+  const head = `<section class="fz-final"><div><span class="fz-n">Итоговый экзамен</span><b>Все 9 тем · ${EXAM_N} вопросов</b><p>По 3 вопроса из каждой темы и ещё 3 случайных. На каждый вопрос — своё время (до 5 минут); если не успел, вопрос не засчитывается. Оценка по 100-балльной шкале.</p>
+      ${fin ? `<span class="fz-best g${fin.grade}">Лучший результат: ${fin.score} баллов — «${fin.grade}»</span>` : ''}</div>
+    <button class="btn big" data-fz="exam" data-v="final">${ic('graduation-cap')} Начать итоговый экзамен</button></section>`;
+  const rows = BANK.topics.map(tp => { const t = tp.id, q = bankTopic(t), solved = q.filter(x => T.self[x.id] === 1).length, wrong = q.filter(x => T.self[x.id] === 0).length, b = best(t);
+    return `<div class="fz-topic"><span class="fz-tn">${t}</span><div class="fz-tt"><b>${esc(tp.title)}</b><small>${q.length} вопросов · решено верно ${solved}${wrong ? ` · ошибок ${wrong}` : ''}</small>
+        <span class="fz-bar"><i style="width:${Math.round(solved / Math.max(1, q.length) * 100)}%"></i></span></div>
+      ${b ? `<span class="fz-best g${b.grade}" title="Лучший экзамен">${b.score} · «${b.grade}»</span>` : '<span class="fz-best none">экзамен не сдавался</span>'}
+      <div class="fz-tb"><button class="btn line" data-fz="self" data-v="${t}">${ic('book-open')} Самопроверка</button>${wrong ? `<button class="btn ghost" data-fz="selfw" data-v="${t}">${ic('rotate-ccw')} Ошибки (${wrong})</button>` : ''}<button class="btn" data-fz="exam" data-v="${t}">${ic('timer')} Экзамен</button></div></div>`; }).join('');
+  return head + `<p class="fz-h">Темы курса</p><div class="fz-topics">${rows}</div>
+    <p class="mute small">Экзамен по теме — ${EXAM_N} вопросов из 100, при каждом запуске разные. Шкала: до 60 баллов — «2», 60–74 — «3», 75–89 — «4», 90–100 — «5». Самопроверка — без ограничения времени, с разбором каждого ответа.</p>`;
+}
+function qHtml(q) {
+  return `<div class="fz-q">${esc(q.t).replace(/\n/g, '<br>')}</div>${q.p.map(p => `<div class="fz-qimg"><img src="bank/img/${encodeURIComponent(p)}" alt="Рисунок к вопросу"></div>`).join('')}`;
+}
+function explainHtml(q) {
+  const e = q.e; let body = '';
+  if (e && typeof e === 'object') body = [['s', 'Условие'], ['i', 'Идея'], ['r', 'Решение']].filter(([k]) => e[k]).map(([k, t]) => `<p><b>${t}.</b> ${esc(e[k]).replace(/\n/g, '<br>')}</p>`).join('');
+  else if (typeof e === 'string') body = `<p>${esc(e)}</p>`;
+  const disp = 'disp' in q ? `<p class="fz-disp">${ic('circle-x')} На экзамене засчитывается ответ из ключа${q.disp ? `. Строго по физике: ${esc(q.disp)}` : ''}.</p>` : '';
+  return body || disp ? `<div class="fz-expl">${body}${disp}</div>` : '';
+}
+function testScreen() {
+  if (!TQ) return '';
+  if (TQ.done) return testResult();
+  const q = tCur(), a = TQ.ans[q.id], n = TQ.ids.length, self = TQ.kind === 'self';
+  const opts = TQ.opts[q.id].map((o, j) => { const cls = a ? (o === q.a ? 'ok' : o === a.v ? 'bad' : 'dim') : '';
+    return `<button class="fz-opt ${cls}" data-fz="ans" data-v="${esc(o)}" ${a ? 'disabled' : ''}><span class="lt">${j + 1}</span><span>${esc(o)}</span></button>`; }).join('');
+  const solved = self ? Object.values(TQ.ans).filter(x => x.ok).length : 0;
+  const top = `<div class="fz-thead"><button class="btn ghost fz-quit" data-fz="quit">${ic('chevron-left')} ${self ? 'Завершить' : 'Прервать'}</button>
+      <div class="fz-ttl"><b>${self ? 'Самопроверка' : 'Экзамен'}</b><small>${esc(topicName(TQ.topic))}${TQ.onlyWrong ? ' · работа над ошибками' : ''}</small></div>
+      <span class="fz-cnt">Вопрос ${TQ.i + 1} из ${n}${self ? ` · верно ${solved}` : ''}</span></div>
+    <div class="fz-prog"><i style="width:${Math.round(TQ.i / n * 100)}%"></i></div>`;
+  const timer = self ? '' : `<div class="fz-timerbox"><span>${ic('timer')} На этот вопрос: <b id="fz-timer">${q.time}:00</b> из ${q.time} мин</span><span class="fz-tb2"><i id="fz-tbar"></i></span></div>`;
+  const after = self && a ? `<div class="fz-verdict ${a.ok ? 'ok' : 'bad'}">${a.ok ? `${ic('circle-check')} Верно` : `${ic('circle-x')} Неверно. Правильный ответ: <b>${esc(q.a)}</b>`}</div>${explainHtml(q)}
+      <button class="btn big fz-next" data-fz="next" data-primary>${TQ.i >= n - 1 ? 'Завершить' : 'Следующий вопрос'} ${ic('chevron-right')}</button>` : '';
+  return top + `<div class="fz-qwrap">${timer}<div class="fz-qcard"><span class="fz-qid">№ ${q.id}</span>${qHtml(q)}<div class="fz-opts">${opts}</div>${after}</div>
+    ${self ? '' : '<p class="mute small center">Ответ засчитывается сразу после выбора варианта. Вернуться к предыдущему вопросу нельзя.</p>'}</div>`;
+}
+function testResult() {
+  const r = TQ.result;
+  if (r.kind === 'self') { const n = Object.keys(TQ.ans).length, ok = Object.values(TQ.ans).filter(x => x.ok).length;
+    return `<div class="fz-qwrap"><div class="fz-qcard fz-res"><span class="fz-big">${ok} / ${n}</span><h2>Самопроверка завершена</h2><p class="mute">${esc(topicName(TQ.topic))}. Верно ${ok} из ${n} отвеченных. Неверно решённые вопросы можно повторить в режиме «Ошибки».</p>
+      <div class="row center"><button class="btn" data-fz="back">${ic('chevron-left')} К тестам</button></div></div></div>`; }
+  const wrong = r.items.filter(x => !x.ok);
+  return `<div class="fz-qwrap"><div class="fz-qcard fz-res"><span class="fz-big g${r.grade}">${r.score}</span><h2>Оценка «${r.grade}» — ${GRADE_T[r.grade]}</h2>
+      <p class="mute">${esc(topicName(r.topic))}. Верно ${r.right} из ${r.n}. Время — ${Math.floor(r.spent / 60)} мин ${r.spent % 60} с.</p>
+      <div class="row center"><button class="btn" data-fz="examfile" data-v="${r.id}">${ic('graduation-cap')} Файл результата для преподавателя</button><button class="btn line" data-fz="back">${ic('chevron-left')} К тестам</button></div></div>
+    ${wrong.length ? `<p class="fz-h">Разбор ошибок (${wrong.length})</p>${wrong.map(x => { const q = BANK.byId[x.id]; return `<div class="fz-qcard fz-rev"><span class="fz-qid">№ ${q.id}</span>${qHtml(q)}
+      <p class="fz-verdict bad">${x.v == null ? 'Нет ответа (время вышло)' : `Твой ответ: ${esc(x.v)}`}</p><p class="fz-verdict ok">Правильный ответ: <b>${esc(q.a)}</b></p>${explainHtml(q)}</div>`; }).join('')}` : ''}</div>`;
+}
+function resultsHtml(attr) {
+  const T = tsLoad(), labs = labNums().map(n => { const S = labState(n, PROFILE.id); let res = ''; if (S && S.done) { try { res = withLabState(n, S, () => LABS[n].result()); } catch (e) {} }
+    return `<tr><td>ЛР ${n}</td><td>${esc(labTitle(n))}</td><td>${S ? esc(labStatus(n, S)) : 'не начата'}</td><td>${esc(res)}</td><td>${S && (S.max || S.done) ? `<button class="btn ghost" ${attr}="lab" data-v="${n}">Открыть</button>` : ''}</td></tr>`; }).join('');
+  const ex = T.att.filter(a => a.kind === 'exam');
+  return `<p class="fz-h">Лабораторные работы</p><div class="fz-tbl"><table><tr><th>№</th><th>Работа</th><th>Состояние</th><th>Результат</th><th></th></tr>${labs}</table></div>
+    <p class="fz-h">Экзамены</p>${ex.length ? `<div class="fz-tbl"><table><tr><th>Дата</th><th>Экзамен</th><th>Верно</th><th>Баллы</th><th>Оценка</th><th></th></tr>${ex.map(a => `<tr><td>${new Date(a.date).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td><td>${esc(topicName(a.topic))}</td><td>${a.right} из ${a.n}</td><td><b>${a.score}</b></td><td><span class="fz-best g${a.grade}">«${a.grade}»</span></td><td><button class="btn ghost" data-fz="examfile" data-v="${a.id}">${ic('file-text')} Файл</button></td></tr>`).join('')}</table></div>` : '<p class="mute">Экзамены ещё не сдавались.</p>'}`;
+}
+
+/* ---------- файл результата экзамена (тот же формат и подпись, что у лабораторных) ---------- */
+function packExam(att) {
+  const body = { format: RESULT_FORMAT, v: 1, kind: 'exam', lab: 'exam', app: APP_VER, saved: new Date().toISOString(), student: { fio: PROFILE.fio, group: PROFILE.group || '' },
+    state: { v: 1, fio: PROFILE.fio, group: PROFILE.group || '', exam: att }, summary: { score: att.score, grade: att.grade, right: att.right, n: att.n } };
+  return JSON.stringify(Object.assign({}, body, { sig: hmac256(SIG_KEY, JSON.stringify(body)) }));
+}
+const examFileName = att => `Экзамен_${att.topic === 'final' ? 'итоговый' : 'тема' + att.topic}_${safeName(PROFILE.fio) || 'курсант'}${PROFILE.group ? '_' + safeName(PROFILE.group) : ''}.lw3`;
+
+/* ---------- О программе ---------- */
+function aboutHtml(attr) {
+  return `<div class="fz-about">
+    <div class="fz-ab-head"><span class="logo big">γ</span><div><h1>${APP_NAME}</h1><p>Виртуальный лабораторный практикум по физике</p><span class="fz-ver">Версия ${esc(APP_VER)}</span></div></div>
+    <section class="fz-ab-card"><p class="fz-ab-org">${esc(ORG.school)}</p><p class="fz-ab-dept">${esc(ORG.dept)}</p>
+      <p>Программа предназначена для выполнения лабораторных работ по физике в виртуальной лаборатории, подготовки к допуску и защите, а также для самопроверки и экзамена по курсу физики.</p>
+      <div class="fz-ab-grid"><div><b>8</b><span>лабораторных работ по методическим указаниям кафедры</span></div><div><b>900</b><span>вопросов по 9 темам курса</span></div><div><b>3</b><span>режима тестов: самопроверка, экзамен по теме, итоговый экзамен</span></div></div></section>
+    <section class="fz-ab-card"><p class="fz-ab-t">Данные и конфиденциальность</p><p>Учётные записи, результаты работ и тестов хранятся только на этом устройстве и никуда не передаются. Пароль хранится в виде хеша. Результаты передаются преподавателю файлами, защищёнными подписью от изменения.</p></section>
+    <section class="fz-ab-card"><p class="fz-ab-t">Использованные материалы</p><p>Шрифты Golos UI и STIX Two — SIL Open Font License 1.1. Значки Lucide — лицензия ISC.</p></section>
+    <p class="fz-copy">${esc(ORG.copy)}</p>
+    <button class="fz-devs" data-fz="devs">Разработчики</button></div>`;
+}
+const devsHtml = () => `<div class="fz-devlist"><p class="mute">${esc(ORG.devsNote[0].toUpperCase() + ORG.devsNote.slice(1))}</p>${ORG.devs.map(d => `<div class="fz-dev">${ava(d.split(' ').slice(-2, -1)[0] || d)}<b>${esc(d)}</b></div>`).join('')}<p class="mute small">${esc(ORG.dept)}, ${esc(ORG.school)}</p></div>`;
+
+/* ---------- действия ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-fz]'); if (!b) return; const d = b.dataset;
+  switch (d.fz) {
+    case 'self': tStart('self', +d.v); break;
+    case 'selfw': tStart('self', +d.v, true); break;
+    case 'exam': { const t = d.v === 'final' ? 'final' : +d.v;
+      if (confirm(`${topicName(t)}: ${EXAM_N} вопросов, на каждый — своё время. Вернуться к вопросу нельзя, прервать экзамен — значит не сдать его. Начать?`)) tStart('exam', t); break; }
+    case 'ans': tAnswer(d.v); break;
+    case 'next': tNext(); break;
+    case 'quit': if (!TQ) break;
+      if (TQ.kind === 'exam' && !TQ.done) { if (!confirm('Прервать экзамен? Неотвеченные вопросы будут засчитаны как неверные.')) break; return tFinish(); }
+      if (TQ.kind === 'self' && !TQ.done && Object.keys(TQ.ans).length) return tFinish();
+      TQ = null; clearInterval(tTimer.h); SCREEN = 'labs'; render(); break;
+    case 'back': TQ = null; clearInterval(tTimer.h); SCREEN = 'labs'; if (typeof PAGE !== 'undefined') PAGE = 'tests'; render(); break;
+    case 'examfile': { const a = tsLoad().att.find(x => x.id === d.v); if (a) fzSaveExam(a); break; }
+    case 'devs': fzModal('Разработчики', devsHtml()); break;
+  }
+});
+bankLoad();
+
+/* =====================================================================
+   «Физпрактикум» для Android и iPhone — оболочка под телефон.
    Сама работа (модель установки, вопросы, расчёты, проверки, действия data-l3/data-k3, отчёт) —
    fizika2/src/lw3-core.js, тот же файл, что на сайте и в программе для Windows/Linux.
    Файл работы (.lw3) и подпись — result.js, тоже общие: преподаватель проверяет работы с телефона
@@ -3240,7 +3618,8 @@ function toast(html, kind = '') {
 function addXP() { toast(`${ic('award')} Работа защищена! Отправь файл преподавателю на шаге «Отчёт».`); }
 function render() {
   if (SCREEN === 'home' || !PROFILE) return vHome();
-  if (SCREEN === 'labs') return mLabs();
+  if (SCREEN === 'labs') return mApp();
+  if (SCREEN === 'test') return mTest();
   if (LAB !== 3) return mWorkLab();
   vWork();
 }
@@ -3257,7 +3636,7 @@ function loadBg(cfg, key, to = BG) { if (!cfg) return; const im = new Image(); i
 loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); loadBg(LAB_BG2, 'dark', BG2); loadBg(LAB_BG2_LIGHT, 'light', BG2); sceneTheme();
 ['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens', 'puck-steel', 'puck-brass', 'launcher', 'cross', 'cyl', 'pulley', 'hanger', 'plate', 'magnet', 'psu', 'generator', 'multimeter', 'miniblock', 'magnetron', 'coil', 'helmholtz', 'compass'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); if ($('#le-cv')) leDraw(); }; im.src = `img/parts/${k}.webp`; });
 
-/* ---------- профили (несколько студентов на одном телефоне) ---------- */
+/* ---------- профили (несколько курсантов на одном телефоне) ---------- */
 const PKEY = 'lw3m-profiles';
 const profiles = () => store.get(PKEY, []);
 const workKey = id => 'lw3m-w-' + id;
@@ -3274,9 +3653,9 @@ function ensureMeta(S) {
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
   S.dx.device = IOS ? 'ios' : 'android';
 }
-function openProfile(p, intro = false, lab = 0) {   // студент → выбор работы (или сразу работа lab)
+function openProfile(p, intro = false, lab = 0) {   // курсант → выбор работы (или сразу работа lab)
   PROFILE = p; L3S = null; LWS = null; L2S = null;
-  if (lab) mOpenLab(lab); else { SCREEN = 'labs'; render(); scrollTo(0, 0); }
+  if (lab) mOpenLab(lab); else { SCREEN = 'labs'; PAGE = 'main'; render(); scrollTo(0, 0); }
   if (intro) showIntro(0);
 }
 const firstOpen = (list, ans) => { const i = list.findIndex((_, j) => !(ans || {})[j]); return i < 0 ? 0 : i; };
@@ -3285,21 +3664,69 @@ function profileStatus(p) {
   return st.length ? st.map(([n, S]) => `ЛР ${n}: ${S.done ? 'защищена' : 'шаг ' + ((S.max || 0) + 1)}`).join(' · ') : 'работы не начаты';
 }
 
-/* ---------- вход ---------- */
+/* ---------- вход и регистрация (пароль — только хеш, app-core.js) ---------- */
+let AUTH = 'in', ASEL = '';
 function vHome() {
   ui.bar.innerHTML = ''; dock('');
-  const ps = profiles();
+  const ps = profiles(); if (!ps.length) AUTH = 'up';
+  const sel = ps.find(p => p.id === ASEL) || null;
+  const pw = (id, lab, ac = 'current-password') => `<label class="field">${lab}<input class="inp" type="password" id="${id}" autocomplete="${ac}" enterkeyhint="go"></label>`;
+  const login = !ps.length ? '<p class="mute">На этом устройстве ещё нет учётных записей. Зарегистрируйся — это займёт минуту.</p>'
+    : `<p class="mute small">Выбери свою учётную запись:</p><div class="fz-acc">${ps.map(p => `<button data-m="acc" data-v="${p.id}" class="${p.id === ASEL ? 'on' : ''}">${ava(p.fio)}<span><b>${esc(p.fio)}</b><small>${esc(p.group || 'класс не указан')}</small></span></button>`).join('')}</div>
+      ${sel ? (acctHasPw(sel) ? `${pw('au-pw', 'Пароль')}<button class="btn" data-m="login">Войти ${ic('chevron-right')}</button><button class="lnk" data-m="forgot">Забыли пароль?</button>`
+        : `<p class="mute small">${sel.pwReset ? 'Пароль сброшен.' : 'У этой учётной записи ещё нет пароля.'} Придумай новый:</p>${pw('au-n1', 'Новый пароль', 'new-password')}${pw('au-n2', 'Ещё раз', 'new-password')}<button class="btn" data-m="setpw">Сохранить и войти</button>`) : ''}`;
+  const reg = `<label class="field">ФИО<input class="inp" id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off" autocapitalize="words" enterkeyhint="next"></label>
+      <label class="field">Класс<input class="inp" id="np-group" placeholder="103" autocomplete="off" enterkeyhint="next"></label>${pw('np-pw', 'Пароль', 'new-password')}${pw('np-pw2', 'Пароль ещё раз', 'new-password')}
+      <button class="btn" data-m="register">Зарегистрироваться ${ic('chevron-right')}</button><p class="mute small">Учётная запись и результаты хранятся только на этом устройстве.</p>`;
   ui.main.innerHTML = `<div class="login">
-    <div class="brand"><span class="logo">γ</span><h1>Физпрактикум</h1><p>Лабораторные работы по физике</p></div>
-    <div class="card">
-      <label class="field">ФИО<input class="inp" id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off" autocapitalize="words" enterkeyhint="next"></label>
-      <label class="field">Класс / группа<input class="inp" id="np-group" placeholder="11 А" autocomplete="off" enterkeyhint="go"></label>
-      <button class="btn" data-m="new">Начать работу ${ic('chevron-right')}</button>
-    </div>
-    ${ps.length ? `<p class="mute small" style="margin:14px 4px 0; font-weight:700">Продолжить работу</p><div class="plist">${ps.map(p => `<button class="prof" data-m="open" data-v="${p.id}">${ava(p.fio)}<div class="nm"><b>${esc(p.fio)}</b><small>${esc(p.group || 'без класса')} · ${esc(profileStatus(p))}</small></div>${ic('chevron-right')}</button>`).join('')}</div>` : ''}
+    <div class="brand"><span class="logo">γ</span><h1>Физпрактикум</h1><p>Виртуальный лабораторный практикум по физике</p></div>
+    <div class="card"><div class="fz-seg"><button data-m="atab" data-v="in" class="${AUTH === 'in' ? 'on' : ''}">Вход</button><button data-m="atab" data-v="up" class="${AUTH === 'up' ? 'on' : ''}">Регистрация</button></div>
+      ${AUTH === 'in' ? login : reg}<p class="fz-msg" id="au-msg"></p></div>
+    <p class="fz-org">${esc(ORG.school)}<br>${esc(ORG.dept)}</p>
     <div class="foot"><button class="lnk" data-m="import">${ic('file-text')} Открыть файл работы</button><span>версия ${esc(APP_VER)}</span></div>
   </div>`;
 }
+const auMsg = t => { const m = $('#au-msg'); if (m) m.textContent = t; };
+
+/* ---------- приложение: разделы и нижняя панель ---------- */
+let PAGE = 'main';
+const TABS = [['main', 'Главная', 'house'], ['labs', 'Работы', 'flask-conical'], ['tests', 'Тесты', 'graduation-cap'], ['results', 'Итоги', 'trophy'], ['more', 'Ещё', 'sliders-horizontal']];
+const PAGE_T = { main: 'Физпрактикум', labs: 'Лабораторные работы', tests: 'Тесты и экзамены', results: 'Мои результаты', more: 'Ещё', profile: 'Профиль', about: 'О программе' };
+function mApp() {
+  const back = ['profile', 'about'].includes(PAGE);
+  ui.bar.innerHTML = `<div class="bar">${back ? `<button class="ib" data-m="page" data-v="more" aria-label="Назад">${ic('chevron-left')}</button>` : ''}<h1>${PAGE_T[PAGE]}${PAGE === 'main' ? `<small>${esc(PROFILE.fio)}${PROFILE.group ? ' · ' + esc(PROFILE.group) : ''}</small>` : ''}</h1></div>`;
+  const body = ({ main: mpMain, labs: () => labCards('data-m'), tests: testsHome, results: () => resultsHtml('data-m'), more: mpMore, profile: mpProfile, about: () => aboutHtml('data-m') })[PAGE] || mpMain;
+  ui.main.innerHTML = `<div class="fz-mpage">${body()}</div>`;
+  dock(`<nav class="fz-tabs">${TABS.map(([k, t, i]) => `<button data-m="page" data-v="${k}" class="${PAGE === k || (k === 'more' && ['profile', 'about'].includes(PAGE)) ? 'on' : ''}">${ic(i)}<span>${t}</span></button>`).join('')}</nav>`);
+}
+function mpMain() {
+  const st = labNums().map(n => [n, labState(n, PROFILE.id)]);
+  const go = st.filter(([, S]) => S && (S.max || 0) > 0 && !S.done).sort((a, b) => (b[1].max || 0) - (a[1].max || 0))[0] || st.find(([, S]) => !S || !(S.max || S.done));
+  const n = go ? go[0] : 0, S = n ? labState(n, PROFILE.id) : null, T = tsLoad(), done = st.filter(([, x]) => x && x.done).length, last = T.att.filter(a => a.kind === 'exam')[0];
+  return `${n ? `<button class="fz-mcont" data-m="lab" data-v="${n}"><img src="${cover(n)}" alt=""><span><small>${S && S.max ? 'Продолжить' : 'Следующая работа'}</small><b>ЛР № ${n}. ${esc(labTitle(n))}</b><em>${S && S.max ? esc(labStatus(n, S)) : 'не начата'}</em></span>${ic('chevron-right')}</button>` : ''}
+    <div class="fz-stats"><div class="fz-stat"><b>${done}/${labNums().length}</b><span>работ защищено</span></div><div class="fz-stat"><b>${Object.values(T.self).filter(v => v === 1).length}</b><span>вопросов решено</span></div><div class="fz-stat"><b>${last ? last.score : '—'}</b><span>${last ? `последний экзамен, «${last.grade}»` : 'экзаменов нет'}</span></div></div>
+    <div class="fz-links"><button class="fz-link" data-m="page" data-v="labs">${ic('flask-conical')}<span><b>Лабораторные работы</b><small>8 работ по методичке кафедры</small></span></button>
+      <button class="fz-link" data-m="page" data-v="tests">${ic('graduation-cap')}<span><b>Тесты и экзамены</b><small>900 вопросов по 9 темам</small></span></button></div>`;
+}
+function mpMore() {
+  const it = (m, v, icn, t, d) => `<button data-m="${m}" ${v ? `data-v="${v}"` : ''}>${ic(icn)}<span>${t}${d ? `<small>${d}</small>` : ''}</span></button>`;
+  return `<div class="menu">${it('page', 'profile', 'user', 'Профиль', 'ФИО, класс, пароль')}${it('page', 'about', 'book-open', 'О программе', 'училище, кафедра, авторские права')}
+    ${it('theme', '', 'sparkles', isLight() ? 'Тёмная тема' : 'Светлая тема', '')}${it('intro', '', 'captions', 'Как проходит работа', 'короткое знакомство')}
+    ${it('import', '', 'file-text', 'Открыть файл работы', 'продолжить работу с другого устройства')}${it('home', '', 'chevron-left', 'Выйти', 'из учётной записи')}</div>`;
+}
+function mpProfile() {
+  const p = PROFILE, f = (id, lab, v, t = 'text', ac = 'off') => `<label class="field">${lab}<input class="inp" type="${t}" id="${id}" value="${esc(v || '')}" autocomplete="${ac}"></label>`;
+  return `<section class="card"><h2>${ic('user')} Учётная запись</h2>${f('pf-fio', 'ФИО', p.fio)}${f('pf-group', 'Класс', p.group)}<button class="btn" data-m="pf-save">Сохранить</button></section>
+    <section class="card"><h2>${ic('lock')} Смена пароля</h2>${f('pf-old', 'Текущий пароль', '', 'password', 'current-password')}${f('pf-n1', 'Новый пароль', '', 'password', 'new-password')}${f('pf-n2', 'Ещё раз', '', 'password', 'new-password')}
+      <button class="btn" data-m="pf-pw">Сменить пароль</button><p class="fz-msg" id="pf-msg"></p></section>
+    <button class="btn line" data-m="pf-del" style="color:var(--bad)">${ic('trash-2')} Удалить учётную запись</button>`;
+}
+function mTest() {
+  ui.bar.innerHTML = ''; dock('');
+  ui.main.innerHTML = `<div class="fz-test fz-phone">${testScreen()}</div>`; scrollTo(0, 0);
+}
+const fzModal = (t, html) => sheet(t, html);
+const fzSaveExam = a => shareText(examFileName(a), packExam(a), `Экзамен: ${topicName(a.topic)}`);
 
 /* ---------- работа ---------- */
 const STEP_T = ['Допуск', 'Подготовка', 'Опыты', 'Обработка', 'Выводы и защита', 'Отчёт'];
@@ -3518,7 +3945,7 @@ function showMenu() {
     ${it('hod', 'clipboard-list', 'Ход работы', 'порядок по методичке')}${it('theory', 'book-open', 'Теория', 'формулы, установка, безопасность')}
     ${it('send', 'file-text', 'Отправить файл работы', 'преподавателю — в мессенджер, почту, на диск')}
     ${it('theme', 'sparkles', isLight() ? 'Тёмная тема' : 'Светлая тема', '')}${it('intro', 'captions', 'Как проходит работа', 'короткое знакомство')}
-    ${it('labs', 'layers', 'К списку работ', 'работа сохранится')}${it('home', 'house', 'Сменить студента', '')}</div>`);
+    ${it('labs', 'layers', 'К списку работ', 'работа сохранится')}${it('home', 'house', 'Выйти из учётной записи', '')}</div>`);
 }
 function openSummary() {
   const L = curLab(), S = L.load(); if (!S || (LAB === 3 ? (S.runs || []).length !== L3.N : !S.cqOk)) return;
@@ -3526,21 +3953,22 @@ function openSummary() {
   S.dx = S.dx || {}; if (!S.dx.sumSeen) { S.dx.sumSeen = new Date().toISOString(); L.save(); }
 }
 const INTRO = [
-  { big: '🧪', t: 'Как проходит работа', p: 'Шесть шагов по порядку. Следующий открывается, когда выполнен предыдущий. Всё сохраняется само — можно закрыть приложение и продолжить потом.',
-    x: () => `<div class="isteps">${[['Допуск', '8 вопросов'], ['Подготовка', 'питание и краны'], ['Опыты', '3 измерения'], ['Обработка', 'расчёт γ'], ['Защита', '8 вопросов'], ['Отчёт', 'PDF и файл']].map(([a, b], i) => `<div><b>${i + 1}. ${a}</b>${b}</div>`).join('')}</div>` },
-  { big: '👆', t: 'Управление', p: 'Главная кнопка всегда внизу экрана. Компрессор работает, пока держишь кнопку. Ход работы по методичке — значок со списком вверху.', x: () => '' },
-  { big: '📤', t: 'Как сдать работу', p: 'В конце нажми «Отправить работу преподавателю» и выбери Telegram, VK, почту или диск. Преподаватель откроет файл в своей программе — подделку она распознаёт.', x: () => '' }
+  { big: '🎓', t: 'Добро пожаловать в «Физпрактикум»', p: 'Внизу — разделы: работы, тесты и экзамены, итоги. Всё сохраняется само — можно закрыть приложение и продолжить потом.',
+    x: () => `<div class="isteps">${[['Работы', '8 лабораторных'], ['Тесты', '900 вопросов'], ['Экзамены', 'по темам и итоговый'], ['Итоги', 'файлы для преподавателя']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
+  { big: '🧪', t: 'Как проходит работа', p: 'Шаги идут по порядку: следующий открывается, когда выполнен предыдущий. Ход работы по методичке — значок со списком вверху экрана.',
+    x: () => `<div class="isteps">${[['Допуск', '8 вопросов'], ['Подготовка', 'установка'], ['Опыты', 'измерения'], ['Обработка', 'расчёты'], ['Защита', 'выводы'], ['Отчёт', 'PDF']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
+  { big: '📤', t: 'Как сдать работу', p: 'В конце работы нажми «Отправить работу преподавателю» и выбери мессенджер, почту или диск. Результат экзамена отправляется так же — в разделе «Итоги».', x: () => '' }
 ];
 let INTRO_AT = 0;
 function showIntro(i) {
   INTRO_AT = Math.max(0, Math.min(INTRO.length - 1, i)); const s = INTRO[INTRO_AT], last = INTRO_AT === INTRO.length - 1;
   sheet('Знакомство', `<div class="slide"><div class="big">${s.big}</div><h3>${s.t}</h3><p>${s.p}</p>${s.x()}</div>
     <div class="sdots">${INTRO.map((_, j) => `<i class="${j === INTRO_AT ? 'on' : ''}"></i>`).join('')}</div>`,
-    `<button class="btn" data-m="intro-next">${last ? 'Начать работу' : 'Дальше'} ${ic('chevron-right')}</button>${last ? '' : '<button class="btn soft" data-m="sclose">Пропустить</button>'}`);
+    `<button class="btn" data-m="intro-next">${last ? 'Начать' : 'Дальше'} ${ic('chevron-right')}</button>${last ? '' : '<button class="btn soft" data-m="sclose">Пропустить</button>'}`);
 }
 
 /* ---------- файл работы, PDF ---------- */
-const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
+const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'курсант'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
 async function shareText(name, text, title, type = 'application/octet-stream') {
   const FS = plug('Filesystem'), SH = plug('Share');
   if (FS && SH) {
@@ -3564,10 +3992,10 @@ async function sendWork() {
 async function printReport() {
   const L = curLab(), S = L.load(); $('#printroot').innerHTML = L.report();
   const PR = plug('Printer');
-  if (PR) { try { await PR.print({ name: `Отчёт_ЛР${LAB}_${safeName(S.fio) || 'студент'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
+  if (PR) { try { await PR.print({ name: `Отчёт_ЛР${LAB}_${safeName(S.fio) || 'курсант'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
   // на iPhone в приложении с экрана «Домой» печать из страницы может не открываться — отчёт отдаётся файлом:
   // его открывают в «Файлах» или Safari и оттуда печатают или сохраняют в PDF (меню «Поделиться» → «Напечатать»)
-  if (IOS && (STANDALONE || typeof window.print !== 'function')) { await shareText(`Отчёт_ЛР${LAB}_${safeName(S.fio) || 'студент'}.html`, reportFileHtml(L.report(), `Отчёт по ЛР № ${LAB}`), `Отчёт по ЛР № ${LAB}`, 'text/html'); return; }
+  if (IOS && (STANDALONE || typeof window.print !== 'function')) { await shareText(`Отчёт_ЛР${LAB}_${safeName(S.fio) || 'курсант'}.html`, reportFileHtml(L.report(), `Отчёт по ЛР № ${LAB}`), `Отчёт по ЛР № ${LAB}`, 'text/html'); return; }
   window.print();
 }
 const reportFileHtml = (body, title) => `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}</title>
@@ -3579,9 +4007,10 @@ function continueFrom(text) {
   const r = unpackResult(text);
   if (r.err) return toast(r.err, 'bad');
   if (!r.ok) return toast('Файл изменён вручную — продолжить по нему нельзя.', 'bad');
+  if (r.d.kind === 'exam') return toast('Это файл результата экзамена — его открывает преподаватель в режиме преподавателя.', 'bad');
   const S = r.d.state; if (S.v !== 1) return toast('Файл от другой версии работы.', 'bad');
-  if (S.demo || (S.dx && S.dx.demo)) return toast('Это демо-прохождение преподавателя, а не работа студента.', 'bad');
-  const fio = (S.fio || r.d.student.fio || 'Студент').trim(), group = (S.group || r.d.student.group || '').trim();
+  if (S.demo || (S.dx && S.dx.demo)) return toast('Это демо-прохождение преподавателя, а не работа курсанта.', 'bad');
+  const fio = (S.fio || r.d.student.fio || 'Курсант').trim(), group = (S.group || r.d.student.group || '').trim();
   let p = profiles().find(x => x.fio.toLowerCase() === fio.toLowerCase() && (x.group || '') === group);
   if (p) { const cur = store.get(workKey(p.id), null); if (cur && (cur.max || 0) > (S.max || 0) && !confirm(`У «${fio}» на этом телефоне работа продвинута дальше. Заменить её работой из файла?`)) return; }
   else p = addProfile(fio, group);
@@ -3592,14 +4021,31 @@ function continueFrom(text) {
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-m]'); if (!b) return; const d = b.dataset;
   switch (d.m) {
-    case 'new': {
-      const fio = $('#np-fio').value.trim(), group = $('#np-group').value.trim();
-      if (fio.length < 3) { toast('Впиши ФИО полностью, например: Иванов И. И.', 'bad'); $('#np-fio').focus(); break; }
-      openProfile(addProfile(fio, group), true); break;
+    case 'atab': AUTH = d.v; render(); break;
+    case 'acc': ASEL = d.v; render(); break;
+    case 'login': { const p = profiles().find(x => x.id === ASEL); if (acctCheck(p, $('#au-pw').value)) { ASEL = ''; openProfile(p); } else auMsg('Неверный пароль.'); break; }
+    case 'forgot': { const p = profiles().find(x => x.id === ASEL); if (p && confirm(`Сбросить пароль учётной записи «${p.fio}»? Работы и результаты сохранятся, нужно будет придумать новый пароль.`)) { acctResetPw(p.id); render(); } break; }
+    case 'setpw': { const a = $('#au-n1').value, c = $('#au-n2').value; if (a.length < 4) { auMsg('Пароль — не короче 4 символов.'); break; } if (a !== c) { auMsg('Пароли не совпадают.'); break; }
+      const p = acctSetPw(ASEL, a); ASEL = ''; if (p) { toast('Пароль сохранён'); openProfile(p); } break; }
+    case 'register': {
+      const fio = $('#np-fio').value.trim(), group = $('#np-group').value.trim(), err = acctValidate(fio, group, $('#np-pw').value, $('#np-pw2').value);
+      if (err) { auMsg(err); break; }
+      openProfile(acctSetPw(addProfile(fio, group).id, $('#np-pw').value), true); break;
     }
-    case 'open': { const p = profiles().find(x => x.id === d.v); if (p) openProfile(p); break; }
+    case 'page': closeSheet(); PAGE = d.v; SCREEN = 'labs'; render(); scrollTo(0, 0); break;
+    case 'pf-save': { const fio = $('#pf-fio').value.trim(), group = $('#pf-group').value.trim();
+      if (fio.split(/\s+/).length < 2) { toast('Впиши фамилию и инициалы.', 'bad'); break; }
+      const list = profiles(), p = list.find(x => x.id === PROFILE.id); p.fio = fio; p.group = group; store.set(PKEY, list); PROFILE = p; render(); toast('Сохранено'); break; }
+    case 'pf-pw': { const m = t => { const el = $('#pf-msg'); if (el) el.textContent = t; };
+      if (!acctCheck(PROFILE, $('#pf-old').value)) { m('Текущий пароль неверный.'); break; } const a = $('#pf-n1').value;
+      if (a.length < 4) { m('Новый пароль — не короче 4 символов.'); break; } if (a !== $('#pf-n2').value) { m('Пароли не совпадают.'); break; }
+      PROFILE = acctSetPw(PROFILE.id, a); render(); toast('Пароль изменён'); break; }
+    case 'pf-del': { const pw = prompt('Удалить учётную запись и все её результаты с этого устройства? Для подтверждения введи пароль.');
+      if (pw == null) break; if (!acctCheck(PROFILE, pw)) { toast('Неверный пароль — учётная запись не удалена.', 'bad'); break; }
+      const id = PROFILE.id; store.set(PKEY, profiles().filter(x => x.id !== id)); labNums().forEach(n => store.del(LABS[n].key(id))); store.del(testKey(id));
+      PROFILE = null; SCREEN = 'home'; render(); toast('Учётная запись удалена'); break; }
     case 'import': { const i = $('#file-in'); i.value = ''; i.click(); break; }
-    case 'home': closeSheet(); PROFILE = null; L3S = null; SCREEN = 'home'; render(); scrollTo(0, 0); break;
+    case 'home': closeSheet(); if (TQ && !TQ.done && TQ.kind === 'exam') break; PROFILE = null; L3S = null; LES = null; TQ = null; SCREEN = 'home'; AUTH = 'in'; render(); scrollTo(0, 0); break;
     case 'aq': AQ = Math.max(0, Math.min(7, +d.v)); render(); scrollTo(0, 0); break;
     case 'cqq': CQ = Math.max(0, Math.min(7, +d.v)); render(); scrollTo(0, 0); break;
     case 'ctab': CTAB = d.v; render(); scrollTo(0, 0); break;
@@ -3644,8 +4090,9 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  if (e.target.id === 'np-fio') { e.preventDefault(); $('#np-group').focus(); }
-  else if (e.target.id === 'np-group') { e.preventDefault(); $('[data-m="new"]').click(); }
+  const go = { 'np-fio': '#np-group', 'np-group': '#np-pw', 'np-pw': '#np-pw2', 'au-n1': '#au-n2' }[e.target.id];
+  if (go) { e.preventDefault(); $(go).focus(); }
+  else if (['np-pw2', 'au-pw', 'au-n2'].includes(e.target.id)) { e.preventDefault(); const b = $('[data-m="register"],[data-m="login"],[data-m="setpw"]'); if (b) b.click(); }
   else if (e.target.dataset && e.target.dataset.k3 === 'ch') { e.preventDefault(); const r = $('[data-l3^="rec"]'); if (r) r.click(); }
 });
 document.addEventListener('contextmenu', e => { if (!(e.target.closest && e.target.closest('input,textarea'))) e.preventDefault(); });
@@ -3657,8 +4104,10 @@ try {
   const APP = plug('App');
   if (APP) APP.addListener('backButton', () => {
     if (!$('#sheet').hidden) return closeSheet();
-    if (SCREEN === 'work') { SCREEN = 'labs'; render(); return; }
-    if (SCREEN === 'labs') { PROFILE = null; L3S = null; SCREEN = 'home'; render(); return; }
+    if (SCREEN === 'test') { const q = $('[data-fz="quit"],[data-fz="back"]'); if (q) q.click(); return; }
+    if (SCREEN === 'work') { SCREEN = 'labs'; PAGE = 'labs'; render(); return; }
+    if (SCREEN === 'labs' && PAGE !== 'main') { PAGE = ['profile', 'about'].includes(PAGE) ? 'more' : 'main'; render(); return; }
+    if (SCREEN === 'labs') { APP.exitApp(); return; }
     APP.exitApp();
   }).catch(() => {});
 } catch (e) {}
@@ -3671,16 +4120,6 @@ render();
    Подготовка, опыты и обработка ЛР 1 и ЛР 2 — экраны модулей сайта (они уже сделаны под палец);
    допуск и защита — по одному вопросу, отчёт и сводка — как у ЛР 3.
    ===================================================================== */
-function mLabs() {
-  const p = PROFILE; ui.bar.innerHTML = ''; dock('');
-  ui.main.innerHTML = `<div class="labs-m">
-    <div class="labs-mh"><span class="logo sm">γ</span><div><h1>Физпрактикум</h1><p>${esc(p.fio)}${p.group ? ' · ' + esc(p.group) : ''}</p></div><button class="ib" data-m="home" aria-label="Сменить студента">${ic('chevron-left')}</button></div>
-    ${labNums().map(n => { const L = LABS[n], S = labState(n, p.id), at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), L.steps.length) : 0;
-      let res = ''; if (S && S.done) { try { res = withLabState(n, S, () => L.result()); } catch (e) {} }
-      return `<button class="labm ${S && S.done ? 'done' : ''}" data-m="lab" data-v="${n}"><span class="labm-ic">${ic(L.icon)}</span><div><small>ЛР ${n}</small><b>${esc(labTitle(n))}</b><span>${esc(labStatus(n, S))}</span>${res ? `<em>${esc(res)}</em>` : ''}
-        <i class="labm-bar"><i style="width:${Math.round(at / L.steps.length * 100)}%"></i></i></div></button>`; }).join('')}
-    <p class="mute small center" style="margin-top:14px">Каждая работа сохраняется отдельно.</p></div>`;
-}
 function mOpenLab(n) {
   LAB = n; const L = curLab(); L.setKey(L.key(PROFILE.id));
   const S = L.load(); ensureMeta(S); L.save(); if (n === 3) l3Reset();
@@ -3751,7 +4190,7 @@ function mReportLab(S, L) {
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-m]'); if (!b) return; const d = b.dataset;
   if (d.m === 'lab') mOpenLab(+d.v);
-  if (d.m === 'labs' && PROFILE) { closeSheet(); SCREEN = 'labs'; render(); scrollTo(0, 0); }
+  if (d.m === 'labs' && PROFILE) { closeSheet(); SCREEN = 'labs'; PAGE = 'labs'; render(); scrollTo(0, 0); }
 });
 // ответ выбран — следующий вопрос без ответа
 document.addEventListener('click', e => {

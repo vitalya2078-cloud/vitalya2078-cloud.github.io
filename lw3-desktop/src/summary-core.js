@@ -1,4 +1,4 @@
-/* Сводка «Что рассказать на защите» по работе студента. Общий файл для Windows/Linux и Android. */
+/* Сводка «Что рассказать на защите» по работе курсанта. Общий файл для Windows/Linux и Android. */
 const fx = (v, d = 3) => Number.isFinite(v) ? v.toFixed(d).replace('.', ',') : '—';
 function withState(S, fn) { const keep = L3S; L3S = S; try { return fn(); } finally { L3S = keep; } }
 
@@ -6,7 +6,7 @@ function l3SummaryHtml(S) {
   const o = withState(S, l3Calc), hi = o.gm > o.gT, agree = Math.abs(o.gm - o.gT) <= 2 * o.dg;
   const qa = [L3_CQ[0], L3_CQ[2], L3_ADMIT[4], L3_CQ[6], L3_CQ[7]];
   return `<div class="sum">
-    ${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+    ${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     <section><h3>${ic('target')} Что делали</h3>
       <p>Методом Клемана — Дезорма определяли показатель адиабаты воздуха γ = C<sub>p</sub>/C<sub>v</sub>.
       Накачали воздух в баллон и подождали минуту, пока он остынет до комнатной температуры, — записали <b>h₁</b>.
@@ -39,7 +39,7 @@ const sumQa = list => `<ul class="sum-qa">${list.map(([q, a]) => `<li><b>${esc(q
 function lwSummaryHtml(S) {
   const keep = LWS; LWS = S; let O; try { O = lwCalcAll(); } finally { LWS = keep; }
   const o = O[2], dP = Math.abs(o.px1 - o.px0) / o.px0 * 100, g = v => f1(v * 1000, 1);
-  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     ${sumBox('target', 'Что делали', `<p>Проверяли законы сохранения импульса и энергии при соударении двух тел примерно одинаковой массы: тело 1 (${g(o.m1)} г) и тело 2 (${g(o.m2)} г). Пружинный механизм — в первом пазу. Опыт 1 — свободное движение тела 1, опыт 2 — удар по телу 2 в закрашенном круге, по ${LW1.N} выстрела. Скорость не измеряли: шайба тормозится трением, поэтому v = √(2μgl), импульс пропорционален m√l, энергия — m·l. По сетке снимали координаты крайних точек шайб.</p>`)}
     ${sumBox('grid-3x3', 'Мои результаты', `<table class="tt sum-t"><tr><th></th><th>до удара</th><th>после удара</th></tr>
       <tr><td>импульс по X, кг·мм^½</td><td class="n">${f1(o.px0, 3)}</td><td class="n">${f1(o.px1, 3)}</td></tr>
@@ -54,7 +54,7 @@ function lwSummaryHtml(S) {
 function l2SummaryHtml(S) {
   const keep = L2S; L2S = S; let o; try { o = l2Calc(); } finally { L2S = keep; }
   const a = o.a, far = S.l2 > S.l1;
-  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     ${sumBox('target', 'Что делали', `<p>Определяли момент инерции маятника Обербека динамическим методом. Груз на нити, намотанной на шкив радиусом r = ${S.rr} м, опускался с высоты h = ${S.rh} м; секундомер мерил время t. По a = 2h/t² находили угловое ускорение ε = 2h/(rt²), момент инерции J = mr²(gt²/(2h) − 1) и момент силы M = Jε. Массу груза увеличивали ${a.length} раза, затем переставили цилиндры (l = ${S.rl1} → ${S.rl2} м).</p>`)}
     ${sumBox('grid-3x3', 'Мои измерения', `<table class="tt sum-t"><tr><th>Пуск</th><th>m, кг</th><th>t, с</th><th>ε, рад/с²</th><th>J, кг·м²</th></tr>
       ${a.map((x, i) => `<tr><td>${i + 1}</td><td class="n">${l2Fix(x.m, 3)}</td><td class="n">${l2Fix(x.t, 3)}</td><td class="n">${l2Sig(x.e, 3)}</td><td class="n"><b>${l2Sig(x.J, 3)}</b></td></tr>`).join('')}

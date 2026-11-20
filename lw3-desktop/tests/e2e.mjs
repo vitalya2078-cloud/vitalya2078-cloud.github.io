@@ -19,8 +19,10 @@ try {
   await page.goto(BASE, { waitUntil: 'networkidle' });
   await shot(page, '0-home');
   // пустое ФИО не принимается
-  await page.click('[data-d="new"]'); must(await page.evaluate(() => SCREEN === 'home'), 'профиль создан без ФИО');
-  await page.fill('#np-fio', 'Сидорова Анна Викторовна'); await page.fill('#np-group', '11 Б'); await page.press('#np-group', 'Enter');
+  await page.click('[data-d="register"]'); must(await page.evaluate(() => SCREEN === 'home'), 'учётная запись создана без ФИО');
+  await page.fill('#np-fio', 'Сидорова Анна Викторовна'); await page.fill('#np-group', '11 Б'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '4321'); await page.click('[data-d="register"]');
+  must(await page.evaluate(() => SCREEN === 'home'), 'принят пароль, не совпавший с повтором');
+  await page.fill('#np-pw2', '1234'); await page.press('#np-pw2', 'Enter');
   must(await page.evaluate(() => SCREEN === 'labs' && PROFILE.fio === 'Сидорова Анна Викторовна'), 'после входа нет выбора работы');
   // знакомство: 4 слайда, листается Enter, закрывается на последнем
   must(await page.locator('#modal [data-intro]').isVisible(), 'нет знакомства после входа');
@@ -29,7 +31,7 @@ try {
   must(await page.evaluate(() => document.querySelector('.keys').getBoundingClientRect().bottom <= document.querySelector('.intro-art').getBoundingClientRect().bottom + 1), 'клавиши вылезают за область слайда');
   for (let i = 0; i < 2; i++) await page.keyboard.press('Enter');
   must(await page.locator('#modal').isHidden(), 'знакомство не закрылось');
-  await page.click('[data-d="lab"][data-v="3"]');
+  await page.click('[data-d="page"][data-v="labs"]'); await page.click('[data-d="lab"][data-v="3"]');
   must(await page.evaluate(() => SCREEN === 'work' && LAB === 3 && L3S.fio === 'Сидорова Анна Викторовна' && L3S.group === '11 Б'), 'ЛР 3 не открылась');
   await page.keyboard.press('F1'); must(await page.locator('#modal [data-intro]').isVisible(), 'F1 не открывает знакомство');
   await page.click('[data-d="intro-skip"]'); must(await page.locator('#modal').isHidden(), '«Пропустить» не закрывает');

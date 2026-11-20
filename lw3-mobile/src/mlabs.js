@@ -4,16 +4,6 @@
    Подготовка, опыты и обработка ЛР 1 и ЛР 2 — экраны модулей сайта (они уже сделаны под палец);
    допуск и защита — по одному вопросу, отчёт и сводка — как у ЛР 3.
    ===================================================================== */
-function mLabs() {
-  const p = PROFILE; ui.bar.innerHTML = ''; dock('');
-  ui.main.innerHTML = `<div class="labs-m">
-    <div class="labs-mh"><span class="logo sm">γ</span><div><h1>Физпрактикум</h1><p>${esc(p.fio)}${p.group ? ' · ' + esc(p.group) : ''}</p></div><button class="ib" data-m="home" aria-label="Сменить студента">${ic('chevron-left')}</button></div>
-    ${labNums().map(n => { const L = LABS[n], S = labState(n, p.id), at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), L.steps.length) : 0;
-      let res = ''; if (S && S.done) { try { res = withLabState(n, S, () => L.result()); } catch (e) {} }
-      return `<button class="labm ${S && S.done ? 'done' : ''}" data-m="lab" data-v="${n}"><span class="labm-ic">${ic(L.icon)}</span><div><small>ЛР ${n}</small><b>${esc(labTitle(n))}</b><span>${esc(labStatus(n, S))}</span>${res ? `<em>${esc(res)}</em>` : ''}
-        <i class="labm-bar"><i style="width:${Math.round(at / L.steps.length * 100)}%"></i></i></div></button>`; }).join('')}
-    <p class="mute small center" style="margin-top:14px">Каждая работа сохраняется отдельно.</p></div>`;
-}
 function mOpenLab(n) {
   LAB = n; const L = curLab(); L.setKey(L.key(PROFILE.id));
   const S = L.load(); ensureMeta(S); L.save(); if (n === 3) l3Reset();
@@ -84,7 +74,7 @@ function mReportLab(S, L) {
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-m]'); if (!b) return; const d = b.dataset;
   if (d.m === 'lab') mOpenLab(+d.v);
-  if (d.m === 'labs' && PROFILE) { closeSheet(); SCREEN = 'labs'; render(); scrollTo(0, 0); }
+  if (d.m === 'labs' && PROFILE) { closeSheet(); SCREEN = 'labs'; PAGE = 'labs'; render(); scrollTo(0, 0); }
 });
 // ответ выбран — следующий вопрос без ответа
 document.addEventListener('click', e => {

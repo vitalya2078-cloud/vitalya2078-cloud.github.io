@@ -1,5 +1,5 @@
 /* =====================================================================
-   «Показатель адиабаты» для Android — оболочка под телефон.
+   «Физпрактикум» для Android и iPhone — оболочка под телефон.
    Сама работа (модель установки, вопросы, расчёты, проверки, действия data-l3/data-k3, отчёт) —
    fizika2/src/lw3-core.js, тот же файл, что на сайте и в программе для Windows/Linux.
    Файл работы (.lw3) и подпись — result.js, тоже общие: преподаватель проверяет работы с телефона
@@ -45,7 +45,8 @@ function toast(html, kind = '') {
 function addXP() { toast(`${ic('award')} Работа защищена! Отправь файл преподавателю на шаге «Отчёт».`); }
 function render() {
   if (SCREEN === 'home' || !PROFILE) return vHome();
-  if (SCREEN === 'labs') return mLabs();
+  if (SCREEN === 'labs') return mApp();
+  if (SCREEN === 'test') return mTest();
   if (LAB !== 3) return mWorkLab();
   vWork();
 }
@@ -62,7 +63,7 @@ function loadBg(cfg, key, to = BG) { if (!cfg) return; const im = new Image(); i
 loadBg(LAB_BG, 'dark'); loadBg(LAB_BG_LIGHT, 'light'); loadBg(LAB_BG2, 'dark', BG2); loadBg(LAB_BG2_LIGHT, 'light', BG2); sceneTheme();
 ['compressor', 'valve', 'cork', 'stopwatch', 'bottle', 'manometer', 'lens', 'puck-steel', 'puck-brass', 'launcher', 'cross', 'cyl', 'pulley', 'hanger', 'plate', 'magnet', 'psu', 'generator', 'multimeter', 'miniblock', 'magnetron', 'coil', 'helmholtz', 'compass'].forEach(k => { const im = new Image(); im.onload = () => { L3_SPR[k] = im; if (k === 'bottle') L3D.mol = null; if ($('#l3-cv')) l3Draw(); if ($('#lw-cv')) lwDraw(); if ($('#l2-cv')) l2Draw(); if ($('#le-cv')) leDraw(); }; im.src = `img/parts/${k}.webp`; });
 
-/* ---------- профили (несколько студентов на одном телефоне) ---------- */
+/* ---------- профили (несколько курсантов на одном телефоне) ---------- */
 const PKEY = 'lw3m-profiles';
 const profiles = () => store.get(PKEY, []);
 const workKey = id => 'lw3m-w-' + id;
@@ -79,9 +80,9 @@ function ensureMeta(S) {
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
   S.dx.device = IOS ? 'ios' : 'android';
 }
-function openProfile(p, intro = false, lab = 0) {   // студент → выбор работы (или сразу работа lab)
+function openProfile(p, intro = false, lab = 0) {   // курсант → выбор работы (или сразу работа lab)
   PROFILE = p; L3S = null; LWS = null; L2S = null;
-  if (lab) mOpenLab(lab); else { SCREEN = 'labs'; render(); scrollTo(0, 0); }
+  if (lab) mOpenLab(lab); else { SCREEN = 'labs'; PAGE = 'main'; render(); scrollTo(0, 0); }
   if (intro) showIntro(0);
 }
 const firstOpen = (list, ans) => { const i = list.findIndex((_, j) => !(ans || {})[j]); return i < 0 ? 0 : i; };
@@ -90,21 +91,69 @@ function profileStatus(p) {
   return st.length ? st.map(([n, S]) => `ЛР ${n}: ${S.done ? 'защищена' : 'шаг ' + ((S.max || 0) + 1)}`).join(' · ') : 'работы не начаты';
 }
 
-/* ---------- вход ---------- */
+/* ---------- вход и регистрация (пароль — только хеш, app-core.js) ---------- */
+let AUTH = 'in', ASEL = '';
 function vHome() {
   ui.bar.innerHTML = ''; dock('');
-  const ps = profiles();
+  const ps = profiles(); if (!ps.length) AUTH = 'up';
+  const sel = ps.find(p => p.id === ASEL) || null;
+  const pw = (id, lab, ac = 'current-password') => `<label class="field">${lab}<input class="inp" type="password" id="${id}" autocomplete="${ac}" enterkeyhint="go"></label>`;
+  const login = !ps.length ? '<p class="mute">На этом устройстве ещё нет учётных записей. Зарегистрируйся — это займёт минуту.</p>'
+    : `<p class="mute small">Выбери свою учётную запись:</p><div class="fz-acc">${ps.map(p => `<button data-m="acc" data-v="${p.id}" class="${p.id === ASEL ? 'on' : ''}">${ava(p.fio)}<span><b>${esc(p.fio)}</b><small>${esc(p.group || 'класс не указан')}</small></span></button>`).join('')}</div>
+      ${sel ? (acctHasPw(sel) ? `${pw('au-pw', 'Пароль')}<button class="btn" data-m="login">Войти ${ic('chevron-right')}</button><button class="lnk" data-m="forgot">Забыли пароль?</button>`
+        : `<p class="mute small">${sel.pwReset ? 'Пароль сброшен.' : 'У этой учётной записи ещё нет пароля.'} Придумай новый:</p>${pw('au-n1', 'Новый пароль', 'new-password')}${pw('au-n2', 'Ещё раз', 'new-password')}<button class="btn" data-m="setpw">Сохранить и войти</button>`) : ''}`;
+  const reg = `<label class="field">ФИО<input class="inp" id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off" autocapitalize="words" enterkeyhint="next"></label>
+      <label class="field">Класс<input class="inp" id="np-group" placeholder="103" autocomplete="off" enterkeyhint="next"></label>${pw('np-pw', 'Пароль', 'new-password')}${pw('np-pw2', 'Пароль ещё раз', 'new-password')}
+      <button class="btn" data-m="register">Зарегистрироваться ${ic('chevron-right')}</button><p class="mute small">Учётная запись и результаты хранятся только на этом устройстве.</p>`;
   ui.main.innerHTML = `<div class="login">
-    <div class="brand"><span class="logo">γ</span><h1>Физпрактикум</h1><p>Лабораторные работы по физике</p></div>
-    <div class="card">
-      <label class="field">ФИО<input class="inp" id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off" autocapitalize="words" enterkeyhint="next"></label>
-      <label class="field">Класс / группа<input class="inp" id="np-group" placeholder="11 А" autocomplete="off" enterkeyhint="go"></label>
-      <button class="btn" data-m="new">Начать работу ${ic('chevron-right')}</button>
-    </div>
-    ${ps.length ? `<p class="mute small" style="margin:14px 4px 0; font-weight:700">Продолжить работу</p><div class="plist">${ps.map(p => `<button class="prof" data-m="open" data-v="${p.id}">${ava(p.fio)}<div class="nm"><b>${esc(p.fio)}</b><small>${esc(p.group || 'без класса')} · ${esc(profileStatus(p))}</small></div>${ic('chevron-right')}</button>`).join('')}</div>` : ''}
+    <div class="brand"><span class="logo">γ</span><h1>Физпрактикум</h1><p>Виртуальный лабораторный практикум по физике</p></div>
+    <div class="card"><div class="fz-seg"><button data-m="atab" data-v="in" class="${AUTH === 'in' ? 'on' : ''}">Вход</button><button data-m="atab" data-v="up" class="${AUTH === 'up' ? 'on' : ''}">Регистрация</button></div>
+      ${AUTH === 'in' ? login : reg}<p class="fz-msg" id="au-msg"></p></div>
+    <p class="fz-org">${esc(ORG.school)}<br>${esc(ORG.dept)}</p>
     <div class="foot"><button class="lnk" data-m="import">${ic('file-text')} Открыть файл работы</button><span>версия ${esc(APP_VER)}</span></div>
   </div>`;
 }
+const auMsg = t => { const m = $('#au-msg'); if (m) m.textContent = t; };
+
+/* ---------- приложение: разделы и нижняя панель ---------- */
+let PAGE = 'main';
+const TABS = [['main', 'Главная', 'house'], ['labs', 'Работы', 'flask-conical'], ['tests', 'Тесты', 'graduation-cap'], ['results', 'Итоги', 'trophy'], ['more', 'Ещё', 'sliders-horizontal']];
+const PAGE_T = { main: 'Физпрактикум', labs: 'Лабораторные работы', tests: 'Тесты и экзамены', results: 'Мои результаты', more: 'Ещё', profile: 'Профиль', about: 'О программе' };
+function mApp() {
+  const back = ['profile', 'about'].includes(PAGE);
+  ui.bar.innerHTML = `<div class="bar">${back ? `<button class="ib" data-m="page" data-v="more" aria-label="Назад">${ic('chevron-left')}</button>` : ''}<h1>${PAGE_T[PAGE]}${PAGE === 'main' ? `<small>${esc(PROFILE.fio)}${PROFILE.group ? ' · ' + esc(PROFILE.group) : ''}</small>` : ''}</h1></div>`;
+  const body = ({ main: mpMain, labs: () => labCards('data-m'), tests: testsHome, results: () => resultsHtml('data-m'), more: mpMore, profile: mpProfile, about: () => aboutHtml('data-m') })[PAGE] || mpMain;
+  ui.main.innerHTML = `<div class="fz-mpage">${body()}</div>`;
+  dock(`<nav class="fz-tabs">${TABS.map(([k, t, i]) => `<button data-m="page" data-v="${k}" class="${PAGE === k || (k === 'more' && ['profile', 'about'].includes(PAGE)) ? 'on' : ''}">${ic(i)}<span>${t}</span></button>`).join('')}</nav>`);
+}
+function mpMain() {
+  const st = labNums().map(n => [n, labState(n, PROFILE.id)]);
+  const go = st.filter(([, S]) => S && (S.max || 0) > 0 && !S.done).sort((a, b) => (b[1].max || 0) - (a[1].max || 0))[0] || st.find(([, S]) => !S || !(S.max || S.done));
+  const n = go ? go[0] : 0, S = n ? labState(n, PROFILE.id) : null, T = tsLoad(), done = st.filter(([, x]) => x && x.done).length, last = T.att.filter(a => a.kind === 'exam')[0];
+  return `${n ? `<button class="fz-mcont" data-m="lab" data-v="${n}"><img src="${cover(n)}" alt=""><span><small>${S && S.max ? 'Продолжить' : 'Следующая работа'}</small><b>ЛР № ${n}. ${esc(labTitle(n))}</b><em>${S && S.max ? esc(labStatus(n, S)) : 'не начата'}</em></span>${ic('chevron-right')}</button>` : ''}
+    <div class="fz-stats"><div class="fz-stat"><b>${done}/${labNums().length}</b><span>работ защищено</span></div><div class="fz-stat"><b>${Object.values(T.self).filter(v => v === 1).length}</b><span>вопросов решено</span></div><div class="fz-stat"><b>${last ? last.score : '—'}</b><span>${last ? `последний экзамен, «${last.grade}»` : 'экзаменов нет'}</span></div></div>
+    <div class="fz-links"><button class="fz-link" data-m="page" data-v="labs">${ic('flask-conical')}<span><b>Лабораторные работы</b><small>8 работ по методичке кафедры</small></span></button>
+      <button class="fz-link" data-m="page" data-v="tests">${ic('graduation-cap')}<span><b>Тесты и экзамены</b><small>900 вопросов по 9 темам</small></span></button></div>`;
+}
+function mpMore() {
+  const it = (m, v, icn, t, d) => `<button data-m="${m}" ${v ? `data-v="${v}"` : ''}>${ic(icn)}<span>${t}${d ? `<small>${d}</small>` : ''}</span></button>`;
+  return `<div class="menu">${it('page', 'profile', 'user', 'Профиль', 'ФИО, класс, пароль')}${it('page', 'about', 'book-open', 'О программе', 'училище, кафедра, авторские права')}
+    ${it('theme', '', 'sparkles', isLight() ? 'Тёмная тема' : 'Светлая тема', '')}${it('intro', '', 'captions', 'Как проходит работа', 'короткое знакомство')}
+    ${it('import', '', 'file-text', 'Открыть файл работы', 'продолжить работу с другого устройства')}${it('home', '', 'chevron-left', 'Выйти', 'из учётной записи')}</div>`;
+}
+function mpProfile() {
+  const p = PROFILE, f = (id, lab, v, t = 'text', ac = 'off') => `<label class="field">${lab}<input class="inp" type="${t}" id="${id}" value="${esc(v || '')}" autocomplete="${ac}"></label>`;
+  return `<section class="card"><h2>${ic('user')} Учётная запись</h2>${f('pf-fio', 'ФИО', p.fio)}${f('pf-group', 'Класс', p.group)}<button class="btn" data-m="pf-save">Сохранить</button></section>
+    <section class="card"><h2>${ic('lock')} Смена пароля</h2>${f('pf-old', 'Текущий пароль', '', 'password', 'current-password')}${f('pf-n1', 'Новый пароль', '', 'password', 'new-password')}${f('pf-n2', 'Ещё раз', '', 'password', 'new-password')}
+      <button class="btn" data-m="pf-pw">Сменить пароль</button><p class="fz-msg" id="pf-msg"></p></section>
+    <button class="btn line" data-m="pf-del" style="color:var(--bad)">${ic('trash-2')} Удалить учётную запись</button>`;
+}
+function mTest() {
+  ui.bar.innerHTML = ''; dock('');
+  ui.main.innerHTML = `<div class="fz-test fz-phone">${testScreen()}</div>`; scrollTo(0, 0);
+}
+const fzModal = (t, html) => sheet(t, html);
+const fzSaveExam = a => shareText(examFileName(a), packExam(a), `Экзамен: ${topicName(a.topic)}`);
 
 /* ---------- работа ---------- */
 const STEP_T = ['Допуск', 'Подготовка', 'Опыты', 'Обработка', 'Выводы и защита', 'Отчёт'];
@@ -323,7 +372,7 @@ function showMenu() {
     ${it('hod', 'clipboard-list', 'Ход работы', 'порядок по методичке')}${it('theory', 'book-open', 'Теория', 'формулы, установка, безопасность')}
     ${it('send', 'file-text', 'Отправить файл работы', 'преподавателю — в мессенджер, почту, на диск')}
     ${it('theme', 'sparkles', isLight() ? 'Тёмная тема' : 'Светлая тема', '')}${it('intro', 'captions', 'Как проходит работа', 'короткое знакомство')}
-    ${it('labs', 'layers', 'К списку работ', 'работа сохранится')}${it('home', 'house', 'Сменить студента', '')}</div>`);
+    ${it('labs', 'layers', 'К списку работ', 'работа сохранится')}${it('home', 'house', 'Выйти из учётной записи', '')}</div>`);
 }
 function openSummary() {
   const L = curLab(), S = L.load(); if (!S || (LAB === 3 ? (S.runs || []).length !== L3.N : !S.cqOk)) return;
@@ -331,21 +380,22 @@ function openSummary() {
   S.dx = S.dx || {}; if (!S.dx.sumSeen) { S.dx.sumSeen = new Date().toISOString(); L.save(); }
 }
 const INTRO = [
-  { big: '🧪', t: 'Как проходит работа', p: 'Шесть шагов по порядку. Следующий открывается, когда выполнен предыдущий. Всё сохраняется само — можно закрыть приложение и продолжить потом.',
-    x: () => `<div class="isteps">${[['Допуск', '8 вопросов'], ['Подготовка', 'питание и краны'], ['Опыты', '3 измерения'], ['Обработка', 'расчёт γ'], ['Защита', '8 вопросов'], ['Отчёт', 'PDF и файл']].map(([a, b], i) => `<div><b>${i + 1}. ${a}</b>${b}</div>`).join('')}</div>` },
-  { big: '👆', t: 'Управление', p: 'Главная кнопка всегда внизу экрана. Компрессор работает, пока держишь кнопку. Ход работы по методичке — значок со списком вверху.', x: () => '' },
-  { big: '📤', t: 'Как сдать работу', p: 'В конце нажми «Отправить работу преподавателю» и выбери Telegram, VK, почту или диск. Преподаватель откроет файл в своей программе — подделку она распознаёт.', x: () => '' }
+  { big: '🎓', t: 'Добро пожаловать в «Физпрактикум»', p: 'Внизу — разделы: работы, тесты и экзамены, итоги. Всё сохраняется само — можно закрыть приложение и продолжить потом.',
+    x: () => `<div class="isteps">${[['Работы', '8 лабораторных'], ['Тесты', '900 вопросов'], ['Экзамены', 'по темам и итоговый'], ['Итоги', 'файлы для преподавателя']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
+  { big: '🧪', t: 'Как проходит работа', p: 'Шаги идут по порядку: следующий открывается, когда выполнен предыдущий. Ход работы по методичке — значок со списком вверху экрана.',
+    x: () => `<div class="isteps">${[['Допуск', '8 вопросов'], ['Подготовка', 'установка'], ['Опыты', 'измерения'], ['Обработка', 'расчёты'], ['Защита', 'выводы'], ['Отчёт', 'PDF']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
+  { big: '📤', t: 'Как сдать работу', p: 'В конце работы нажми «Отправить работу преподавателю» и выбери мессенджер, почту или диск. Результат экзамена отправляется так же — в разделе «Итоги».', x: () => '' }
 ];
 let INTRO_AT = 0;
 function showIntro(i) {
   INTRO_AT = Math.max(0, Math.min(INTRO.length - 1, i)); const s = INTRO[INTRO_AT], last = INTRO_AT === INTRO.length - 1;
   sheet('Знакомство', `<div class="slide"><div class="big">${s.big}</div><h3>${s.t}</h3><p>${s.p}</p>${s.x()}</div>
     <div class="sdots">${INTRO.map((_, j) => `<i class="${j === INTRO_AT ? 'on' : ''}"></i>`).join('')}</div>`,
-    `<button class="btn" data-m="intro-next">${last ? 'Начать работу' : 'Дальше'} ${ic('chevron-right')}</button>${last ? '' : '<button class="btn soft" data-m="sclose">Пропустить</button>'}`);
+    `<button class="btn" data-m="intro-next">${last ? 'Начать' : 'Дальше'} ${ic('chevron-right')}</button>${last ? '' : '<button class="btn soft" data-m="sclose">Пропустить</button>'}`);
 }
 
 /* ---------- файл работы, PDF ---------- */
-const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'студент'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
+const workFileName = S => `ЛР${LAB}_${safeName(S.fio) || 'курсант'}${S.group ? '_' + safeName(S.group) : ''}.lw3`;
 async function shareText(name, text, title, type = 'application/octet-stream') {
   const FS = plug('Filesystem'), SH = plug('Share');
   if (FS && SH) {
@@ -369,10 +419,10 @@ async function sendWork() {
 async function printReport() {
   const L = curLab(), S = L.load(); $('#printroot').innerHTML = L.report();
   const PR = plug('Printer');
-  if (PR) { try { await PR.print({ name: `Отчёт_ЛР${LAB}_${safeName(S.fio) || 'студент'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
+  if (PR) { try { await PR.print({ name: `Отчёт_ЛР${LAB}_${safeName(S.fio) || 'курсант'}` }); } catch (e) { toast('Печать недоступна: ' + esc(String(e && (e.message || e))), 'bad'); } return; }
   // на iPhone в приложении с экрана «Домой» печать из страницы может не открываться — отчёт отдаётся файлом:
   // его открывают в «Файлах» или Safari и оттуда печатают или сохраняют в PDF (меню «Поделиться» → «Напечатать»)
-  if (IOS && (STANDALONE || typeof window.print !== 'function')) { await shareText(`Отчёт_ЛР${LAB}_${safeName(S.fio) || 'студент'}.html`, reportFileHtml(L.report(), `Отчёт по ЛР № ${LAB}`), `Отчёт по ЛР № ${LAB}`, 'text/html'); return; }
+  if (IOS && (STANDALONE || typeof window.print !== 'function')) { await shareText(`Отчёт_ЛР${LAB}_${safeName(S.fio) || 'курсант'}.html`, reportFileHtml(L.report(), `Отчёт по ЛР № ${LAB}`), `Отчёт по ЛР № ${LAB}`, 'text/html'); return; }
   window.print();
 }
 const reportFileHtml = (body, title) => `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}</title>
@@ -384,9 +434,10 @@ function continueFrom(text) {
   const r = unpackResult(text);
   if (r.err) return toast(r.err, 'bad');
   if (!r.ok) return toast('Файл изменён вручную — продолжить по нему нельзя.', 'bad');
+  if (r.d.kind === 'exam') return toast('Это файл результата экзамена — его открывает преподаватель в режиме преподавателя.', 'bad');
   const S = r.d.state; if (S.v !== 1) return toast('Файл от другой версии работы.', 'bad');
-  if (S.demo || (S.dx && S.dx.demo)) return toast('Это демо-прохождение преподавателя, а не работа студента.', 'bad');
-  const fio = (S.fio || r.d.student.fio || 'Студент').trim(), group = (S.group || r.d.student.group || '').trim();
+  if (S.demo || (S.dx && S.dx.demo)) return toast('Это демо-прохождение преподавателя, а не работа курсанта.', 'bad');
+  const fio = (S.fio || r.d.student.fio || 'Курсант').trim(), group = (S.group || r.d.student.group || '').trim();
   let p = profiles().find(x => x.fio.toLowerCase() === fio.toLowerCase() && (x.group || '') === group);
   if (p) { const cur = store.get(workKey(p.id), null); if (cur && (cur.max || 0) > (S.max || 0) && !confirm(`У «${fio}» на этом телефоне работа продвинута дальше. Заменить её работой из файла?`)) return; }
   else p = addProfile(fio, group);
@@ -397,14 +448,31 @@ function continueFrom(text) {
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-m]'); if (!b) return; const d = b.dataset;
   switch (d.m) {
-    case 'new': {
-      const fio = $('#np-fio').value.trim(), group = $('#np-group').value.trim();
-      if (fio.length < 3) { toast('Впиши ФИО полностью, например: Иванов И. И.', 'bad'); $('#np-fio').focus(); break; }
-      openProfile(addProfile(fio, group), true); break;
+    case 'atab': AUTH = d.v; render(); break;
+    case 'acc': ASEL = d.v; render(); break;
+    case 'login': { const p = profiles().find(x => x.id === ASEL); if (acctCheck(p, $('#au-pw').value)) { ASEL = ''; openProfile(p); } else auMsg('Неверный пароль.'); break; }
+    case 'forgot': { const p = profiles().find(x => x.id === ASEL); if (p && confirm(`Сбросить пароль учётной записи «${p.fio}»? Работы и результаты сохранятся, нужно будет придумать новый пароль.`)) { acctResetPw(p.id); render(); } break; }
+    case 'setpw': { const a = $('#au-n1').value, c = $('#au-n2').value; if (a.length < 4) { auMsg('Пароль — не короче 4 символов.'); break; } if (a !== c) { auMsg('Пароли не совпадают.'); break; }
+      const p = acctSetPw(ASEL, a); ASEL = ''; if (p) { toast('Пароль сохранён'); openProfile(p); } break; }
+    case 'register': {
+      const fio = $('#np-fio').value.trim(), group = $('#np-group').value.trim(), err = acctValidate(fio, group, $('#np-pw').value, $('#np-pw2').value);
+      if (err) { auMsg(err); break; }
+      openProfile(acctSetPw(addProfile(fio, group).id, $('#np-pw').value), true); break;
     }
-    case 'open': { const p = profiles().find(x => x.id === d.v); if (p) openProfile(p); break; }
+    case 'page': closeSheet(); PAGE = d.v; SCREEN = 'labs'; render(); scrollTo(0, 0); break;
+    case 'pf-save': { const fio = $('#pf-fio').value.trim(), group = $('#pf-group').value.trim();
+      if (fio.split(/\s+/).length < 2) { toast('Впиши фамилию и инициалы.', 'bad'); break; }
+      const list = profiles(), p = list.find(x => x.id === PROFILE.id); p.fio = fio; p.group = group; store.set(PKEY, list); PROFILE = p; render(); toast('Сохранено'); break; }
+    case 'pf-pw': { const m = t => { const el = $('#pf-msg'); if (el) el.textContent = t; };
+      if (!acctCheck(PROFILE, $('#pf-old').value)) { m('Текущий пароль неверный.'); break; } const a = $('#pf-n1').value;
+      if (a.length < 4) { m('Новый пароль — не короче 4 символов.'); break; } if (a !== $('#pf-n2').value) { m('Пароли не совпадают.'); break; }
+      PROFILE = acctSetPw(PROFILE.id, a); render(); toast('Пароль изменён'); break; }
+    case 'pf-del': { const pw = prompt('Удалить учётную запись и все её результаты с этого устройства? Для подтверждения введи пароль.');
+      if (pw == null) break; if (!acctCheck(PROFILE, pw)) { toast('Неверный пароль — учётная запись не удалена.', 'bad'); break; }
+      const id = PROFILE.id; store.set(PKEY, profiles().filter(x => x.id !== id)); labNums().forEach(n => store.del(LABS[n].key(id))); store.del(testKey(id));
+      PROFILE = null; SCREEN = 'home'; render(); toast('Учётная запись удалена'); break; }
     case 'import': { const i = $('#file-in'); i.value = ''; i.click(); break; }
-    case 'home': closeSheet(); PROFILE = null; L3S = null; SCREEN = 'home'; render(); scrollTo(0, 0); break;
+    case 'home': closeSheet(); if (TQ && !TQ.done && TQ.kind === 'exam') break; PROFILE = null; L3S = null; LES = null; TQ = null; SCREEN = 'home'; AUTH = 'in'; render(); scrollTo(0, 0); break;
     case 'aq': AQ = Math.max(0, Math.min(7, +d.v)); render(); scrollTo(0, 0); break;
     case 'cqq': CQ = Math.max(0, Math.min(7, +d.v)); render(); scrollTo(0, 0); break;
     case 'ctab': CTAB = d.v; render(); scrollTo(0, 0); break;
@@ -449,8 +517,9 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  if (e.target.id === 'np-fio') { e.preventDefault(); $('#np-group').focus(); }
-  else if (e.target.id === 'np-group') { e.preventDefault(); $('[data-m="new"]').click(); }
+  const go = { 'np-fio': '#np-group', 'np-group': '#np-pw', 'np-pw': '#np-pw2', 'au-n1': '#au-n2' }[e.target.id];
+  if (go) { e.preventDefault(); $(go).focus(); }
+  else if (['np-pw2', 'au-pw', 'au-n2'].includes(e.target.id)) { e.preventDefault(); const b = $('[data-m="register"],[data-m="login"],[data-m="setpw"]'); if (b) b.click(); }
   else if (e.target.dataset && e.target.dataset.k3 === 'ch') { e.preventDefault(); const r = $('[data-l3^="rec"]'); if (r) r.click(); }
 });
 document.addEventListener('contextmenu', e => { if (!(e.target.closest && e.target.closest('input,textarea'))) e.preventDefault(); });
@@ -462,8 +531,10 @@ try {
   const APP = plug('App');
   if (APP) APP.addListener('backButton', () => {
     if (!$('#sheet').hidden) return closeSheet();
-    if (SCREEN === 'work') { SCREEN = 'labs'; render(); return; }
-    if (SCREEN === 'labs') { PROFILE = null; L3S = null; SCREEN = 'home'; render(); return; }
+    if (SCREEN === 'test') { const q = $('[data-fz="quit"],[data-fz="back"]'); if (q) q.click(); return; }
+    if (SCREEN === 'work') { SCREEN = 'labs'; PAGE = 'labs'; render(); return; }
+    if (SCREEN === 'labs' && PAGE !== 'main') { PAGE = ['profile', 'about'].includes(PAGE) ? 'more' : 'main'; render(); return; }
+    if (SCREEN === 'labs') { APP.exitApp(); return; }
     APP.exitApp();
   }).catch(() => {});
 } catch (e) {}

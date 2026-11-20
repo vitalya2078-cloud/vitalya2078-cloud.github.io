@@ -59,8 +59,8 @@ js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'labs.js', 'teacher.js')])
-html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css).replace('{{JS}}', js.replace('</script', '<\\/script'))
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'labs.js', 'teacher.js')])
+html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(D, 'src', 'app.css'))).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 
 if os.path.exists(DIST):
@@ -76,6 +76,15 @@ for f in (bg, bgl, 'lab-bg2.webp', 'lab-bg2-light.webp'):
         os.makedirs(os.path.join(DIST, 'img'), exist_ok=True)
         shutil.copy2(os.path.join(D, 'assets', f), os.path.join(DIST, 'img', f))
 # приборы установки (необязательно): assets/parts/*.webp → dist/img/parts/; без файла прибор рисуется кодом
+# обложки лабораторных (assets/covers) и банк вопросов (bank/bank.json + bank/img) — в dist
+COV = os.path.join(D, 'assets', 'covers')
+if os.path.isdir(COV):
+    shutil.copytree(COV, os.path.join(DIST, 'img', 'covers'), dirs_exist_ok=True)
+BANK_DIR = os.path.join(D, 'bank')
+shutil.rmtree(os.path.join(DIST, 'bank'), ignore_errors=True)
+os.makedirs(os.path.join(DIST, 'bank'))
+shutil.copy2(os.path.join(BANK_DIR, 'bank.json'), os.path.join(DIST, 'bank', 'bank.json'))
+shutil.copytree(os.path.join(BANK_DIR, 'img'), os.path.join(DIST, 'bank', 'img'))
 PARTS = os.path.join(D, 'assets', 'parts')
 if os.path.isdir(PARTS):
     os.makedirs(os.path.join(DIST, 'img', 'parts'), exist_ok=True)

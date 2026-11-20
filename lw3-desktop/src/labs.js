@@ -5,23 +5,78 @@
    ЛР 3 идёт своими экранами (desktop.js, layout2.js) — как раньше.
    ===================================================================== */
 /* ---------- выбор работы ---------- */
-function vLabs() {
+/* ---------- приложение: меню слева и разделы ---------- */
+let PAGE = 'main';
+const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторные работы', 'flask-conical'], ['tests', 'Тесты и экзамены', 'graduation-cap'], ['results', 'Мои результаты', 'trophy'], ['profile', 'Профиль', 'user'], ['about', 'О программе', 'book-open']];
+function vApp() {
   document.body.classList.add('noside'); document.body.classList.remove('full'); ui.side.innerHTML = '';
-  const p = PROFILE, cards = labNums().map(n => { const L = LABS[n], S = labState(n, p.id), n2 = L.steps.length, at = S ? Math.min((S.max || 0) + (S.done ? 1 : 0), n2) : 0;
-    let res = ''; if (S && S.done) { try { res = withLabState(n, S, () => L.result()); } catch (e) { res = ''; } }
-    return `<button class="labc ${S && S.done ? 'done' : ''}" data-d="lab" data-v="${n}"><span class="labc-n">ЛР ${n}</span><span class="labc-ic">${ic(L.icon)}</span>
-      <b>${esc(labTitle(n))}</b><small>${esc(labStatus(n, S))}</small>${res ? `<em>${esc(res)}</em>` : ''}
-      <span class="labc-bar"><i style="width:${Math.round(at / n2 * 100)}%"></i></span></button>`; }).join('');
-  ui.main.innerHTML = `<div class="labs">
-    <header class="labs-h"><span class="logo">γ</span><div><h1>Физпрактикум</h1><p>${esc(p.fio)}${p.group ? ' · ' + esc(p.group) : ''}</p></div><span class="sp"></span>
-      ${themeBtn()}<button class="btn ghost" data-d="help">${ic('book-open')} Как проходит работа</button><button class="btn line" data-d="home">${ic('chevron-left')} Сменить студента</button></header>
-    <p class="labs-t">Лабораторные работы</p><div class="labs-g">${cards}</div>
-    <p class="mute small labs-f">Каждая работа сохраняется отдельно — можно выполнять в любом порядке и продолжать позже.</p></div>`;
+  const p = PROFILE, page = ({ main: pgMain, labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout })[PAGE] || pgMain;
+  ui.main.innerHTML = `<div class="fz-app"><nav class="fz-nav">
+      <div class="fz-brand"><span class="logo">γ</span><div><b>Физпрактикум</b><small>ЧВВМУ им. П.С. Нахимова</small></div></div>
+      ${NAV.map(([k, t, i]) => `<button class="fz-ni ${PAGE === k ? 'on' : ''}" data-d="page" data-v="${k}">${ic(i)}<span>${t}</span></button>`).join('')}
+      <span class="fz-sp"></span>
+      <button class="fz-ni" data-d="theme">${ic('sparkles')}<span>${isLight() ? 'Тёмная тема' : 'Светлая тема'}</span></button>
+      <div class="fz-me">${ava(p.fio)}<div><b>${esc(p.fio)}</b><small>${esc(p.group || '')}</small></div><button class="tb-ic" data-d="home" title="Выйти">${ic('chevron-left')}</button></div>
+    </nav><main class="fz-page">${page()}</main></div>`;
 }
+const pgHead = (t, sub = '', extra = '') => `<div class="fz-ph"><div><h1>${t}</h1>${sub ? `<p>${sub}</p>` : ''}</div>${extra}</div>`;
+function fzNext() {   // продолжить: начатая и не защищённая работа; иначе — первая не начатая
+  const st = labNums().map(n => [n, labState(n, PROFILE.id)]);
+  const go = st.filter(([, S]) => S && (S.max || 0) > 0 && !S.done).sort((a, b) => (b[1].max || 0) - (a[1].max || 0))[0] || st.find(([, S]) => !S || !(S.max || S.done));
+  return go ? go[0] : 0;
+}
+function pgMain() {
+  const n = fzNext(), T = tsLoad(), done = labNums().filter(k => { const S = labState(k, PROFILE.id); return S && S.done; }).length;
+  const ex = T.att.filter(a => a.kind === 'exam'), last = ex[0], solved = Object.values(T.self).filter(v => v === 1).length;
+  const name = PROFILE.fio.split(/\s+/).slice(1).join(' ') || PROFILE.fio;
+  const S = n ? labState(n, PROFILE.id) : null;
+  return pgHead(`Здравствуйте, ${esc(name)}!`, `${esc(PROFILE.group ? PROFILE.group + ' класс · ' : '')}${new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}`) +
+    `<div class="fz-hero"><section class="fz-tile">${n ? `<div class="fz-cont"><img src="${cover(n)}" alt=""><div><span class="fz-n">${S && S.max ? 'Продолжить' : 'Следующая работа'}</span><h2>ЛР № ${n}. ${esc(labTitle(n))}</h2>
+        <p>${S && S.max ? esc(labStatus(n, S)) : 'Работа ещё не начата.'}</p><button class="btn" data-d="lab" data-v="${n}">${S && S.max ? 'Продолжить работу' : 'Начать работу'} ${ic('chevron-right')}</button></div></div>`
+      : `<h2>Все лабораторные работы защищены</h2><p>Отличная работа! Результаты — в разделе «Мои результаты».</p><button class="btn" data-d="page" data-v="results">Мои результаты</button>`}</section>
+      <section class="fz-tile"><h2>Прогресс</h2><div class="fz-stats"><div class="fz-stat"><b>${done} / ${labNums().length}</b><span>работ защищено</span></div>
+        <div class="fz-stat"><b>${solved}</b><span>вопросов решено верно</span></div><div class="fz-stat"><b>${last ? last.score : '—'}</b><span>${last ? `баллов, «${last.grade}» — последний экзамен` : 'экзамены не сдавались'}</span></div></div></section></div>
+    <div class="fz-links"><button class="fz-link" data-d="page" data-v="labs">${ic('flask-conical')}<span><b>Лабораторные работы</b><small>8 работ по методическим указаниям кафедры</small></span></button>
+      <button class="fz-link" data-d="page" data-v="tests">${ic('graduation-cap')}<span><b>Тесты и экзамены</b><small>900 вопросов: самопроверка и экзамены по темам</small></span></button>
+      <button class="fz-link" data-d="help">${ic('book-open')}<span><b>Как проходит работа</b><small>Шаги лабораторной работы и клавиши</small></span></button>
+      <button class="fz-link" data-d="import">${ic('file-text')}<span><b>Открыть файл работы</b><small>Продолжить работу с другого компьютера</small></span></button></div>`;
+}
+const pgLabs = () => pgHead('Лабораторные работы', 'Работы выполняются по методическим указаниям кафедры. Каждая сохраняется отдельно — можно продолжить позже.') + labCards('data-d');
+const pgTests = () => pgHead('Тесты и экзамены', 'Банк из 900 вопросов по 9 темам курса физики.') + testsHome();
+const pgResults = () => pgHead('Мои результаты', 'Лабораторные работы и экзамены. Файл результата экзамена можно сохранить для преподавателя.') + resultsHtml('data-d');
+const pgAbout = () => aboutHtml('data-d');
+function pgProfile() {
+  const p = PROFILE;
+  return pgHead('Профиль', 'Учётная запись хранится только на этом компьютере.') + `<div class="fz-pcards">
+    <section class="card"><h2>${ic('user')} Учётная запись</h2><div class="fz-form"><label class="field">ФИО<input id="pf-fio" value="${esc(p.fio)}" autocomplete="off"></label>
+      <label class="field">Класс<input id="pf-group" value="${esc(p.group || '')}" autocomplete="off"></label><button class="btn" data-d="pf-save">${ic('circle-check')} Сохранить</button></div></section>
+    <section class="card"><h2>${ic('lock')} Смена пароля</h2><div class="fz-form"><label class="field">Текущий пароль<input type="password" id="pf-old" autocomplete="current-password"></label>
+      <label class="field">Новый пароль<input type="password" id="pf-n1" autocomplete="new-password"></label><label class="field">Ещё раз<input type="password" id="pf-n2" autocomplete="new-password"></label>
+      <button class="btn" data-d="pf-pw">${ic('lock')} Сменить пароль</button><p class="fz-msg" id="pf-msg"></p></div></section>
+    <section class="card"><h2>${ic('settings')} Сеанс</h2><div class="fz-form"><button class="btn line" data-d="home">${ic('chevron-left')} Выйти из учётной записи</button>
+      <button class="btn ghost" data-d="pf-del" style="color:var(--bad)">${ic('trash-2')} Удалить учётную запись и её результаты</button></div></section></div>`;
+}
+const pfMsg = t => { const m = $('#pf-msg'); if (m) m.textContent = t; };
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-d]'); if (!b || !PROFILE) return; const d = b.dataset;
+  switch (d.d) {
+    case 'page': PAGE = d.v; SCREEN = 'labs'; render(); ui.main.scrollTop = 0; break;
+    case 'pf-save': { const fio = $('#pf-fio').value.trim(), group = $('#pf-group').value.trim();
+      if (fio.split(/\s+/).length < 2) { toast('Впиши фамилию и инициалы.', 'bad'); break; }
+      const list = profiles(), p = list.find(x => x.id === PROFILE.id); p.fio = fio; p.group = group; store.set(PKEY, list); PROFILE = p; render(); toast('Сохранено'); break; }
+    case 'pf-pw': { if (!acctCheck(PROFILE, $('#pf-old').value)) { pfMsg('Текущий пароль неверный.'); break; } const a = $('#pf-n1').value;
+      if (a.length < 4) { pfMsg('Новый пароль — не короче 4 символов.'); break; } if (a !== $('#pf-n2').value) { pfMsg('Пароли не совпадают.'); break; }
+      PROFILE = acctSetPw(PROFILE.id, a); render(); toast('Пароль изменён'); break; }
+    case 'pf-del': { const pw = prompt('Удалить учётную запись и все её результаты с этого компьютера? Для подтверждения введи пароль.');
+      if (pw == null) break; if (!acctCheck(PROFILE, pw)) { toast('Неверный пароль — учётная запись не удалена.', 'bad'); break; }
+      const id = PROFILE.id; store.set(PKEY, profiles().filter(x => x.id !== id)); labNums().forEach(n => store.del(LABS[n].key(id))); store.del(testKey(id));
+      PROFILE = null; SCREEN = 'home'; render(); toast('Учётная запись удалена'); break; }
+  }
+});
 function openLab(n) {
   LAB = n; const L = curLab(); L.setKey(L.key(PROFILE.id));
   const S = L.load(); ensureMeta(S); L.save(); if (n === 3) l3Reset();
-  AQ = 0; CQI = 0; SCREEN = 'work'; render(); ui.main.scrollTop = 0;
+  AQ = 0; CQI = 0; SCREEN = 'work'; PAGE = 'labs'; render(); ui.main.scrollTop = 0;
 }
 
 /* ---------- общие экраны ЛР 1 и ЛР 2 ---------- */
@@ -118,7 +173,7 @@ function showTheoryLab() {
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-d]'); if (!b) return; const d = b.dataset;
   if (d.d === 'lab') openLab(+d.v);
-  if (d.d === 'labs' && PROFILE) { closeModal(); SCREEN = 'labs'; render(); }
+  if (d.d === 'labs' && PROFILE) { closeModal(); SCREEN = 'labs'; PAGE = 'labs'; render(); }
   if (d.d === 'cqi') { CQI = +d.v; render(); }
 });
 // ответ выбран — следующий вопрос без ответа (ЛР 1 и ЛР 2)

@@ -20,8 +20,9 @@ const fmt = (v, d) => v.toFixed(d).replace('.', ',');
 const st = () => E(() => curLab().steps[curLab().S().step][0]);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '11 В'); await page.click('[data-m="new"]'); await page.click('#sheet [data-m="sclose"]');
-must(await page.locator('.labm').count() === 8, 'на главном экране не 8 работ'); await shot(page, 'labs');
+await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await page.click('[data-m="register"]'); await page.click('#sheet [data-m="sclose"]');
+await page.click('#dock [data-m="page"][data-v="labs"]');
+must(await page.locator('.fz-card').count() === 8, 'на главном экране не 8 работ'); await shot(page, 'labs');
 
 async function admitAndCq(act, key) {
   const list = await E(k => curLab()[k].map(([, a]) => a), key);
@@ -123,7 +124,7 @@ for (const n of [4, 5, 6, 7, 8]) {
 }
 
 /* главный экран: обе работы защищены, ЛР 3 не тронута; файл ЛР 2 открывается для продолжения на «другом компьютере» */
-must((await page.locator('.labm.done').count()) === 7, 'на главном экране не отмечены защищённые работы'); await shot(page, 'labs-done');
+must((await page.locator('.fz-card.done').count()) === 7, 'на главном экране не отмечены защищённые работы'); await shot(page, 'labs-done');
 const ctx2 = await b.newContext({ ...devices['Pixel 7'] }); const p2 = await ctx2.newPage(); p2.on('pageerror', e => errors.push(e.message));
 await p2.goto(BASE, { waitUntil: 'networkidle' }); await p2.setInputFiles('#file-in', f2); await p2.waitForFunction(() => SCREEN === 'work');
 must(await p2.evaluate(() => LAB === 2 && L2S.done && L2.steps[L2S.step][0] === 'report'), 'ЛР 2 из файла не восстановилась'); await ctx2.close();

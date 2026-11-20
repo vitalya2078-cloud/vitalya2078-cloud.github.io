@@ -116,13 +116,13 @@ jobs:
       - name: Collect files
         run: |
           mkdir -p out
-          cp lw3-desktop/src-tauri/target/release/bundle/nsis/*.exe "out/Pokazatel-adiabaty-setup.exe"
-          cp lw3-desktop/src-tauri/target/release/lw3-adiabata.exe "out/Pokazatel-adiabaty-portable.exe"
+          cp lw3-desktop/src-tauri/target/release/bundle/nsis/*.exe "out/Fizpraktikum-setup.exe"
+          cp lw3-desktop/src-tauri/target/release/lw3-adiabata.exe "out/Fizpraktikum-portable.exe"
           ls -la out
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Pokazatel-adiabaty-windows
+          name: Fizpraktikum-windows
           path: out/*.exe
 
   linux:
@@ -154,15 +154,15 @@ jobs:
       - name: Collect files
         run: |
           mkdir -p out web
-          cp lw3-desktop/src-tauri/target/release/bundle/deb/*.deb out/pokazatel-adiabaty_amd64.deb
-          dpkg-deb -f out/pokazatel-adiabaty_amd64.deb Package Version Depends
+          cp lw3-desktop/src-tauri/target/release/bundle/deb/*.deb out/fizpraktikum_amd64.deb
+          dpkg-deb -f out/fizpraktikum_amd64.deb Package Version Depends
           cp -r lw3-desktop/dist/. web/
           cp lw3-desktop/linux/README-web.txt "web/Как запустить.txt"
-          (cd web && zip -qr ../out/Pokazatel-adiabaty-web.zip .)
+          (cd web && zip -qr ../out/Fizpraktikum-web.zip .)
           ls -la out
       - uses: actions/upload-artifact@v4
         with:
-          name: Pokazatel-adiabaty-linux
+          name: Fizpraktikum-linux
           path: out/*
 
   android:
@@ -205,11 +205,11 @@ jobs:
       - name: Collect APK
         run: |
           mkdir -p out
-          cp lw3-mobile/android/app/build/outputs/apk/release/app-release.apk out/Pokazatel-adiabaty.apk
+          cp lw3-mobile/android/app/build/outputs/apk/release/app-release.apk out/Fizpraktikum.apk
           ls -la out
       - uses: actions/upload-artifact@v4
         with:
-          name: Pokazatel-adiabaty-android
+          name: Fizpraktikum-android
           path: out/*
 
   release:
@@ -239,15 +239,17 @@ jobs:
             out/*.zip
             out/*.apk
           body: |
-            **Физпрактикум** — лабораторные работы по физике: ЛР 1 «Изучение закона сохранения импульса», ЛР 2 «Определение момента инерции абсолютно твёрдого тела», ЛР 3 «Определение показателя адиабаты». Названия файлов прежние — ссылки на скачивание не меняются.
+            **Физпрактикум** — виртуальный лабораторный практикум по физике (ЧВВМУ им. П.С. Нахимова, кафедра физики и общетехнических дисциплин): 8 лабораторных работ по методическим указаниям кафедры, тесты и экзамены по банку из 900 вопросов, учётные записи курсантов с паролем.
+
+            **iPhone и iPad** — веб-приложение: открыть https://vitalya2078-cloud.github.io/fizpraktikum/ в Safari → «Поделиться» → «На экран „Домой“».
 
             **Windows**
-            **Pokazatel-adiabaty-setup.exe** — установщик (без прав администратора, ярлык в «Пуске»).
-            **Pokazatel-adiabaty-portable.exe** — переносная версия: запускается без установки (нужен WebView2, в Windows 10/11 он обычно уже есть).
+            **Fizpraktikum-setup.exe** — установщик (без прав администратора, ярлык в «Пуске»).
+            **Fizpraktikum-portable.exe** — переносная версия: запускается без установки (нужен WebView2, в Windows 10/11 он обычно уже есть).
 
             **Android**
-            **Pokazatel-adiabaty.apk** — приложение для телефона (Android 7 и новее): своя раскладка под экран телефона, отправка работы преподавателю через мессенджер или почту, отчёт в PDF.
+            **Fizpraktikum.apk** — приложение для телефона (Android 7 и новее): своя раскладка под экран телефона, отправка работы преподавателю через мессенджер или почту, отчёт в PDF.
 
             **Astra Linux / Linux**
-            **pokazatel-adiabaty_amd64.deb** — программа для Astra Linux 1.8+, Debian 12, Ubuntu 22.04+: `sudo apt install ./pokazatel-adiabaty_amd64.deb`.
-            **Pokazatel-adiabaty-web.zip** — версия для браузера: распаковать и открыть index.html в Firefox / Chromium. Подходит для Astra Linux 1.7 и компьютеров без права установки.
+            **fizpraktikum_amd64.deb** — программа для Astra Linux 1.8+, Debian 12, Ubuntu 22.04+: `sudo apt install ./fizpraktikum_amd64.deb`.
+            **Fizpraktikum-web.zip** — версия для браузера: распаковать и открыть index.html в Firefox / Chromium. Подходит для Astra Linux 1.7 и компьютеров без права установки.

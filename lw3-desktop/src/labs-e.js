@@ -1,6 +1,6 @@
 /* =====================================================================
    «Физпрактикум»: ЛР 4–8 (электричество и магнетизм) — общий движок.
-   Как в ЛР 1–3: допуск → подготовка установки → опыты (студент сам настраивает приборы,
+   Как в ЛР 1–3: допуск → подготовка установки → опыты (курсант сам настраивает приборы,
    читает показания и записывает их; программа сверяет записи с тем, что показывали приборы)
    → обработка (таблицы проверяются) → выводы и защита → отчёт по бланку кафедры.
    Описания работ по методичке — labs-e-defs.js (LE[4] … LE[8]).
@@ -135,7 +135,7 @@ function leReportHtml(n) {
   const equip = D.equip(S);
   const p1 = `<section class="lwp"><p class="c b">${LAB_DEPT}</p><hr>
     <p class="row">Оценка ${ln('')} Подпись преподавателя ${ln('')}</p>
-    <p class="row">Курсант (студент) ${ln(S.fio)} Класс <span class="ul s">${esc(S.group || '')}</span></p>
+    <p class="row">Курсант (курсант) ${ln(S.fio)} Класс <span class="ul s">${esc(S.group || '')}</span></p>
     <p class="row">Дата выполнения «<span class="ul s">${esc(dd || '')}</span>» <span class="ul m">${MON[(+mon || 1) - 1]}</span> 20<span class="ul s">${esc((yy || '').slice(2))}</span> г.</p>
     <p class="c mt2">ОТЧЕТ<br>по лабораторной работе № <span class="ul s">${n}</span></p>
     <p class="row">Наименование ${ln(D.title)}</p>
@@ -173,7 +173,7 @@ const leTbl = (head, rows, cls = 'tight') => `<table class="${cls}"><tr>${head.m
 /* ---------- сводка «что рассказать на защите» ---------- */
 function leSummaryHtml(n, S) {
   const D = LE[n], keep = LES; LES = S; let o, s; try { o = D.calc(S); s = D.sum(S, o); } finally { LES = keep; }
-  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа студента</p>` : ''}
+  return `<div class="sum">${S.demo ? `<p class="pill warn">${ic('circle-x')} Демо-прохождение: выполнено программой автоматически, не работа курсанта</p>` : ''}
     ${sumBox('target', 'Что делали', `<p>${s.what}</p>`)}
     ${sumBox('grid-3x3', 'Мои результаты', s.res)}
     ${sumBox('circle-check', 'Вывод', `<p>${s.concl}</p>`)}

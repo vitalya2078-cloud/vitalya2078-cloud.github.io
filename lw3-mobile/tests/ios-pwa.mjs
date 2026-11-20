@@ -35,8 +35,9 @@ must(await E(() => getComputedStyle(document.body).fontFamily.length > 0 && !!do
 await ctx.setOffline(false);
 
 // ЛР 5 целиком (без интернета приложению он и не нужен; включён обратно, чтобы скачивания шли как обычно)
-await page.fill('#np-fio', 'Котова Ирина'); await page.fill('#np-group', '11 А'); await page.click('[data-m="new"]'); await page.click('#sheet [data-m="sclose"]');
-must(await page.locator('.labm').count() === 8, 'на главном экране не 8 работ');
+await page.fill('#np-fio', 'Котова Ирина'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await page.click('[data-m="register"]'); await page.click('#sheet [data-m="sclose"]');
+await page.click('#dock [data-m="page"][data-v="labs"]');
+must(await page.locator('.fz-card').count() === 8, 'на главном экране не 8 работ');
 await page.click('[data-m="lab"][data-v="5"]'); await W(200);
 async function quiz(key) {
   const list = await E(k => curLab()[k].map(([, a]) => a), key);

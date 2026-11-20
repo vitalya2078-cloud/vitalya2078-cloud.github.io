@@ -16,8 +16,8 @@ function packResult() {
   return JSON.stringify(Object.assign({}, body, { sig: hmac256(SIG_KEY, JSON.stringify(body)) }));
 }
 function unpackResult(text) {
-  let d; try { d = JSON.parse(text); } catch (e) { return { err: 'это не файл работы «Показатель адиабаты»' }; }
-  if (!d || d.format !== RESULT_FORMAT || !d.state) return { err: 'это не файл работы «Показатель адиабаты»' };
+  let d; try { d = JSON.parse(text); } catch (e) { return { err: 'это не файл результата «Физпрактикума»' }; }
+  if (!d || d.format !== RESULT_FORMAT || !d.state) return { err: 'это не файл результата «Физпрактикума»' };
   const { sig, ...body } = d;
   const ok = typeof sig === 'string' && sig === hmac256(SIG_KEY, JSON.stringify(body));
   if (!body.lab) body.lab = 3;

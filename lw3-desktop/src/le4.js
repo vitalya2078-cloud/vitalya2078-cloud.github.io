@@ -42,7 +42,7 @@ leRegister(4, (() => {
       const R = S.rig, p = S.p;
       if (c === 'power') { R.on = !R.on; if (!R.on) { R.chg = false; R.ui = 0; R.fresh = false; } return; }
       if (!R.on) return 'Сначала включи питание кнопкой «Сеть».';
-      if (c === 'U') { if (st !== 'prep') return 'Напряжение зарядки менять нельзя: все измерения — при одном и том же U (п. 6, 8).'; R.U = Math.max(0, Math.min(15, +(R.U + +v).toFixed(2))); R.chg = false; return; }
+      if (c === 'U') { if (st !== 'prep') return 'Напряжение зарядки менять нельзя: все измерения — при одном и том же U.'; R.U = Math.max(0, Math.min(15, +(R.U + +v).toFixed(2))); R.chg = false; return; }
       if (c === 'conn') { R.conn = v; R.sw = 'A'; R.rst = true; R.chg = true; R.ui = 0; R.fresh = false; R.cm = false; return; }
       if (c === 'cm') { R.cm = true; return; }
       if (c === 'rst') { R.rst = !R.rst; if (R.rst) { R.ui = 0; if (R.fresh) { R.fresh = false; return 'Ключ 5 замкнут — интегратор сброшен, показание пропало. Измерение нужно повторить.'; } } return; }
@@ -56,8 +56,8 @@ leRegister(4, (() => {
       }
     },
     prep: {
-      view: S => leCard('1. Схема для эталонного конденсатора', `<p class="mute small">Цепь собрана по монтажной схеме для Cэ (п. 1). Значение эталонной ёмкости написано на миниблоке — запиши его в мкФ.</p><div class="lw-row"><label>Cэ, мкФ ${leIn('pCe', S.inp.pCe, '0,00')}</label></div>`)
-        + leCard('2. Питание и напряжение зарядки', `<p class="mute small">Включи кнопкой «Сеть» блок генераторов и мультиметры (п. 2–3). Кнопками источника «0…+15 В» установи напряжение зарядки в пределах 3–4 В по мультиметру 9 (предел 20 В) и запиши его (п. 4.3–4.4). Дальше оно не меняется.</p><div class="lw-row"><label>U, В ${leIn('pU', S.inp.pU, '0,00')}</label></div>`),
+      view: S => leCard('1. Схема для эталонного конденсатора', `<p class="mute small">Цепь собрана по монтажной схеме для Cэ. Значение эталонной ёмкости написано на миниблоке — запиши его в мкФ.</p><div class="lw-row"><label>Cэ, мкФ ${leIn('pCe', S.inp.pCe, '0,00')}</label></div>`)
+        + leCard('2. Питание и напряжение зарядки', `<p class="mute small">Включи кнопкой «Сеть» блок генераторов и мультиметры. Кнопками источника «0…+15 В» установи напряжение зарядки в пределах 3–4 В по мультиметру 9 (предел 20 В) и запиши его. Дальше оно не меняется.</p><div class="lw-row"><label>U, В ${leIn('pU', S.inp.pU, '0,00')}</label></div>`),
       ctl: S => `<div class="lw-ctl-row">${leB('power', S.rig.on ? `${ic('circle-check')} «Сеть»: включено` : 'Включить «Сеть»', '', S.rig.on ? '' : 'line')}</div>${leKnob('U', 'Источник 0…+15 В', leFix(S.rig.U, 2) + ' В', [.01, .1, 1], !S.rig.on)}`,
       check(S) { const bad = [], R = S.rig;
         if (!(Math.abs(lwNum(S.inp.pCe) - S.p.Ce) <= .005)) bad.push('Cэ — посмотри надпись на миниблоке эталонного конденсатора');
