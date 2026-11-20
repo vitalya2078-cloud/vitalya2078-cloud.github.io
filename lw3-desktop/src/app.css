@@ -308,3 +308,27 @@
 @media (max-width:1250px){ .fz-wcn .fz-cn{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-wq{grid-column:1/-1} }
 .fz-wqe{display:block; margin-top:6px; font-weight:400; color:var(--tx2)}
 .fz-cbt{background:var(--line)} .fz-sri mark{padding:0}
+/* кабинет преподавателя */
+.tch .fz-brand{cursor:default} .tch .fz-brand:hover{background:none}
+.fz-cnt-b{margin-left:auto; font:700 11.5px var(--ui); font-style:normal; padding:1px 8px; border-radius:999px; background:var(--card2); color:var(--mute)} .fz-ni.on .fz-cnt-b{background:var(--acc); color:var(--acc-tx)}
+.fz-app.mini .fz-cnt-b{display:none}
+.tpage .head{display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; margin-bottom:20px} .tpage .head h1{margin:2px 0 4px; font-size:28px} .tpage .head p{margin:0}
+.tpage .head .btn{width:auto}
+.tpage .ttabs{margin-top:12px} .mb{margin-bottom:14px}
+.tpage .stats{margin:0 0 16px}
+.th-steps{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:20px} .th-steps .fz-tile{position:relative} .th-steps .ic{width:26px; height:26px; color:var(--acc)} .th-steps b{display:block; margin:10px 0 4px; font-size:15.5px} .th-steps p{margin:0}
+.th-no{position:absolute; right:18px; top:16px; font:800 28px var(--ui); color:var(--line2)}
+.th-labs{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px}
+.th-lab{display:flex; gap:12px; align-items:center; padding:12px; border-radius:16px; border:1px solid var(--line); background:var(--card); color:var(--tx); font:inherit; text-align:left; cursor:pointer} .th-lab:hover{border-color:var(--acc)}
+.th-lab img{width:76px; height:52px; object-fit:cover; border-radius:10px; flex:none} .th-lab > span{min-width:0; flex:1; display:flex; flex-direction:column; gap:2px}
+.th-lab small{color:var(--acc); font:800 11px var(--ui); text-transform:uppercase} .th-lab b{font-size:13.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .th-lab i{font-style:normal; font-size:12px; color:var(--mute)} .th-lab .fz-bar{margin-top:4px}
+.th-row{display:flex; gap:12px; align-items:center; width:100%; padding:9px 6px; border:0; border-top:1px solid var(--line); background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer; border-radius:0} .th-row:first-of-type{border-top:0}
+.th-row:hover{background:var(--card2)} .th-row b{display:block; font-size:14px} .th-row small{color:var(--mute); font-size:12.5px} .th-row > .ic:last-child{color:var(--mute)}
+.th-files{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px} .th-files button{display:flex; flex-direction:column; align-items:center; min-width:76px; padding:10px; border-radius:14px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:inherit; cursor:pointer} .th-files b{font-size:22px} .th-files span{font-size:12px; color:var(--mute)} .th-files button:hover{border-color:var(--acc)}
+.tj td, .tj th{white-space:nowrap} .tj th.c{text-align:center}
+.tj-c{text-align:center; font:700 12px var(--ui)} .tj-c .ic{width:16px; height:16px}
+.tj-c.ok{color:var(--ok); background:var(--ok-soft)} .tj-c.go{color:var(--warn); background:var(--warn-soft)} .tj-c.bad{color:var(--bad); background:var(--bad-soft)} .tj-c.none{color:var(--mute)}
+.tj-note{width:200px; height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:13px var(--ui); user-select:text}
+@media (max-width:1200px){ .th-steps{grid-template-columns:repeat(2, minmax(0,1fr))} }
+.th-row > span:not(.ava){flex:1; min-width:0} .th-row span.ava{flex:none}
+.tpage .head > div:has(.ttabs){flex:1 1 100%}

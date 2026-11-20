@@ -185,6 +185,13 @@ for (const n of [1, 2, 4, 5, 6, 7, 8]) {
   await page.click('table.tt tr.r'); await page.locator('#modal .lwp').first().waitFor(); must(await page.locator('#modal .lwp').count() === 4, `преподаватель: отчёт ЛР ${n}`);
   await shot(page, `teacher-l${n}`); await page.keyboard.press('Escape');
 }
+// кабинет: обзор, журнал (комментарий, CSV), файлы
+await page.click('[data-t="tlab"][data-v="home"]'); await W(150); must(await page.locator('.th-lab').count() === 8, 'преподаватель: в обзоре нет карточек работ');
+await page.click('[data-t="tlab"][data-v="journal"]'); await W(150); must(await page.locator('table.tj tr').count() >= 2 && await page.locator('table.tj .tj-c.ok').count() >= 7, 'преподаватель: журнал пуст');
+await page.fill('.tj-note >> nth=0', 'Молодец'); await page.press('.tj-note >> nth=0', 'Tab'); await W(150);
+must(await E(() => Object.values(store.get('lw3d-tnotes', {})).includes('Молодец')), 'преподаватель: комментарий не сохранился');
+const [jcsv] = await Promise.all([page.waitForEvent('download'), page.click('[data-t="jcsv"]')]); must(fs.readFileSync(await jcsv.path(), 'utf8').includes('Молодец'), 'преподаватель: журнал в CSV без комментария');
+await page.click('[data-t="tlab"][data-v="files"]'); await W(150); must(await page.locator('.th-files button').count() >= 8, 'преподаватель: раздел файлов пуст');
 if (errors.length) throw new Error('ошибки в браузере: ' + errors.join(' | '));
 console.log('PASS: Физпрактикум — выбор работы, ЛР 1, 2, 4–8 целиком, тесты (самопроверка, экзамен с таймером), учётные записи с паролем: допуск, подготовка, опыты, обработка, защита, сводка, отчёт, файл работы, продолжение из файла, режим преподавателя по работам.');
 await b.close();
