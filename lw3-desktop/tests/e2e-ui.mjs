@@ -13,11 +13,12 @@ await page.click('[data-d="register"]'); await W(200); must(await page.evaluate(
 await page.click('.fz-eula-ok [data-fz="eula"]'); await W(200); must((await page.locator('.fz-eula h4').count()) >= 8, 'нет текста лицензионного соглашения'); await page.keyboard.press('Escape'); await W(150);
 await page.check('#np-eula'); await page.click('[data-d="register"]'); await W(400); await page.keyboard.press('Escape'); await W(800);
 // главная: блоки, вопрос дня, перевод единиц
-must(await page.locator('.fz-widgets .fz-w').count() >= 5, 'на главной нет полезных блоков');
+must(await page.locator('.fz-widgets .fz-w').count() >= 2, 'на главной нет блоков «Вопрос дня» и «Что повторить»');
 await page.click('.fz-wqo button >> nth=0'); await W(200); must(await page.locator('.fz-wq .fz-verdict').count() === 1, 'вопрос дня не проверяется');
+must(await page.locator('.fz-mlabs .fz-ml').count() === 8, 'на главной нет карточек работ');
+await page.click('[data-d="page"][data-v="ref"]'); await W(300); must(await page.locator('.fz-refg .fz-w').count() >= 8, 'справочник пуст');
 await page.click('[data-d="uc-cat"][data-v="Скорость"]'); await page.selectOption('#uc-a', '1'); await page.selectOption('#uc-b', '0'); await page.fill('#uc-v', '36'); await W(100);
-must((await page.textContent('#uc-r')).trim() === '10', 'перевод 36 км/ч → м/с неверен: ' + await page.textContent('#uc-r'));
-must(await page.locator('.fz-fd .katex').count() === 1, 'формула дня не нарисована');
+must((await page.textContent('#uc-r')).trim() === '10', 'перевод 36 км/ч → м/с неверен: ' + await page.textContent('#uc-r')); await page.click('[data-d="page"][data-v="main"]'); await W(300);
 // меню: свернуть и развернуть
 await page.keyboard.press('Control+b'); await W(200); must(await page.locator('.fz-app.mini').count() === 1, 'Ctrl+B не свернул меню');
 await page.click('[data-d="navmini"]'); await W(200); must(await page.locator('.fz-app.mini').count() === 0, 'меню не развернулось');
@@ -43,5 +44,5 @@ must(await page.locator('#fz-sr[hidden]').count() === 1, 'Esc не закрыл 
 await page.click('[data-d="page"][data-v="tests"]'); await W(300); await page.click('[data-d="note"][data-v="t5"]'); await W(500); must(await page.evaluate(() => NOTE === 't5'), 'кнопка «Конспект» в тестах не работает');
 await page.click('[data-d="page"][data-v="about"]'); await W(200); await page.click('[data-fz="legal"]'); await W(200); must(await page.locator('.fz-legal').count() === 1, 'нет правовой информации'); await page.keyboard.press('Escape');
 must(!errors.length, 'ошибки в консоли: ' + errors.join(' | '));
-console.log('PASS: интерфейс — вход, меню (Ctrl+B), главная (вопрос дня, формула, перевод единиц), «Что нового», профиль, конспекты с формулами, поиск Ctrl+K, правовая информация.');
+console.log('PASS: интерфейс — вход, меню (Ctrl+B), главная (работы, вопрос дня), справочник (перевод единиц), без «Что нового», профиль, конспекты с формулами, поиск Ctrl+K, правовая информация.');
 await b.close();

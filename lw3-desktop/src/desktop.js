@@ -19,6 +19,7 @@ function toast(html, kind = '') { const box = $('#toasts'); while (box.children.
 function addXP() { toast(`${ic('award')} Работа защищена. Сохрани файл результата для преподавателя на шаге «Отчёт».`); }
 function render() {
   document.body.classList.remove('full', 'fzapp');
+  if (SCREEN !== 'work' && typeof lnoteHide === 'function') lnoteHide();
   if (SCREEN === 'lock') return vLock();
   if (SCREEN === 'teacher') return vTeacher();
   if (SCREEN === 'home' || !PROFILE) return vHome();

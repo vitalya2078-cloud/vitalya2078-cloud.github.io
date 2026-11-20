@@ -9,13 +9,13 @@
    Меню прижато к левому краю; кнопкой внизу меню или Ctrl+B оно сворачивается до значков (выбор запоминается).
    Клик по названию программы — на главную. Пока курсант не открыл «Что нового» этой версии, у названия метка «Новое». */
 let PAGE = 'main';
-const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторные работы', 'flask-conical'], ['tests', 'Тесты и экзамены', 'graduation-cap'], ['notes', 'Конспекты', 'notebook-pen'], ['results', 'Мои результаты', 'trophy'], ['profile', 'Профиль', 'user'], ['about', 'О программе', 'book-open']];
+const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторные работы', 'flask-conical'], ['tests', 'Тесты и экзамены', 'graduation-cap'], ['notes', 'Конспекты', 'notebook-pen'], ['ref', 'Справочник', 'library'], ['results', 'Мои результаты', 'trophy'], ['profile', 'Профиль', 'user'], ['about', 'О программе', 'book-open']];
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 let NAVMINI = lsGet('fz-nav-mini', '0') === '1';
 function vApp() {
   document.body.classList.add('noside', 'fzapp'); document.body.classList.remove('full'); ui.side.innerHTML = '';
-  const p = PROFILE, page = ({ main: () => pgMain() + fzWidgets(), labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes })[PAGE] || pgMain;
+  const p = PROFILE, page = ({ main: () => pgMain() + fzWidgets(), labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes, ref: pgRef })[PAGE] || pgMain;
   const tip = t => NAVMINI ? ` title="${t}"` : '';
   ui.main.innerHTML = `<div class="fz-app ${NAVMINI ? 'mini' : ''}"><nav class="fz-nav">
       <button class="fz-brand" data-d="brand" title="На главную">${LOGO}<span class="fz-bt"><b>Физпрактикум</b><small>ЧВВМУ им. П.С. Нахимова</small></span></button>
@@ -44,16 +44,13 @@ function pgMain() {
   const ex = T.att.filter(a => a.kind === 'exam'), last = ex[0], solved = Object.values(T.self).filter(v => v === 1).length;
   const name = PROFILE.fio.split(/\s+/).slice(1).join(' ') || PROFILE.fio;
   const S = n ? labState(n, PROFILE.id) : null;
-  return pgHead(`Здравствуйте, ${esc(name)}!`, `${esc(PROFILE.group ? PROFILE.group + ' класс · ' : '')}${new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}`) +
+  return pgHead(`Здравствуйте, ${esc(name)}!`, `${esc(PROFILE.group ? PROFILE.group + ' класс · ' : '')}${new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}`,
+    `<button class="btn ghost" data-d="help">${ic('circle-help')} Как проходит работа</button><button class="btn ghost" data-d="import">${ic('file-text')} Открыть файл работы</button>`) +
     `<div class="fz-hero"><section class="fz-tile">${n ? `<div class="fz-cont"><img src="${cover(n)}" alt=""><div><span class="fz-n">${S && S.max ? 'Продолжить' : 'Следующая работа'}</span><h2>ЛР № ${n}. ${esc(labTitle(n))}</h2>
         <p>${S && S.max ? esc(labStatus(n, S)) : 'Работа ещё не начата.'}</p><button class="btn" data-d="lab" data-v="${n}">${S && S.max ? 'Продолжить работу' : 'Начать работу'} ${ic('chevron-right')}</button></div></div>`
       : `<h2>Все лабораторные работы защищены</h2><p>Отличная работа! Результаты — в разделе «Мои результаты».</p><button class="btn" data-d="page" data-v="results">Мои результаты</button>`}</section>
       <section class="fz-tile"><h2>Прогресс</h2><div class="fz-stats"><div class="fz-stat"><b>${done} / ${labNums().length}</b><span>работ защищено</span></div>
-        <div class="fz-stat"><b>${solved}</b><span>вопросов решено верно</span></div><div class="fz-stat"><b>${last ? last.score : '—'}</b><span>${last ? `баллов, «${last.grade}» — последний экзамен` : 'экзамены не сдавались'}</span></div></div></section></div>
-    <div class="fz-links"><button class="fz-link" data-d="page" data-v="labs">${ic('flask-conical')}<span><b>Лабораторные работы</b><small>8 работ по методическим указаниям кафедры</small></span></button>
-      <button class="fz-link" data-d="page" data-v="tests">${ic('graduation-cap')}<span><b>Тесты и экзамены</b><small>900 вопросов: самопроверка и экзамены по темам</small></span></button>
-      <button class="fz-link" data-d="help">${ic('book-open')}<span><b>Как проходит работа</b><small>Шаги лабораторной работы и клавиши</small></span></button>
-      <button class="fz-link" data-d="import">${ic('file-text')}<span><b>Открыть файл работы</b><small>Продолжить работу с другого компьютера</small></span></button></div>`;
+        <div class="fz-stat"><b>${solved}</b><span>вопросов решено верно</span></div><div class="fz-stat"><b>${last ? last.score : '—'}</b><span>${last ? `баллов, «${last.grade}» — последний экзамен` : 'экзамены не сдавались'}</span></div></div></section></div>`;
 }
 const pgLabs = () => pgHead('Лабораторные работы', 'Работы выполняются по методическим указаниям кафедры. Каждая сохраняется отдельно — можно продолжить позже.') + labCards('data-d');
 const pgTests = () => pgHead('Тесты и экзамены', 'Банк из 900 вопросов по 9 темам курса физики.') + testsHome().replace(/<button class="btn line" data-fz="self" data-v="(\d)">/g, (m, t) => `<button class="btn ghost" data-d="note" data-v="t${t}" title="Конспект темы">${ic('notebook-pen')} Конспект</button>` + m);
@@ -128,6 +125,7 @@ function gTop(S, L) {
     <nav class="tb-steps${L.steps.length > 7 || L.steps.map(x => x[1]).join('').length > 58 ? ' many' : ''}">${L.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
       return `<button data-${L.act}="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i><span>${t}</span></button>`; }).join('<s></s>')}</nav>
     <div class="tb-act">
+      <button class="btn line" data-d="lnote" title="Конспект работы рядом с установкой">${ic('notebook-pen')} Конспект</button>
       <button class="btn line tb-hod" data-d="hod" title="Ход работы (H)">${ic('clipboard-list')} Ход работы ${kbd('H')}</button>
       <span class="tb-who">${ava(S.fio || PROFILE.fio)}<span>${esc(S.fio || PROFILE.fio)}</span></span>
       <button class="tb-ic" data-d="save" title="Сохранить файл работы (Ctrl+S)">${ic('file-text')}</button>

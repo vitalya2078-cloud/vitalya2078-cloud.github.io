@@ -154,7 +154,7 @@ function rpHtml() {
 const CONSTS = [['g', 'Ускорение свободного падения', '9,81 м/с²'], ['G', 'Гравитационная постоянная', '6,67·10⁻¹¹ Н·м²/кг²'], ['c', 'Скорость света в вакууме', '3,00·10⁸ м/с'],
   ['e', 'Элементарный заряд', '1,60·10⁻¹⁹ Кл'], ['mₑ', 'Масса электрона', '9,11·10⁻³¹ кг'], ['h', 'Постоянная Планка', '6,63·10⁻³⁴ Дж·с'], ['k', 'Постоянная Больцмана', '1,38·10⁻²³ Дж/К'],
   ['Nₐ', 'Постоянная Авогадро', '6,02·10²³ моль⁻¹'], ['R', 'Молярная газовая постоянная', '8,31 Дж/(моль·К)'], ['ε₀', 'Электрическая постоянная', '8,85·10⁻¹² Ф/м'], ['μ₀', 'Магнитная постоянная', '4π·10⁻⁷ Гн/м'], ['σ', 'Постоянная Стефана — Больцмана', '5,67·10⁻⁸ Вт/(м²·К⁴)']];
-const cnHtml = () => `<section class="fz-tile fz-w fz-wcn"><div class="fz-wh"><h2>${ic('atom')} Физические постоянные</h2></div><div class="fz-cn">${CONSTS.map(([s, t, v]) => `<div><i>${s}</i><span>${t}</span><b>${v}</b></div>`).join('')}</div></section>`;
+const cnHtml = () => `<section class="fz-tile fz-w"><div class="fz-wh"><h2>${ic('atom')} Физические постоянные</h2></div><div class="fz-cn">${CONSTS.map(([s, t, v]) => `<div><i>${s}</i><span>${t}</span><b>${v}</b></div>`).join('')}</div></section>`;
 
 /* ---------- перевод единиц ---------- */
 const UNITS = {
@@ -190,7 +190,10 @@ document.addEventListener('input', e => {
 /* ---------- блоки главной ---------- */
 function fzWidgets() {
   if (!BANK || !NOTES) { Promise.all([bankLoad(), notesLoad()]).then(() => { if (SCREEN === 'labs' && PAGE === 'main') render(); }); }
-  return `<p class="fz-h">Полезное</p><div class="fz-widgets">${wqHtml()}${fdHtml()}${rpHtml()}${ucHtml()}${cnHtml()}</div>`;
+  const labs = labNums().map(n => { const S = labState(n, PROFILE.id), st = S && S.done ? 'done' : S && (S.max || 0) > 0 ? 'go' : '';
+    return `<button class="fz-ml ${st}" data-d="lab" data-v="${n}" title="${esc(labTitle(n))}"><img src="${cover(n)}" alt=""><span><b>ЛР ${n}</b><small>${st === 'done' ? 'защищена' : st === 'go' ? 'в работе' : 'не начата'}</small></span></button>`; }).join('');
+  return `<p class="fz-h">Лабораторные работы</p><div class="fz-mlabs">${labs}</div>
+    <div class="fz-widgets two">${wqHtml()}${rpHtml()}</div>`;
 }
 
 /* ---------- результаты: лучший балл по темам ---------- */
@@ -216,3 +219,21 @@ document.addEventListener('click', e => {
     case 'uc-cat': UC = { cat: d.v, a: d.v === 'Давление' ? 4 : 1, b: 0, v: UC.v }; render(); break;
   }
 });
+
+/* ---------- справочник: то, что нужно при обработке результатов ---------- */
+const REF = [
+  ['Плотность веществ', 'кг/м³', [['Вода', '1000'], ['Лёд', '900'], ['Алюминий', '2700'], ['Сталь, железо', '7800'], ['Медь', '8900'], ['Свинец', '11 300'], ['Ртуть', '13 600'], ['Стекло', '2500'], ['Воздух (0 °C)', '1,29']]],
+  ['Удельное сопротивление при 20 °C', 'Ом·мм²/м', [['Медь', '0,017'], ['Алюминий', '0,028'], ['Никелин', '0,40'], ['Манганин', '0,43'], ['Константан', '0,50'], ['Нихром', '1,10'], ['Фехраль', '1,30']], '1 Ом·мм²/м = 10⁻⁶ Ом·м. Значения те же, что в ЛР 5.'],
+  ['Удельная теплоёмкость', 'Дж/(кг·К)', [['Вода', '4200'], ['Лёд', '2100'], ['Алюминий', '920'], ['Сталь', '460'], ['Медь', '380'], ['Свинец', '130'], ['Воздух (p = const)', '1005']]],
+  ['Показатель преломления', '', [['Воздух', '1,0003'], ['Вода', '1,33'], ['Стекло', '1,5'], ['Алмаз', '2,42']]],
+];
+const PREF = [['гига', 'Г', '10⁹'], ['мега', 'М', '10⁶'], ['кило', 'к', '10³'], ['санти', 'с', '10⁻²'], ['милли', 'м', '10⁻³'], ['микро', 'мк', '10⁻⁶'], ['нано', 'н', '10⁻⁹'], ['пико', 'п', '10⁻¹²']];
+const GREEK = 'α альфа,β бета,γ гамма,δ дельта,ε эпсилон,η эта,θ тета,λ лямбда,μ мю,ν ню,ρ ро,σ сигма,τ тау,φ фи,ω омега,Δ дельта,Φ фи,Ψ пси,Ω омега'.split(',');
+function pgRef() {
+  const tbl = ([t, u, rows, note]) => `<section class="fz-tile fz-w"><div class="fz-wh"><h2>${ic('layers')} ${t}</h2>${u ? `<span class="fz-wtag">${u}</span>` : ''}</div>
+    <div class="fz-rt">${rows.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>${note ? `<p class="fz-rn">${note}</p>` : ''}</section>`;
+  return pgHead('Справочник', 'Постоянные, перевод единиц и табличные значения для обработки результатов.') +
+    `<div class="fz-refg">${ucHtml()}${cnHtml()}${REF.map(tbl).join('')}
+      <section class="fz-tile fz-w"><div class="fz-wh"><h2>${ic('sigma')} Приставки СИ</h2></div><div class="fz-rt">${PREF.map(([a, b, c]) => `<div><span>${a} (${b})</span><b>${c}</b></div>`).join('')}</div></section>
+      <section class="fz-tile fz-w"><div class="fz-wh"><h2>${ic('sigma')} Греческие буквы</h2></div><div class="fz-greek">${GREEK.map(g => { const [l, n] = g.split(' '); return `<div><i>${l}</i><span>${n}</span></div>`; }).join('')}</div></section></div>`;
+}

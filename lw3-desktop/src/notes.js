@@ -67,7 +67,6 @@ function noteView(x) {
 function noteScroll(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 /* после отрисовки раздела: формулы и переход к нужному разделу */
 function fzAfter() {
-  if (PAGE === 'main') texRender($('.fz-fd'));
   if (PAGE !== 'notes' || !NOTE) return;
   const root = $('.fz-nview'); texRender(root);
   if (NOTE_SEC) { const s = NOTE_SEC; NOTE_SEC = ''; setTimeout(() => { const el = document.getElementById(s); if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('fz-hl'); setTimeout(() => el.classList.remove('fz-hl'), 2200); } }, 30); }
@@ -82,3 +81,20 @@ document.addEventListener('click', e => {
   }
 });
 notesLoad();
+
+/* конспект работы в выдвижной панели справа: читать теорию, не уходя от установки */
+function lnoteHide() { const el = $('#fz-drw'); if (!el || el.hidden) return; el.hidden = true; document.body.classList.remove('drw'); window.dispatchEvent(new Event('resize')); }
+function lnoteToggle() {
+  const cur = $('#fz-drw'); if (cur && !cur.hidden) return lnoteHide();
+  notesLoad().then(() => {
+    const x = NOTES.byId['l' + LAB]; if (!x) { toast('Конспект этой работы не найден.', 'bad'); return; }
+    let el = $('#fz-drw'); if (!el) { el = document.createElement('aside'); el.id = 'fz-drw'; document.body.appendChild(el); }
+    el.innerHTML = `<div class="fz-drh"><div><small>Конспект · лабораторная работа № ${x.n}</small><b>${esc(x.title)}</b></div><button class="tb-ic" data-d="lnote-x" title="Закрыть (Esc)">${ic('x')}</button></div><article class="fz-note">${x.html}</article>`;
+    el.hidden = false; el.scrollTop = 0; document.body.classList.add('drw'); window.dispatchEvent(new Event('resize')); texRender(el);
+  });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-d="lnote"],[data-d="lnote-x"]'); if (!b) return;
+  e.stopImmediatePropagation(); b.dataset.d === 'lnote' ? lnoteToggle() : lnoteHide();
+}, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#fz-drw') && !$('#fz-drw').hidden && $('#modal').hidden) { e.stopImmediatePropagation(); lnoteHide(); } }, true);
