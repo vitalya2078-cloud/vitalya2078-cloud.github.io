@@ -134,9 +134,55 @@ fn open_release(url: String) -> Result<(), String> {
     r.map(|_| ()).map_err(|e| e.to_string())
 }
 
+/// Видеоуроки через свой протокол fzv (http://fzv.localhost/video/t1.mp4 в Windows) с поддержкой Range:
+/// плеер перематывает видео и переходит по главам, не завися от встроенного сервера файлов.
+fn video_protocol<R: tauri::Runtime>(ctx: tauri::UriSchemeContext<'_, R>, req: tauri::http::Request<Vec<u8>>) -> tauri::http::Response<Vec<u8>> {
+    use tauri::http::{header, Response, StatusCode};
+    let empty = |code: StatusCode| Response::builder().status(code).body(Vec::new()).unwrap();
+    let path = req.uri().path().trim_start_matches('/').to_string();
+    if !path.starts_with("video/") || path.contains("..") || !(path.ends_with(".mp4") || path.ends_with(".jpg")) {
+        return empty(StatusCode::NOT_FOUND);
+    }
+    let Some(asset) = ctx.app_handle().asset_resolver().get(path) else { return empty(StatusCode::NOT_FOUND) };
+    let len = asset.bytes.len();
+    let range = req
+        .headers()
+        .get(header::RANGE)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.strip_prefix("bytes="))
+        .and_then(|v| v.split(',').next())
+        .and_then(|v| v.split_once('-'))
+        .and_then(|(a, b)| {
+            const CHUNK: usize = 2 * 1024 * 1024;
+            let (start, end) = if a.trim().is_empty() {
+                let n: usize = b.trim().parse().ok()?;
+                (len.saturating_sub(n), len.saturating_sub(1))
+            } else {
+                let s: usize = a.trim().parse().ok()?;
+                let e = if b.trim().is_empty() { s + CHUNK - 1 } else { b.trim().parse().ok()? };
+                (s, e.min(len.saturating_sub(1)))
+            };
+            if len == 0 || start > end || start >= len { None } else { Some((start, end)) }
+        });
+    let b = Response::builder()
+        .header(header::CONTENT_TYPE, asset.mime_type.as_str())
+        .header(header::ACCEPT_RANGES, "bytes")
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+    match range {
+        Some((s, e)) => b
+            .status(StatusCode::PARTIAL_CONTENT)
+            .header(header::CONTENT_RANGE, format!("bytes {}-{}/{}", s, e, len))
+            .header(header::CONTENT_LENGTH, e - s + 1)
+            .body(asset.bytes[s..=e].to_vec())
+            .unwrap(),
+        None => b.status(StatusCode::OK).header(header::CONTENT_LENGTH, len).body(asset.bytes).unwrap(),
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .register_uri_scheme_protocol("fzv", video_protocol)
         .invoke_handler(tauri::generate_handler![
             save_file, save_pdf, pick_folder, write_lw3, read_lw3_dir, app_config, set_zoom, toggle_fullscreen, open_release
         ])

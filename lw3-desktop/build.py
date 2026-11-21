@@ -55,13 +55,30 @@ bgl = next((f for f in ('lab-bg-light.webp', 'lab-bg-light.jpg', 'lab-bg-light.p
 def bg_cfg(f, meta):
     m = os.path.join(D, 'assets', meta)
     return dict(json.loads(rd(m)) if os.path.exists(m) else {}, src='img/' + f) if f else None
-js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
+# пароль кабинета преподавателя: только хеш PBKDF2-SHA256 (пароль — секрет сборки FZ_TEACHER_PASS, в репозитории его нет).
+# Для выпуска (FZ_REQUIRE_TEACHER_PASS=1) пароль обязателен; локальная и тестовая сборка без секрета берут пароль «test-teacher».
+def teacher_pw():
+    import hashlib, secrets
+    pw = os.environ.get('FZ_TEACHER_PASS', '')
+    if not pw:
+        if os.environ.get('FZ_REQUIRE_TEACHER_PASS') == '1':
+            raise SystemExit('нет пароля преподавателя: задайте секрет FZ_TEACHER_PASS в настройках репозитория')
+        pw = 'test-teacher'
+    salt = secrets.token_bytes(16); it = 150000
+    return {'salt': salt.hex(), 'it': it, 'hash': hashlib.pbkdf2_hmac('sha256', pw.encode('utf-8'), salt, it).hex()}
+
+
+js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const TEACHER_PW = %s;' % json.dumps(teacher_pw()), 'const EULA_TXT = %s;' % json.dumps(open(os.path.join(D, 'src-tauri', 'license.txt'), encoding='utf-8-sig').read(), ensure_ascii=False), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
-                'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'labs.js', 'teacher.js')])
+                'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, rd(os.path.join(D, 'src', 'icons-x.js')), core] +
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'app-core.js', 'qpool.js', 'labs.js', 'notes.js', 'widgets.js', 'about-win.js', 'teacher.js', 'guard.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(D, 'src', 'app.css'))).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
+# тексты Windows-версии: обращение на «Вы», дефис вместо длинного тире (исходники общие с сайтом и телефоном не меняются)
+sys.path.insert(0, D)
+import textfix
+html = textfix.fix(html)
 
 if os.path.exists(DIST):
     shutil.rmtree(DIST)
@@ -76,6 +93,27 @@ for f in (bg, bgl, 'lab-bg2.webp', 'lab-bg2-light.webp'):
         os.makedirs(os.path.join(DIST, 'img'), exist_ok=True)
         shutil.copy2(os.path.join(D, 'assets', f), os.path.join(DIST, 'img', f))
 # приборы установки (необязательно): assets/parts/*.webp → dist/img/parts/; без файла прибор рисуется кодом
+# конспекты (notes/*.md → dist/notes/notes.json) и KaTeX для формул (vendor/katex → dist/katex), видеоуроки (assets/video → dist/video)
+sys.path.insert(0, D)
+import notes_md
+os.makedirs(os.path.join(DIST, 'notes'), exist_ok=True)
+with open(os.path.join(DIST, 'notes', 'notes.json'), 'w', encoding='utf-8') as fh:
+    NOTES = notes_md.build(os.path.join(D, 'notes'))
+    CH = json.load(open(os.path.join(D, 'assets', 'video', 'chapters.json'), encoding='utf-8')) if os.path.exists(os.path.join(D, 'assets', 'video', 'chapters.json')) else {}
+    for x in NOTES['notes']:
+        x['video'] = os.path.exists(os.path.join(D, 'assets', 'video', x['id'] + '.mp4'))
+        x['chapters'] = CH.get(x['id'], [])
+    import textfix
+    fh.write(textfix.fix(json.dumps(NOTES, ensure_ascii=False, separators=(',', ':'))))
+shutil.copytree(os.path.join(D, 'vendor', 'katex'), os.path.join(DIST, 'katex'), dirs_exist_ok=True)
+if os.path.isdir(os.path.join(D, 'assets', 'video')):
+    shutil.copytree(os.path.join(D, 'assets', 'video'), os.path.join(DIST, 'video'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src*', '*.txt', '*.json'))
+# иконка программы для интерфейса (assets/brand → dist/img/brand)
+shutil.copytree(os.path.join(D, 'assets', 'brand'), os.path.join(DIST, 'img', 'brand'), dirs_exist_ok=True)
+# рамка-доска вокруг плеера видеоуроков (assets/frame → dist/img/frame)
+shutil.copytree(os.path.join(D, 'assets', 'frame'), os.path.join(DIST, 'img', 'frame'), dirs_exist_ok=True)
+# общий фон страниц (assets/bg/light.webp, dark.webp) → dist/img/bg
+shutil.copytree(os.path.join(D, 'assets', 'bg'), os.path.join(DIST, 'img', 'bg'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src-*'))
 # обложки лабораторных (assets/covers) и банк вопросов (bank/bank.json + bank/img) — в dist
 COV = os.path.join(D, 'assets', 'covers')
 if os.path.isdir(COV):
@@ -85,6 +123,19 @@ shutil.rmtree(os.path.join(DIST, 'bank'), ignore_errors=True)
 os.makedirs(os.path.join(DIST, 'bank'))
 shutil.copy2(os.path.join(BANK_DIR, 'bank.json'), os.path.join(DIST, 'bank', 'bank.json'))
 shutil.copytree(os.path.join(BANK_DIR, 'img'), os.path.join(DIST, 'bank', 'img'))
+# картинки к вопросам без рисунка (только ПК-версия): в банк — после проверки преподавателем (bank/pc/pc-fix.json, approved)
+PC_FIX = os.path.join(BANK_DIR, 'pc', 'pc-fix.json')
+if os.path.exists(PC_FIX):
+    fx = json.load(open(PC_FIX, encoding='utf-8'))
+    if fx.get('approved'):
+        bk = json.load(open(os.path.join(DIST, 'bank', 'bank.json'), encoding='utf-8'))
+        for q in bk['q']:
+            if q['id'] in fx['q']:
+                q.pop('broken', None)
+                q.update(fx['q'][q['id']])
+                for f in fx['q'][q['id']].get('p', []):
+                    shutil.copy2(os.path.join(BANK_DIR, 'pc', 'img', f), os.path.join(DIST, 'bank', 'img', f))
+        json.dump(bk, open(os.path.join(DIST, 'bank', 'bank.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 PARTS = os.path.join(D, 'assets', 'parts')
 if os.path.isdir(PARTS):
     os.makedirs(os.path.join(DIST, 'img', 'parts'), exist_ok=True)

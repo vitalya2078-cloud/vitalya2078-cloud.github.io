@@ -1,15 +1,20 @@
 /* ===== «Физпрактикум»: меню, разделы, карточки работ, тесты, «О программе» — общее для компьютера и телефона ===== */
 .fz-app{display:grid; grid-template-columns:264px minmax(0,1fr); min-height:100vh}
-.fz-nav{position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:2px; padding:22px 14px 16px; background:var(--card); border-right:1px solid var(--line); overflow:auto}
-.fz-brand{display:flex; gap:12px; align-items:center; padding:0 8px 22px}
+.fz-app.mini{grid-template-columns:76px minmax(0,1fr)}
+.fz-nav{position:sticky; top:0; height:100vh; box-sizing:border-box; display:flex; flex-direction:column; gap:2px; padding:20px 14px 14px; background:color-mix(in srgb, var(--card) 90%, transparent); backdrop-filter:blur(18px); border-right:1px solid var(--line); overflow:auto; z-index:6}
+.fz-brand{display:flex; gap:12px; align-items:center; padding:6px 8px; margin:0 0 16px; border:0; border-radius:14px; background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer; position:relative}
+.fz-brand:hover{background:var(--card2)}
+.fz-bt{min-width:0}
+.fz-new{display:inline-block; margin-top:3px; padding:1px 8px; border-radius:999px; background:var(--acc); color:var(--acc-tx); font:800 9.5px/1.4 var(--ui); font-style:normal; letter-spacing:.05em; text-transform:uppercase}
 .fz-brand .logo{width:44px; height:44px; border-radius:13px; font-size:24px; flex:none}
-.fz-brand b{display:block; font-size:18px; line-height:1.2} .fz-brand small{display:block; color:var(--mute); font-size:11.5px; line-height:1.3; margin-top:2px}
+.fz-brand b{display:block; font-size:18px; line-height:1.2; white-space:nowrap} .fz-brand small{display:block; color:var(--mute); font-size:11.5px; line-height:1.3; margin-top:2px}
 .fz-nav a, .fz-nav button.fz-ni{display:flex; gap:12px; align-items:center; width:100%; padding:11px 12px; border:0; border-radius:12px; background:none; color:var(--tx2); font:600 14.5px var(--ui); text-align:left; cursor:pointer; text-decoration:none}
 .fz-nav .fz-ni .ic{width:20px; height:20px; flex:none; opacity:.85}
 .fz-nav .fz-ni:hover{background:var(--card2); color:var(--tx)}
 .fz-nav .fz-ni.on{background:var(--acc-soft); color:var(--acc)} .fz-nav .fz-ni.on .ic{opacity:1}
 .fz-nav .fz-sp{flex:1}
-.fz-me{display:flex; gap:10px; align-items:center; padding:12px 10px; margin-top:8px; border-top:1px solid var(--line)}
+.fz-me{display:flex; gap:10px; align-items:center; padding:12px 6px 2px; margin-top:8px; border-top:1px solid var(--line)}
+.fz-meb{border:0; padding:0; background:none; cursor:pointer; border-radius:10px} .fz-meb:hover .ava{box-shadow:0 0 0 2px var(--acc)}
 .fz-me div{min-width:0; flex:1} .fz-me b{display:block; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-me small{color:var(--mute); font-size:12px}
 .fz-page{padding:30px 40px 48px; max-width:1360px; width:100%; box-sizing:border-box}
 .fz-ph{display:flex; align-items:flex-end; gap:16px; margin-bottom:22px} .fz-ph div{flex:1}
@@ -154,3 +159,283 @@
 .fz-test.fz-phone .fz-thead{display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; column-gap:6px; row-gap:2px}
 .fz-test.fz-phone .fz-quit{width:auto; min-height:36px; padding:6px 8px; background:none; box-shadow:none; color:var(--acc); font-size:14px; border:0}
 .fz-test.fz-phone .fz-cnt{grid-column:2; font-size:12px; color:var(--mute)}
+
+/* ---------- меню свёрнуто до значков ---------- */
+.fz-app.mini .fz-nav{padding:20px 12px 14px; align-items:center}
+.fz-app.mini .fz-bt, .fz-app.mini .fz-ni span, .fz-app.mini .fz-me > div, .fz-app.mini .fz-me .tb-ic{display:none}
+.fz-app.mini .fz-brand{padding:4px; justify-content:center}
+.fz-app.mini .fz-brand.new::after{content:''; position:absolute; top:0; right:0; width:11px; height:11px; border-radius:50%; background:var(--acc); border:2px solid var(--card)}
+.fz-app.mini .fz-ni{justify-content:center; width:48px; padding:12px 0}
+.fz-app.mini .fz-me{justify-content:center; padding:12px 0 2px; width:100%}
+.fz-page{margin:0 auto}
+/* что нового */
+.fz-wn{display:flex; gap:16px; align-items:center; padding:16px 20px; margin-bottom:20px; border-radius:18px; background:linear-gradient(110deg, var(--acc-soft), color-mix(in srgb, var(--card) 92%, transparent)); border:1px solid var(--line)}
+.fz-wn > .ic{width:30px; height:30px; color:var(--acc)} .fz-wn div{flex:1; min-width:0} .fz-wn b{display:block; font-size:16px} .fz-wn span{color:var(--tx2); font-size:13.5px}
+.fz-news{display:grid; gap:10px; min-width:min(520px, 80vw)}
+.fz-nwi{display:flex; gap:14px; align-items:flex-start; padding:12px 14px; border-radius:14px; background:var(--card2)}
+.fz-nwi > .ic{width:22px; height:22px; color:var(--acc); margin-top:2px} .fz-nwi b{display:block; font-size:15px} .fz-nwi span{color:var(--tx2); font-size:13.5px; line-height:1.45}
+/* вход и регистрация: слева — о программе, справа — форма */
+.fz-login{padding:24px 0}
+.fz-lgrid{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(360px,440px); gap:64px; align-items:center; width:min(1120px, 100%)}
+.fz-lbrand{display:flex; gap:18px; align-items:center; margin-bottom:30px}
+.fz-lbrand .logo{width:72px; height:72px; border-radius:20px; font-size:44px}
+.fz-lbrand h1{margin:0; font:800 40px/1.1 "Golos UI"; letter-spacing:-.5px} .fz-lbrand p{margin:6px 0 0; color:var(--tx2); font-size:16px}
+.fz-lfeat{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px}
+.fz-lfeat > div{display:flex; gap:14px; padding:18px; border-radius:18px; background:color-mix(in srgb, var(--card) 84%, transparent); backdrop-filter:blur(10px); border:1px solid var(--line)}
+.fz-lfeat .ic{width:26px; height:26px; color:var(--acc); flex:none} .fz-lfeat b{display:block; font-size:15.5px; margin-bottom:4px} .fz-lfeat span{color:var(--tx2); font-size:13.5px; line-height:1.45}
+.fz-lhero .fz-org{text-align:left; margin-top:26px}
+.fz-ah{margin:0 0 14px; font-size:20px}
+.fz-login .login-box{width:100%}
+@media (max-width:980px){ .fz-lgrid{grid-template-columns:1fr; gap:24px; width:min(480px, 100%)} .fz-lfeat{display:none} .fz-lbrand{justify-content:center; margin-bottom:0} .fz-lhero .fz-org{display:none} }
+/* профиль */
+.fz-prof{display:grid; gap:20px}
+.fz-pid{display:flex; gap:22px; align-items:center}
+.ava.big{width:84px; height:84px; border-radius:24px; font-size:30px}
+.fz-pid h2{margin:0; font-size:24px} .fz-pid p{margin:4px 0 6px} .fz-pid small{color:var(--mute); font-size:13px} .fz-pid small .ic{width:15px; height:15px}
+.fz-pstats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px}
+.fz-pst{padding:18px; border-radius:18px; background:var(--card); border:1px solid var(--line)}
+.fz-pst .ic{width:22px; height:22px; color:var(--acc)} .fz-pst b{display:block; font-size:30px; line-height:1.1; margin-top:10px} .fz-pst b small{font-size:16px; color:var(--mute); font-weight:600} .fz-pst span{font-size:13px; color:var(--mute)}
+.fz-pgrid{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px; align-items:start}
+.fz-pcol{display:grid; gap:20px}
+.fz-tile h2 .ic{width:20px; height:20px; color:var(--acc); vertical-align:-3px; margin-right:4px}
+.fz-ptops{display:grid; gap:8px}
+.fz-ptop{display:grid; grid-template-columns:36px minmax(0,1fr) 64px 46px; gap:12px; align-items:center; padding:8px 4px}
+.fz-ptop .fz-tn{width:34px; height:34px; border-radius:10px; font-size:15px}
+.fz-ptop b{display:block; font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px} .fz-ptop small{color:var(--mute); font-size:12.5px; text-align:right}
+.fz-ptop .fz-best{text-align:center; padding:4px 6px}
+.fz-plabs{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px}
+.fz-plab{display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; border-radius:14px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:inherit; cursor:pointer}
+.fz-plab b{font-size:20px} .fz-plab small{font-size:11.5px; color:var(--mute)} .fz-plab:hover{border-color:var(--acc)}
+.fz-plab.done{background:var(--ok-soft); border-color:transparent} .fz-plab.done small{color:var(--ok)}
+.fz-plab.go{background:var(--acc-soft); border-color:transparent} .fz-plab.go small{color:var(--acc)}
+.fz-pact{display:flex; gap:12px; align-items:center; padding:10px 0; border-top:1px solid var(--line)} .fz-pact:first-of-type{border-top:0}
+.fz-pact > .ic{color:var(--mute)} .fz-pact div{flex:1; min-width:0} .fz-pact b{display:block; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-pact small{color:var(--mute); font-size:12px}
+.fz-pcards{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; align-items:start}
+.fz-pcards .fz-tile p{margin:0 0 12px}
+@media (max-width:1200px){ .fz-pstats{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-pgrid, .fz-pcards{grid-template-columns:1fr} }
+/* о программе */
+.fz-ab-links{display:flex; justify-content:center; gap:18px}
+.fz-legal{display:grid; gap:10px; max-width:640px; font-size:14px; line-height:1.55} .fz-legal p{margin:0}
+.fz-about{max-width:980px}
+.fz-ab-two{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px}
+.fz-ab-t .ic{width:18px; height:18px; color:var(--acc); margin-right:4px}
+.fz-key{display:flex; align-items:center; gap:6px; padding:6px 0; border-top:1px solid var(--line); font-size:14px} .fz-key:nth-child(2){border-top:0}
+.fz-key kbd{margin:0} .fz-key span{margin-left:10px; color:var(--tx2)}
+.fz-ab-ul{margin:0 0 14px; padding-left:20px; color:var(--tx2)} .fz-ab-ul li{margin:3px 0}
+/* конспекты */
+.fz-page.wide{max-width:1480px}
+.fz-ngrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px}
+.fz-ncard{display:flex; gap:14px; align-items:center; padding:14px; border-radius:18px; border:1px solid var(--line); background:var(--card); color:var(--tx); font:inherit; text-align:left; cursor:pointer; transition:border-color .15s, transform .15s}
+.fz-ncard:hover{border-color:var(--acc); transform:translateY(-1px)}
+.fz-ncard .fz-tn{width:52px; height:52px; border-radius:14px; font-size:22px; flex:none}
+.fz-ncard img{width:84px; height:56px; object-fit:cover; border-radius:10px; flex:none}
+.fz-nct{min-width:0; display:flex; flex-direction:column; gap:2px} .fz-nct small{color:var(--acc); font:800 11px var(--ui); letter-spacing:.04em; text-transform:uppercase} .fz-nct b{font-size:15px; line-height:1.3}
+.fz-ntags{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px} .fz-ntags i{font-style:normal; font-size:12px; color:var(--mute); display:inline-flex; gap:4px; align-items:center} .fz-ntags .ic{width:13px; height:13px} .fz-ntags i.ok{color:var(--ok)}
+.fz-nview{display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:36px; align-items:start}
+.fz-nmain{min-width:0; max-width:900px}
+.fz-nback{margin:0 0 10px -10px}
+.fz-nhead h1{margin:4px 0 12px; font-size:30px; letter-spacing:-.01em} .fz-nhead .row{gap:10px; align-items:center; flex-wrap:wrap} .fz-nhead .mute .ic{width:15px; height:15px}
+.fz-video{margin:20px 0 6px} .fz-video video{display:block; width:100%; aspect-ratio:16/9; border-radius:18px; background:#000; border:1px solid var(--line)} .fz-video p{margin:8px 2px 0} .fz-video .ic{width:15px; height:15px}
+.fz-note{margin-top:18px; padding:30px 36px 34px; border-radius:20px; background:var(--card); border:1px solid var(--line); font-size:16px; line-height:1.68; user-select:text; color:var(--tx)}
+.fz-note h2{font-size:22px; margin:30px 0 10px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px} .fz-note h2:first-child{margin-top:0; padding-top:0; border-top:0}
+.fz-note h3{font-size:17.5px; margin:22px 0 6px; scroll-margin-top:20px}
+.fz-note p{margin:0 0 12px} .fz-note ul, .fz-note ol{margin:0 0 12px; padding-left:24px} .fz-note li{margin:4px 0}
+.fz-note b{font-weight:700}
+.fz-note .tx.d{margin:12px 0 16px; padding:10px 14px; border-radius:12px; background:var(--card2); overflow-x:auto; text-align:center; font-size:17px}
+.fz-note .tx:not(.ok){font-family:var(--serif); font-style:italic}
+.fz-note .katex{font-size:1.08em}
+.fz-note .nb{margin:14px 0 16px; padding:12px 16px; border-radius:14px; border-left:4px solid var(--acc); background:var(--acc-soft)} .fz-note .nb p{margin:0}
+.fz-note .nb.law{border-color:var(--cold); background:color-mix(in srgb, var(--cold) 12%, transparent)}
+.fz-note .nb.warn{border-color:var(--warn); background:var(--warn-soft)}
+.fz-note .nb.ex{border-color:var(--ok); background:var(--ok-soft)}
+.fz-note .ntbl{overflow-x:auto; margin:10px 0 16px} .fz-note table{border-collapse:collapse; width:100%; font-size:14.5px} .fz-note th, .fz-note td{border:1px solid var(--line); padding:7px 10px; text-align:left} .fz-note th{background:var(--card2)}
+.fz-note .fz-hl{animation:fzhl 2.2s ease}
+@keyframes fzhl{0%, 40%{background:var(--acc-soft)} 100%{background:transparent}}
+.fz-nnav{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px} .fz-nnav .fz-link small{display:block; color:var(--mute); font-size:12px} .fz-nnav .nx{justify-content:flex-end; text-align:right}
+.fz-ntoc{position:sticky; top:24px; max-height:calc(100vh - 48px); overflow:auto; display:flex; flex-direction:column; gap:2px; padding:16px; border-radius:18px; background:color-mix(in srgb, var(--card) 90%, transparent); border:1px solid var(--line)}
+.fz-ntoc > b{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); margin-bottom:6px}
+.fz-tl{border:0; background:none; text-align:left; padding:6px 8px; border-radius:8px; color:var(--tx2); font:600 13.5px/1.35 var(--ui); cursor:pointer} .fz-tl:hover{background:var(--card2); color:var(--acc)} .fz-tl.l3{padding-left:20px; font-weight:500; font-size:13px; color:var(--mute)}
+.fz-nterms{margin:10px 8px 0; font-size:12.5px; color:var(--mute)}
+@media (max-width:1150px){ .fz-nview{grid-template-columns:1fr} .fz-ntoc{display:none} }
+.fz-nhead .row .btn{width:auto; flex:none}
+/* поиск */
+.fz-sbtn{margin-bottom:8px; border:1px solid var(--line) !important; background:var(--card2) !important}
+.fz-sbtn kbd{margin-left:auto; font-size:10px}
+.fz-app.mini .fz-sbtn kbd{display:none}
+#fz-sr{position:fixed; inset:0; z-index:60; display:flex; justify-content:center; align-items:flex-start; padding-top:11vh; background:rgba(8,10,14,.45); backdrop-filter:blur(3px)}
+#fz-sr[hidden]{display:none}
+.fz-srbox{width:min(680px, calc(100vw - 32px)); max-height:72vh; display:flex; flex-direction:column; border-radius:20px; background:var(--card); border:1px solid var(--line2); box-shadow:0 30px 80px rgba(0,0,0,.35); overflow:hidden}
+.fz-srin{display:flex; gap:12px; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line)} .fz-srin .ic{width:22px; height:22px; color:var(--acc)}
+.fz-srin input{flex:1; border:0; outline:0; background:none; color:var(--tx); font:500 17px var(--ui); user-select:text}
+#fz-srl{overflow:auto; padding:8px; flex:1}
+.fz-srg{margin:10px 10px 4px; font:800 11px var(--ui); letter-spacing:.07em; text-transform:uppercase; color:var(--mute)}
+.fz-sri{display:flex; gap:12px; align-items:center; width:100%; padding:10px 12px; border:0; border-radius:12px; background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer}
+.fz-sri > .ic:first-child{color:var(--mute); width:18px; height:18px} .fz-sri > .ic:last-child{opacity:0; color:var(--acc)}
+.fz-sri span{flex:1; min-width:0} .fz-sri b{display:block; font-size:14.5px; font-weight:600} .fz-sri small{display:block; color:var(--mute); font-size:12px}
+.fz-sri em{display:block; font-style:normal; color:var(--tx2); font-size:12.5px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-sri mark{background:var(--acc-soft); color:var(--acc); border-radius:3px; padding:0 2px}
+.fz-sri.on, .fz-sri:hover{background:var(--acc-soft)} .fz-sri.on > .ic:last-child{opacity:1} .fz-sri.on > .ic:first-child{color:var(--acc)}
+.fz-srhint{padding:16px 12px; color:var(--tx2); font-size:14px} .fz-srhint p{margin:0 0 12px}
+.fz-srchips{display:flex; flex-wrap:wrap; gap:8px} .fz-srchips button{padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--card2); color:var(--tx2); font:600 13px var(--ui); cursor:pointer} .fz-srchips button:hover{border-color:var(--acc); color:var(--acc)}
+.fz-srnone{padding:18px 12px; color:var(--mute)}
+.fz-srft{display:flex; gap:18px; padding:10px 18px; border-top:1px solid var(--line); color:var(--mute); font-size:12px} .fz-srft kbd{margin:0 3px 0 0}
+/* полезные блоки */
+.fz-widgets{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; align-items:start}
+.fz-w h2{display:flex; align-items:center; gap:8px; font-size:17px; margin:0} .fz-wh{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+.fz-wtag{font:700 11.5px var(--ui); color:var(--acc); background:var(--acc-soft); padding:3px 9px; border-radius:999px}
+.fz-wq{grid-column:span 2} .fz-wqt{color:var(--tx) !important; font-size:15.5px !important; font-weight:600; margin-bottom:12px !important}
+.fz-wqo{display:grid; grid-template-columns:1fr 1fr; gap:8px} .fz-wqo button{padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:500 14px var(--ui); text-align:left; cursor:pointer}
+.fz-wqo button:hover:not([disabled]){border-color:var(--acc)} .fz-wqo button.ok{background:var(--ok-soft); border-color:var(--ok); color:var(--ok)} .fz-wqo button.bad{background:var(--bad-soft); border-color:var(--bad); color:var(--bad)} .fz-wqo button[disabled]{cursor:default}
+.fz-wrow{margin-top:12px; gap:6px} .fz-wrow .btn{width:auto}
+.fz-fdf .tx.d{padding:18px 10px; border-radius:14px; background:var(--card2); text-align:center; font-size:19px; overflow-x:auto} .fz-fdh{margin:10px 0 8px !important; font-weight:600; color:var(--tx2) !important}
+.fz-fd .btn, .fz-w .tb-ic{width:auto}
+.fz-rp{display:grid; grid-template-columns:34px minmax(0,1fr) auto auto; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line)} .fz-rp:first-of-type{border-top:0}
+.fz-rp .fz-tn{width:32px; height:32px; border-radius:10px; font-size:14px} .fz-rp b{display:block; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .fz-rp small{color:var(--mute); font-size:12px} .fz-rp .btn{width:auto; padding:6px 10px; min-height:0}
+.fz-cn{display:grid; gap:2px} .fz-cn div{display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:8px; align-items:baseline; padding:5px 0; border-top:1px solid var(--line); font-size:13px} .fz-cn div:first-child{border-top:0}
+.fz-cn i{font:italic 600 15px var(--serif); color:var(--acc)} .fz-cn span{color:var(--tx2)} .fz-cn b{font-weight:600; white-space:nowrap}
+.fz-ucc{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px} .fz-ucc button{padding:5px 10px; border-radius:999px; border:1px solid var(--line); background:none; color:var(--tx2); font:600 12.5px var(--ui); cursor:pointer} .fz-ucc button.on{background:var(--acc); border-color:var(--acc); color:var(--acc-tx)}
+.fz-ucr{display:grid; grid-template-columns:minmax(0,1fr) 140px; gap:8px; margin-top:8px}
+.fz-ucr input, .fz-ucr select, .fz-ucr output{height:42px; box-sizing:border-box; padding:0 12px; border-radius:12px; border:1px solid var(--line2); background:var(--card2); color:var(--tx); font:600 15px var(--ui); user-select:text}
+.fz-ucr output{display:flex; align-items:center; background:var(--acc-soft); border-color:transparent; color:var(--acc)}
+@media (max-width:1250px){ .fz-widgets{grid-template-columns:repeat(2, minmax(0,1fr))} }
+/* результаты: диаграмма */
+.fz-rsum{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-bottom:20px}
+.fz-chart{margin-bottom:8px} .fz-chart h2 .ic{width:20px; height:20px; color:var(--acc); vertical-align:-3px}
+.fz-cb{display:grid; grid-template-columns:minmax(0,280px) minmax(0,1fr) 40px 44px; gap:12px; align-items:center; padding:6px 4px; border-radius:8px} .fz-cb:hover{background:var(--card2)}
+.fz-cbl{font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--tx2)}
+.fz-cbt{position:relative; height:14px; border-radius:4px; background:var(--card2)} .fz-cbt i{position:absolute; left:0; top:0; bottom:0; border-radius:0 4px 4px 0; background:var(--acc)}
+.fz-cbt s{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--line2)} .fz-cb > b{text-align:right; font-size:14px}
+.fz-wcn{grid-column:1/-1} .fz-wcn .fz-cn{grid-template-columns:repeat(3, minmax(0,1fr)); column-gap:28px} .fz-wcn .fz-cn div:nth-child(-n+3){border-top:0}
+@media (max-width:1250px){ .fz-wcn .fz-cn{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-wq{grid-column:1/-1} }
+.fz-wqe{display:block; margin-top:6px; font-weight:400; color:var(--tx2)}
+.fz-cbt{background:var(--line)} .fz-sri mark{padding:0}
+/* кабинет преподавателя */
+.tch .fz-brand{cursor:default} .tch .fz-brand:hover{background:none}
+.fz-cnt-b{margin-left:auto; font:700 11.5px var(--ui); font-style:normal; padding:1px 8px; border-radius:999px; background:var(--card2); color:var(--mute)} .fz-ni.on .fz-cnt-b{background:var(--acc); color:var(--acc-tx)}
+.fz-app.mini .fz-cnt-b{display:none}
+.tpage .head{display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; margin-bottom:20px} .tpage .head h1{margin:2px 0 4px; font-size:28px} .tpage .head p{margin:0}
+.tpage .head .btn{width:auto}
+.tpage .ttabs{margin-top:12px} .mb{margin-bottom:14px}
+.tpage .stats{margin:0 0 16px}
+.th-steps{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:20px} .th-steps .fz-tile{position:relative} .th-steps .ic{width:26px; height:26px; color:var(--acc)} .th-steps b{display:block; margin:10px 0 4px; font-size:15.5px} .th-steps p{margin:0}
+.th-no{position:absolute; right:18px; top:16px; font:800 28px var(--ui); color:var(--line2)}
+.th-labs{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px}
+.th-lab{display:flex; gap:12px; align-items:center; padding:12px; border-radius:16px; border:1px solid var(--line); background:var(--card); color:var(--tx); font:inherit; text-align:left; cursor:pointer} .th-lab:hover{border-color:var(--acc)}
+.th-lab img{width:76px; height:52px; object-fit:cover; border-radius:10px; flex:none} .th-lab > span{min-width:0; flex:1; display:flex; flex-direction:column; gap:2px}
+.th-lab small{color:var(--acc); font:800 11px var(--ui); text-transform:uppercase} .th-lab b{font-size:13.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .th-lab i{font-style:normal; font-size:12px; color:var(--mute)} .th-lab .fz-bar{margin-top:4px}
+.th-row{display:flex; gap:12px; align-items:center; width:100%; padding:9px 6px; border:0; border-top:1px solid var(--line); background:none; color:var(--tx); font:inherit; text-align:left; cursor:pointer; border-radius:0} .th-row:first-of-type{border-top:0}
+.th-row:hover{background:var(--card2)} .th-row b{display:block; font-size:14px} .th-row small{color:var(--mute); font-size:12.5px} .th-row > .ic:last-child{color:var(--mute)}
+.th-files{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px} .th-files button{display:flex; flex-direction:column; align-items:center; min-width:76px; padding:10px; border-radius:14px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:inherit; cursor:pointer} .th-files b{font-size:22px} .th-files span{font-size:12px; color:var(--mute)} .th-files button:hover{border-color:var(--acc)}
+.tj td, .tj th{white-space:nowrap} .tj th.c{text-align:center}
+.tj-c{text-align:center; font:700 12px var(--ui)} .tj-c .ic{width:16px; height:16px}
+.tj-c.ok{color:var(--ok); background:var(--ok-soft)} .tj-c.go{color:var(--warn); background:var(--warn-soft)} .tj-c.bad{color:var(--bad); background:var(--bad-soft)} .tj-c.none{color:var(--mute)}
+.tj-note{width:200px; height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--line); background:var(--card2); color:var(--tx); font:13px var(--ui); user-select:text}
+@media (max-width:1200px){ .th-steps{grid-template-columns:repeat(2, minmax(0,1fr))} }
+.th-row > span:not(.ava){flex:1; min-width:0} .th-row span.ava{flex:none}
+.tpage .head > div:has(.ttabs){flex:1 1 100%}
+/* иконка программы вместо буквы γ */
+img.logo.img{background:none; border-radius:0; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.fz-ab-head img.logo{width:84px; height:84px}
+.fz-lbrand img.logo{width:84px; height:84px}
+.login-brand img.logo{width:72px; height:72px}
+/* «О программе»: подвал прижат к низу страницы */
+.fz-page:has(> .fz-about){display:flex; flex-direction:column; min-height:100vh}
+.fz-about{flex:1; display:flex; flex-direction:column; gap:16px; max-width:980px; width:100%}
+.fz-ab-foot{margin-top:auto; padding-top:28px; display:grid; gap:8px; justify-items:center; text-align:center}
+.fz-ab-foot .fz-copy{margin:0; padding:16px 0 0; border-top:1px solid var(--line); width:100%; font-size:13.5px; line-height:1.6; color:var(--tx2)}
+.fz-adv{margin:0; font-size:13.5px; color:var(--tx2)}
+.fz-ver-s{margin:0; font-size:12px; color:var(--mute)}
+.fz-ab-links{gap:22px}
+/* разработчики */
+.fz-dev > span:not(.ava){display:flex; flex-direction:column} .fz-dev small{color:var(--mute); font-size:12px; line-height:1.3}
+/* лицензионное соглашение */
+.fz-eula{max-width:760px; max-height:68vh; overflow:auto; padding-right:8px; font-size:14px; line-height:1.55; user-select:text}
+.fz-eula h3{margin:0 0 4px; font-size:18px; text-align:center} .fz-eu-s{margin:0 0 2px; text-align:center; color:var(--tx2)}
+.fz-eula h4{margin:16px 0 6px; font-size:15px} .fz-eula p{margin:0 0 6px} .fz-eula ul{margin:0 0 6px; padding-left:22px}
+.fz-legal{max-width:720px}
+/* регистрация: согласие */
+.fz-eula-ok{display:flex; gap:10px; align-items:flex-start; margin-top:4px; font-size:13.5px; color:var(--tx2); cursor:pointer}
+.fz-eula-ok input{width:18px; height:18px; margin:1px 0 0; accent-color:var(--acc); flex:none}
+.fz-lnk{border:0; padding:0; background:none; color:var(--acc); font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer}
+/* конспекты: смысловые цвета */
+:root, [data-theme="dark"]{--c-tm:#7FB2FF; --c-lw:#4ADE80; --c-un:#C4A5FF; --c-fc:#FF9C70; --c-wv:rgba(255,122,69,.75)}
+[data-theme="light"]{--c-tm:#1D4ED8; --c-lw:#15803D; --c-un:#7C3AED; --c-fc:#C2410C; --c-wv:rgba(228,87,27,.7)}
+.fz-note b.tm{color:var(--c-tm)} .fz-note b.lw{color:var(--c-lw)} .fz-note b.un{color:var(--c-un)} .fz-note b.lb{color:var(--tx)}
+.fz-note .wv{text-decoration:underline wavy var(--c-wv); text-decoration-thickness:1.5px; text-underline-offset:4px; text-decoration-skip-ink:none}
+.fz-note .fq, .fz-cs .fq{color:var(--c-tm)} .fz-note .fc, .fz-cs .fc{color:var(--c-fc)}
+.fz-legend{display:flex; flex-wrap:wrap; gap:8px 16px; margin:14px 2px 0; font-size:12.5px; color:var(--tx2)}
+.fz-legend span{display:inline-flex; align-items:center; gap:6px} .fz-legend span::before{content:''; width:10px; height:10px; border-radius:3px; background:currentColor}
+.fz-legend .tm{color:var(--c-tm)} .fz-legend .lw{color:var(--c-lw)} .fz-legend .un{color:var(--c-un)} .fz-legend .fq{color:var(--c-tm)} .fz-legend .fc{color:var(--c-fc)}
+.fz-legend .wv{color:var(--tx2); text-decoration:underline wavy var(--c-wv); text-underline-offset:4px} .fz-legend .wv::before, .fz-legend .fq::before{display:none}
+.fz-legend .fq{font-family:var(--serif); font-style:italic} .fz-legend .fc{font-family:var(--serif); font-style:italic} .fz-legend .fc::before{display:none}
+/* шпаргалка формул под оглавлением */
+.fz-csh{margin-top:14px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute)}
+.fz-cs{display:flex; flex-direction:column; gap:2px; align-items:flex-start; width:100%; padding:7px 8px; border:0; border-radius:8px; background:none; color:var(--tx); text-align:left; cursor:pointer; overflow:hidden}
+.fz-cs:hover{background:var(--card2)} .fz-cs .katex{font-size:1.08em} .fz-cs small{font:500 11.5px var(--ui); color:var(--mute)}
+.fz-cs .tx:not(.ok){font-family:var(--serif); font-size:12px}
+/* читаемость: фон приглушён под содержимым, подписи разделов контрастнее */
+body.fzapp #main{background:color-mix(in srgb, var(--bg) 84%, transparent)}
+.fz-login{background:color-mix(in srgb, var(--bg) 55%, transparent); border-radius:0}
+.fz-h{color:var(--tx2); font-weight:800}
+.fz-ph p, .fz-org{color:var(--tx2)}
+.fz-page{max-width:1600px}
+/* главная: работы одной строкой */
+.fz-mlabs{display:grid; grid-template-columns:repeat(8, minmax(0,1fr)); gap:12px}
+.fz-ml{display:flex; flex-direction:column; padding:0; border:1px solid var(--line); border-radius:16px; background:var(--card); color:var(--tx); font:inherit; text-align:left; cursor:pointer; overflow:hidden}
+.fz-ml img{width:100%; aspect-ratio:16/10; object-fit:cover; display:block} .fz-ml span{padding:8px 10px 10px} .fz-ml b{display:block; font-size:14px} .fz-ml small{font-size:12px; color:var(--mute)}
+.fz-ml:hover{border-color:var(--acc)} .fz-ml.done small{color:var(--ok)} .fz-ml.go small{color:var(--acc)} .fz-ml.done{border-color:color-mix(in srgb, var(--ok) 45%, var(--line))}
+.fz-widgets.two{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); margin-top:20px} .fz-widgets.two .fz-wq{grid-column:auto}
+@media (max-width:1300px){ .fz-mlabs{grid-template-columns:repeat(4, minmax(0,1fr))} .fz-widgets.two{grid-template-columns:1fr} }
+/* справочник */
+.fz-refg{display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px; align-items:start}
+.fz-refg .fz-cn div{grid-template-columns:30px minmax(0,1fr) auto}
+.fz-rt div{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px solid var(--line); font-size:14px} .fz-rt div:first-child{border-top:0} .fz-rt span{color:var(--tx2)} .fz-rt b{font-weight:600; white-space:nowrap}
+.fz-rn{margin:10px 0 0 !important; font-size:12.5px}
+.fz-greek{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px} .fz-greek div{display:flex; gap:8px; align-items:baseline; padding:4px 6px; border-radius:8px; background:var(--card2)} .fz-greek i{font:italic 600 18px var(--serif); color:var(--acc); width:18px} .fz-greek span{font-size:12.5px; color:var(--tx2)}
+/* конспект работы в выдвижной панели */
+#fz-drw{position:fixed; top:0; right:0; bottom:0; width:460px; z-index:40; background:var(--card); border-left:1px solid var(--line2); box-shadow:-12px 0 32px rgba(0,0,0,.22); overflow:auto}
+#fz-drw[hidden]{display:none}
+body.drw #app{margin-right:460px}
+.fz-drh{position:sticky; top:0; z-index:2; display:flex; gap:12px; align-items:center; padding:14px 16px; background:var(--card); border-bottom:1px solid var(--line)}
+.fz-drh div{flex:1; min-width:0} .fz-drh small{display:block; color:var(--acc); font:800 11px var(--ui); text-transform:uppercase; letter-spacing:.04em} .fz-drh b{display:block; font-size:15px; line-height:1.3}
+#fz-drw .fz-note{margin:0; padding:18px 20px 30px; border:0; border-radius:0; font-size:14.5px}
+#fz-drw .fz-note h2{font-size:18px} #fz-drw .fz-note h3{font-size:15.5px}
+.fz-wtag{white-space:nowrap}
+/* плеер видеоурока в рамке-доске: проём 1322×744 при картинке 1586×1050 */
+.fz-board{position:relative; width:100%; aspect-ratio:1586/1050; filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
+.fz-board video{position:absolute; left:8.323%; top:13.714%; width:83.354%; height:70.857%; aspect-ratio:auto; border:0; border-radius:0; background:#000; object-fit:contain}
+.fz-bframe{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; user-select:none}
+.fz-chap{margin-top:14px; padding:14px 16px; border-radius:16px; background:var(--card); border:1px solid var(--line)}
+.fz-chap > b{display:flex; gap:8px; align-items:center; font-size:14px; margin-bottom:8px} .fz-chap > b .ic{width:17px; height:17px; color:var(--acc)}
+.fz-chap > div{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:2px 14px}
+.fz-chap button{display:flex; gap:10px; align-items:baseline; padding:6px 8px; border:0; border-radius:8px; background:none; color:var(--tx2); font:500 13.5px var(--ui); text-align:left; cursor:pointer}
+.fz-chap button:hover{background:var(--card2); color:var(--acc)} .fz-chap i{font-style:normal; font-variant-numeric:tabular-nums; color:var(--acc); font-weight:700; min-width:36px}
+.fz-chap > div{grid-auto-flow:column}
+.fz-cs{overflow-x:auto; overflow-y:hidden; padding:8px 8px 6px} .fz-cs .tx{display:block; line-height:1.9; padding:2px 0} .fz-cs .katex{line-height:1.6}
+/* вход: кнопка темы над формой, по её правому краю */
+.fz-lbar{display:flex; justify-content:flex-end; margin-bottom:10px}
+/* «О программе» подробно */
+.fz-about{max-width:1100px}
+.fz-ab-lead p{font-size:15px}
+.fz-ab-can{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px}
+.fz-ab-can .fz-ab-card{display:grid; grid-template-columns:28px minmax(0,1fr); column-gap:12px; align-items:start}
+.fz-ab-can .ic{width:24px; height:24px; color:var(--acc); grid-row:span 2; margin-top:2px} .fz-ab-can b{font-size:16px} .fz-ab-can p{margin:4px 0 0; color:var(--tx2); font-size:14px}
+.fz-ab-how{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px}
+.fz-ab-how > div{padding:16px 18px; border-radius:18px; background:var(--card); border:1px solid var(--line); position:relative}
+.fz-ab-how span{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--acc-soft); color:var(--acc); font:800 14px var(--ui); margin-bottom:8px}
+.fz-ab-how b{display:block; font-size:15px} .fz-ab-how p{margin:4px 0 0; font-size:13.5px; color:var(--tx2); line-height:1.45}
+.fz-about .fz-h{margin:10px 2px 0}
+@media (max-width:1200px){ .fz-ab-how{grid-template-columns:repeat(2, minmax(0,1fr))} .fz-ab-can{grid-template-columns:1fr} }
+/* справочник: блоки колонками без пустот */
+.fz-refg{display:block; columns:3 360px; column-gap:20px} .fz-refg > section{break-inside:avoid; margin:0 0 20px; display:block}
+/* окна соглашения и правовой информации: окно по ширине текста */
+.mbox:has(.fz-eula), .mbox:has(.fz-legal), .mbox:has(.fz-devlist){max-width:820px}
+.fz-eula, .fz-legal{max-width:none; max-height:none; overflow:visible; padding-right:0}
+.fz-ab-can .fz-ab-card{display:block; position:relative; padding-left:60px}
+.fz-ab-can .ic{position:absolute; left:22px; top:21px; margin:0}
+.fz-refg{display:grid; columns:auto; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; align-items:stretch}
+.fz-refc{display:flex; flex-direction:column; gap:20px} .fz-refc > section{margin:0} .fz-refc > section:last-child{flex:1}
+@media (max-width:1250px){ .fz-refg{grid-template-columns:1fr 1fr} .fz-refc:last-child{grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr} }
+.fz-refc > section:last-child{display:flex; flex-direction:column}
+.fz-refc > section:last-child > .fz-rt{flex:1; display:flex; flex-direction:column; justify-content:space-between}
+.fz-refc > section:last-child > .fz-greek{flex:1; grid-template-columns:repeat(3, minmax(0,1fr)); grid-auto-rows:1fr; gap:8px}
+.fz-refc .fz-greek div{align-items:center; padding:8px 10px} .fz-refc .fz-greek i{font-size:24px; width:26px} .fz-refc .fz-greek span{font-size:14px}

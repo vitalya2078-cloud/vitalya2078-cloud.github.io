@@ -22,7 +22,7 @@ try {
   await page.click('[data-d="register"]'); must(await page.evaluate(() => SCREEN === 'home'), 'учётная запись создана без ФИО');
   await page.fill('#np-fio', 'Сидорова Анна Викторовна'); await page.fill('#np-group', '11 Б'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '4321'); await page.click('[data-d="register"]');
   must(await page.evaluate(() => SCREEN === 'home'), 'принят пароль, не совпавший с повтором');
-  await page.fill('#np-pw2', '1234'); await page.press('#np-pw2', 'Enter');
+  await page.fill('#np-pw2', '1234'); await page.check('#np-eula'); await page.press('#np-pw2', 'Enter');
   must(await page.evaluate(() => SCREEN === 'labs' && PROFILE.fio === 'Сидорова Анна Викторовна'), 'после входа нет выбора работы');
   // знакомство: 4 слайда, листается Enter, закрывается на последнем
   must(await page.locator('#modal [data-intro]').isVisible(), 'нет знакомства после входа');
@@ -100,14 +100,10 @@ try {
 
   // режим преподавателя: подлинный и подделанный файлы
   await page.click('[data-d="labs"]'); await page.click('[data-d="home"]'); await page.click('[data-d="teacher"]');
-  // пароль преподавателя: задать, выйти, войти с неверным и верным
-  await page.fill('#tp1', '4321'); await page.fill('#tp2', '1234'); await page.click('[data-t="setpass"]');
-  must(await page.evaluate(() => SCREEN === 'lock'), 'принят пароль, не совпавший с повтором');
-  await page.fill('#tp1', '4321'); await page.fill('#tp2', '4321'); await page.press('#tp2', 'Enter');
-  must(await page.evaluate(() => SCREEN === 'teacher'), 'пароль не сохранился');
-  await page.click('[data-t="back"]'); await page.click('[data-d="teacher"]');
-  await page.fill('#tp', '0000'); await page.click('[data-t="unlock"]'); must(await page.evaluate(() => SCREEN === 'lock'), 'вход с неверным паролем');
-  await page.fill('#tp', '4321'); await page.press('#tp', 'Enter'); must(await page.evaluate(() => SCREEN === 'teacher'), 'вход с верным паролем не сработал');
+  // пароль кафедры задан при сборке: создать новый нельзя, неверный не пускает, верный пускает
+  must(await page.locator('#tp1').count() === 0 && await page.locator('[data-t="forgot"]').count() === 0, 'в кабинете преподавателя можно создать или сбросить пароль');
+  await page.fill('#tp', '0000'); await page.click('[data-t="unlock"]'); await page.waitForTimeout(400); must(await page.evaluate(() => SCREEN === 'lock'), 'вход с неверным паролем');
+  await page.fill('#tp', 'test-teacher'); await page.press('#tp', 'Enter'); await page.waitForFunction(() => SCREEN === 'teacher', null, { timeout: 5000 });
   await page.setInputFiles('#file-in', [file]);
   await page.waitForFunction(() => TROWS.length === 1);
   const t1 = await page.locator('table.tt').innerText();

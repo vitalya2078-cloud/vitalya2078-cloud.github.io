@@ -12,6 +12,7 @@ function topbar(S) {
     <nav class="tb-steps">${L3.steps.map(([, t], i) => { const ok = i < S.max || (i === S.max && fin && S.done), on = i === S.step;
       return `<button data-l3="go" data-v="${i}" class="${on ? 'on' : ''}${ok ? ' ok' : ''}" ${i > S.max ? 'disabled' : ''}><i>${ok && !on ? '✓' : i + 1}</i><span>${t}</span></button>`; }).join('<s></s>')}</nav>
     <div class="tb-act">
+      <button class="btn line" data-d="lnote" title="Конспект работы рядом с установкой">${ic('notebook-pen')} Конспект</button>
       <button class="btn line tb-hod" data-d="hod" title="Ход работы (H)">${ic('clipboard-list')} Ход работы ${kbd('H')}</button>
       <span class="tb-who">${ava(S.fio || PROFILE.fio)}<span>${esc(S.fio || PROFILE.fio)}</span></span>
       <button class="tb-ic" data-d="save" title="Сохранить файл работы (Ctrl+S)">${ic('file-text')}</button>
@@ -93,7 +94,7 @@ function vAdmitStep(S) {
       ${S.admitOk ? `<button class="btn" data-l3="next" data-primary>К подготовке ${kbd('Enter')}</button>` : `<button class="btn" data-l3="admitCheck" data-primary ${answered ? '' : 'disabled'}>${ic('circle-check')} Сдать допуск ${kbd('Enter')}</button>`}</div>`;
   }
   return topbar(S) + `<div class="qs">
-    <div class="qs-main"><div class="qs-aim"><span class="kicker">Цель работы</span>${esc(L3_AIM())}</div>${dots}<section class="qs-card">${body}</section></div>
+    <div class="qs-main"><div class="qs-aim"><span class="kicker">Цель работы</span>${esc(L3_AIM())}</div>${qWaitBox(S, 'admit')}${dots}<section class="qs-card">${body}</section></div>
     <aside class="qs-side card"><div class="tabs">${[['theory', 'Теория и установка'], ['safety', 'Безопасность']].map(([k, t]) => `<button data-d="stab" data-v="${k}" class="${(TAB === 'safety' ? 'safety' : 'theory') === k ? 'on' : ''}">${t}</button>`).join('')}</div>
       <div class="read">${TAB === 'safety' ? L3_TEXT.safety : `${L3_TEXT.theory}<div class="paper-mini">${l3SchemeSvg()}</div>${L3_TEXT.equip}`}</div></aside>
   </div>`;

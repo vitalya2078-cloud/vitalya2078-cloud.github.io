@@ -81,7 +81,7 @@ function ensureMeta(S) {
   S.dx.device = IOS ? 'ios' : 'android';
 }
 function openProfile(p, intro = false, lab = 0) {   // курсант → выбор работы (или сразу работа lab)
-  PROFILE = p; L3S = null; LWS = null; L2S = null;
+  PROFILE = p; L3S = null; LWS = null; L2S = null; tRecover();
   if (lab) mOpenLab(lab); else { SCREEN = 'labs'; PAGE = 'main'; render(); scrollTo(0, 0); }
   if (intro) showIntro(0);
 }

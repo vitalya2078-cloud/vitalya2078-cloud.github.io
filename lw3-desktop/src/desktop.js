@@ -18,19 +18,21 @@ const store = {
 function toast(html, kind = '') { const box = $('#toasts'); while (box.children.length >= 3) box.firstChild.remove(); const t = document.createElement('div'); t.className = 'toast ' + kind; t.innerHTML = html; $('#toasts').appendChild(t); setTimeout(() => t.classList.add('out'), 3200); setTimeout(() => t.remove(), 3700); }
 function addXP() { toast(`${ic('award')} Работа защищена. Сохрани файл результата для преподавателя на шаге «Отчёт».`); }
 function render() {
-  document.body.classList.remove('full');
+  document.body.classList.remove('full', 'fzapp');
+  if (SCREEN !== 'work' && typeof lnoteHide === 'function') lnoteHide();
   if (SCREEN === 'lock') return vLock();
   if (SCREEN === 'teacher') return vTeacher();
   if (SCREEN === 'home' || !PROFILE) return vHome();
   if (SCREEN === 'labs') return vApp();
   if (SCREEN === 'test') return vTest();
+  if (PROFILE) qApply(LAB, curLab().load());
   if (LAB !== 3) return vWorkLab();
   vWork();
 }
-const LOGO = '<span class="logo">γ</span>';
+const LOGO = '<img class="logo img" src="img/brand/icon-128.png" alt="">';
 const isLight = () => document.documentElement.dataset.theme === 'light';
 function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem('lw3d-theme', t); } catch (e) {} render(); }
-const themeBtn = () => `<button class="btn ghost" data-d="theme">${ic('sparkles')} ${isLight() ? 'Тёмная тема' : 'Светлая тема'}</button>`;
+const themeBtn = () => `<button class="btn ghost" data-d="theme">${ic(isLight() ? 'moon' : 'sun')} ${isLight() ? 'Тёмная тема' : 'Светлая тема'}</button>`;
 
 /* ---------- профили курсантов ---------- */
 const PKEY = 'lw3d-profiles';
@@ -39,6 +41,8 @@ const workKey = id => 'lw3d-w-' + id;
 const initials = fio => String(fio || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
 const hue = s => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
 const ava = (fio, size = '') => `<span class="ava ${size}" style="background:hsl(${hue(fio)} 70% 68%)">${esc(initials(fio))}</span>`;
+/* отметка о принятии лицензионного соглашения (редакция и дата) */
+function acctEula(id) { const list = profiles(), p = list.find(x => x.id === id); if (!p) return; p.eula = { v: '1.0', at: new Date().toISOString() }; store.set(PKEY, list); }
 function addProfile(fio, group) {
   const p = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), fio: fio.trim(), group: group.trim(), created: new Date().toISOString() };
   store.set(PKEY, [p, ...profiles()]); return p;
@@ -49,7 +53,7 @@ function ensureMeta(S) {
   if (!S.dx) S.dx = { started: new Date().toISOString(), admitTries: 0, procTries: 0, cqTries: 0 };
 }
 function openProfile(p, intro = false, lab = 0) {   // курсант → экран выбора работы (или сразу работа lab)
-  PROFILE = p; L3S = null; LWS = null; L2S = null; CH.pts = []; CH.marks = [];
+  PROFILE = p; L3S = null; LWS = null; L2S = null; CH.pts = []; CH.marks = []; tRecover();
   if (lab) openLab(lab); else { SCREEN = 'labs'; PAGE = 'main'; render(); ui.main.scrollTop = 0; }
   if (intro) showIntro(0);
 }
@@ -67,21 +71,31 @@ function vHome() {
   const ps = profiles(); if (!ps.length) AUTH = 'up';
   const sel = ps.find(p => p.id === ASEL) || null;
   const pwField = (id, lab, ac = 'current-password') => `<label class="field">${lab}<input type="password" id="${id}" autocomplete="${ac}"></label>`;
-  const login = !ps.length ? `<p class="mute">На этом компьютере ещё нет учётных записей. Зарегистрируйся — это займёт минуту.</p>`
+  const login = !ps.length ? `<p class="mute">На этом компьютере ещё нет учётных записей. Зарегистрируйтесь, это займёт минуту.</p>`
     : `<p class="mute small">Выбери свою учётную запись:</p><div class="fz-acc">${ps.map(p => `<button data-d="acc" data-v="${p.id}" class="${p.id === ASEL ? 'on' : ''}">${ava(p.fio)}<span><b>${esc(p.fio)}</b><small>${esc(p.group || 'класс не указан')}</small></span></button>`).join('')}</div>
       ${sel ? (acctHasPw(sel) ? `${pwField('au-pw', 'Пароль')}<button class="btn wide big mt" data-d="login" data-primary>Войти ${kbd('Enter')}</button><p class="mute small" style="margin-top:10px">Забыли пароль? Его сбросит преподаватель в режиме преподавателя.</p>`
         : `<p class="mute small">${sel.pwReset ? 'Пароль сброшен преподавателем.' : 'У этой учётной записи ещё нет пароля.'} Придумай новый:</p>${pwField('au-n1', 'Новый пароль', 'new-password')}${pwField('au-n2', 'Ещё раз', 'new-password')}<button class="btn wide big mt" data-d="setpw" data-primary>Сохранить и войти ${kbd('Enter')}</button>`) : ''}`;
   const reg = `<div style="display:grid; gap:12px"><label class="field">ФИО<input id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off"></label>
       <label class="field">Класс<input id="np-group" placeholder="103" autocomplete="off"></label>${pwField('np-pw', 'Пароль', 'new-password')}${pwField('np-pw2', 'Пароль ещё раз', 'new-password')}
+      <label class="fz-eula-ok"><input type="checkbox" id="np-eula"><span>Я принимаю условия <button type="button" class="fz-lnk" data-fz="eula">лицензионного соглашения</button></span></label>
       <button class="btn wide big mt" data-d="register" data-primary>Зарегистрироваться ${kbd('Enter')}</button>
       <p class="mute small">Учётная запись и результаты хранятся только на этом компьютере.</p></div>`;
-  ui.main.innerHTML = `<div class="login">
-    <div class="corner tr">${themeBtn()}</div>
-    <div class="login-box fz-auth">
-      <div class="login-brand">${LOGO}<h1>Физпрактикум</h1><p>Виртуальный лабораторный практикум по физике</p></div>
-      <div class="card"><div class="fz-seg"><button data-d="atab" data-v="in" class="${AUTH === 'in' ? 'on' : ''}">Вход</button><button data-d="atab" data-v="up" class="${AUTH === 'up' ? 'on' : ''}">Регистрация</button></div>
-        ${AUTH === 'in' ? login : reg}<p class="fz-msg" id="au-msg"></p></div>
-      <p class="fz-org">${esc(ORG.school)}<br>${esc(ORG.dept)}</p>
+  const feat = [['flask-conical', '8 лабораторных работ', 'По методическим указаниям кафедры: допуск, опыты, обработка результатов, отчёт и защита.'],
+    ['graduation-cap', '900 вопросов по 9 темам', 'Самопроверка с разбором, экзамены по темам и итоговый экзамен по 100-балльной шкале.'],
+    ['notebook-pen', 'Конспекты и видеоуроки', 'Определения, законы и формулы по каждой теме курса физики.'],
+    ['shield-check', 'Результаты для преподавателя', 'Отчёты и результаты экзаменов сохраняются в файлы, защищённые от изменения.']];
+  ui.main.innerHTML = `<div class="login fz-login">
+    <div class="fz-lgrid">
+      <section class="fz-lhero">
+        <div class="fz-lbrand">${LOGO}<div><h1>Физпрактикум</h1><p>Виртуальный лабораторный практикум по физике</p></div></div>
+        <div class="fz-lfeat">${feat.map(([i, t, d]) => `<div>${ic(i)}<div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div>
+        <p class="fz-org">${esc(ORG.school)}<br>${esc(ORG.dept)}</p>
+      </section>
+      <div class="login-box fz-auth">
+        <div class="fz-lbar">${themeBtn()}</div>
+        <div class="card"><h2 class="fz-ah">${AUTH === 'in' ? 'Вход в программу' : 'Новая учётная запись'}</h2><div class="fz-seg"><button data-d="atab" data-v="in" class="${AUTH === 'in' ? 'on' : ''}">Вход</button><button data-d="atab" data-v="up" class="${AUTH === 'up' ? 'on' : ''}">Регистрация</button></div>
+          ${AUTH === 'in' ? login : reg}<p class="fz-msg" id="au-msg"></p></div>
+      </div>
     </div>
     <div class="corner bl">Версия ${esc(APP_VER)}${UPD ? ` · <button class="btn ghost" data-d="upd" style="color:var(--acc)">${ic('sparkles')} Вышла версия ${esc(UPD.v)} — скачать</button>` : ''}</div>
     <div class="corner br"><button class="btn ghost" data-d="import">${ic('file-text')} Открыть файл работы</button><button class="btn ghost" data-d="teacher">${ic('lock')} Преподаватель</button></div>
@@ -311,11 +325,11 @@ function modal(title, body, actions = '') {
 function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; if (SCREEN === 'work' && PROFILE) { const L = curLab(), S = L.S(); if (S && L.steps[S.step][0] === 'report') $('#printroot').innerHTML = L.report(); } }
 /* Знакомство: 4 слайда после первого входа, потом — по F1 */
 const INTRO = [
-  { t: 'Добро пожаловать в «Физпрактикум»', p: 'Слева — разделы программы: лабораторные работы, тесты и экзамены, результаты, профиль. Всё сохраняется само — можно закрыть программу и продолжить потом.',
+  { t: 'Добро пожаловать в «Физпрактикум»', p: 'Слева — разделы программы. Работа сохраняется автоматически: программу можно закрыть и продолжить позже.',
     art: () => `<div class="isteps">${[['Работы', '8 лабораторных'], ['Тесты', '900 вопросов'], ['Экзамены', 'по темам и итоговый'], ['Результаты', 'файлы для преподавателя']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
   { t: 'Как проходит лабораторная работа', p: 'Шаги идут по порядку: следующий открывается, когда выполнен предыдущий. Порядок выполнения по методичке всегда под рукой — кнопка «Ход работы» (клавиша H).',
     art: () => `<div class="isteps">${[['Допуск', '8 вопросов'], ['Подготовка', 'установка и приборы'], ['Опыты', 'измерения'], ['Обработка', 'таблицы и расчёты'], ['Защита', 'выводы и вопросы'], ['Отчёт', 'печать или PDF']].map(([b, sm], i) => `<div><i>${i + 1}</i><b>${b}</b><small>${sm}</small></div>`).join('')}</div>` },
-  { t: 'Клавиши', p: 'Мышью тоже можно, но клавишами быстрее. Подсвеченная кнопка с Enter — главное действие на экране.',
+  { t: 'Клавиши', p: 'Работать можно мышью или клавишами. Кнопка с подсказкой Enter выполняет главное действие на экране.',
     art: () => `<div class="keys">${[['Enter', 'главное действие'], ['1 – 4', 'ответ в тесте'], ['Ctrl+S', 'сохранить файл работы'], ['H', 'ход работы (порядок по методичке)'], ['Пробел', 'компрессор (ЛР 3)'], ['F1', 'это знакомство'], ['Ctrl + / −', 'крупнее / мельче (Ctrl 0 — как было)'], ['F11', 'во весь экран']].map(([k, t]) => `${kbd(k)}<span>${t}</span>`).join('')}</div>` },
   { t: 'Как сдать работу', p: 'В конце работы нажми «Сохранить файл для преподавателя» (Ctrl+S) и передай файл на флешке или через общую папку. Результат экзамена сохраняется так же — в разделе «Мои результаты».', art: () => introFile() }
 ];
@@ -376,7 +390,8 @@ document.addEventListener('click', e => {
     case 'register': {
       const fio = $('#np-fio').value.trim(), group = $('#np-group').value.trim(), pw = $('#np-pw').value, pw2 = $('#np-pw2').value, err = acctValidate(fio, group, pw, pw2);
       if (err) { auMsg(err); break; }
-      const p = acctSetPw(addProfile(fio, group).id, pw); openProfile(p, true); break;
+      if (!$('#np-eula').checked) { auMsg('Чтобы продолжить, примите условия лицензионного соглашения.'); break; }
+      const p = acctSetPw(addProfile(fio, group).id, pw); acctEula(p.id); openProfile(p, true); break;
     }
     case 'import': pickFiles('continue'); break;
     case 'teacher': SCREEN = 'lock'; render(); break;
