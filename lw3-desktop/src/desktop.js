@@ -85,7 +85,6 @@ function vHome() {
     ['notebook-pen', 'Конспекты и видеоуроки', 'Определения, законы и формулы по каждой теме курса физики.'],
     ['shield-check', 'Результаты для преподавателя', 'Отчёты и результаты экзаменов сохраняются в файлы, защищённые от изменения.']];
   ui.main.innerHTML = `<div class="login fz-login">
-    <div class="corner tr">${themeBtn()}</div>
     <div class="fz-lgrid">
       <section class="fz-lhero">
         <div class="fz-lbrand">${LOGO}<div><h1>Физпрактикум</h1><p>Виртуальный лабораторный практикум по физике</p></div></div>
@@ -93,6 +92,7 @@ function vHome() {
         <p class="fz-org">${esc(ORG.school)}<br>${esc(ORG.dept)}</p>
       </section>
       <div class="login-box fz-auth">
+        <div class="fz-lbar">${themeBtn()}</div>
         <div class="card"><h2 class="fz-ah">${AUTH === 'in' ? 'Вход в программу' : 'Новая учётная запись'}</h2><div class="fz-seg"><button data-d="atab" data-v="in" class="${AUTH === 'in' ? 'on' : ''}">Вход</button><button data-d="atab" data-v="up" class="${AUTH === 'up' ? 'on' : ''}">Регистрация</button></div>
           ${AUTH === 'in' ? login : reg}<p class="fz-msg" id="au-msg"></p></div>
       </div>
