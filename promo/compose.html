@@ -1,0 +1,113 @@
+<!doctype html><meta charset="utf-8">
+<!-- Промо-ролик «Физпрактикум»: сцена 1920×1080, кадр задаётся функцией draw(t) (секунды). Монтаж — по долям трека (≈120 уд/мин, такт ≈ 2 с). -->
+<style>
+@font-face{font-family:G; font-weight:400; src:url(fonts/golos-400.woff2)} @font-face{font-family:G; font-weight:600; src:url(fonts/golos-600.woff2)}
+@font-face{font-family:G; font-weight:800; src:url(fonts/golos-cyrillic-800.woff2)}
+html,body{margin:0; width:1920px; height:1080px; overflow:hidden; background:#000; color:#F5F5F7; font-family:G, sans-serif}
+.l{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; will-change:opacity, transform}
+.t{font-weight:800; letter-spacing:-.035em; line-height:1.02; margin:0}
+.s{font-weight:400; color:#86868B; margin:0}
+.gr{background:linear-gradient(90deg,#4F8BFF,#B36BFF 45%,#FF7A45); -webkit-background-clip:background; -webkit-background-clip:text; background-clip:text; color:transparent}
+.scr{position:absolute; border-radius:24px; overflow:hidden; box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 70px 180px rgba(79,139,255,.20), 0 40px 100px rgba(0,0,0,.85)}
+.scr img{display:block; width:100%}
+.w{display:inline-block; will-change:opacity, transform, filter}
+#glow{position:absolute; left:50%; top:46%; width:1200px; height:1200px; margin:-600px 0 0 -600px; border-radius:50%; background:radial-gradient(circle, rgba(79,139,255,.35), rgba(179,107,255,.16) 35%, rgba(255,122,69,.08) 55%, transparent 70%)}
+#flash{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none}
+</style>
+<div id="glow"></div>
+<!-- 1. иконка -->
+<div class="l" id="s1"><img id="icon" src="img/brand/icon-1024.png" style="width:280px; filter:drop-shadow(0 40px 90px rgba(79,139,255,.5))">
+  <h1 class="t" style="font-size:124px; margin-top:64px"><span class="w" id="w11">Физика.</span> <span class="w gr" id="w12">По-новому.</span></h1></div>
+<!-- 2. лаборатория -->
+<div class="l" id="s2"><h2 class="t" id="s2a" style="font-size:92px; color:#5A5A5F"><span class="w" id="w21">Лаборатория открыта</span><br><span class="w" id="w22">два часа в неделю.</span></h2>
+  <h2 class="t" id="s2b" style="font-size:132px; margin-top:56px"><span class="w" id="w23">Теперь</span> <span class="w gr" id="w24">всегда.</span></h2></div>
+<!-- 3. опыт вживую -->
+<div class="l" id="s3" style="justify-content:flex-start; padding-top:96px"><h2 class="t" style="font-size:96px"><span class="w" id="w31">8</span> <span class="w" id="w32">лабораторных</span> <span class="w" id="w33">работ.</span></h2>
+  <p class="s" id="s3p" style="font-size:36px; margin-top:16px">По методическим указаниям кафедры.</p></div>
+<div class="scr" id="exp" style="left:210px; top:330px; width:1500px"><img id="expimg" src="cap/exp/000.png"></div>
+<!-- 4. все работы -->
+<div class="scr" id="labs" style="left:210px; top:72px; width:1500px; border-radius:20px"><img id="labimg" src="cap/lab1.png"></div>
+<div id="labtag" style="position:absolute; left:250px; bottom:110px; padding:10px 22px; border-radius:999px; background:rgba(0,0,0,.65); backdrop-filter:blur(10px); font:800 34px G; color:#fff">ЛР 1</div>
+<!-- 5. честность -->
+<div class="l" id="s5" style="align-items:flex-start; padding-left:150px; text-align:left"><h2 class="t" style="font-size:96px"><span class="w" id="w51">У каждого</span><br><span class="w" id="w52">свои данные.</span></h2>
+  <p class="s" style="font-size:40px; margin-top:30px; line-height:1.35"><span class="w" id="w53">Списать не выйдет.</span><br><span class="w" id="w54">Подделку видно сразу.</span></p></div>
+<div class="scr" id="tch" style="left:860px; top:220px; width:1000px"><img src="cap/teacher.png"></div>
+<!-- 6. теория -->
+<div class="l" id="s6" style="justify-content:flex-start; padding-top:92px"><h2 class="t" style="font-size:96px"><span class="w" id="w61">Теория</span> <span class="w gr" id="w62">рядом с опытом.</span></h2>
+  <p class="s" id="s6p" style="font-size:36px; margin-top:16px">Конспекты и видеоуроки по 9 темам курса.</p></div>
+<div class="scr" id="note" style="left:150px; top:360px; width:900px"><img src="cap/note.png"></div>
+<div class="scr" id="board" style="left:870px; top:330px; width:900px"><img src="cap/board.png"></div>
+<!-- 7. 900 -->
+<div class="l" id="s7"><div class="t gr" id="n900" style="font-size:330px; letter-spacing:-.05em">0</div><h2 class="t" id="s7w" style="font-size:96px; margin-top:-6px">вопросов.</h2>
+  <p class="s" id="s7p" style="font-size:38px; margin-top:26px">Самопроверка. Экзамены на время. 100 баллов.</p></div>
+<!-- 8. финал -->
+<div class="l" id="s8"><img id="ficon" src="img/brand/icon-1024.png" style="width:190px; filter:drop-shadow(0 30px 80px rgba(79,139,255,.45))">
+  <h1 class="t" id="fname" style="font-size:118px; margin-top:46px">Физпрактикум</h1>
+  <p class="s" id="forg" style="font-size:32px; margin-top:22px; color:#A1A1A6">ЧВВМУ им. П.С. Нахимова · Кафедра физики и общетехнических дисциплин</p></div>
+<div id="credit" style="position:absolute; left:0; right:0; bottom:40px; text-align:center; font:400 20px G; color:#5A5A5F">Музыка: Eleven Music</div>
+<div id="flash"></div>
+<script>
+const $ = id => document.getElementById(id);
+const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const eo = x => 1 - Math.pow(1 - cl(x), 3);              // плавный выход
+const eio = x => { x = cl(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const seg = (t, a, b) => cl((t - a) / (b - a));
+// появление и исчезновение: in [a, a+d], out [b-d2, b]
+const vis = (t, a, b, d = .6, d2 = .5) => Math.min(eo(seg(t, a, a + d)), 1 - eio(seg(t, b - d2, b)));
+function word(id, t, a, b, rise = 40) {             // слово: появляется снизу из размытия
+  const e = $(id), k = eo(seg(t, a, a + .55)), out = 1 - eio(seg(t, b - .45, b));
+  e.style.opacity = Math.min(k, out); e.style.transform = `translateY(${(1 - k) * rise}px)`; e.style.filter = `blur(${(1 - k) * 14}px)`;
+}
+function layer(id, o, tr = '') { const e = $(id); e.style.opacity = o; e.style.transform = tr; e.style.visibility = o > 0.001 ? 'visible' : 'hidden'; }
+const LABS = [1, 2, 4, 5, 6, 7, 8, 3];
+const B0 = 2.16, BEAT = (51.59 - 2.16) / 99, BAR = BEAT * 4;   // доли трека (≈ 120 уд/мин)
+const bar = n => B0 + n * BAR;                       // начало такта n (0 → 2,16 с)
+function draw(t) {
+  // фон-свечение
+  const g = t < bar(4) ? eo(seg(t, 0, bar(0))) * 1 : t < bar(17) ? .45 : t < bar(23) ? .7 : 1;
+  $('glow').style.opacity = g * (t > 54 ? 1 - seg(t, 54, 55.6) : 1); $('glow').style.transform = `scale(${.8 + .25 * Math.sin(t * .35)})`;
+  // 1. иконка 2,16–10,15
+  { const a = bar(0), b = bar(4); const o = vis(t, a, b, 1.2, .55), k = eo(seg(t, a, a + 1.6));
+    layer('s1', o, `scale(${(.92 + .08 * k) * (1 + .03 * seg(t, a, b))})`);
+    $('icon').style.transform = `scale(${.75 + .25 * k})`; $('icon').style.filter = `blur(${(1 - k) * 20}px) drop-shadow(0 40px 90px rgba(79,139,255,.5))`;
+    word('w11', t, bar(1), b); word('w12', t, bar(2), b); }
+  // 2. лаборатория 10,15–18,16
+  { const a = bar(4), b = bar(8); layer('s2', vis(t, a, b, .3, .5), `scale(${1 + .04 * seg(t, a, b)})`);
+    word('w21', t, a, b); word('w22', t, a + BEAT * 2, b); word('w23', t, bar(6), b, 60); word('w24', t, bar(6) + BEAT, b, 60);
+    $('s2a').style.opacity = 1 - .55 * eo(seg(t, bar(6) - .3, bar(6) + .3)); }
+  // 3. «8 лабораторных работ» + опыт 18,16–28,14
+  { const a = bar(8), b = bar(13); layer('s3', vis(t, a, b, .3, .5));
+    word('w31', t, a, b, 60); word('w32', t, a + BEAT, b); word('w33', t, a + BEAT * 2, b); $('s3p').style.opacity = Math.min(eo(seg(t, a + BEAT * 4, a + BEAT * 5)), 1 - seg(t, b - .5, b));
+    const k = eo(seg(t, bar(9), bar(9) + 1.4)), p = seg(t, bar(9), b);
+    layer('exp', vis(t, bar(9), b, .9, .5), `perspective(2600px) translateY(${(1 - k) * 420}px) rotateX(${22 - 14 * eio(p)}deg) scale(${.94 + .1 * eio(p)})`);
+    $('exp').style.transformOrigin = '50% 0';
+    const fi = Math.floor(cl(seg(t, bar(9) + .8, b - .3)) * 63); $('expimg').src = `cap/exp/${String(fi).padStart(3, '0')}.png`; }
+  // 4. все работы — по доле на каждую: 28,14–32,14
+  { const a = bar(13), b = bar(15); const i = Math.min(7, Math.floor((t - a) / BEAT)), on = t >= a && t < b;
+    layer('labs', on ? 1 : 0, `scale(${1.02 - .02 * ((t - a) / BEAT - i)})`); layer('labtag', on ? 1 : 0);
+    if (on) { $('labimg').src = `cap/${LABS[i] === 3 ? 'exp/063' : 'lab' + LABS[i]}.png`; $('labtag').textContent = 'ЛР ' + LABS[i]; }
+    $('flash').style.opacity = on ? .18 * (1 - cl(((t - a) % BEAT) / .12)) : 0; }
+  // 5. честность 32,14–38,13
+  { const a = bar(15), b = bar(18); layer('s5', vis(t, a, b, .3, .5));
+    word('w51', t, a, b); word('w52', t, a + BEAT, b); word('w53', t, bar(16), b); word('w54', t, bar(17), b);
+    const k = eo(seg(t, a + .2, a + 1.4)), p = seg(t, a, b);
+    layer('tch', vis(t, a + .2, b, .9, .5), `perspective(2400px) translateX(${(1 - k) * 300}px) rotateY(${-20 + 10 * eio(p)}deg)`); }
+  // 6. теория 38,13–42,10
+  { const a = bar(18), b = bar(20); layer('s6', vis(t, a, b, .3, .45));
+    word('w61', t, a, b); word('w62', t, a + BEAT, b); $('s6p').style.opacity = Math.min(eo(seg(t, a + BEAT * 3, a + BEAT * 4)), 1 - seg(t, b - .45, b));
+    const k = eo(seg(t, a + .3, a + 1.5)), p = seg(t, a, b);
+    layer('note', vis(t, a + .3, b, .8, .45), `translateX(${-(1 - k) * 500}px) rotate(${-4 + 1.5 * p}deg)`);
+    layer('board', vis(t, a + .6, b, .8, .45), `translateX(${(1 - eo(seg(t, a + .6, a + 1.8))) * 500}px) rotate(${4 - 1.5 * p}deg) scale(${1 + .04 * p})`); }
+  // 7. 900 вопросов 42,10–48,09
+  { const a = bar(20), b = bar(23); layer('s7', vis(t, a, b, .4, .5), `scale(${1 + .05 * seg(t, a, b)})`);
+    $('n900').textContent = Math.round(900 * eio(seg(t, a, a + 2.2)));
+    $('s7w').style.opacity = eo(seg(t, a + 2.0, a + 2.6)); $('s7p').style.opacity = eo(seg(t, bar(22), bar(22) + .6)); }
+  // 8. финал 48,09–конец
+  { const a = bar(23); const o = Math.min(eo(seg(t, a, a + 1.2)), 1 - eio(seg(t, 54.2, 55.8)));
+    layer('s8', o, `scale(${1.04 - .04 * eo(seg(t, a, a + 3))})`);
+    const k = eo(seg(t, a, a + 1.5)); $('ficon').style.transform = `scale(${.8 + .2 * k}) rotate(${(1 - k) * -12}deg)`;
+    $('fname').style.opacity = eo(seg(t, a + BEAT * 2, a + BEAT * 3)); $('forg').style.opacity = eo(seg(t, bar(24), bar(24) + .8));
+    $('credit').style.opacity = Math.min(eo(seg(t, bar(24), bar(24) + .8)), 1 - seg(t, 54.6, 55.8)); }
+}
+draw(0);
+</script>
