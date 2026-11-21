@@ -24,6 +24,7 @@ concurrency:
 
 jobs:
   apk:
+    if: false              # Android сейчас не собираем (только Windows); вернуть — убрать эту строку
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
