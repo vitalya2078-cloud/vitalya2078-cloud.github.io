@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const BASE = process.env.BASE || 'http://127.0.0.1:4180/';
 const SHOTS = process.env.SHOTS || '';
-const ONLY = (process.env.LABS || '10').split(',').map(Number);
+const ONLY = (process.env.LABS || '9,10,11,12,13,14').split(',').map(Number);
 const shot = async (p, n) => { if (SHOTS) await p.screenshot({ path: path.join(SHOTS, `nuc-${n}.png`) }); };
 const must = (ok, msg) => { if (!ok) throw new Error(msg); };
 const mustL = async (ok, f) => { if (!ok) throw new Error(await f()); };
@@ -59,6 +59,24 @@ async function proc(n, picks = async () => {}) {
 }
 
 const RUN = {
+  async 9() {
+    const mark = async tag => {   // три точки на треке: щелчки мышью по холсту
+      const P = await E(tg => { const R = LES.rig, t = R.tracks.find(x => x.tag === tg), out = [], dth = t.sign * 1.5 / t.r, n = Math.ceil(2 * Math.PI * t.r / 1.5); let th = t.a0;
+        const CX = 220, CY = 222, RIN = .36 * 330; for (let i = 0; i < n; i++) { const x = t.cx + t.r * Math.cos(th), y = t.cy + t.r * Math.sin(th); if (i > 3 && (x - CX) ** 2 + (y - CY) ** 2 >= (RIN - 3) ** 2) break; out.push([x, y]); th += dth; }
+        return [.12, .5, .88].map(f => out[Math.floor(out.length * f)]); }, tag);
+      const box = await page.locator('#le-cv').boundingBox(), k = box.width / 580;
+      for (const [x, y] of P) { await page.mouse.click(box.x + x * k, box.y + y * k); await W(120); }
+    };
+    await ctl('lamp'); await ctl('mag'); await click('[data-le="prepCheck"]'); must(await E(() => LES.prepOk), 'ЛР 9: подготовка не принята'); await click('[data-le="next"]'); await W(150);
+    for (const [id, tag] of [['p', 'p'], ['x', 'x'], ['e', 'e']]) {
+      must(await st() === id, `ЛР 9: нет опыта ${id}`);
+      if (id === 'e') { await ctl('mag'); await ctl('mag'); }
+      await ctl('exp'); await page.waitForFunction(() => LES.rig.anim >= 1, null, { timeout: 10000 }); await W(150);
+      await mark(tag); await W(150); if (id === 'x') await shot(page, 'l9-x');
+      await mustL(await record(id) === 1, async () => `ЛР 9: ${id}: ${await ready(id)}`); await click('[data-le="next"]'); await W(150);
+    }
+    await proc(9, async t => { if (t === '2') await click(`[data-le="pick"][data-k="xid"][data-v="${await E(() => LES.p.x)}"]`); });
+  },
   async 14() {
     const waitAcc = () => page.waitForFunction(() => LES.rig.acc >= 1, null, { timeout: 30000 });
     const goR = async to => { let r = await E(() => LES.rig.R); while (r !== to) { const d = to - r, s = Math.abs(d) >= 5 ? 5 * Math.sign(d) : Math.sign(d); await ctl('dR', String(s)); r = await E(() => LES.rig.R); } };

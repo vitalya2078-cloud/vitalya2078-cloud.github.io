@@ -287,13 +287,13 @@ function leLiveBind(cv) {
   cv.addEventListener('pointermove', e => {
     if (!LES || !LE[LAB] || !LE[LAB].live) return; const [x, y] = lePt(cv, e);
     if (LEA.drag) { const d = LEA.drag, n = Math.trunc((d.y0 - y) / 7); if (n !== d.n) { const k = n - d.n; d.n = n; for (let i = 0; i < Math.abs(k); i++) { const m = leLiveAct(d.o.c, String(Math.sign(k) * d.o.step)); if (m) d.msg = m; } } return; }
-    const h = leHit(LES, x, y); cv.style.cursor = h ? (h.kind === 'knob' ? 'ns-resize' : 'pointer') : '';
+    const h = leHit(LES, x, y); cv.style.cursor = h ? (h.kind === 'knob' ? 'ns-resize' : h.o.xy ? 'crosshair' : 'pointer') : '';
   });
   cv.addEventListener('pointerdown', e => {
     if (!LES || !LE[LAB] || !LE[LAB].live) return; leSndInit(); const [x, y] = lePt(cv, e), h = leHit(LES, x, y); if (!h) return;
     e.preventDefault();
     if (h.kind === 'knob') { LEA.drag = { o: h.o, y0: y, n: 0 }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} return; }
-    const m = leLiveAct(h.o.c, h.o.v ?? ''); leSnd.tick(); render(); if (m) lwMsg(m, 1);
+    const m = leLiveAct(h.o.c, h.o.xy ? `${x.toFixed(1)},${y.toFixed(1)}` : (h.o.v ?? '')); leSnd.tick(); render(); if (m) lwMsg(m, 1);   // xy: щелчок по точке установки (отметки на треке)
   });
   const up = () => { if (!LEA.drag) return; const m = LEA.drag.msg; LEA.drag = null; render(); if (m) lwMsg(m, 1); };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
