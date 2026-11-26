@@ -4,6 +4,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::path::{Path, PathBuf};
+mod license;
 use tauri_plugin_dialog::DialogExt;
 
 fn pick_save(app: &tauri::AppHandle, name: &str, ext: &str, label: &str) -> Result<Option<PathBuf>, String> {
@@ -179,12 +180,20 @@ fn video_protocol<R: tauri::Runtime>(ctx: tauri::UriSchemeContext<'_, R>, req: t
     }
 }
 
+/// Состояние лицензии: код компьютера, действует ли ключ, до какого числа и сколько дней осталось.
+#[tauri::command]
+fn license_status(folders: Vec<String>) -> license::Status { license::status(&folders) }
+
+/// Активация ключом (или текстом файла лицензии кафедры).
+#[tauri::command]
+fn license_activate(text: String) -> Result<license::Status, String> { license::activate(&text) }
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .register_uri_scheme_protocol("fzv", video_protocol)
         .invoke_handler(tauri::generate_handler![
-            save_file, save_pdf, pick_folder, write_lw3, read_lw3_dir, app_config, set_zoom, toggle_fullscreen, open_release
+            save_file, save_pdf, pick_folder, write_lw3, read_lw3_dir, app_config, set_zoom, toggle_fullscreen, open_release, license_status, license_activate
         ])
         .run(tauri::generate_context!())
         .expect("не удалось запустить программу");

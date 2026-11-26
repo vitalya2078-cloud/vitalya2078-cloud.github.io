@@ -59,6 +59,7 @@ jobs:
           SHOTS=shots node lw3-desktop/tests/e2e-labs.mjs
           node lw3-desktop/tests/notes-tex.mjs
           node lw3-desktop/tests/e2e-ui.mjs
+          node lw3-desktop/tests/e2e-license.mjs
 
       - name: Screenshots
         if: always()
@@ -111,6 +112,14 @@ jobs:
           if (-not $exe) { throw 'В архиве WebView2 нет msedgewebview2.exe' }
           Move-Item $exe.Directory.FullName lw3-desktop/src-tauri/WebView2Runtime
           Get-ChildItem lw3-desktop/src-tauri/WebView2Runtime/msedgewebview2.exe
+
+      # открытый ключ лицензии (из генератора ключей кафедры) вшивается в программу; без него выпуск не собирается
+      - name: License public key
+        env:
+          PK: ${{ vars.FZ_LICENSE_PUBKEY || secrets.FZ_LICENSE_PUBKEY }}
+        run: |
+          [ ${#PK} -eq 64 ] || { echo "::error::нет открытого ключа лицензии: задайте переменную или секрет FZ_LICENSE_PUBKEY (64 шестнадцатеричных знака из генератора ключей)"; exit 1; }
+          echo "FZ_LICENSE_PUBKEY=$PK" >> "$GITHUB_ENV"
 
       - name: Build Windows app
         working-directory: lw3-desktop
