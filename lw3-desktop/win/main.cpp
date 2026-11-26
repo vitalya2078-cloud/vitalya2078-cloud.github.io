@@ -141,7 +141,7 @@ static void serve(ICoreWebView2WebResourceRequestedEventArgs* args) {
   if (path.empty()) path = "index.html";
   if (video && (path.rfind("video/", 0) != 0 || !(path.size() > 4 && (path.substr(path.size() - 4) == ".mp4" || path.substr(path.size() - 4) == ".jpg")))) path = "";
   auto it = path.find("..") == std::string::npos ? g_assets.find(path) : g_assets.end();
-  if (it == g_assets.end()) { respond(args, 404, L"Not Found", nullptr, 0, L"Content-Type: text/plain"); return; }
+  if (it == g_assets.end()) { respond(args, 404, L"Not Found", nullptr, 0, L"Content-Type: text/plain\r\nAccess-Control-Allow-Origin: *"); return; }
   const Asset& a = it->second;
   std::wstring h = std::wstring(L"Content-Type: ") + mime(path) + L"\r\nAccept-Ranges: bytes\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Expose-Headers: Content-Range, Content-Length, Accept-Ranges\r\nCache-Control: no-cache";
   // Range: bytes=a-b, bytes=a-, bytes=-n (перемотка видео); без Range — весь файл
