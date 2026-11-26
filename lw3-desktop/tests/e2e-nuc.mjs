@@ -59,6 +59,21 @@ async function proc(n, picks = async () => {}) {
 }
 
 const RUN = {
+  async 12() {
+    await ctl('power'); await page.waitForFunction(() => LES.rig.warm === 0, null, { timeout: 15000 });
+    await click('[data-le="prepCheck"]'); must(await E(() => LES.prepOk), 'ЛР 12: подготовка не принята'); await click('[data-le="next"]'); await W(150);
+    must(await st() === 'bg', 'ЛР 12: нет фона'); await count(); await mustL(await record('bg') === 1, async () => 'ЛР 12: фон: ' + await ready('bg')); await click('[data-le="next"]'); await W(150);
+    must(await st() === 'abs', 'ЛР 12: нет кривой поглощения'); await ctl('src');
+    const Dh = await E(() => LES.p.D), PL = [5, 10, 20, 50];
+    for (const [i, f] of [0, .3, .6, .9, 1.2, 1.5, 1.9, 2.4].entries()) {
+      let cur = await E(() => Object.entries(LES.rig.pl).reduce((s, [t, n]) => s + t * n, 0));
+      while (cur < f * Dh || (i && cur <= (await E(() => LES.rows.abs.slice(-1)[0].d)))) { const cnt = await E(() => LES.rig.pl); const t = [...PL].reverse().find(t => (cnt[t] || 0) < 4 && cur + t <= f * Dh + 5) || PL.find(t => (cnt[t] || 0) < 4); await ctl('pl', String(t)); cur += t; }
+      await count(); if (i === 4) await shot(page, 'l12-abs');
+      await mustL(await record('abs') === i + 1, async () => `ЛР 12: толщина ${i + 1}: ${await ready('abs')} ${await page.locator('#lw-msg').innerText()}`);
+    }
+    await click('[data-le="next"]'); await W(150);
+    await proc(12, async t => { if (t === '2') await click(`[data-le="pick"][data-k="iso"][data-v="${await E(() => LES.p.iso)}"]`); });
+  },
   async 13() {
     await ctl('power'); await page.waitForFunction(() => LES.rig.warm === 0, null, { timeout: 15000 });
     await setU(await E(() => LES.p.Up)); for (let i = 0; i < 4; i++) await ctl('h', '-1');
