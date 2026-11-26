@@ -153,28 +153,31 @@ leRegister(10, (() => {
       leDrawBtn(c, { x: 132, y: 270, w: 76, h: 24 }, on ? 'СЕТЬ ВКЛ' : 'СЕТЬ', on, '#5A2A2E');
       c.fillStyle = !on ? '#4A2025' : R.warm > 0 ? (Math.sin(performance.now() / 160) > 0 ? '#F2B544' : '#6B4A14') : '#3FD27F'; c.beginPath(); c.arc(120, 282, 4.5, 0, 7); c.fill();
       leLcd(c, 216, 270, 90, 24, on && !R.warm ? `${t}/${T}` : '', 'с', on); leText(c, 'время ×20', 70, 288, { size: 8, color: '#5A6576' });
-      // 2 — счётчик СБТ-13 на штативе (картинки); в окне счётчика — газ, нить-анод и лавины разряда
-      const sx = 330, sy = 44, sw = 176; leImg(c, 'stand', sx, sy, sw, 1.485);
-      const tw = 44, tx = sx + .925 * sw - tw / 2, ty = 92, th = leImg(c, 'gm-tube', tx, ty, tw, 3.83);
+      // 2 — счётчик СБТ-13 в кольце зажима штатива (картинки); основание штатива стоит на столе (верх стола — y 312)
+      const sw = 180, sh = sw * 1.485, sx = 330, sy = 318 - .992 * sh; leImg(c, 'stand', sx, sy, sw, 1.485);
+      const rx = sx + .853 * sw, ry = sy + .28 * sh, baseTop = sy + .9 * sh;                // центр кольца зажима, верх основания
+      const tw = 34, th = tw * 3.83, tx = rx - tw / 2, ty = ry - .12 * th; leImg(c, 'gm-tube', tx, ty, tw, 3.83);
+      const ringIm = leSprite('stand');                                                      // передняя половина кольца — поверх счётчика: он зажат
+      if (ringIm) { const k = ringIm.naturalWidth / sw, x0 = rx - .14 * sw, y0 = ry, w0 = .28 * sw, h0 = .1 * sh; c.drawImage(ringIm, (x0 - sx) * k, (y0 - sy) * k, w0 * k, h0 * k, x0, y0, w0, h0); }
       const win = [tx + .327 * tw, ty + .349 * th, .397 * tw, .417 * th], wx = win[0] + win[2] / 2, wy0 = win[1] + 4, wy1 = win[1] + win[3] - 4;
       c.save(); leRR(c, win[0], win[1], win[2], win[3], win[2] / 2); c.clip();
       c.fillStyle = '#0D1522'; c.fillRect(win[0], win[1], win[2], win[3]);
       if (V.glow > 0) { c.fillStyle = `rgba(190,140,255,${.75 * V.glow * (.75 + .25 * Math.random())})`; c.fillRect(win[0], win[1], win[2], win[3]); }
       V.fl.forEach(f => { const k = 1 - f.a / .16, y = wy0 + f.y * (wy1 - wy0), spread = (wy1 - wy0) * Math.min(1, f.a / .05);
         const gg = c.createLinearGradient(0, y - spread, 0, y + spread); gg.addColorStop(0, 'rgba(120,220,255,0)'); gg.addColorStop(.5, `rgba(170,240,255,${.9 * k})`); gg.addColorStop(1, 'rgba(120,220,255,0)');
-        c.strokeStyle = gg; c.lineWidth = 7; c.beginPath(); c.moveTo(wx, y - spread); c.lineTo(wx, y + spread); c.stroke();
-        if (!LEA.lite) { c.fillStyle = `rgba(220,252,255,${.95 * k})`; c.beginPath(); c.arc(wx, y, 2 + 5 * k, 0, 7); c.fill(); } });
-      c.strokeStyle = 'rgba(232,238,246,.9)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(wx, wy0); c.lineTo(wx, wy1); c.stroke(); c.restore();
-      leText(c, '2 — счётчик СБТ-13', tx + tw / 2, sy - 9, { size: 9.5 });
-      const tb = ty + th;                                                                     // нижний торец — слюдяное окно
-      // треки β-частиц от источника к окну
-      V.tr.forEach(q => { const k = 1 - q.a / .14; c.strokeStyle = `rgba(255,200,90,${.95 * k})`; c.lineWidth = 1.6; c.beginPath(); c.moveTo(wx + q.x * .7, tb + 22); c.lineTo(wx + q.x * .25 + q.dx * .2, tb + 1); c.stroke(); });
-      // 3 — источники: чашка с KCl, источники 1 и 2 (картинки)
-      const dish = (x, y) => leImg(c, 'kcl-dish', x, y, 66, .42), disk = (x, y, lab) => { leImg(c, 'source', x - 12, y, 24, 1.13); leText(c, lab, x, y - 7, { size: 9, weight: 800, color: leAcc() }); };
-      if (R.src === 'kcl') { dish(wx - 33, tb + 8); leText(c, '3 — KCl', wx - 52, tb + 22, { size: 9.5, align: 'right' }); } else dish(338, 286);
+        c.strokeStyle = gg; c.lineWidth = 6; c.beginPath(); c.moveTo(wx, y - spread); c.lineTo(wx, y + spread); c.stroke();
+        if (!LEA.lite) { c.fillStyle = `rgba(220,252,255,${.95 * k})`; c.beginPath(); c.arc(wx, y, 2 + 4 * k, 0, 7); c.fill(); } });
+      c.strokeStyle = 'rgba(232,238,246,.9)'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(wx, wy0); c.lineTo(wx, wy1); c.stroke(); c.restore();
+      leText(c, '2 — счётчик СБТ-13', rx, sy - 8, { size: 9.5 });
+      const tb = ty + th * .99;                                                                // нижний торец — слюдяное окно
+      // 3 — источники на основании штатива под окном счётчика; убранные — на столе перед штативом
+      const dishH = 66 * .42, srcH = 24 * 1.13;
+      V.tr.forEach(q => { const k = 1 - q.a / .14, y0 = R.src === 'kcl' ? baseTop - dishH + 6 : baseTop - srcH + 4; c.strokeStyle = `rgba(255,200,90,${.95 * k})`; c.lineWidth = 1.6; c.beginPath(); c.moveTo(wx + q.x * .55, y0); c.lineTo(wx + q.x * .2 + q.dx * .15, tb + 1); c.stroke(); });
+      const dish = (x, y) => leImg(c, 'kcl-dish', x, y, 66, .42), disk = (x, y, lab) => { leImg(c, 'source', x - 12, y, 24, 1.13); leText(c, lab, x, y - 6, { size: 9, weight: 800, color: leAcc() }); };
+      if (R.src === 'kcl') { dish(wx - 33, baseTop - dishH); leText(c, '3 — KCl', wx - 44, baseTop - 12, { size: 9.5, align: 'right' }); } else dish(352, 322);
       const placedA = R.src === 'A' || R.src === 'AB', placedB = R.src === 'B' || R.src === 'AB';
-      disk(placedA ? wx - 15 : 418, placedA ? tb + 6 : 285, '1'); disk(placedB ? wx + 15 : 446, placedB ? tb + 6 : 285, '2');
-      leWire(c, [[tx + tw / 2, ty + 2], [bx + bw - 4, by + bh * .5]], '#3E7BFA');
+      disk(placedA ? wx - 13 : 440, placedA ? baseTop - srcH : 324, '1'); disk(placedB ? wx + 13 : 470, placedB ? baseTop - srcH : 324, '2');
+      leWire(c, [[rx, ty + 2], [bx + bw - 4, by + bh * .5]], '#3E7BFA');
       // график, растущий на глазах
       const rows = S.rows.char || [];
       if (st === 'char' || st === 'dead' || rows.length) {
