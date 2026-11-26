@@ -26,19 +26,22 @@ const licBlocked = () => LIC === null || (LIC.enforced && LIC.state !== 'ok');
 function vLicense() {
   document.body.classList.add('noside'); document.body.classList.remove('full', 'fzapp'); ui.side.innerHTML = '';
   if (LIC === null) { ui.main.innerHTML = ''; return; }
-  const why = { none: 'Программа ещё не активирована на этом компьютере.', expired: `Срок действия ключа закончился ${licDate(LIC.expires)}.`,
-    clock: 'Дата на компьютере переведена назад. Установите правильную дату и перезапустите программу.' }[LIC.state] || '';
-  ui.main.innerHTML = `<div class="login fz-login"><div class="login-box fz-lic">
-    <div class="login-brand">${LOGO}<h1>Активация</h1><p>${esc(why)}</p></div>
-    <div class="card">
-      <label class="field">Код этого компьютера<div class="fz-lcode"><b id="lic-code">${esc(LIC.code)}</b><button class="btn line" data-d="lic-copy">${ic('copy')} Копировать</button></div></label>
-      <p class="mute small">Передайте этот код на кафедру физики и общетехнических дисциплин. Кафедра выдаст ключ для этого компьютера.</p>
-      <label class="field">Ключ активации<textarea id="lic-key" rows="3" spellcheck="false" placeholder="FZK-..."></textarea></label>
-      <button class="btn wide big mt" data-d="lic-go" data-primary>Активировать ${kbd('Enter')}</button>
-      <button class="btn ghost wide" data-d="lic-file">${ic('file-text')} Открыть файл лицензии (license.fzl)</button>
+  const why = { none: 'Программа ещё не активирована на этом компьютере', expired: `Срок действия ключа закончился ${licDate(LIC.expires)}`,
+    clock: 'Дата на компьютере переведена назад. Установите правильную дату и перезапустите программу' }[LIC.state] || '';
+  const parts = String(LIC.code).split('-');
+  const steps = [['copy', 'Скопируйте код', 'Код этого компьютера показан справа.'], ['school', 'Передайте его на кафедру', 'Кафедра физики и общетехнических дисциплин выдаст ключ.'], ['key-round', 'Вставьте ключ', 'Программа запомнит его, вводить повторно не нужно.']];
+  ui.main.innerHTML = `<div class="login fz-login"><div class="fz-lgrid fz-lact">
+    <section class="fz-lhero"><div class="fz-lbrand">${LOGO}<div><h1>Активация</h1><p>${esc(why)}</p></div></div>
+      <ol class="fz-lsteps">${steps.map(([i, t, d]) => `<li>${ic(i)}<div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ol></section>
+    <div class="login-box fz-auth"><div class="card fz-lcard">
+      <span class="fz-lcap">Код компьютера</span>
+      <button class="fz-lcode" data-d="lic-copy" title="Копировать">${parts.map((p, k) => `<span class="${k ? '' : 'pre'}">${esc(p)}</span>`).join('')}${ic('copy')}</button>
+      <span class="fz-lcap">Ключ активации</span>
+      <input id="lic-key" spellcheck="false" autocomplete="off" placeholder="FZK-…">
+      <button class="btn wide big" data-d="lic-go" data-primary>Активировать ${kbd('Enter')}</button>
       <p class="fz-msg" id="lic-msg"></p>
-      <p class="mute small">Файл лицензии класса можно также положить рядом с программой или в общую папку класса: программа найдёт свой ключ сама.</p>
-    </div></div>
+      <button class="fz-lnk2" data-d="lic-file">${ic('file-text')} Есть файл лицензии класса</button>
+    </div></div></div>
     <input type="file" id="lic-in" accept=".fzl,.txt" hidden>
     <div class="corner bl">Версия ${esc(APP_VER)}</div></div>`;
   setTimeout(() => { const f = $('#lic-key'); if (f) f.focus(); }, 0);
@@ -63,15 +66,13 @@ document.addEventListener('keydown', e => { if (licBlocked() && e.key === 'Enter
 /* без лицензии — только окно активации; с лицензией — обычная программа */
 const renderApp = render;
 render = function () { if (licBlocked()) return vLicense(); renderApp(); licDecorate(); };
-/* срок действия: на экране входа, в «О программе», предупреждение на главной */
+/* срок — коротко в углу: на входе рядом с версией, в программе — под меню; за 30 дней — оранжевым */
+const licShort = () => !LIC || !LIC.enforced || LIC.state !== 'ok' ? '' : !LIC.expires ? 'бессрочно' : LIC.days_left === 0 ? 'последний день' : `${LIC.days_left} ${daysWord(LIC.days_left)}`;
 function licDecorate() {
-  if (!LIC || !LIC.enforced) return;
-  const t = licText();
-  const bl = document.querySelector('.login .corner.bl'); if (bl && !bl.querySelector('.fz-lic-s')) bl.insertAdjacentHTML('beforeend', ` · <span class="fz-lic-s">Лицензия ${esc(t)}</span>`);
-  const v = document.querySelector('.fz-ab-foot .fz-ver-s'); if (v && !v.querySelector('.fz-lic-s')) v.insertAdjacentHTML('beforeend', ` · <span class="fz-lic-s">лицензия ${esc(t)}</span>`);
-  if (licSoon() && SCREEN === 'labs' && PAGE === 'main' && !document.querySelector('.fz-licwarn')) {
-    const ph = document.querySelector('.fz-page .fz-ph');
-    if (ph) ph.insertAdjacentHTML('afterend', `<div class="fz-licwarn">${ic('timer')}<span>Лицензия программы на этом компьютере действует ${esc(t)}. Чтобы продлить, обратитесь на кафедру.</span></div>`);
-  }
+  const t = licShort(); if (!t) return;
+  const chip = `<span class="fz-licchip${licSoon() ? ' soon' : ''}" title="Лицензия на этом компьютере: ${esc(licText())}">${ic('key-round')}${esc(t)}</span>`;
+  const bl = document.querySelector('.login .corner.bl'); if (bl && !bl.querySelector('.fz-licchip')) bl.insertAdjacentHTML('beforeend', chip);
+  const me = document.querySelector('.fz-nav .fz-me'); if (me && !document.querySelector('.fz-nav .fz-licchip')) me.insertAdjacentHTML('beforebegin', chip);
+  const v = document.querySelector('.fz-ab-foot .fz-ver-s'); if (v && !v.querySelector('.fz-lic-s')) v.insertAdjacentHTML('beforeend', ` · <span class="fz-lic-s">лицензия ${esc(licText())}</span>`);
 }
 licRefresh();

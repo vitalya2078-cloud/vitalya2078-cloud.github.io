@@ -439,11 +439,21 @@ body.drw #app{margin-right:460px}
 .fz-refc > section:last-child > .fz-rt{flex:1; display:flex; flex-direction:column; justify-content:space-between}
 .fz-refc > section:last-child > .fz-greek{flex:1; grid-template-columns:repeat(3, minmax(0,1fr)); grid-auto-rows:1fr; gap:8px}
 .fz-refc .fz-greek div{align-items:center; padding:8px 10px} .fz-refc .fz-greek i{font-size:24px; width:26px} .fz-refc .fz-greek span{font-size:14px}
-/* лицензия */
-.fz-lic{width:min(560px, 100%)} .fz-lic textarea{width:100%; box-sizing:border-box; font:14px Consolas, monospace; resize:vertical; user-select:text}
-.fz-lcode{display:flex; gap:10px; align-items:center; margin-top:6px} .fz-lcode b{flex:1; padding:12px 14px; border-radius:12px; background:var(--card2); font:700 22px Consolas, monospace; letter-spacing:.06em; user-select:all}
-.fz-lcode .btn{width:auto} .fz-lic .btn.ghost.wide{margin-top:8px}
-.fz-licwarn{display:flex; gap:10px; align-items:center; padding:12px 16px; margin:0 0 18px; border-radius:14px; background:var(--warn-soft); color:var(--warn); font-weight:600; font-size:14px} .fz-licwarn .ic{width:18px; height:18px; flex:none}
-.fz-login .login-box.fz-lic{width:min(580px, 100%)}
-.fz-lic textarea{padding:10px 12px; border-radius:12px; border:1px solid var(--line2); background:var(--card2); color:var(--tx); margin-top:6px}
-.fz-lcode b{font-size:19px}
+/* лицензия: окно активации */
+.fz-lact .fz-lbrand p{max-width:440px}
+.fz-lsteps{list-style:none; margin:34px 0 0; padding:0; display:grid; gap:14px; counter-reset:s}
+.fz-lsteps li{display:flex; gap:16px; align-items:center; padding:16px 18px; border-radius:18px; background:color-mix(in srgb, var(--card) 84%, transparent); border:1px solid var(--line); backdrop-filter:blur(10px)}
+.fz-lsteps .ic{width:24px; height:24px; color:var(--acc); flex:none} .fz-lsteps b{display:block; font-size:15.5px} .fz-lsteps span{font-size:13.5px; color:var(--tx2)}
+.fz-lcard{display:grid; gap:10px; padding:28px !important}
+.fz-lcap{font:700 12px var(--ui); letter-spacing:.06em; text-transform:uppercase; color:var(--mute); margin-top:6px}
+.fz-lcode{display:flex; align-items:center; gap:6px; width:100%; padding:10px; border:1px solid var(--line2); border-radius:14px; background:var(--card2); cursor:pointer; color:var(--tx)}
+.fz-lcode span{flex:1; padding:8px 0; border-radius:9px; background:var(--card); font:700 19px/1 Consolas, "Cascadia Mono", monospace; letter-spacing:.08em; text-align:center; user-select:all}
+.fz-lcode span.pre{flex:.6; color:var(--acc)} .fz-lcode .ic{width:18px; height:18px; color:var(--mute); margin:0 6px} .fz-lcode:hover{border-color:var(--acc)} .fz-lcode:hover .ic{color:var(--acc)}
+#lic-key{width:100%; box-sizing:border-box; height:50px; padding:0 14px; border-radius:14px; border:1px solid var(--line2); background:var(--card2); color:var(--tx); font:600 15px Consolas, monospace; user-select:text}
+#lic-key:focus{outline:none; border-color:var(--acc); box-shadow:0 0 0 3px var(--acc-soft)}
+.fz-lcard .btn.big{margin-top:6px}
+.fz-lnk2{justify-self:center; display:inline-flex; gap:6px; align-items:center; border:0; background:none; color:var(--mute); font:600 13.5px var(--ui); cursor:pointer} .fz-lnk2:hover{color:var(--acc)} .fz-lnk2 .ic{width:15px; height:15px}
+/* лицензия: срок в углу */
+.fz-licchip{display:inline-flex; gap:5px; align-items:center; margin-left:10px; font:600 12px var(--ui); color:var(--mute); white-space:nowrap}
+.fz-licchip .ic{width:13px; height:13px} .fz-licchip.soon{color:var(--warn)}
+.fz-nav .fz-licchip{margin:6px 0 0 14px} .fz-app.mini .fz-nav .fz-licchip{margin:6px 0 0; font-size:0; gap:0}
