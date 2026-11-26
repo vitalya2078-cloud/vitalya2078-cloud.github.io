@@ -103,7 +103,9 @@ function leImg(c, k, x, y, w, fallback) {                         // карти�
 function leLcd(c, x, y, w, h, txt, unit = '', on = true) {
   c.fillStyle = '#0A1610'; leRR(c, x, y, w, h, 4); c.fill(); c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 1; c.stroke();
   if (!on) return; const uw = unit ? Math.max(14, unit.length * h * .26 + 4) : 0;
-  c.fillStyle = '#7CF29B'; c.font = `700 ${Math.round(h * .62)}px ui-monospace, "Golos UI", monospace`; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillText(txt, x + w - 5 - uw, y + h / 2 + 1);
+  c.fillStyle = '#7CF29B'; let fs = Math.round(h * .62); c.font = `700 ${fs}px ui-monospace, "Golos UI", monospace`;
+  const room = w - 10 - uw, tw = c.measureText(txt).width; if (tw > room) { fs = Math.max(6, Math.floor(fs * room / tw)); c.font = `700 ${fs}px ui-monospace, "Golos UI", monospace`; }   // длинное число — мельче, но в табло
+  c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillText(txt, x + w - 5 - uw, y + h / 2 + 1);
   if (unit) { c.fillStyle = '#9FE7B4'; c.font = `600 ${Math.round(h * .34)}px "Golos UI", system-ui`; c.textAlign = 'left'; c.fillText(unit, x + w - uw - 1, y + h / 2 + 2); }
 }
 function leText(c, t, x, y, { size = 10, align = 'center', color, weight = 600 } = {}) { c.fillStyle = color || leTx(); c.font = `${weight} ${size}px "Golos UI", system-ui`; c.textAlign = align; c.textBaseline = 'middle'; c.fillText(t, x, y); }
