@@ -59,6 +59,21 @@ async function proc(n, picks = async () => {}) {
 }
 
 const RUN = {
+  async 14() {
+    const waitAcc = () => page.waitForFunction(() => LES.rig.acc >= 1, null, { timeout: 30000 });
+    const goR = async to => { let r = await E(() => LES.rig.R); while (r !== to) { const d = to - r, s = Math.abs(d) >= 5 ? 5 * Math.sign(d) : Math.sign(d); await ctl('dR', String(s)); r = await E(() => LES.rig.R); } };
+    await ctl('power'); await click('[data-le="prepCheck"]'); must(await E(() => LES.prepOk), 'ЛР 14: подготовка не принята'); await click('[data-le="next"]'); await W(150);
+    must(await st() === 'fon', 'ЛР 14: нет фона');
+    for (const [i, k] of ['out', 'room', 'pb'].entries()) { await ctl('place', k); await waitAcc(); await mustL(await record('fon') === i + 1, async () => 'ЛР 14: фон: ' + await ready('fon')); }
+    await click('[data-le="next"]'); await W(150);
+    must(await st() === 'dist', 'ЛР 14: нет опыта с расстоянием'); await ctl('open');
+    for (const [i, r] of [10, 15, 20, 25, 30, 40, 55, 70].entries()) { await goR(r); await waitAcc(); if (i === 3) await shot(page, 'l14-dist'); await mustL(await record('dist') === i + 1, async () => `ЛР 14: R=${r}: ${await ready('dist')}`); }
+    await click('[data-le="next"]'); await W(150);
+    must(await st() === 'shield', 'ЛР 14: нет опыта с экранами'); await goR(30);
+    for (const [i, k] of ['none', 'pb', 'fe', 'bt', 'wt'].entries()) { await ctl('sh', k); await waitAcc(); if (k === 'bt') await shot(page, 'l14-shield'); await mustL(await record('shield') === i + 1, async () => `ЛР 14: экран ${k}: ${await ready('shield')}`); }
+    await click('[data-le="next"]'); await W(150);
+    await proc(14);
+  },
   async 12() {
     await ctl('power'); await page.waitForFunction(() => LES.rig.warm === 0, null, { timeout: 15000 });
     await click('[data-le="prepCheck"]'); must(await E(() => LES.prepOk), 'ЛР 12: подготовка не принята'); await click('[data-le="next"]'); await W(150);
