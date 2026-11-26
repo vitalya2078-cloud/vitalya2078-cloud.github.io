@@ -457,3 +457,6 @@ body.drw #app{margin-right:460px}
 .fz-licchip{display:inline-flex; gap:5px; align-items:center; margin-left:10px; font:600 12px var(--ui); color:var(--mute); white-space:nowrap}
 .fz-licchip .ic{width:13px; height:13px} .fz-licchip.soon{color:var(--warn)}
 .fz-nav .fz-licchip{margin:6px 0 0 14px} .fz-app.mini .fz-nav .fz-licchip{margin:6px 0 0; font-size:0; gap:0}
+
+/* графики на экране обработки (живые лабораторные) */
+.le-graph{max-width:620px; margin:10px auto}

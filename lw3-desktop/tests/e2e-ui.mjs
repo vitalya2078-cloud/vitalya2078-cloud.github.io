@@ -15,7 +15,7 @@ await page.check('#np-eula'); await page.click('[data-d="register"]'); await W(4
 // главная: блоки, вопрос дня, перевод единиц
 must(await page.locator('.fz-widgets .fz-w').count() >= 2, 'на главной нет блоков «Вопрос дня» и «Что повторить»');
 await page.click('.fz-wqo button >> nth=0'); await W(200); must(await page.locator('.fz-wq .fz-verdict').count() === 1, 'вопрос дня не проверяется');
-must(await page.locator('.fz-mlabs .fz-ml').count() === 8, 'на главной нет карточек работ');
+must(await page.locator('.fz-mlabs .fz-ml').count() === await page.evaluate(() => labNums().length), 'на главной нет карточек работ');
 await page.click('[data-d="page"][data-v="ref"]'); await W(300); must(await page.locator('.fz-refg .fz-w').count() >= 8, 'справочник пуст');
 await page.click('[data-d="uc-cat"][data-v="Скорость"]'); await page.selectOption('#uc-a', '1'); await page.selectOption('#uc-b', '0'); await page.fill('#uc-v', '36'); await W(100);
 must((await page.textContent('#uc-r')).trim() === '10', 'перевод 36 км/ч → м/с неверен: ' + await page.textContent('#uc-r')); await page.click('[data-d="page"][data-v="main"]'); await W(300);
@@ -29,7 +29,7 @@ must(await page.locator('.fz-new, [data-d="news"]').count() === 0, 'осталс
 must(await page.evaluate(() => profiles()[0].eula && profiles()[0].eula.v === '1.0'), 'не записано принятие соглашения');
 // конспекты: 17 штук, формулы рисуются, оглавление
 await page.click('[data-d="page"][data-v="notes"]'); await W(400);
-must(await page.locator('.fz-ncard').count() === 17, 'конспектов не 17');
+must(await page.locator('.fz-ncard').count() === await page.evaluate(() => NOTES.notes.length) && await page.evaluate(() => NOTES.notes.length) >= 18, 'показаны не все конспекты');
 await page.click('[data-d="note"][data-v="t2"]'); await page.waitForFunction(() => document.querySelectorAll('.fz-note .katex').length > 50, null, { timeout: 8000 });
 must(await page.locator('.fz-note .tx:not(.ok)').count() === 0, 'не все формулы нарисованы');
 must(await page.locator('.fz-ntoc .fz-tl').count() > 8, 'нет оглавления');

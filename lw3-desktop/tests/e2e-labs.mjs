@@ -22,7 +22,7 @@ const st = () => E(() => curLab().steps[curLab().S().step][0]);
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.fill('#np-fio', 'Смирнова Алина'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234'); await page.check('#np-eula'); await page.click('[data-d="register"]'); await page.click('[data-d="intro-skip"]');
 await page.click('[data-d="page"][data-v="labs"]');
-must(await page.locator('.fz-card').count() === 8, 'на главном экране не 8 работ'); await shot(page, 'labs');
+must(await page.locator('.fz-card').count() === await E(() => labNums().length) && await E(() => labNums().length) >= 9, 'на экране работ не все работы'); await shot(page, 'labs');
 
 async function admitAndCq(act, key) {
   const list = await E(k => curLab()[k].map(([, a]) => a), key);
@@ -186,7 +186,7 @@ for (const n of [1, 2, 4, 5, 6, 7, 8]) {
   await shot(page, `teacher-l${n}`); await page.keyboard.press('Escape');
 }
 // кабинет: обзор, журнал (комментарий, CSV), файлы
-await page.click('[data-t="tlab"][data-v="home"]'); await W(150); must(await page.locator('.th-lab').count() === 8, 'преподаватель: в обзоре нет карточек работ');
+await page.click('[data-t="tlab"][data-v="home"]'); await W(150); must(await page.locator('.th-lab').count() === await E(() => labNums().length), 'преподаватель: в обзоре нет карточек работ');
 await page.click('[data-t="tlab"][data-v="journal"]'); await W(150); must(await page.locator('table.tj tr').count() >= 2 && await page.locator('table.tj .tj-c.ok').count() >= 7, 'преподаватель: журнал пуст');
 await page.fill('.tj-note >> nth=0', 'Молодец'); await page.press('.tj-note >> nth=0', 'Tab'); await W(150);
 must(await E(() => Object.values(store.get('lw3d-tnotes', {})).includes('Молодец')), 'преподаватель: комментарий не сохранился');

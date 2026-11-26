@@ -50,9 +50,10 @@ function leExpView(id) {
   const rec = full ? '' : `<div class="lw-ctl-row le-rec">${inputs}<button class="btn" data-le="record" data-v="${id}" ${ready ? 'disabled' : ''}>${ic('pencil')} Записать</button></div>`;
   const idx = D.exps.indexOf(E), nextLab = idx < D.exps.length - 1 ? `К опыту: ${D.exps[idx + 1].tab.toLowerCase()}` : 'К обработке';
   const ctl = (full ? '' : E.ctl(S)) + rec + `<p class="lw-msg" id="lw-msg">${full ? (done ? 'Измерения выполнены.' : '') : esc(ready || E.hint(S, k) || '')}</p>` + (done ? leNext(nextLab) : '');
-  const tbl = `<table class="lw-tbl"><tr><th>№</th>${E.cols.map(c => `<th>${c.th || c.label}</th>`).join('')}</tr>${Array.from({ length: need }, (_, i) => rows[i]
-    ? `<tr><td>${i + 1}</td>${E.cols.map(c => `<td>${leFix(rows[i][c.k], c.d)}</td>`).join('')}</tr>`
-    : `<tr class="${i === k ? 'now' : ''}"><td>${i + 1}</td>${E.cols.map(() => '<td></td>').join('')}</tr>`).join('')}</table>`;
+  const rl = i => (E.rowLabel ? E.rowLabel(i) : i + 1);
+  const tbl = `<table class="lw-tbl"><tr><th>${E.rowHead || '№'}</th>${E.cols.map(c => `<th>${c.th || c.label}</th>`).join('')}</tr>${Array.from({ length: need }, (_, i) => rows[i]
+    ? `<tr><td>${rl(i)}</td>${E.cols.map(c => `<td>${leFix(rows[i][c.k], c.d)}</td>`).join('')}</tr>`
+    : `<tr class="${i === k ? 'now' : ''}"><td>${rl(i)}</td>${E.cols.map(() => '<td></td>').join('')}</tr>`).join('')}</table>`;
   return `<section class="card lw-cond"><b class="h">${E.title}</b><p class="mute small">${E.desc(S)}</p></section>` + leField(ctl)
     + `<section class="card"><b class="h">${E.tableTitle || 'Записи'}</b><div class="lw-scroll">${tbl}</div></section>`
     + (full && E.extra ? leCard(E.extra.title, E.extra.view(S) + `<p class="lw-msg" id="lw-msg2"></p>`) : '');
@@ -191,7 +192,7 @@ function leRegister(n, D) {
     admit: D.admit, cq: D.cq, text: D.text, hod: D.hod, scheme: () => D.scheme(), report: () => leReportHtml(n),
     inp: (k, v, ph) => `<input class="lwi lei txt inp" data-ke="${k}" value="${esc(v || '')}" placeholder="${ph}" autocomplete="off">`,
     ta: v => `<textarea class="lw-ta lei inp" data-ke="concl" rows="14">${esc(v)}</textarea>`, autoConcl: () => D.concl(LES, D.calc(LES)),
-    view: leView(n), after(st) { if (this.live.includes(st)) { leDraw(); if (!leDraw.ro && 'ResizeObserver' in window) leDraw.ro = new ResizeObserver(() => leDraw()); const cv = $('#le-cv'); if (leDraw.ro && cv) { leDraw.ro.disconnect(); leDraw.ro.observe(cv); } } },
+    view: leView(n), after(st) { if (this.live.includes(st)) { leDraw(); if (!leDraw.ro && 'ResizeObserver' in window) leDraw.ro = new ResizeObserver(() => leDraw()); const cv = $('#le-cv'); if (leDraw.ro && cv) { leDraw.ro.disconnect(); leDraw.ro.observe(cv); } leLive(); } },
     result: () => D.result(D.calc(LES)), nums: () => D.nums(D.calc(LES)),
     sig: S => Object.values(S.rows || {}).flat().map(r => Object.values(r).join('/')).join(';') };
 }
@@ -244,3 +245,97 @@ document.addEventListener('click', e => {
     case 'restart': if (confirm(`Начать лабораторную работу № ${n} заново? Записи и таблицы будут очищены.`)) { const keep = { dx: S.dx, fio: S.fio, group: S.group }; LES = Object.assign(leFresh(n), { _k: LE_KEYS[n] }, keep); if (LES.dx) LES.dx = { t: {} }; leSave(); render(); } break;
   }
 });
+
+/* =====================================================================
+   Живая установка (ЛР 9–14): непрерывная анимация, звук и управление мышью на самой установке.
+   Работа описывает D.live = { tick(S, dt, st) → 'render' | undefined, knobs(S, st) → [{c, x, y, r, step, fine}],
+   hits(S, st) → [{c, v, x, y, w, h}] }. Ручки крутятся перетаскиванием вверх-вниз и колесом мыши,
+   кнопки на приборах нажимаются щелчком. Всё — через D.act, как кнопки под установкой.
+   ===================================================================== */
+const LEA = { raf: 0, last: 0, drag: null, wheelT: 0, ac: null, mute: false, lite: false, slow: 0 };
+try { LEA.mute = localStorage.getItem('fz-mute') === '1'; } catch (e) {}
+function leLive() {
+  const D = LE[LAB]; if (!D || !D.live || !LES) return;
+  if (LEA.raf) return;                                   // цикл уже идёт: подхватит новый холст сам
+  const step = t => {
+    const cv = $('#le-cv'), D2 = LE[LAB];
+    if (!cv || !LES || !D2 || !D2.live || SCREEN !== 'work') { LEA.raf = 0; LEA.last = 0; return; }
+    const dt = LEA.last ? Math.min(.1, (t - LEA.last) / 1000) : 0; LEA.last = t;
+    if (dt > .045) { if (++LEA.slow > 40) LEA.lite = true; } else LEA.slow = Math.max(0, LEA.slow - 1);   // слабый компьютер — облегчённый режим
+    let r; try { r = D2.live.tick ? D2.live.tick(LES, dt, leSt()) : undefined; } catch (e) { r = undefined; }
+    leLiveBind(cv); leDraw();
+    if (r === 'render' && !LEA.drag) { leSave(); render(); }
+    LEA.raf = requestAnimationFrame(step);
+  };
+  LEA.raf = requestAnimationFrame(step);
+}
+/* координаты указателя в системе установки (ширина 580) */
+function lePt(cv, e) { const b = cv.getBoundingClientRect(), k = 580 / b.width; return [(e.clientX - b.left) * k, (e.clientY - b.top) * k]; }
+function leHit(S, x, y) {
+  const D = LE[LAB], st = leSt(S);
+  const kn = (D.live.knobs ? D.live.knobs(S, st) : []).find(o => Math.hypot(x - o.x, y - o.y) <= o.r + 4);
+  if (kn) return { kind: 'knob', o: kn };
+  const ht = (D.live.hits ? D.live.hits(S, st) : []).find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h);
+  return ht ? { kind: 'hit', o: ht } : null;
+}
+function leLiveAct(c, v) { const D = LE[LAB], S = LES; const m = D.act(S, c, v, leSt(S)); leSave(); return m; }
+function leLiveBind(cv) {
+  if (cv._live) return; cv._live = true; cv.style.touchAction = 'none';
+  cv.addEventListener('pointermove', e => {
+    if (!LES || !LE[LAB] || !LE[LAB].live) return; const [x, y] = lePt(cv, e);
+    if (LEA.drag) { const d = LEA.drag, n = Math.trunc((d.y0 - y) / 7); if (n !== d.n) { const k = n - d.n; d.n = n; for (let i = 0; i < Math.abs(k); i++) { const m = leLiveAct(d.o.c, String(Math.sign(k) * d.o.step)); if (m) d.msg = m; } } return; }
+    const h = leHit(LES, x, y); cv.style.cursor = h ? (h.kind === 'knob' ? 'ns-resize' : 'pointer') : '';
+  });
+  cv.addEventListener('pointerdown', e => {
+    if (!LES || !LE[LAB] || !LE[LAB].live) return; leSndInit(); const [x, y] = lePt(cv, e), h = leHit(LES, x, y); if (!h) return;
+    e.preventDefault();
+    if (h.kind === 'knob') { LEA.drag = { o: h.o, y0: y, n: 0 }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} return; }
+    const m = leLiveAct(h.o.c, h.o.v ?? ''); leSnd.tick(); render(); if (m) lwMsg(m, 1);
+  });
+  const up = () => { if (!LEA.drag) return; const m = LEA.drag.msg; LEA.drag = null; render(); if (m) lwMsg(m, 1); };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  cv.addEventListener('wheel', e => {
+    if (!LES || !LE[LAB] || !LE[LAB].live) return; const [x, y] = lePt(cv, e), h = leHit(LES, x, y); if (!h || h.kind !== 'knob') return;
+    e.preventDefault(); const m = leLiveAct(h.o.c, String((e.deltaY < 0 ? 1 : -1) * h.o.step)); leSnd.tick(.25);
+    clearTimeout(LEA.wheelT); LEA.wheelT = setTimeout(() => { render(); if (m) lwMsg(m, 1); }, 350);
+  }, { passive: false });
+}
+/* ручка прибора на холсте: корпус, риска, подпись */
+function leDrawKnob(c, o, ang, label) {
+  const { x, y, r } = o, g = c.createRadialGradient(x - r * .3, y - r * .3, r * .1, x, y, r);
+  g.addColorStop(0, '#5B6577'); g.addColorStop(1, '#1D232E'); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 1; c.stroke();
+  for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; c.strokeStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.moveTo(x + Math.cos(a) * r * .82, y + Math.sin(a) * r * .82); c.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); c.stroke(); }
+  c.strokeStyle = '#F2B544'; c.lineWidth = 2.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + Math.cos(ang) * r * .2, y + Math.sin(ang) * r * .2); c.lineTo(x + Math.cos(ang) * r * .78, y + Math.sin(ang) * r * .78); c.stroke();
+  if (label) leText(c, label, x, y + r + 10, { size: 9, color: '#C9D4E3' });
+}
+/* кнопка на панели прибора */
+function leDrawBtn(c, o, label, on = false, col = '#2B3443') {
+  c.fillStyle = on ? '#3FD27F' : col; leRR(c, o.x, o.y, o.w, o.h, 5); c.fill(); c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = 1; c.stroke();
+  leText(c, label, o.x + o.w / 2, o.y + o.h / 2 + .5, { size: 9, color: on ? '#0B1F12' : '#E8EEF6', weight: 700 });
+}
+/* звук установки: щелчки счётчика и кнопок — синтез в программе, файлы не нужны */
+function leSndInit() { if (LEA.ac || LEA.mute) return; try { const A = window.AudioContext || window.webkitAudioContext; if (A) LEA.ac = new A(); } catch (e) {} }
+const leSnd = {
+  click(vol = .5, when = 0) {                            // щелчок счётчика Гейгера: короткий шумовой импульс
+    const ac = LEA.ac; if (!ac || LEA.mute) return; const t = ac.currentTime + when, n = Math.floor(ac.sampleRate * .004);
+    if (!leSnd.buf || leSnd.buf.sampleRate !== ac.sampleRate) { leSnd.buf = ac.createBuffer(1, n, ac.sampleRate); const d = leSnd.buf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3); }
+    const s = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter(); s.buffer = leSnd.buf; f.type = 'highpass'; f.frequency.value = 900;
+    g.gain.value = vol; s.connect(f); f.connect(g); g.connect(ac.destination); s.start(t);
+  },
+  tick(vol = .15) {                                      // щелчок кнопки или ручки
+    const ac = LEA.ac; if (!ac || LEA.mute) return; const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+    o.frequency.value = 1800; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .03); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .04);
+  },
+  beep(freq = 880, dur = .12, vol = .12) {
+    const ac = LEA.ac; if (!ac || LEA.mute) return; const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+    o.frequency.value = freq; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur + .02);
+  }
+};
+function leMuteToggle() { LEA.mute = !LEA.mute; try { localStorage.setItem('fz-mute', LEA.mute ? '1' : '0'); } catch (e) {} if (!LEA.mute) leSndInit(); }
+/* случайное число событий Пуассона со средним m (для больших m — нормальное приближение) */
+function lePoisson(m) {
+  if (!(m > 0)) return 0;
+  if (m > 40) return Math.max(0, Math.round(m + Math.sqrt(m) * lwGauss()));
+  const L = Math.exp(-m); let k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1;
+}
