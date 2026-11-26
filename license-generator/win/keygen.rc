@@ -1,0 +1,27 @@
+#pragma code_page(65001)
+#include <windows.h>
+1 ICON "../../lw3-desktop/src-tauri/icons/icon.ico"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "keygen.manifest"
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "041904B0"
+    BEGIN
+      VALUE "CompanyName", "ЧВВМУ им. П.С. Нахимова, кафедра физики и общетехнических дисциплин"
+      VALUE "FileDescription", "Генератор ключей Физпрактикума"
+      VALUE "ProductName", "Физпрактикум"
+      VALUE "FileVersion", "1.0.0"
+      VALUE "ProductVersion", "1.0.0"
+      VALUE "OriginalFilename", "Fizpraktikum-keygen.exe"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x419, 1200
+  END
+END
