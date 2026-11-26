@@ -54,8 +54,8 @@ r = await inv('set_zoom', { scale: 1.25 }); must(r.ok, 'set_zoom'); await inv('s
 
 // файлы интерфейса и видео с перемоткой
 const v = await page.evaluate(async () => {
-  const a = await fetch('http://fzv.localhost/video/t1.mp4', { headers: { Range: 'bytes=100-199' } });
-  const b = await fetch('http://fzv.localhost/video/../index.html');
+  const a = await fetch('video/t1.mp4', { headers: { Range: 'bytes=100-199' } });   /* перемотка: тот же разбор Range, что у fzv */
+  const b = await fetch('http://fzv.localhost/index.html');   /* с адреса видео отдаются только ролики */
   const c = await fetch('notes/notes.json');
   return { st: a.status, cr: a.headers.get('content-range'), len: (await a.arrayBuffer()).byteLength, bad: b.status, notes: c.status };
 });
