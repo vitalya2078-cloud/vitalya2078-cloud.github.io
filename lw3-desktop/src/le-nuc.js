@@ -113,19 +113,21 @@ function gmRig(cfg) {
         if (!LEA.lite) { c.fillStyle = `rgba(220,252,255,${.95 * k})`; c.beginPath(); c.arc(wx, y, 2 + 4 * k, 0, 7); c.fill(); } });
       c.strokeStyle = 'rgba(232,238,246,.9)'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(wx, wy0); c.lineTo(wx, wy1); c.stroke(); c.restore();
       leText(c, '2 - счётчик СБТ-13', rx, sy - 8, { size: 9.5 });
+      let baseTop0 = baseTop; const rz = cfg.riser || 0;
+      if (rz) { c.fillStyle = '#AEB7C4'; leRR(c, wx - 40, baseTop - rz, 80, rz, 3); c.fill(); c.strokeStyle = '#1D2A3E'; c.lineWidth = 2; c.stroke(); baseTop0 = baseTop - rz; }   // подъёмный столик
       const tb = ty + th * .99, dishH = 66 * .42, srcH = 24 * 1.13, under = R.src;
-      V.tr.forEach(q => { const k = 1 - q.a / .14, y0 = under === 'kcl' ? baseTop - dishH + 6 : baseTop - srcH + 4; c.strokeStyle = `rgba(255,200,90,${.95 * k})`; c.lineWidth = 1.6; c.beginPath(); c.moveTo(wx + q.x * .55, y0); c.lineTo(wx + q.x * .2 + q.dx * .15, tb + 1); c.stroke(); });
+      V.tr.forEach(q => { const k = 1 - q.a / .14, y0 = under === 'kcl' ? baseTop0 - dishH + 6 : baseTop0 - srcH + 4; c.strokeStyle = `rgba(255,200,90,${.95 * k})`; c.lineWidth = 1.6; c.beginPath(); c.moveTo(wx + q.x * .55, y0); c.lineTo(wx + q.x * .2 + q.dx * .15, tb + 1); c.stroke(); });
       const dish = (x, y, salt = true) => { if (salt) leImg(c, 'kcl-dish', x, y, 66, .42); else { leImg(c, 'kcl-dish', x, y, 66, .42); c.fillStyle = '#C9D0DA'; leRR(c, x + 6, y + 2, 54, 9, 4); c.fill(); } },
         disk = (x, y, lab) => { leImg(c, 'source', x - 12, y, 24, 1.13); leText(c, lab, x, y - 6, { size: 9, weight: 800, color: leAcc() }); };
       const items = cfg.items || ['kcl', 'A', 'B'];
-      if (items.includes('kcl')) { if (under === 'kcl') { dish(wx - 33, baseTop - dishH); leText(c, '3 - KCl', wx - 44, baseTop - 12, { size: 9.5, align: 'right' }); } else if (under !== 'empty') dish(352, 322); }
-      if (items.includes('empty') && under === 'empty') { dish(wx - 33, baseTop - dishH, false); leText(c, 'пустая чашка', wx - 44, baseTop - 12, { size: 9.5, align: 'right' }); }
+      if (items.includes('kcl')) { if (under === 'kcl') { dish(wx - 33, baseTop0 - dishH); leText(c, '3 - KCl', wx, baseTop + 32, { size: 9.5 }); } else if (under !== 'empty') dish(352, 322); }
+      if (items.includes('empty') && under === 'empty') { dish(wx - 33, baseTop0 - dishH, false); leText(c, 'пустая чашка', wx, baseTop + 32, { size: 9.5 }); }
       if (items.includes('A')) { const a = under === 'A' || under === 'AB', b = under === 'B' || under === 'AB';
-        disk(a ? wx - 13 : 440, a ? baseTop - srcH : 324, '1'); disk(b ? wx + 13 : 470, b ? baseTop - srcH : 324, '2'); }
-      if (items.includes('G')) { const g = under === 'G'; disk(g ? wx : 450, g ? baseTop - srcH : 324, cfg.gLabel || 'γ'); }
+        disk(a ? wx - 13 : 440, a ? baseTop0 - srcH : 324, '1'); disk(b ? wx + 13 : 470, b ? baseTop0 - srcH : 324, '2'); }
+      if (items.includes('G')) { const g = under === 'G'; disk(g ? wx : 450, g ? baseTop0 - srcH : 324, cfg.gLabel || 'γ'); }
       leWire(c, [[rx, ty + 2], [bx + bw - 4, by + bh * .5]], '#3E7BFA');
       if (V.glow > .3) leText(c, 'НЕПРЕРЫВНЫЙ РАЗРЯД - снизь напряжение!', 450, 30, { size: 10.5, color: '#FF6B6B', weight: 800 });
-      return { wx, tb, baseTop };
+      return { wx, tb, baseTop: baseTop0 };
     },
     /* панель графика на столе (слева внизу) */
     panel(c, title, xl) {

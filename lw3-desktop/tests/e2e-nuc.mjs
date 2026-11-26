@@ -59,6 +59,17 @@ async function proc(n, picks = async () => {}) {
 }
 
 const RUN = {
+  async 13() {
+    await ctl('power'); await page.waitForFunction(() => LES.rig.warm === 0, null, { timeout: 15000 });
+    await setU(await E(() => LES.p.Up)); for (let i = 0; i < 4; i++) await ctl('h', '-1');
+    await shot(page, 'l13-prep'); await click('[data-le="prepCheck"]'); must(await E(() => LES.prepOk), 'ЛР 13: подготовка не принята: ' + await page.locator('#lw-msg').innerText()); await click('[data-le="next"]'); await W(150);
+    for (const [id, src] of [['bg', 'empty'], ['kcl', 'kcl']]) {
+      must(await st() === id, `ЛР 13: нет опыта ${id}`); await ctl('src', src); await ctl('T', '1200'); await count();
+      if (id === 'kcl') await shot(page, 'l13-kcl');
+      await mustL(await record(id) === 1, async () => `ЛР 13: ${id}: ${await ready(id)}`); await click('[data-le="next"]'); await W(150);
+    }
+    await proc(13);
+  },
   async 11() {
     await ctl('power'); await page.waitForFunction(() => LES.rig.warm === 0, null, { timeout: 15000 });
     await setU(await E(() => LES.p.Up)); await shot(page, 'l11-prep');
