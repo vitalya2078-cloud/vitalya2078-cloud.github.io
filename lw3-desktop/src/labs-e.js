@@ -55,6 +55,7 @@ function leExpView(id) {
     ? `<tr><td>${rl(i)}</td>${E.cols.map(c => `<td>${leFix(rows[i][c.k], c.d)}</td>`).join('')}</tr>`
     : `<tr class="${i === k ? 'now' : ''}"><td>${rl(i)}</td>${E.cols.map(() => '<td></td>').join('')}</tr>`).join('')}</table>`;
   return `<section class="card lw-cond"><b class="h">${E.title}</b><p class="mute small">${E.desc(S)}</p></section>` + leField(ctl)
+    + (E.below ? E.below(S) : '')
     + `<section class="card"><b class="h">${E.tableTitle || 'Записи'}</b><div class="lw-scroll">${tbl}</div></section>`
     + (full && E.extra ? leCard(E.extra.title, E.extra.view(S) + `<p class="lw-msg" id="lw-msg2"></p>`) : '');
 }

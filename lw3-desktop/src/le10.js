@@ -12,45 +12,13 @@
    наблюдаемая скорость m = n/(1 + nτ) (непродлевающееся мёртвое время). Время на установке идёт в 20 раз быстрее.
    ===================================================================== */
 leRegister(10, (() => {
-  const SPEED = 20, TIMES = [10, 30, 60, 100], DEAD = [['none', 'фон (источники убраны)'], ['A', 'источник 1'], ['AB', 'источники 1 и 2'], ['B', 'источник 2']];
-  const V = { fl: [], tr: [], glow: 0 };                 // вспышки лавины и треки частиц (только для рисования)
-  const srcName = s => ({ kcl: 'соль KCl', none: 'без источника', A: 'источник 1', B: 'источник 2', AB: 'источники 1 и 2' })[s] || s;
-  /* эффективность счёта: 0 до порога, подъём, плато с наклоном, резкий рост */
-  function eff(p, U) {
-    if (U < p.Us) return 0;
-    const UB = p.Us + p.wB, UC = UB + p.wP;
-    if (U < UB) return Math.pow((U - p.Us) / p.wB, 1.6);
-    const pl = 1 + p.sl / 100 * (U - UB) / 100;
-    if (U <= UC) return pl;
-    return (1 + p.sl / 100 * p.wP / 100) * Math.exp((U - UC) / 25);
-  }
-  const disch = (p, U) => U > p.Us + p.wB + p.wP + 90;           // непрерывный разряд
-  function trueRate(p, U, src) {
-    const e = eff(p, U); if (!e) return 0;
-    if (disch(p, U)) return 2.4e4;
-    const s = (src === 'kcl' ? p.r0 : 0) + (src === 'A' || src === 'AB' ? p.nA : 0) + (src === 'B' || src === 'AB' ? p.nB : 0);
-    return (s + p.bg) * e;
-  }
-  const obsRate = (p, U, src) => { const n = trueRate(p, U, src); return n / (1 + n * p.tau); };
-  const rd = S => S.rig, last = S => S.rig.last;
+  const DEAD = [['none', 'фон (источники убраны)'], ['A', 'источник 1'], ['AB', 'источники 1 и 2'], ['B', 'источник 2']];
+  const GM = gmRig({ src: (p, s) => (s === 'kcl' ? p.r0 : 0) + (s === 'A' || s === 'AB' ? p.nA : 0) + (s === 'B' || s === 'AB' ? p.nB : 0), items: ['kcl', 'A', 'B'] });
+  const TIMES = GM.TIMES, srcName = GM.srcName, rd = S => S.rig, last = S => S.rig.last;
   const exU = S => { const t = (S.rows.thr || [])[0]; return t ? t.U : NaN; };
 
-  /* ---------- панель управления под установкой (дублирует ручки и кнопки на приборе) ---------- */
-  function ctl(S, st) {
-    const R = rd(S), run = !!R.run;
-    const p1 = `<div class="lw-ctl-row">${leB('power', R.on ? `${ic('circle-check')} «Сеть»: ${R.warm > 0 ? 'прогрев…' : 'включено'}` : 'Включить «Сеть»', '', R.on ? '' : 'line')}${leB('snd', LEA.mute ? `${ic('volume-x')} Звук выключен` : `${ic('volume-2')} Звук`, '', 'line')}</div>`;
-    const kn = `<div class="lw-screw le-knob"><span>Напряжение</span>${leB('U', '−10', '-10', 'lp-btn', !R.on || run)}${leB('U', '−1', '-1', 'lp-btn', !R.on || run)}<b>${R.U} В</b>${leB('U', '+1', '1', 'lp-btn', !R.on || run)}${leB('U', '+10', '10', 'lp-btn', !R.on || run)}</div>`;
-    const tm = `<div class="lw-ctl-row"><span class="mute small">Время счёта:</span>${TIMES.map(t => leB('T', `${t} с`, t, R.T === t ? '' : 'line', run)).join('')}</div>`;
-    const go = `<div class="lw-ctl-row">${leB('start', `${ic('play')} Пуск`, '', '', !R.on || R.warm > 0 || run)}${leB('reset', `${ic('rotate-ccw')} Сброс`, '', 'line', !R.on)}</div>`;
-    const src = st === 'dead' ? `<div class="lw-ctl-row"><span class="mute small">Под счётчиком:</span>${DEAD.map(([k, t]) => leB('src', t, k, R.src === k ? '' : 'line', run)).join('')}</div>`
-      : st === 'prep' ? `<div class="lw-ctl-row">${leB('src', R.src === 'kcl' ? `${ic('circle-check')} Чашка с KCl под счётчиком` : 'Поставить чашку с солью KCl под счётчик', 'kcl', R.src === 'kcl' ? '' : 'line')}</div>` : '';
-    return p1 + kn + tm + go + src;
-  }
-
-  /* ---------- опыты ---------- */
-  const stateMsg = S => { const R = rd(S); if (!R.on) return 'Включи «Сеть».'; if (R.warm > 0) return 'Счётчик прогревается — подожди.'; if (R.run) return 'Идёт счёт импульсов…'; return null; };
-  const lastOk = (S, T, src) => { const R = rd(S), L = last(S); if (!L) return `Нажми «Пуск»: счёт ${T} с.`; if (L.U !== R.U) return 'Напряжение изменено после счёта — нажми «Пуск» ещё раз.';
-    if (L.T !== T) return `Время счёта должно быть ${T} с — выбери ${T} с и нажми «Пуск».`; if (L.src !== src) return `Под счётчиком должно быть: ${srcName(src)}.`; return null; };
+  const ctl = (S, st) => GM.ctl(S, st === 'dead' ? GM.srcRow(S, DEAD) : st === 'prep' ? `<div class="lw-ctl-row">${leB('src', rd(S).src === 'kcl' ? `${ic('circle-check')} Чашка с KCl под счётчиком` : 'Поставить чашку с солью KCl под счётчик', 'kcl', rd(S).src === 'kcl' ? '' : 'line')}</div>` : '');
+  const stateMsg = GM.stateMsg, lastOk = GM.lastOk;
   const D = {
     title: 'Исследование газоразрядного счётчика', short: 'Газоразрядный счётчик', icon: 'radiation',
     aim: 'Изучить устройство и работу счётчика Гейгера – Мюллера; снять его счётную характеристику, определить порог счёта, протяжённость и наклон плато, рабочее напряжение и мёртвое время счётной системы.',
@@ -91,105 +59,25 @@ leRegister(10, (() => {
         onRecord: S => { S.extra.deadU = rd(S).U; },
         truth: S => ({ N: last(S).N }) }
     ],
-    act(S, c, v, st) {
-      const R = rd(S);
-      if (c === 'snd') { leMuteToggle(); return LEA.mute ? 'Звук выключен.' : 'Звук включён: щелчки счётчика.'; }
-      if (c === 'power') { R.on = !R.on; R.run = null; R.last = null; if (R.on) { R.warm = 6; R.U = 250; leSndInit(); return 'Блок включён. Счётчик прогревается (на занятии — 10–15 минут).'; } R.warm = 0; return; }
-      if (!R.on) return 'Сначала включи «Сеть».';
-      if (c === 'U') { if (R.run) return 'Идёт счёт: дождись конца или нажми «Сброс».'; R.U = Math.max(250, Math.min(700, R.U + +v)); if (disch(S.p, R.U)) return 'Непрерывный разряд! Немедленно снизь напряжение — рабочая смесь счётчика портится.'; return; }
-      if (c === 'T') { if (R.run) return 'Идёт счёт: дождись конца или нажми «Сброс».'; R.T = +v; return; }
-      if (c === 'start') { if (R.warm > 0) return 'Счётчик ещё прогревается.'; if (R.run) return; R.run = { U: R.U, T: R.T, t: 0, N: 0, src: R.src }; R.last = null; leSndInit(); return; }
-      if (c === 'reset') { R.run = null; R.last = null; return; }
-      if (c === 'src') { if (R.run) return 'Идёт счёт: дождись конца или нажми «Сброс».'; R.src = v; R.last = null; return; }
-    },
+    act: (S, c, v) => GM.act(S, c, v),
     prep: {
       view: () => leCard('Подготовка установки', `<p class="mute small">Включи счётный блок кнопкой «Сеть» и дай счётчику прогреться. Ручками «Грубо» и «Точно» установи 290 В (на приборе ручки крутятся мышью: потяни вверх-вниз или покрути колесо). Поставь алюминиевую чашку с солью KCl под окно торцевого счётчика СБТ-13: калий-40 в соли — источник β-частиц.</p>`),
       ctl: S => ctl(S, 'prep'),
       check(S) { const R = rd(S), bad = []; if (!R.on) bad.push('блок не включён'); else if (R.warm > 0) bad.push('счётчик ещё прогревается'); else if (R.U !== 290) bad.push(`напряжение должно быть 290 В (сейчас ${R.U} В)`);
         if (R.src !== 'kcl') bad.push('нет чашки с KCl под счётчиком'); return bad; }
     },
-    live: {
-      tick(S, dt, st) {
-        const R = rd(S), p = S.p; let ret;
-        if (R.warm > 0) { R.warm = Math.max(0, R.warm - dt); if (!R.warm) { leSnd.beep(990, .1); ret = 'render'; } }
-        V.glow = R.on && !R.warm && disch(p, R.U) ? Math.min(1, V.glow + dt * 4) : Math.max(0, V.glow - dt * 3);
-        if (V.glow > .5) R.over = (R.over || 0) + dt;
-        if (R.run) {
-          const run = R.run, d = Math.min(dt * SPEED, run.T - run.t), m = obsRate(p, run.U, run.src), k = lePoisson(m * d);
-          run.N += k; run.t += d;
-          const show = LEA.lite ? Math.min(k, 2) : Math.min(k, 6), vol = m > 200 ? .12 : .45;
-          for (let i = 0; i < show; i++) {
-            V.fl.push({ y: .08 + Math.random() * .84, a: 0, s: Math.random() });
-            const tot = trueRate(p, run.U, run.src) / Math.max(eff(p, run.U), 1e-9), fromSrc = run.src !== 'none' && Math.random() < (tot - p.bg) / tot;
-            if (fromSrc && !LEA.lite) V.tr.push({ x: (run.src === 'B' ? 24 : run.src === 'A' ? -24 : 0) + (Math.random() - .5) * 30, dx: (Math.random() - .5) * 36, a: 0 });
-            leSnd.click(vol, Math.random() * dt);
-          }
-          if (run.t >= run.T - 1e-9) { R.last = { U: run.U, T: run.T, N: run.N, src: run.src }; R.run = null; leSnd.beep(880, .14); ret = 'render'; }
-        }
-        V.fl = V.fl.filter(f => (f.a += dt) < .16).slice(-40); V.tr = V.tr.filter(t => (t.a += dt) < .14).slice(-20);
-        return ret;
-      },
-      knobs: S => [{ c: 'U', x: 44, y: 236, r: 18, step: 10 }, { c: 'U', x: 94, y: 236, r: 13, step: 1 }],
-      hits: S => [{ c: 'power', v: '', x: 132, y: 270, w: 76, h: 24 }, { c: 'start', v: '', x: 132, y: 206, w: 56, h: 24 }, { c: 'reset', v: '', x: 194, y: 206, w: 56, h: 24 },
-        ...TIMES.map((t, i) => ({ c: 'T', v: String(t), x: 132 + i * 44, y: 238, w: 40, h: 22 })), { c: 'snd', v: '', x: 256, y: 206, w: 50, h: 24 }]
-    },
+    live: { tick: (S, dt) => GM.tick(S, dt), knobs: S => GM.knobs(S), hits: S => GM.hits(S) },
     draw(c, S, st) {
-      const R = rd(S), p = S.p, run = R.run, L = R.last, on = R.on, lt = typeof L3_THEME !== 'undefined' && L3_THEME === 'light';
-      const N = run ? run.N : L ? L.N : 0, t = run ? Math.floor(run.t) : L ? L.T : 0, T = run ? run.T : R.T;
-      // 1 — блок счётный (картинка) и табло на нём: слева число импульсов, справа напряжение
-      const bx = 12, by = 48, bw = 300, bh = leImg(c, 'counter-unit', bx, by, bw, .47);
-      const dL = [bx + .087 * bw, by + .277 * bh, .386 * bw, .326 * bh], dR = [bx + .52 * bw, by + .277 * bh, .392 * bw, .326 * bh];
-      leLcd(c, dL[0] + 3, dL[1] + 3, dL[2] - 6, dL[3] - 6, on ? String(N) : '', 'имп', on && !R.warm);
-      leLcd(c, dR[0] + 3, dR[1] + 3, dR[2] - 6, dR[3] - 6, on ? (R.warm > 0 ? '----' : String(R.U)) : '', 'В', on);
-      leText(c, '1 — блок счётный', bx + bw / 2, by - 9, { size: 9.5 });
-      if (run) { c.fillStyle = '#E5484D'; c.beginPath(); c.arc(dL[0] + 10, dL[1] - 7, 3.5 + Math.sin(performance.now() / 120), 0, 7); c.fill(); leText(c, 'идёт счёт', dL[0] + 18, dL[1] - 7, { size: 8.5, align: 'left', weight: 700 }); }
-      // пульт блока: ручки напряжения, кнопки, время счёта, «Сеть»
-      c.fillStyle = '#D3D9E2'; leRR(c, bx + 4, 198, bw - 8, 104, 10); c.fill(); c.strokeStyle = '#1D2A3E'; c.lineWidth = 2; c.stroke();
-      const ang = U => -Math.PI / 2 + (U - 250) / 450 * Math.PI * 1.5;
-      leDrawKnob(c, { x: 44, y: 236, r: 18 }, ang(Math.round(R.U / 10) * 10)); leDrawKnob(c, { x: 94, y: 236, r: 13 }, -Math.PI / 2 + (R.U % 10) / 10 * Math.PI * 2);
-      leText(c, 'ГРУБО', 44, 264, { size: 8, color: '#2A3342', weight: 800 }); leText(c, 'ТОЧНО', 94, 264, { size: 8, color: '#2A3342', weight: 800 });
-      leDrawBtn(c, { x: 132, y: 206, w: 56, h: 24 }, 'ПУСК', !!run); leDrawBtn(c, { x: 194, y: 206, w: 56, h: 24 }, 'СБРОС'); leDrawBtn(c, { x: 256, y: 206, w: 50, h: 24 }, LEA.mute ? 'зв. ✕' : 'звук');
-      TIMES.forEach((tt, i) => leDrawBtn(c, { x: 132 + i * 44, y: 238, w: 40, h: 22 }, tt + ' с', R.T === tt, '#3A4556'));
-      leDrawBtn(c, { x: 132, y: 270, w: 76, h: 24 }, on ? 'СЕТЬ ВКЛ' : 'СЕТЬ', on, '#5A2A2E');
-      c.fillStyle = !on ? '#4A2025' : R.warm > 0 ? (Math.sin(performance.now() / 160) > 0 ? '#F2B544' : '#6B4A14') : '#3FD27F'; c.beginPath(); c.arc(120, 282, 4.5, 0, 7); c.fill();
-      leLcd(c, 216, 270, 90, 24, on && !R.warm ? `${t}/${T}` : '', 'с', on); leText(c, 'время ×20', 70, 288, { size: 8, color: '#5A6576' });
-      // 2 — счётчик СБТ-13 в кольце зажима штатива (картинки); основание штатива стоит на столе (верх стола — y 312)
-      const sw = 180, sh = sw * 1.485, sx = 330, sy = 318 - .992 * sh; leImg(c, 'stand', sx, sy, sw, 1.485);
-      const rx = sx + .853 * sw, ry = sy + .28 * sh, baseTop = sy + .9 * sh;                // центр кольца зажима, верх основания
-      const tw = 34, th = tw * 3.83, tx = rx - tw / 2, ty = ry - .12 * th; leImg(c, 'gm-tube', tx, ty, tw, 3.83);
-      const ringIm = leSprite('stand');                                                      // передняя половина кольца — поверх счётчика: он зажат
-      if (ringIm) { const k = ringIm.naturalWidth / sw, x0 = rx - .14 * sw, y0 = ry, w0 = .28 * sw, h0 = .1 * sh; c.drawImage(ringIm, (x0 - sx) * k, (y0 - sy) * k, w0 * k, h0 * k, x0, y0, w0, h0); }
-      const win = [tx + .327 * tw, ty + .349 * th, .397 * tw, .417 * th], wx = win[0] + win[2] / 2, wy0 = win[1] + 4, wy1 = win[1] + win[3] - 4;
-      c.save(); leRR(c, win[0], win[1], win[2], win[3], win[2] / 2); c.clip();
-      c.fillStyle = '#0D1522'; c.fillRect(win[0], win[1], win[2], win[3]);
-      if (V.glow > 0) { c.fillStyle = `rgba(190,140,255,${.75 * V.glow * (.75 + .25 * Math.random())})`; c.fillRect(win[0], win[1], win[2], win[3]); }
-      V.fl.forEach(f => { const k = 1 - f.a / .16, y = wy0 + f.y * (wy1 - wy0), spread = (wy1 - wy0) * Math.min(1, f.a / .05);
-        const gg = c.createLinearGradient(0, y - spread, 0, y + spread); gg.addColorStop(0, 'rgba(120,220,255,0)'); gg.addColorStop(.5, `rgba(170,240,255,${.9 * k})`); gg.addColorStop(1, 'rgba(120,220,255,0)');
-        c.strokeStyle = gg; c.lineWidth = 6; c.beginPath(); c.moveTo(wx, y - spread); c.lineTo(wx, y + spread); c.stroke();
-        if (!LEA.lite) { c.fillStyle = `rgba(220,252,255,${.95 * k})`; c.beginPath(); c.arc(wx, y, 2 + 4 * k, 0, 7); c.fill(); } });
-      c.strokeStyle = 'rgba(232,238,246,.9)'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(wx, wy0); c.lineTo(wx, wy1); c.stroke(); c.restore();
-      leText(c, '2 — счётчик СБТ-13', rx, sy - 8, { size: 9.5 });
-      const tb = ty + th * .99;                                                                // нижний торец — слюдяное окно
-      // 3 — источники на основании штатива под окном счётчика; убранные — на столе перед штативом
-      const dishH = 66 * .42, srcH = 24 * 1.13;
-      V.tr.forEach(q => { const k = 1 - q.a / .14, y0 = R.src === 'kcl' ? baseTop - dishH + 6 : baseTop - srcH + 4; c.strokeStyle = `rgba(255,200,90,${.95 * k})`; c.lineWidth = 1.6; c.beginPath(); c.moveTo(wx + q.x * .55, y0); c.lineTo(wx + q.x * .2 + q.dx * .15, tb + 1); c.stroke(); });
-      const dish = (x, y) => leImg(c, 'kcl-dish', x, y, 66, .42), disk = (x, y, lab) => { leImg(c, 'source', x - 12, y, 24, 1.13); leText(c, lab, x, y - 6, { size: 9, weight: 800, color: leAcc() }); };
-      if (R.src === 'kcl') { dish(wx - 33, baseTop - dishH); leText(c, '3 — KCl', wx - 44, baseTop - 12, { size: 9.5, align: 'right' }); } else dish(352, 322);
-      const placedA = R.src === 'A' || R.src === 'AB', placedB = R.src === 'B' || R.src === 'AB';
-      disk(placedA ? wx - 13 : 440, placedA ? baseTop - srcH : 324, '1'); disk(placedB ? wx + 13 : 470, placedB ? baseTop - srcH : 324, '2');
-      leWire(c, [[rx, ty + 2], [bx + bw - 4, by + bh * .5]], '#3E7BFA');
+      const R = rd(S), run = R.run; GM.draw(c, S);
       // график, растущий на глазах
       const rows = S.rows.char || [];
       if (st === 'char' || st === 'dead' || rows.length) {
-        c.fillStyle = lt ? 'rgba(255,255,255,.9)' : 'rgba(12,20,32,.88)'; leRR(c, 12, 322, 320, 122, 8); c.fill();
-        leText(c, 'n, имп/с', 34, 333, { size: 8.5, align: 'left', color: lt ? '#2A3342' : '#C9D4E3' }); leText(c, 'U, В', 320, 434, { size: 8.5, align: 'right', color: lt ? '#2A3342' : '#C9D4E3' });
+        GM.panel(c, 'n, имп/с', 'U, В');
         const U0 = Number.isFinite(exU(S)) ? exU(S) : 320, xs = U => 34 + (U - U0) / 240 * 280, nmax = Math.max(12, ...rows.map(r => r.N / 60)) * 1.1, ys = n => 428 - n / nmax * 86;
-        c.strokeStyle = lt ? '#9AA6B6' : '#3A4659'; c.lineWidth = 1; c.beginPath(); c.moveTo(34, 340); c.lineTo(34, 428); c.lineTo(318, 428); c.stroke();
         c.strokeStyle = '#F2B544'; c.lineWidth = 1.6; c.beginPath(); rows.forEach((r, i) => { const x = xs(r.U), y = ys(r.N / 60); i ? c.lineTo(x, y) : c.moveTo(x, y); }); c.stroke();
         c.fillStyle = '#F2B544'; rows.forEach(r => { c.beginPath(); c.arc(xs(r.U), ys(r.N / 60), 3, 0, 7); c.fill(); });
         if (run && st === 'char' && run.t > 2) { c.fillStyle = 'rgba(242,181,68,.45)'; c.beginPath(); c.arc(xs(run.U), ys(run.N / run.t), 3, 0, 7); c.fill(); }
       }
-      if (V.glow > .3) leText(c, 'НЕПРЕРЫВНЫЙ РАЗРЯД — снизь напряжение!', 450, 30, { size: 10.5, color: '#FF6B6B', weight: 800 });
     },
     hodNow(S, st) { return ({ prep: 2, thr: 3, char: 4, dead: 5, proc: 7, concl: 9 })[st] || 0; },
     calc(S) {

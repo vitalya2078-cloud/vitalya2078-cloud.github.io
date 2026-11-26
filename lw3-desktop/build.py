@@ -72,7 +72,7 @@ js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const TEACHER_PW =
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, rd(os.path.join(D, 'src', 'icons-x.js')), core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'le10.js', 'app-core.js', 'qpool.js', 'labs.js', 'notes.js', 'widgets.js', 'about-win.js', 'teacher.js', 'guard.js', 'license-ui.js')])
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'le-nuc.js', 'le10.js', 'le11.js', 'app-core.js', 'qpool.js', 'labs.js', 'notes.js', 'widgets.js', 'about-win.js', 'teacher.js', 'guard.js', 'license-ui.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(D, 'src', 'app.css'))).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 # тексты Windows-версии: обращение на «Вы», дефис вместо длинного тире (исходники общие с сайтом и телефоном не меняются)

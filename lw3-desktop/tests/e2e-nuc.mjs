@@ -59,6 +59,20 @@ async function proc(n, picks = async () => {}) {
 }
 
 const RUN = {
+  async 11() {
+    await ctl('power'); await page.waitForFunction(() => LES.rig.warm === 0, null, { timeout: 15000 });
+    await setU(await E(() => LES.p.Up)); await shot(page, 'l11-prep');
+    await click('[data-le="prepCheck"]'); must(await E(() => LES.prepOk), 'ЛР 11: подготовка не принята'); await click('[data-le="next"]'); await W(150);
+    for (const [id, src, T] of [['bg', 'none', 3], ['src', 'G', 3], ['long', 'G', 30]]) {
+      must(await st() === id, `ЛР 11: нет опыта ${id}`);
+      await ctl('src', src); await ctl('T', String(T)); await ctl('series', id);
+      if (id === 'src') { await W(3000); await shot(page, 'l11-series'); if (process.env.COVERS) await page.locator('#le-cv').screenshot({ path: path.join(process.env.COVERS, 'cov11.png') }); }
+      await page.waitForFunction(i => LES.extra.ser && LES.extra.ser[i], id, { timeout: 60000 }); await W(200);
+      if (id === 'src') await shot(page, 'l11-hist');
+      await mustL(await record(id) === 1, async () => `ЛР 11: ${id}: ${await ready(id)}`); await click('[data-le="next"]'); await W(150);
+    }
+    await proc(11);
+  },
   async 10() {
     await ctl('power'); await page.waitForFunction(() => LES.rig.warm === 0, null, { timeout: 15000 });
     await setU(290); await ctl('src', 'kcl'); await shot(page, 'l10-prep');
