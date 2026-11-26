@@ -275,6 +275,8 @@ table.tt td.n{text-align:right}
 
 /* ---------- новая раскладка: верхняя полоса ---------- */
 body.full #main{padding:0; overflow:hidden; display:flex; flex-direction:column}
+/* тесты и экзамены: экран вопроса прокручивается целиком, шапка с таймером остаётся сверху */
+body.full #main > .fz-test{flex:1; min-height:0; overflow-y:auto; scroll-behavior:smooth}
 .tb{display:flex; align-items:center; gap:18px; height:60px; padding:0 18px; background:var(--panel); border-bottom:1px solid var(--line); flex:none}
 .tb-brand{display:flex; align-items:center; gap:10px; font-weight:800; white-space:nowrap}
 .tb-brand .logo{width:32px; height:32px; border-radius:9px; font-size:21px}
