@@ -11,7 +11,7 @@ const BASE = process.env.BASE || 'http://127.0.0.1:4180/';
 const SHOTS = process.env.SHOTS || '';
 const shot = async (p, n) => { if (SHOTS) await p.screenshot({ path: path.join(SHOTS, `fz-${n}.png`) }); };
 const must = (ok, msg) => { if (!ok) throw new Error(msg); };
-const b = await chromium.launch();
+const b = await chromium.launch(process.env.FZ_CHROME ? { executablePath: process.env.FZ_CHROME } : {});
 const page = await b.newPage({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });
 const errors = []; page.on('pageerror', e => errors.push(e.message)); page.on('console', m => m.type() === 'error' && errors.push(m.text()));
 const E = (fn, a) => page.evaluate(fn, a);

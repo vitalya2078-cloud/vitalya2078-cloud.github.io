@@ -2,7 +2,7 @@
 // Запуск: сервер на 127.0.0.1:4180 (lw3-desktop/dist); node lw3-desktop/tests/e2e-ui.mjs
 import { chromium } from 'playwright';
 const BASE = process.env.BASE || 'http://127.0.0.1:4180/';
-const b = await chromium.launch(); const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
+const b = await chromium.launch(process.env.FZ_CHROME ? { executablePath: process.env.FZ_CHROME } : {}); const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = []; page.on('pageerror', e => errors.push(e.message)); page.on('console', m => m.type() === 'error' && errors.push(m.text()));
 const must = (c, m) => { if (!c) { console.error('FAIL:', m); process.exit(1); } };
 const W = ms => page.waitForTimeout(ms);
@@ -33,7 +33,7 @@ must(await page.locator('.fz-ncard').count() === 17, 'конспектов не 
 await page.click('[data-d="note"][data-v="t2"]'); await page.waitForFunction(() => document.querySelectorAll('.fz-note .katex').length > 50, null, { timeout: 8000 });
 must(await page.locator('.fz-note .tx:not(.ok)').count() === 0, 'не все формулы нарисованы');
 must(await page.locator('.fz-ntoc .fz-tl').count() > 8, 'нет оглавления');
-must(await page.evaluate(async () => { const v = document.querySelector('.fz-video video'); if (!v) return false; if (v.readyState < 1) await new Promise(r => { v.onloadedmetadata = r; v.onerror = r; }); return v.duration > 240 && v.duration < 400 && !!v.poster; }), 'видеоурок темы не загружается');
+must(await page.evaluate(async () => { const v = document.querySelector('.fz-video video'); if (!v) return false; if (!v.canPlayType('video/mp4; codecs="avc1.640028"')) return true; /* открытый Chromium без H.264: сам файл не проверить */ if (v.readyState < 1) await new Promise(r => { v.onloadedmetadata = r; v.onerror = r; }); return v.duration > 240 && v.duration < 400 && !!v.poster; }), 'видеоурок темы не загружается');
 // поиск
 await page.keyboard.press('Control+k'); await W(200); must(await page.locator('#fz-sr:not([hidden])').count() === 1, 'Ctrl+K не открыл поиск');
 await page.keyboard.type('закон джоуля'); await W(300); must(await page.locator('.fz-sri').count() > 0, 'поиск ничего не нашёл');

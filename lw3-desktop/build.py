@@ -79,6 +79,14 @@ assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незапол
 sys.path.insert(0, D)
 import textfix
 html = textfix.fix(html)
+# Windows 7: движок WebView2 109. Перед каждым свойством с color-mix() ставим запасное значение без смешивания:
+# если движок color-mix не знает, он возьмёт запасное, а не оставит элемент без фона/рамки.
+_CM = re.compile(r'color-mix\(in srgb,\s*((?:[^,()]|\([^()]*\))+?)\s+(\d+)%,\s*((?:[^,()]|\([^()]*\))+?)\s*\)')
+def _cm_fallback(m):
+    prop, val = m.group(1), m.group(2)
+    fb = _CM.sub(lambda c: c.group(1) if int(c.group(2)) >= 50 else c.group(3), val)
+    return f'{prop}:{fb}; {prop}:{val}'
+html = re.sub(r'(?<![\w-])([a-z-]+)\s*:\s*([^;{}<>]*color-mix\([^;{}<>]*)', _cm_fallback, html)
 
 if os.path.exists(DIST):
     shutil.rmtree(DIST)

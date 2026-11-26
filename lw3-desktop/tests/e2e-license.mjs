@@ -3,7 +3,7 @@
 import { chromium } from 'playwright';
 const BASE = process.env.BASE || 'http://127.0.0.1:4180/', SHOTS = process.env.SHOTS || '';
 const must = (c, m) => { if (!c) { console.error('FAIL:', m); process.exit(1); } };
-const b = await chromium.launch(); const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
+const b = await chromium.launch(process.env.FZ_CHROME ? { executablePath: process.env.FZ_CHROME } : {}); const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = []; page.on('pageerror', e => errors.push(e.message));
 await page.addInitScript(() => {
   window.FZ_LIC_MOCK = { enforced: true, state: 'none', code: 'FZ-PM2E-7KCE-GCJ3-GR1B', expires: '', days_left: 0 };

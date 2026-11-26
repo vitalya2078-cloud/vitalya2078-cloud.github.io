@@ -3,7 +3,7 @@
 import { chromium } from 'playwright';
 import path from 'node:path';
 const BASE = process.env.BASE || 'http://127.0.0.1:4180/', SHOTS = process.env.SHOTS || '/tmp';
-const b = await chromium.launch();
+const b = await chromium.launch(process.env.FZ_CHROME ? { executablePath: process.env.FZ_CHROME } : {});
 const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = []; page.on('pageerror', e => errors.push(e.message)); page.on('console', m => m.type() === 'error' && errors.push(m.text()));
 const shot = n => page.screenshot({ path: path.join(SHOTS, `app-${n}.png`) });

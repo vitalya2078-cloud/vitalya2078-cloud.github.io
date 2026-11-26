@@ -11,7 +11,9 @@
   рисуют только свои экраны. Правка в ядре попадает в оба места.
 - **Оболочка программы** — `src/`: `shell.html` (разметка и стили), `desktop.js` (экраны, профили студентов,
   клавиши, график давления, звук, файл результата), `teacher.js` (режим преподавателя), `sha256.js` (подпись файла).
-- **Окно Windows** — `src-tauri/` (Tauri 2, WebView2). Две команды: «Сохранить как» и полный экран.
+- **Окно Windows** — `win/` (C++, Win32 + WebView2 109, 32 бита): работает в Windows 7, 8, 10, 11 (32 и 64 бита).
+  Интерфейс встроен в .exe (`win/pack.py` → ресурс `app.pak`), команды интерфейса — в `win/main.cpp`, лицензия — `win/license.cpp`.
+  Прежняя оболочка на Tauri (`src-tauri/`) больше не собирается; оттуда берутся версия, значок, установщик и лицензионное соглашение.
 - `build.py` собирает `dist/index.html`: помощники и значки берутся из исходников сайта, без копий.
 
 ## Возможности
@@ -56,16 +58,19 @@
 
 Тег `lw3-v1.0.0` дополнительно публикует релиз с этими файлами.
 
-Локально (нужны Python 3, Node 22, Rust):
+Локально (Windows, Visual Studio 2022, Python 3, CMake):
 
 ```bash
-python3 lw3-desktop/build.py          # интерфейс → lw3-desktop/dist
-cd lw3-desktop && npm ci && npx tauri build
+python lw3-desktop/build.py                                  # интерфейс → lw3-desktop/dist
+python lw3-desktop/win/pack.py lw3-desktop/dist lw3-desktop/win/app.pak
+cmake -S lw3-desktop/win -B build -A Win32 -DWEBVIEW2_SDK=<Microsoft.Web.WebView2 1.0.1518.46>/build/native -DFZ_VERSION=2.4.0 -DFZ_LICENSE_PUBKEY=<ключ>
+cmake --build build --config Release                          # build/Release/Fizpraktikum.exe
 ```
 
-Требования на компьютере: Windows 10 или 11 и WebView2 Runtime (обычно уже установлен). Установщик при
-необходимости ставит WebView2 сам; для этого нужен интернет. Программа не подписана сертификатом, поэтому при
-первом запуске Windows SmartScreen может показать предупреждение: «Подробнее» → «Выполнить в любом случае».
+Рядом с `Fizpraktikum.exe` нужна папка `WebView2Runtime` (WebView2 Runtime 109.0.1518.140 x86 — последняя версия для
+Windows 7; сборка на GitHub берёт её из каталога обновлений Microsoft и проверяет подпись). Интернет программе не нужен.
+В Windows 7 желателен Service Pack 1. Программа не подписана сертификатом, поэтому при первом запуске
+Windows SmartScreen может показать предупреждение: «Подробнее» → «Выполнить в любом случае».
 
 ## Тесты
 

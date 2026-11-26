@@ -8,7 +8,7 @@ import { runLw3 } from '../../fizika2/tests/lw3-flow.mjs';
 
 const BASE = process.env.BASE || 'http://127.0.0.1:4180/';
 const SHOTS = process.env.SHOTS || '';
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.FZ_CHROME ? { executablePath: process.env.FZ_CHROME } : {});
 const errors = [];
 const watch = p => { p.on('pageerror', e => errors.push(e.message)); p.on('console', m => { if (m.type() === 'error') errors.push(m.text()); }); p.on('dialog', d => d.accept()); };
 const shot = async (p, name) => { if (SHOTS) await p.screenshot({ path: path.join(SHOTS, `lw3d-${name}.png`) }); };
