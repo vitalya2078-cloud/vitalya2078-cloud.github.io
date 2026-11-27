@@ -618,3 +618,50 @@ body.rbscr #app, body.rbscr main{max-width:none}
 .rb-azc .rb-azb:active{background:rgba(0,0,0,.15)}
 .rb-azc.fired .rb-azopen img{filter:drop-shadow(0 0 10px #ef4444); animation:rbBlink .6s steps(2) infinite}
 .rb-azc.fired .rb-azb{background:none; animation:none}
+/* ---------- 3D: панель, подписи, карточки ---------- */
+.rb-3dw{grid-template-columns:1fr 320px; grid-template-rows:minmax(0,1fr)}
+.rb-3dhud{min-height:0}
+.rb-hint[hidden], .rb-crashbar[hidden]{display:none !important}
+.rb-3dsc{grid-template-columns:repeat(3,1fr)} .rb-3dsc .btn{padding:6px 4px; min-height:0; font-size:12px; flex-direction:column; gap:2px; text-align:center; line-height:1.15} .rb-3dsc .btn svg{width:16px; height:16px}
+.rb-3dnum{grid-template-columns:repeat(3,1fr)}
+.r3-main{display:grid; grid-template-columns:1fr 92px; gap:8px; align-items:start}
+.r3-main .rb-az3{margin:0} .r3-main .rb-az3 .rb-azc{width:92px}
+.r3-hrods, .r3-btns{display:grid; gap:6px}
+.r3-rod{display:grid; grid-template-columns:34px 1fr auto auto; gap:5px; align-items:center; font-size:12px; font-weight:700}
+.r3-rod i{height:8px; border-radius:5px; background:var(--card2); overflow:hidden} .r3-rod s{display:block; height:100%; background:var(--acc); text-decoration:none}
+.r3-rod .btn, .r3-btns .btn, .r3-rowb .btn, .r3-views .btn, .r3-opts .btn{padding:5px 9px; min-height:0; font-size:12.5px}
+.r3-rowb{display:flex; gap:8px; align-items:center}
+.r3-btns{grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); margin-top:8px} .r3-btns .r3-rod{grid-column:1 / -1}
+.r3-views, .r3-opts{display:flex; flex-wrap:wrap; gap:5px}
+.r3-views:empty{display:none}
+.r3-card .r3-ch{display:flex; align-items:center; gap:8px} .r3-card .r3-ch b{flex:1; font-size:14px}
+.r3-x{border:0; background:none; color:var(--mute); font-size:20px; line-height:1; cursor:pointer; padding:0 4px}
+.r3-live{display:grid; gap:2px; margin-top:6px}
+.r3-row{display:flex; justify-content:space-between; gap:8px; font-size:12.5px; padding:2px 0; border-bottom:1px dashed var(--line)} .r3-row b{font-family:ui-monospace, Consolas, monospace} .r3-row.bad b{color:var(--bad)}
+.r3-lbls{position:absolute; inset:0; pointer-events:none; overflow:hidden} .r3-lbls.off{display:none}
+.r3-lbl{position:absolute; left:0; top:0; pointer-events:auto; cursor:pointer; white-space:nowrap; font-size:11.5px; font-weight:600; padding:3px 8px; border-radius:999px; background:rgba(15,19,25,.72); color:#fff; border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(3px)}
+.r3-lbl:hover, .r3-lbl.sel{background:var(--acc); border-color:var(--acc)}
+.r3-tip{position:absolute; left:0; top:0; pointer-events:none; padding:5px 9px; border-radius:8px; background:var(--card); color:var(--text); border:1px solid var(--line); font-size:12.5px; box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* ---------- подсказки ---------- */
+.rb-hbtn.on{background:#fef3c7; border-color:#f59e0b; color:#92400e}
+.rb-hint{position:absolute; left:16px; bottom:16px; z-index:30; width:min(380px,40vw); display:flex; gap:12px; padding:14px 16px; border-radius:16px; background:var(--card); border:2px solid #f59e0b; box-shadow:0 14px 40px rgba(0,0,0,.28); animation:rbHintIn .25s ease-out}
+.rb-hint.bad{border-color:#e11d48}
+.rb-hic svg{width:26px; height:26px; color:#f59e0b} .rb-hint.bad .rb-hic svg{color:#e11d48}
+.rb-hb{display:grid; gap:4px; font-size:13px; line-height:1.45} .rb-hb b{font-size:14px} .rb-hb p{margin:0} .rb-hb small{color:var(--mute)}
+.rb-hbtns{display:flex; gap:10px; align-items:center; margin-top:4px} .rb-hbtns .btn{padding:4px 10px; min-height:0}
+@keyframes rbHintIn{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
+.rb-hl{outline:3px solid #f59e0b !important; outline-offset:2px; animation:rbHl 1s ease-in-out infinite}
+@keyframes rbHl{50%{outline-color:rgba(245,158,11,.25)}}
+.rb-hnudge{position:absolute; right:16px; top:70px; z-index:31; display:flex; gap:10px; align-items:center; max-width:560px; padding:10px 14px; border-radius:14px; background:#fffbeb; color:#78350f; border:1px solid #f59e0b; box-shadow:0 10px 30px rgba(0,0,0,.2); font-size:13px}
+.rb-hnudge svg{width:22px; height:22px; color:#f59e0b; flex:none} .rb-hnudge .btn{padding:5px 10px; min-height:0; white-space:nowrap}
+.rb-hmk{display:block; font-style:normal; font-size:10.5px; color:#b45309; font-weight:600}
+.rb-shg .rb-hmk{display:inline; margin-left:6px}
+/* ---------- авария ---------- */
+.rb-crashing .rb-grid{animation:rbShake .12s linear infinite}
+.rb-crashing .rb-grid .rb-p, .rb-crashing .rb-big > div{animation:rbRed .3s steps(2) infinite}
+@keyframes rbShake{25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}}
+@keyframes rbRed{50%{background:rgba(225,29,72,.22); border-color:#e11d48}}
+.rb-crashbar{position:absolute; left:calc(50% - 170px); bottom:18px; transform:translateX(-50%); z-index:40; display:flex; gap:12px; align-items:center; width:min(760px,90%); padding:12px 16px; border-radius:16px; background:rgba(17,20,26,.9); color:#fff; border:1px solid #e11d48; box-shadow:0 14px 40px rgba(0,0,0,.4)}
+.rb-crashbar p{flex:1; margin:0; font-size:14.5px; line-height:1.45} .rb-crashbar p.in{animation:rbHintIn .4s ease-out}
+.rb-cbi svg{width:26px; height:26px; color:#f87171} .rb-crashbar .btn{color:#fff; border-color:rgba(255,255,255,.35); background:transparent; white-space:nowrap}
+.rb-3dhud > *{flex:none}

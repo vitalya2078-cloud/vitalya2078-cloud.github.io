@@ -36,6 +36,13 @@ await page.evaluate(() => { const G = window.__rb.G; G.stuck = 0; G.nextFault = 
 const rr0 = await page.evaluate(() => window.__rb.G.S.rods.RR); await page.keyboard.down('w'); await W(1200); await page.keyboard.up('w'); const rr1 = await page.evaluate(() => window.__rb.G.S.rods.RR);
 must(rr1 < rr0, 'клавиша W не выводит стержни РР');
 await shot('free');
+// живые подсказки: по умолчанию выключены, есть предложение включить; L включает; подсказка подсвечивает кнопку
+must(await page.locator('#rb-hnudge').isVisible() && !(await page.locator('#rb-hint').isVisible()), 'подсказки должны быть выключены и предложены');
+await page.keyboard.press('l'); await page.evaluate(() => { window.__rb.G.target = 0.7; }); await W(1300);
+must(await page.locator('#rb-hint').isVisible() && await page.locator('.rb-hl').count() >= 1, 'подсказка не появилась или не подсветила кнопку');
+must(await page.evaluate(() => window.__rb.G.usedHints === true), 'включённые подсказки не отмечены для оценки');
+await shot('hint'); await page.keyboard.press('l'); await page.evaluate(() => { window.__rb.G.target = 1; }); await W(700);
+must(!(await page.locator('#rb-hint').isVisible()), 'подсказка не скрылась после выключения');
 await page.dispatchEvent('[data-rb="az"]', 'click'); await W(150); must(!(await G()).az, 'АЗ-5 нажалась без открытой крышки');
 await page.click('[data-rb="cover"]'); await W(400); await page.click('[data-rb="az"]'); await W(100);
 must((await G()).az, 'АЗ-5 не сработала'); await tick(25, 0.25); await W(400);
@@ -82,6 +89,8 @@ await page.click('#rb-htest'); await W(100); for (let i = 0; i < 37 && (await G(
 must((await G()).step === 'az', 'испытание не закончилось');
 await shot('test');
 await page.click('[data-rb="cover"]'); await W(400); await page.click('[data-rb="az"]'); await tick(8, 0.02); await W(500);
+must(await page.locator('#rb-crashbar').isVisible(), 'при аварии не началась визуализация');
+await W(2600); await shot('crash-viz'); await page.click('#rb-crashbar [data-rb="crashskip"]'); await W(400);
 g = await G(); must(g.broken === 'reactor' && g.done === 'crash', 'АЗ-5 при малом ОЗР не привела к разгону: ' + JSON.stringify(g));
 must(await page.locator('#rb-ov .rb-why li').count() >= 2 && /концевой эффект/.test(await page.textContent('#rb-ov .rb-why')), 'нет разбора причин аварии');
 await shot('crash');

@@ -69,6 +69,7 @@ const rbSnd = (() => {
     beep: (f, d) => tone(f, d), click: () => tone(1800 + Math.random() * 600, 0.012, 'square', 0.025),
     alarm() { tone(880, 0.18); setTimeout(() => tone(660, 0.18), 200); },
     sirenOn() { if (!on || siren) return; const a = ctx(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), l = a.createOscillator(), lg = a.createGain(); o.type = 'sawtooth'; o.frequency.value = 620; l.frequency.value = 0.8; lg.gain.value = 180; l.connect(lg); lg.connect(o.frequency); g.gain.value = 0.035; o.connect(g); g.connect(a.destination); o.start(); l.start(); siren = { o, l, g }; },
+    boom(v = 1) { if (!on) return; const a = ctx(); if (!a) return; const n = Math.round(a.sampleRate * 2.2), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'lowpass'; f.frequency.value = 240; g.gain.value = 0.6 * v; s.buffer = buf; s.connect(f); f.connect(g); g.connect(a.destination); s.start(); },
     sirenOff() { if (siren) { try { siren.o.stop(); siren.l.stop(); } catch (e) {} siren = null; } }
   };
 })();
@@ -78,7 +79,7 @@ function pgRbmk() {
   const R = rbLoad(), done = k => R.career[k], open = k => k === 0 || !!R.career[k - 1];
   const card = (k, s) => `<button class="rb-shc ${done(k) ? 'done' : ''} ${open(k) ? '' : 'rb-locked'}" data-rb="start" data-m="career" data-k="${k}" ${open(k) ? '' : 'disabled'}>
       <span class="rb-shn">${k + 1}</span><span class="rb-sht"><b>${esc(s.t)}</b><small>${s.history ? 'Реконструкция событий по шагам' : esc(s.goal)}</small></span>
-      <span class="rb-shg">${done(k) ? `<i class="g-${done(k).g}">${done(k).g}</i>` : open(k) ? ic('chevron-right') : ic('lock')}</span></button>`;
+      <span class="rb-shg">${done(k) ? `<i class="g-${done(k).g}" title="${done(k).hints ? 'с подсказками' : ''}">${done(k).g}</i>${done(k).hints ? '<small class="rb-hmk">подсказки</small>' : ''}` : open(k) ? ic('chevron-right') : ic('lock')}</span></button>`;
   return pgHead('Тренажёр «Пульт РБМК-1000»', 'Вы — старший инженер управления реактором 4-го энергоблока. Физика реактора считается по-настоящему: кинетика нейтронов, ксенон, паровой эффект, концевой эффект стержней.') +
     `<div class="rb-hero"><img src="img/rbmk/cover-main.webp" alt=""><div><b>Пульт РБМК-1000</b><span>Карьера из 7 смен, свободная смена и реконструкция ночи 26 апреля. 2D-пульт, 3D-вид реактора и энергоблока, вкладка «Задача» с рисками.</span></div></div>
     <div class="rb-land">
@@ -109,6 +110,7 @@ function vRbmk() {
         <button class="btn line" data-rb="speed" id="rb-speed" title="Ускорить время">×1</button>
         <button class="btn line" data-rb="pause" id="rb-pause" title="Пауза (пробел)">${ic('pause')}</button>
         <button class="btn line" data-rb="snd" id="rb-snd" title="Звук">${ic(rbSnd.on ? 'volume-2' : 'volume-x')}</button>
+        <button class="btn line rb-hbtn ${G.hints ? 'on' : ''}" data-rb="hints" id="rb-hbtn" title="Живые подсказки (L). С подсказками высшая оценка — A">${ic('lightbulb')} <span>${G.hints ? 'Подсказки: вкл' : 'Подсказки: выкл'}</span></button>
         <button class="btn line" data-rb="help" title="Справка (H)">${ic('circle-help')}</button>
       </div>
     </header>
@@ -160,12 +162,18 @@ function vRbmk() {
       </section>
     </div>
     <div class="rb-3dw" id="rb-3dw" hidden><div class="rb-3dc" id="rb-3dc"></div>
-      <div class="rb-3dhud"><div class="rb-3dnum"><div><small>Мощность</small><b id="rb-pt3">—</b><em>МВт</em></div><div><small>Период</small><b id="rb-per3">—</b><em>с</em></div><div><small>ОЗР</small><b id="rb-ozr3">—</b><em>стержней</em></div></div>
-        <div class="rb-3dsc"><button class="btn line on" data-rb="scene" data-v="core">Реактор в разрезе</button><button class="btn line" data-rb="scene" data-v="unit">Энергоблок</button><button class="btn line" data-rb="scene" data-v="desk">Щит управления</button></div>
+      <div class="rb-3dhud">
+        <div class="rb-3dnum"><div><small>Мощность</small><b id="rb-pt3">—</b><em>МВт</em></div><div><small>Период</small><b id="rb-per3">—</b><em>с</em></div><div><small>ОЗР</small><b id="rb-ozr3">—</b><em>стержней</em></div>
+          <div><small>Давление</small><b id="rb-p3">—</b><em>МПа</em></div><div><small>Уровень</small><b id="rb-l3">—</b><em>мм</em></div><div><small>Расход</small><b id="rb-g3">—</b><em>тыс. м³/ч</em></div></div>
+        <div class="r3-main"><div class="r3-hrods" id="r3-hudrods"></div><div class="rb-az rb-az3"><div class="rb-azc ${G.cover ? 'open' : ''}">${rbAzHtml()}</div></div></div>
+        <div class="rb-3dsc"><button class="btn line" data-rb="scene" data-v="unit">${ic('factory')} Энергоблок</button><button class="btn line" data-rb="scene" data-v="core">${ic('atom')} Реактор в разрезе</button><button class="btn line" data-rb="scene" data-v="desk">${ic('sliders-horizontal')} Щит управления</button></div>
+        <div class="r3-views" id="r3-views"></div>
         <div class="rb-3dinfo" id="rb-3dinfo"></div>
-        <p class="mute small">Мышь — вращать, колесо — приблизить, щелчок — что это. Стержни: W/S, A/D.</p>
-        <div class="rb-az rb-az3"><div class="rb-azc ${G.cover ? 'open' : ''}">${rbAzHtml()}</div></div></div></div>
+        <div class="r3-opts"><button class="btn line ${r3LblOn() ? 'on' : ''}" data-rb="r3lbl" id="r3-lblb">${ic('tag')} Подписи</button><button class="btn line" data-rb="r3q" id="r3-qb">${ic('gauge')} ${R3Q() === 'low' ? 'Качество: простое' : 'Качество: высокое'}</button></div>
+        <p class="mute small">Мышь — вращать, колесо — приблизить. Стержни: W/S, A/D. Подсказки: L.</p></div></div>
     <div class="rb-taskw" id="rb-taskw" hidden></div>
+    <div class="rb-hint" id="rb-hint" hidden></div>
+    <div class="rb-crashbar" id="rb-crashbar" hidden></div>
     <div class="rb-ov" id="rb-ov" hidden></div>
   </div>`;
   G.view = G.view || '2d'; rbView();
@@ -194,7 +202,8 @@ function rbLoop() {
     if (SCREEN !== 'rbmk' || !RBG) return;
     const dt = Math.min(0.1, (now - rbLast) / 1000); rbLast = now;
     if (!RBG.paused && RBG.started && !RBG.done) rbTick(dt * RBG.speed);
-    rbUpdate(); if (RBG.view === '3d') r3Frame(); rbRaf = requestAnimationFrame(f);
+    if (RBG.crash) rbCrashLoop(dt);
+    rbUpdate(); rbHintLoop(now); if (RBG.view === '3d') r3Frame(); rbRaf = requestAnimationFrame(f);
   };
   rbRaf = requestAnimationFrame(f);
 }
@@ -233,7 +242,7 @@ function rbStep(h) {
     if (RB.ozr(S) < 15 && S.P > 0.02) G.score.ozr += h;
   }
   rbAlarms(h);
-  if (S.broken) rbEnd('crash');
+  if (S.broken && !G.crash) rbCrashStart();
 }
 function rbAlarms(h) {
   const G = RBG, S = G.S, A = {};
@@ -347,11 +356,12 @@ function rbEnd(kind) {
   const S = G.S, R = rbLoad();
   const sc = Math.max(0, Math.round(100 - (G.score.devN ? G.score.dev / G.score.devN * 40 : 0) - G.score.ozr * 0.4 - G.score.alarm * 1.2 - (kind === 'az' ? 20 : 0)));
   let g = kind === 'crash' ? 'X' : RB_GRADE(sc);
+  if (G.usedHints && g === 'S') g = 'A';   // с подсказками высшая оценка недоступна
   if (G.sh && G.sh.shutdown && kind !== 'crash') { const okShut = G.shutOzr >= 15 && G.shutP <= 0.4; if (!okShut) g = g === 'S' || g === 'A' ? 'B' : g; }
   R.shifts++; if (kind === 'crash') R.crashes++;
   if (G.mode === 'free') R.free = Math.max(R.free, Math.round(G.t));
   if (G.hist) { R.history.played++; if (kind === 'crash') R.history.crash++; else R.history.safe++; }
-  if (G.mode === 'career' && kind !== 'crash' && (G.hist ? kind === 'safe' : true)) { const prev = R.career[G.k]; if (!prev || 'SABCD'.indexOf(g) < 'SABCD'.indexOf(prev.g)) R.career[G.k] = { g, sc, at: new Date().toISOString() }; }
+  if (G.mode === 'career' && kind !== 'crash' && (G.hist ? kind === 'safe' : true)) { const prev = R.career[G.k]; if (!prev || 'SABCD'.indexOf(g) < 'SABCD'.indexOf(prev.g)) R.career[G.k] = { g, sc, at: new Date().toISOString(), hints: !!G.usedHints }; }
   rbSave(R);
   const a = RB.analyse(S), hist = G.hist, bk = S.broken ? S.broken.kind : '';
   const reasons = [];
@@ -376,9 +386,10 @@ function rbEnd(kind) {
     <h2>${ttl}</h2><p>${lead}</p>${xe}
     ${kind === 'crash' ? `<div class="rb-why"><b>${ic('search')} Почему так произошло</b><ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul></div>` : ''}
     <div class="rb-post"><b>Последние минуты: мощность и составляющие реактивности</b>${chart}<div class="rb-pleg"><span class="c-p">мощность</span><span class="c-tip">концевой эффект</span><span class="c-void">пар</span><span class="c-dop">Доплер</span><span class="c-rods">стержни</span></div></div>
-    <div class="rb-res"><div><small>Время смены</small><b>${Math.floor(G.t / 60)}:${String(Math.floor(G.t % 60)).padStart(2, '0')}</b></div><div><small>Срабатываний АЗ-5</small><b>${G.score.az}</b></div><div><small>ОЗР < 15</small><b>${Math.round(G.score.ozr)} с</b></div><div><small>Оценка</small><b class="g-${g}">${g === 'X' ? '—' : g}</b></div></div>
+    <div class="rb-res"><div><small>Время смены</small><b>${Math.floor(G.t / 60)}:${String(Math.floor(G.t % 60)).padStart(2, '0')}</b></div><div><small>Срабатываний АЗ-5</small><b>${G.score.az}</b></div><div><small>ОЗР < 15</small><b>${Math.round(G.score.ozr)} с</b></div><div><small>Оценка</small><b class="g-${g}">${g === 'X' ? '—' : g}</b>${G.usedHints ? '<em class="rb-hmk">с подсказками</em>' : ''}</div></div>
     ${kind === 'crash' ? `<p class="mute small">Как надо было: держать ОЗР не меньше 15 стержней, не работать на мощности ниже 700 МВт, не блокировать защиты; при провале мощности — заглушить реактор и ждать распада ксенона.</p>` : ''}
-    <div class="rb-opts"><button class="btn" data-rb="again" data-primary>${ic('rotate-ccw')} Ещё раз ${kbd('Enter')}</button><button class="btn line" data-rb="exit">${ic('chevron-left')} К выбору режима</button>${kind === 'crash' ? `<button class="btn line" data-rb="help">${ic('book-open')} Справка по физике</button>` : ''}</div></div>`);
+    <div class="rb-opts"><button class="btn" data-rb="again" data-primary>${ic('rotate-ccw')} Ещё раз ${kbd('Enter')}</button><button class="btn line" data-rb="exit">${ic('chevron-left')} К выбору режима</button>${kind === 'crash' && r3Supported() ? `<button class="btn line" data-rb="crashreplay">${ic('box')} Посмотреть аварию ещё раз</button>` : ''}${kind === 'crash' ? `<button class="btn line" data-rb="help">${ic('book-open')} Справка по физике</button>` : ''}</div></div>`);
+  G.endHtml = $('#rb-ov') ? $('#rb-ov').innerHTML : ''; $('.rb') && $('.rb').classList.remove('rb-crashing', 'rb-lost'); $('#rb-crashbar') && ($('#rb-crashbar').hidden = true); rbHintShow(null);
   rbPostChart();
 }
 function rbPostChart() {
@@ -496,7 +507,7 @@ document.addEventListener('click', e => {
     case 'start': rbStart(d.m, d.k); break;
     case 'help': if (SCREEN === 'rbmk') rbHelp(); else modal(`${ic('book-open')} Как устроен РБМК-1000`, rbHelpHtml()); break;
     case 'exit': rbExit(); break;
-    case 'go': G.started = true; G.paused = false; rbOverlayClose(); rbLog('ok', G.hist ? 'Смена принята. 23:10, мощность 1600 МВт.' : 'Смена принята.'); break;
+    case 'go': G.started = true; G.paused = false; rbOverlayClose(); rbHintNudge(); rbLog('ok', G.hist ? 'Смена принята. 23:10, мощность 1600 МВт.' : 'Смена принята.'); break;
     case 'close': rbOverlayClose(); if (G && !G.done && G.started) G.paused = false; break;
     case 'again': { const m = G.mode, k = G.k; rbStart(G.hist && m !== 'career' ? 'history' : m, k); break; }
     case 'pause': if (G.started && !G.done) G.paused = !G.paused; break;
@@ -508,7 +519,16 @@ document.addEventListener('click', e => {
     case 'arset': S.ar.set = Math.max(0.06, Math.min(1.05, S.ar.set + (+d.v))); break;
     case 'cover': G.cover = !G.cover; break;
     case 'view': G.view = d.v; rbView(); break;
-    case 'scene': document.querySelectorAll('.rb-3dsc .btn').forEach(x => x.classList.toggle('on', x === b)); R3.kind = d.v; if (R3.ok) r3Build(d.v); break;
+    case 'r3view': r3Preset(d.v); break;
+    case 'r3sel': r3Select(null); break;
+    case 'r3lbl': { const on = !r3LblOn(); try { localStorage.setItem('fz-rb-lbl', on ? '1' : '0'); } catch (e) {} b.classList.toggle('on', on); if (R3.lblBox) R3.lblBox.classList.toggle('off', !on); break; }
+    case 'r3q': { const q = R3Q() === 'low' ? 'high' : 'low'; try { localStorage.setItem('fz-rb-q3', q); } catch (e) {} b.innerHTML = ic('gauge') + (q === 'low' ? ' Качество: простое' : ' Качество: высокое'); if (R3.ok && G.view === '3d') r3Build(R3.kind); break; }
+    case 'hints': rbHintsToggle(); break;
+    case 'hintok': G.hintMute = G.hintMute || {}; G.hintMute[d.v] = G.t + 60; rbHintShow(null); break;
+    case 'hintmute': G.hintMute = G.hintMute || {}; G.hintMute[d.v] = Infinity; rbHintShow(null); break;
+    case 'crashskip': if (G.crash && !G.done) rbEnd('crash'); else if (G.replay) rbCrashFxDone(); break;
+    case 'crashreplay': if (!G.crash) break; rbOverlayClose(); G.replay = true; G.crash.t = 0; R3.kind = G.crash.kind === 'drum' ? 'unit' : 'core'; G.view = '3d'; rbView(); rbCrashBar(true); break;
+    case 'scene': document.querySelectorAll('.rb-3dsc .btn').forEach(x => x.classList.toggle('on', x === b)); R3.kind = d.v; if (R3.ok) { r3Build(d.v); if (G.crash && (!G.done || G.replay)) r3Boom(G.crash.kind); } break;
     case 'az': if (!G.cover) { toast('Сначала откройте крышку кнопки АЗ-5', 'bad'); break; } if (!S.az) { RB.scram(S, 'нажата кнопка на пульте'); if (G.hist) G.hist.choices.push('АЗ-5 нажата при ОЗР ' + RB.ozr(S).toFixed(1)); } break;
     case 'pump': { const i = +d.v, q = S.pumps[i]; if (G.sh && !G.hist && G.k === 0) { toast('В этой смене насосами управляет другой оператор'); break; }
       q.on = !q.on; q.coast = !q.on; if (q.on) { q.fault = q.fault || 0; } rbLog(q.on ? 'ok' : 'warn', `ГЦН-${i + 1} ${q.on ? 'включён' : 'отключён'}.`);
@@ -549,6 +569,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); if (G.started && !G.done) G.paused = !G.paused; }
   if (e.code === 'KeyQ') RBG.S.bru = RBG.S.bru > 0 ? 0 : 1;
   if (e.code === 'KeyH') rbHelp();
+  if (e.code === 'KeyL') rbHintsToggle();
   if (e.code === 'KeyV') { G.view = G.view === '3d' ? '2d' : '3d'; rbView(); }
   if (e.code === 'KeyT') { G.view = G.view === 'task' ? '2d' : 'task'; rbView(); }
 });
@@ -560,4 +581,59 @@ window.addEventListener('blur', () => { rbKeys = {}; });
 // заевший привод: таймер
 setInterval(() => { if (RBG && RBG.stuck > 0 && !RBG.paused) { RBG.stuck -= 0.5 * RBG.speed; if (RBG.stuck <= 0) { RBG.stuck = 0; RBG.faults.filter(f => f.kind === 'rod').forEach(f => f.fixed = true); rbLog('ok', 'Привод РР снова исправен.'); } } }, 500);
 // для тестов: прогнать игру вперёд без отрисовки
-window.__rb = { tick: s => { if (RBG && !RBG.paused && RBG.started) rbTick(s); }, get G() { return RBG; }, RB };
+window.__rb = { hints: () => RBG && rbHintList(RBG), tick: s => { if (RBG && !RBG.paused && RBG.started) rbTick(s); }, get G() { return RBG; }, RB };
+
+/* ---------- авария: пульт «сходит с ума», затем 3D-визуализация по видам разрушения, затем разбор ---------- */
+function rbCrashStart() {
+  const G = RBG; if (G.crash) return; G.crash = { kind: G.S.broken.kind, t: 0, stage: 0 };
+  rbHintShow(null); rbSnd.sirenOn(); const r = $('.rb'); if (r) r.classList.add('rb-crashing');
+  rbCrashBar(true); rbCrashCap({ reactor: 'Мощность растёт лавинообразно — приборы зашкаливают.', drum: 'Давление в барабанах-сепараторах выше предела прочности.', dryout: 'Уровень в барабанах упал: вода не поступает в каналы.' }[G.crash.kind]);
+}
+function rbCrashBar(on) {
+  const b = $('#rb-crashbar'); if (!b) return; b.hidden = !on;
+  if (on) b.innerHTML = `<span class="rb-cbi">${ic('triangle-alert')}</span><p id="rb-crashcap"></p><button class="btn line" data-rb="crashskip">Пропустить ${ic('chevron-right')}</button>`;
+}
+function rbCrashCap(t) { const p = $('#rb-crashcap'); if (!p || p.textContent === t) return; p.textContent = t; p.classList.remove('in'); void p.offsetWidth; p.classList.add('in'); }
+function rbCrashLoop(dt) {
+  const G = RBG, c = G.crash; if (G.done && !G.replay) return; c.t += dt;
+  if (!G.replay && c.stage === 0 && c.t > 2.2) {
+    c.stage = 1; rbSnd.sirenOff(); const r = $('.rb'); if (r) r.classList.remove('rb-crashing');
+    if (r3Supported()) { R3.kind = c.kind === 'drum' ? 'unit' : 'core'; G.view = '3d'; rbView(); } else { c.no3d = true; rbCrashCap('Связь с датчиками потеряна. Реактор разрушен.'); }
+  }
+  if (!G.done && ((c.no3d && c.t > 6) || (c.stage === 1 && G.view !== '3d' && c.t > 6) || c.t > 22)) rbEnd('crash');
+}
+function rbCrashFxDone() {
+  const G = RBG; if (!G) return;
+  if (G.replay) { G.replay = false; rbCrashBar(false); rbOverlay(G.endHtml); rbPostChart(); return; }
+  if (G.crash && !G.done) rbEnd('crash');
+}
+
+/* ---------- живые подсказки (включаются кнопкой или клавишей L; с ними высшая оценка — A) ---------- */
+function rbHintsToggle() {
+  const G = RBG; if (!G || G.done) return; G.hints = !G.hints;
+  const b = $('#rb-hbtn'); if (b) { b.classList.toggle('on', G.hints); const s = b.querySelector('span'); if (s) s.textContent = G.hints ? 'Подсказки: вкл' : 'Подсказки: выкл'; }
+  const n = $('#rb-hnudge'); if (n) n.remove();
+  G._hintAt = 0; if (!G.hints) rbHintShow(null); else toast('Живые подсказки включены. С ними высшая оценка за смену — A.');
+}
+function rbHintNudge() {
+  const G = RBG; if (!G || G.hints || $('#rb-hnudge')) return; const r = $('.rb'); if (!r) return;
+  const el = document.createElement('div'); el.className = 'rb-hnudge'; el.id = 'rb-hnudge';
+  el.innerHTML = `${ic('lightbulb')}<span>Можно включить <b>живые подсказки</b>: что происходит, что сделать и почему. С ними высшая оценка — A.</span><button class="btn" data-rb="hints">Включить</button><button class="btn line" onclick="this.parentNode.remove()">Не нужно</button>`;
+  r.appendChild(el); setTimeout(() => el.remove(), 12000);
+}
+function rbHintLoop(now) {
+  const G = RBG; if (!G || now - (G._hintAt || 0) < 500) return; G._hintAt = now;
+  if (!G.hints || !G.started || G.done || G.crash) { if ($('#rb-hint') && !$('#rb-hint').hidden) rbHintShow(null); return; }
+  G.usedHints = true; const mute = G.hintMute || {};
+  rbHintShow(rbHintList(G).find(h => !(mute[h.id] > G.t)) || null);
+}
+function rbHintShow(h) {
+  const el = $('#rb-hint'); document.querySelectorAll('.rb-hl').forEach(x => x.classList.remove('rb-hl')); if (typeof R3 !== 'undefined') R3.hint = null;
+  if (!el) return; if (!h) { el.hidden = true; el.dataset.k = ''; return; }
+  const key = h.id + '|' + h.what + '|' + h.act;
+  if (el.dataset.k !== key) { el.dataset.k = key; el.className = 'rb-hint ' + (h.pr <= 3 ? 'bad' : ''); el.innerHTML = `<div class="rb-hic">${ic(h.pr <= 3 ? 'triangle-alert' : 'lightbulb')}</div><div class="rb-hb"><b>${h.what}</b><p>${h.act}</p><small>${h.why}</small><div class="rb-hbtns"><button class="btn line" data-rb="hintok" data-v="${h.id}">Понятно</button><button class="fz-lnk" data-rb="hintmute" data-v="${h.id}">Больше не показывать</button></div></div>`; }
+  el.hidden = false;
+  if (h.sel && RBG.view === '2d') document.querySelectorAll('.rb-grid ' + h.sel).forEach(t => t.classList.add('rb-hl'));
+  if (h.sel && RBG.view === '3d') document.querySelectorAll('.rb-3dhud ' + h.sel).forEach(t => t.classList.add('rb-hl'));
+  if (RBG.view === '3d' && typeof R3 !== 'undefined') R3.hint = h.obj || null;
+}
