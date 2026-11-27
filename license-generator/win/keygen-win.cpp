@@ -177,7 +177,7 @@ static void paint(HDC dc, RECT all) {
   HICON ic = (HICON)LoadImageW(GetModuleHandleW(0), MAKEINTRESOURCEW(1), IMAGE_ICON, S(36), S(36), 0);
   if (ic) { DrawIconEx(dc, S(PX), S(18), ic, S(36), S(36), 0, 0, DI_NORMAL); DestroyIcon(ic); }
   draw_text(dc, L"Генератор ключей", {S(PX + 48), S(14), S(CW - PX), S(42)}, g_title, C_TEXT, DT_LEFT | DT_SINGLELINE);
-  draw_text(dc, L"Физпрактикум · ключи активации для компьютеров кафедры · работает без интернета", {S(PX + 48), S(42), S(CW - PX), S(62)}, g_small, C_MUTED, DT_LEFT | DT_SINGLELINE);
+  draw_text(dc, L"Физпрактикум · ключи активации для компьютеров кафедры · работает без интернета", {S(PX + 48), S(46), S(CW - PX), S(66)}, g_small, C_MUTED, DT_LEFT | DT_SINGLELINE);
 
   // 1. секретный ключ
   step(dc, R_C1, 1, L"Откройте секретный ключ кафедры", matches());
@@ -188,8 +188,8 @@ static void paint(HDC dc, RECT all) {
   if (g_has) {
     bool ok = matches(); std::wstring pk8 = W(g_pk.substr(0, 8)), ex8 = W(expected().substr(0, std::min<size_t>(8, expected().size())));
     std::wstring t = expected().empty() ? L"Открытый ключ: " + pk8 + L"…" :
-      ok ? L"Подходит к программе: ключи из этого файла программа примет (открытый ключ " + pk8 + L"…)."
-         : L"Не подходит к программе: в ней открытый ключ " + ex8 + L"…, а у этого файла " + pk8 + L"…. Откройте другой файл.";
+      ok ? L"Подходит к программе: ключи из этого файла программа примет."
+         : L"Не подходит к программе (в ней ключ " + ex8 + L"…, у файла " + pk8 + L"…). Откройте другой файл.";
     fill_round(dc, m, S(10), ok ? C_OK_L : C_BAD_L, ok ? C_OK_L : C_BAD_L);
     RECT d = {m.left + S(12), m.top + S(10), m.left + S(22), m.top + S(20)}; HBRUSH db = CreateSolidBrush(ok ? C_OK : C_BAD); HPEN dp = CreatePen(PS_SOLID, 1, ok ? C_OK : C_BAD);
     HGDIOBJ ob = SelectObject(dc, db), op = SelectObject(dc, dp); Ellipse(dc, d.left, d.top, d.right, d.bottom); SelectObject(dc, ob); SelectObject(dc, op); DeleteObject(db); DeleteObject(dp);
@@ -207,7 +207,7 @@ static void paint(HDC dc, RECT all) {
   step(dc, R_C3, 3, L"Раздайте ключи", !g_last.empty());
   c = SR(R_C3); x = c.left + S(IND); r = c.right - S(18);
   field(dc, g_out);
-  draw_text(dc, L"Один компьютер - вставьте ключ в окно активации. Целый класс - положите license.fzl рядом с Fizpraktikum.exe.", {x, c.top + S(42), r, c.top + S(62)}, g_small, C_MUTED, DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS);
+  draw_text(dc, L"Один компьютер - ключ в окно активации. Весь класс - файл license.fzl рядом с Fizpraktikum.exe.", {x, c.top + S(42), r, c.top + S(62)}, g_small, C_MUTED, DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS);
 
   // строка состояния
   if (!g_status.empty()) draw_text(dc, g_status, {S(PX), S(684), S(CW - PX), S(708)}, g_font, g_bad ? C_BAD : C_OK, DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
