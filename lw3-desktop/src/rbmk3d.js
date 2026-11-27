@@ -33,6 +33,62 @@ const R3INFO = {
   tg: ['Турбогенератор', 'Пар вращает турбину, генератор даёт электричество: два ТГ по 500 МВт.'],
   pipe: ['Трубопроводы', 'Пароводяные коммуникации и опускные трубопроводы контура многократной принудительной циркуляции.'],
 };
+
+/* ---------- модели «потекстурно»: объёмные формы, на каждую натянут вырезанный кусок листа ---------- */
+const R3IMG = {};
+function r3Img(name) { if (!R3IMG[name]) { const im = new Image(); R3IMG[name] = new Promise(res => { im.onload = () => res(im); im.onerror = () => res(null); }); if (RB3D_TEX.includes(name)) im.src = 'img/rbmk3d/' + name + '.webp'; else R3IMG[name] = Promise.resolve(null); } return R3IMG[name]; }
+// кусок листа [x0, y0, x1, y1] (доли) → текстура; rot — повернуть на 90° (длина картинки → высота цилиндра); wrap — повтор с отражением по окружности
+const r3Crop = (name, box, o = {}) => ({ name, box, o });
+function r3Apply(mat, spec) {
+  const T = window.THREE;
+  r3Img(spec.name).then(im => { if (!im) return; const [x0, y0, x1, y1] = spec.box, o = spec.o, sw = (x1 - x0) * im.width, sh = (y1 - y0) * im.height;
+    const W = Math.min(1024, Math.round(o.rot ? sh : sw)), H = Math.min(1024, Math.round(o.rot ? sw : sh)), cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+    if (o.rot) { c.translate(W, 0); c.rotate(Math.PI / 2); c.drawImage(im, x0 * im.width, y0 * im.height, sw, sh, 0, 0, H, W); } else c.drawImage(im, x0 * im.width, y0 * im.height, sw, sh, 0, 0, W, H);
+    const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4;
+    if (o.wrap) { t.wrapS = T.MirroredRepeatWrapping; t.repeat.x = o.wrap; } if (o.repeat) { t.wrapS = T.RepeatWrapping; t.repeat.x = o.repeat; }
+    mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true; });
+}
+const r3Mat = (col, spec, extra = {}) => { const T = window.THREE, m = new T.MeshStandardMaterial(Object.assign({ color: col, roughness: 0.55, metalness: spec ? 0.15 : 0.2 }, extra)); if (spec) r3Apply(m, spec); return m; };
+// полусфера-днище с плоской развёрткой (картинка торца ложится «как на фото»)
+function r3Cap(R, depth, mat) {
+  const T = window.THREE, g = new T.SphereGeometry(R, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), p = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / (2 * R) + 0.5, 0.5 - p.getZ(i) / (2 * R));
+  g.scale(1, depth / R, 1); return new T.Mesh(g, mat);
+}
+function r3Drum() {
+  const T = window.THREE, g = new T.Group(), R = 1.25, L = 12, steelM = r3Mat(0xa9b4c0, null, { metalness: 0.6, roughness: 0.3 });
+  const body = new T.Mesh(new T.CylinderGeometry(R, R, L, 48, 1, true), r3Mat(0xa9b4c0, r3Crop('drum-side', [0.10, 0.16, 0.90, 0.79], { rot: true, wrap: 2 }))); body.rotation.z = Math.PI / 2; g.add(body);
+  const capM = r3Mat(0xa9b4c0, r3Crop('drum-end', [0.10, 0.165, 0.90, 0.805]));
+  [-1, 1].forEach(sd => { const c = r3Cap(R, 0.75, capM); c.rotation.z = -sd * Math.PI / 2; c.position.x = sd * L / 2; g.add(c);
+    const sup = new T.Mesh(new T.CylinderGeometry(0.35, 0.9, 1.5, 4), steelM); sup.rotation.y = Math.PI / 4; sup.position.set(sd * L * 0.33, -R - 0.55, 0); g.add(sup); });
+  [[-0.35, 0.32], [-0.2, 0.22], [0, 0.42], [0.12, 0.2], [0.22, 0.2], [0.35, 0.32]].forEach(([fx, r]) => {
+    const n = new T.Mesh(new T.CylinderGeometry(r, r, 0.7, 16), steelM), fl = new T.Mesh(new T.CylinderGeometry(r + 0.12, r + 0.12, 0.12, 20), steelM); n.position.set(fx * L, R + 0.25, 0); fl.position.set(fx * L, R + 0.6, 0); g.add(n, fl); });
+  return g;
+}
+function r3Pump() {
+  const T = window.THREE, g = new T.Group(), grey = r3Mat(0x55667c), orange = r3Mat(0xf59e0b, r3Crop('pump-front', [0.32, 0.015, 0.70, 0.13], { wrap: 2 }));
+  const motor = new T.Mesh(new T.CylinderGeometry(0.62, 0.62, 1.35, 32, 1, true), r3Mat(0x55667c, r3Crop('pump-front', [0.31, 0.15, 0.69, 0.40], { wrap: 2 }))); motor.position.y = 1.55; g.add(motor);
+  const capTop = r3Mat(0xf59e0b, null, { metalness: 0.1 }), cap = new T.Mesh(new T.CylinderGeometry(0.66, 0.68, 0.38, 32), [orange, capTop, capTop]); cap.position.y = 2.4; g.add(cap);
+  const collar = new T.Mesh(new T.CylinderGeometry(0.74, 0.74, 0.16, 32), r3Mat(0xf59e0b, null, { metalness: 0.1 })); collar.position.y = 0.8; g.add(collar);
+  const neck = new T.Mesh(new T.CylinderGeometry(0.4, 0.5, 0.45, 20), grey); neck.position.y = 0.5; g.add(neck);
+  const face = r3Mat(0x55667c, r3Crop('pump-front', [0.245, 0.555, 0.755, 0.915]));
+  const casing = new T.Mesh(new T.CylinderGeometry(0.88, 0.88, 0.95, 40), [grey, face, face]); casing.rotation.x = Math.PI / 2; casing.position.y = -0.2; g.add(casing);
+  const pipe = new T.Mesh(new T.CylinderGeometry(0.36, 0.36, 3.1, 20), grey); pipe.rotation.z = Math.PI / 2; pipe.position.y = -0.2; g.add(pipe);
+  [-1, 1].forEach(sd => { const fl = new T.Mesh(new T.CylinderGeometry(0.58, 0.58, 0.2, 28), r3Mat(0xf59e0b, null, { metalness: 0.1 })); fl.rotation.z = Math.PI / 2; fl.position.set(sd * 1.45, -0.2, 0); g.add(fl); });
+  const base = new T.Mesh(new T.BoxGeometry(1.9, 0.28, 1.3), grey); base.position.y = -1.2; g.add(base);
+  return g;
+}
+function r3Turbine() {
+  const T = window.THREE, g = new T.Group(), steelM = r3Mat(0xc0c8d2, null, { metalness: 0.6, roughness: 0.3 });
+  const baseTex = r3Crop('tg-side', [0.04, 0.83, 0.98, 0.99]);
+  const base = new T.Mesh(new T.BoxGeometry(12.5, 0.7, 3.4), [r3Mat(0x55667c), r3Mat(0x55667c), r3Mat(0x55667c), r3Mat(0x55667c), r3Mat(0x55667c, baseTex), r3Mat(0x55667c, baseTex)]); base.position.y = -1.6; g.add(base);
+  const cas = new T.Mesh(new T.CylinderGeometry(1.35, 1.35, 6.4, 40), [r3Mat(0x55667c, r3Crop('tg-side', [0.08, 0.22, 0.59, 0.76], { rot: true, wrap: 2 })), r3Mat(0x55667c), r3Mat(0x55667c)]); cas.rotation.z = Math.PI / 2; cas.position.set(-2.4, 0, 0); g.add(cas);
+  const coup = new T.Mesh(new T.CylinderGeometry(0.75, 0.75, 0.5, 24), r3Mat(0xf59e0b, null, { metalness: 0.1 })); coup.rotation.z = Math.PI / 2; coup.position.x = 1.1; g.add(coup);
+  const endM = r3Mat(0xb8c0c9, r3Crop('tg-end', [0.14, 0.09, 0.86, 0.80]));
+  const gen = new T.Mesh(new T.CylinderGeometry(1.4, 1.4, 3.8, 40), [r3Mat(0xb8c0c9, r3Crop('tg-side', [0.645, 0.20, 0.935, 0.80], { rot: true, wrap: 2 })), endM, endM]); gen.rotation.z = Math.PI / 2; gen.position.x = 3.4; g.add(gen);
+  const sp = new T.Mesh(new T.TorusGeometry(1.1, 0.16, 10, 24, Math.PI), steelM); sp.position.set(-2.4, 1.35, 0); g.add(sp);
+  return g;
+}
 function r3Build(kind) {
   const T = window.THREE, S = RBG.S, box = $('#rb-3dc'); if (!box) return;
   if (R3.ren) { R3.ren.dispose(); R3.ren.domElement.remove(); }
@@ -93,11 +149,11 @@ function r3Build(kind) {
     const pipeMat = new T.MeshStandardMaterial({ color: 0xc0c8d2, metalness: 0.6, roughness: 0.3 });
     R3.objs.pumps = [];
     [-1, 1].forEach(side => {
-      for (const k of [0, 1]) { const d = sheetBox(14, 5.7, 4.5, { front: 'drum-side', side: 'drum-end', top: 'drum-side' }, 'drum', 0xa9b4c0); d.position.set(side * 11, 8.2, (k ? 1 : -1) * 3); scene.add(d); }
+      for (const k of [0, 1]) { const d = r3Drum(); d.position.set(side * 11, 8.2, (k ? 1 : -1) * 3); d.traverse(o => { if (o.isMesh) tag(o, 'drum'); }); scene.add(d); }
       for (let i = 0; i < 4; i++) {
         const g = new T.Group(); g.position.set(side * 15.5, -4.1, -7 + i * 4.6);
-        const body = sheetBox(3, 4, 2.3, { front: 'pump-front', side: 'pump-side', top: 'pump-top' }, 'pump', 0x5c6f86); body.rotation.y = side > 0 ? Math.PI : 0; g.add(body);
-        const lamp = new T.Mesh(new T.SphereGeometry(0.3, 12, 10), new T.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 })); lamp.position.set(0, 2.5, 0); g.add(lamp);
+        const body = r3Pump(); body.rotation.y = Math.PI / 2; body.traverse(o => { if (o.isMesh) tag(o, 'pump'); }); g.add(body);
+        const lamp = new T.Mesh(new T.SphereGeometry(0.22, 12, 10), new T.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 })); lamp.position.set(0, 2.85, 0); g.add(lamp);
         scene.add(g); R3.objs.pumps.push({ g, lamp, body, idx: side < 0 ? i : 4 + i });
         const p1 = new T.Mesh(new T.CylinderGeometry(0.28, 0.28, 7.5, 10), pipeMat); p1.rotation.z = Math.PI / 2; p1.position.set(side * 10.3, -4.8, -7 + i * 4.6); scene.add(tag(p1, 'pipe'));
       }
@@ -106,7 +162,7 @@ function r3Build(kind) {
     });
     R3.objs.tgs = [];
     [0, 1].forEach(i => { const g = new T.Group(); g.position.set(-8 + i * 16, -4.7, -22);
-      const b = sheetBox(12, 3.25, 3, { front: 'tg-side', side: 'tg-end', top: 'tg-top' }, 'tg', 0x6b7480); g.add(b); scene.add(g); R3.objs.tgs.push({ g, i });
+      const b = r3Turbine(); b.traverse(o => { if (o.isMesh) tag(o, 'tg'); }); g.add(b); scene.add(g); R3.objs.tgs.push({ g, i });
       const sp = new T.Mesh(new T.CylinderGeometry(0.35, 0.35, 22, 10), pipeMat); sp.rotation.x = Math.PI / 2; sp.position.set(-8 + i * 16, 8.2, -11); scene.add(tag(sp, 'pipe')); });
     cam.position.set(30, 22, 34);
   } else if (kind === 'desk') {
