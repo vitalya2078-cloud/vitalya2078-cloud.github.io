@@ -18,13 +18,14 @@ const store = {
 function toast(html, kind = '') { const box = $('#toasts'); while (box.children.length >= 3) box.firstChild.remove(); const t = document.createElement('div'); t.className = 'toast ' + kind; t.innerHTML = html; $('#toasts').appendChild(t); setTimeout(() => t.classList.add('out'), 3200); setTimeout(() => t.remove(), 3700); }
 function addXP() { toast(`${ic('award')} Работа защищена. Сохрани файл результата для преподавателя на шаге «Отчёт».`); }
 function render() {
-  document.body.classList.remove('full', 'fzapp');
+  document.body.classList.remove('full', 'fzapp', 'rbscr');
   if (SCREEN !== 'work' && typeof lnoteHide === 'function') lnoteHide();
   if (SCREEN === 'lock') return vLock();
   if (SCREEN === 'teacher') return vTeacher();
   if (SCREEN === 'home' || !PROFILE) return vHome();
   if (SCREEN === 'labs') return vApp();
   if (SCREEN === 'test') return vTest();
+  if (SCREEN === 'rbmk') return vRbmk();
   if (PROFILE) qApply(LAB, curLab().load());
   if (LAB !== 3) return vWorkLab();
   vWork();
@@ -325,7 +326,7 @@ function modal(title, body, actions = '') {
 }
 function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; if (SCREEN === 'work' && PROFILE) { const L = curLab(), S = L.S(); if (S && L.steps[S.step][0] === 'report') $('#printroot').innerHTML = L.report(); } }
 /* Удаление учётной записи — из настроек профиля и с окна входа. Подтверждение паролем этой записи (если он задан). */
-function acctDelete(id) { store.set(PKEY, profiles().filter(x => x.id !== id)); labNums().forEach(n => store.del(LABS[n].key(id))); store.del(testKey(id)); }
+function acctDelete(id) { store.set(PKEY, profiles().filter(x => x.id !== id)); labNums().forEach(n => store.del(LABS[n].key(id))); store.del(testKey(id)); store.del(workKey(id) + '-rbmk'); }
 function askDelete(id) {
   const p = profiles().find(x => x.id === id); if (!p) return;
   modal(`${ic('trash-2')} Удалить учётную запись`, `<div class="fz-delbox">

@@ -472,3 +472,109 @@ body.drw #app{margin-right:460px}
 .fz-delbox{display:grid; gap:12px; max-width:520px}
 .fz-delbox p{margin:0}
 .fz-delact{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
+
+/* ===================== Тренажёр «Пульт РБМК-1000» ===================== */
+.rb-land{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:20px; align-items:start}
+.rb-modes{display:grid; gap:12px}
+.rb-mode{display:grid; grid-template-columns:44px 1fr; grid-template-rows:auto auto auto; column-gap:14px; row-gap:4px; text-align:left; padding:16px 18px; border-radius:16px; border:1px solid var(--line); background:var(--card); color:var(--text); font:inherit; cursor:pointer; transition:border-color .15s, transform .15s}
+.rb-mode:hover{border-color:var(--acc); transform:translateY(-1px)}
+.rb-mode svg{grid-row:1 / span 3; width:40px; height:40px; padding:9px; border-radius:12px; background:var(--acc-soft); color:var(--acc); box-sizing:border-box}
+.rb-mode.hist svg{background:var(--bad-soft); color:var(--bad)} .rb-mode.help svg{background:var(--ok-soft); color:var(--ok)}
+.rb-mode b{font-size:16px} .rb-mode span{color:var(--mute); font-size:13.5px; line-height:1.45} .rb-mode em{font-style:normal; font-size:12.5px; color:var(--acc); font-weight:600}
+.rb-shifts{display:grid; gap:8px; margin-top:10px}
+.rb-shc{display:flex; align-items:center; gap:14px; padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:var(--card2); color:var(--text); font:inherit; text-align:left; cursor:pointer}
+.rb-shc:hover:not(:disabled){border-color:var(--acc)} .rb-shc.rb-locked{opacity:.55; cursor:default}
+.rb-shn{width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--acc-soft); color:var(--acc); font-weight:700; flex:none}
+.rb-shc.done .rb-shn{background:var(--ok); color:#fff}
+.rb-sht{flex:1; display:grid} .rb-sht small{color:var(--mute)} .rb-shg svg{width:18px; height:18px; color:var(--mute)}
+.rb-shg i, .rb-res .g-S, .rb-res .g-A, .rb-res .g-B, .rb-res .g-C, .rb-res .g-D{font-style:normal; font-weight:800}
+.rb-shg i{display:inline-grid; place-items:center; width:30px; height:30px; border-radius:8px; background:var(--ok-soft); color:var(--ok)}
+.g-S{color:#d97706 !important} .g-A{color:var(--ok) !important} .g-B{color:var(--blue) !important} .g-C{color:var(--warn) !important} .g-D{color:var(--bad) !important}
+
+body.rbscr #app, body.rbscr main{max-width:none}
+.rb{position:fixed; inset:0; display:flex; flex-direction:column; gap:8px; padding:8px 10px 10px; background:var(--bg); color:var(--text); overflow:hidden; z-index:5; font-variant-numeric:tabular-nums}
+.rb-top{display:flex; align-items:center; gap:14px; padding:6px 10px; border:1px solid var(--line); border-radius:14px; background:var(--card)}
+.rb-top .btn{padding:6px 10px; min-height:0}
+.rb-tt{display:grid; line-height:1.2; min-width:0} .rb-tt b{font-size:15px} .rb-tt small{color:var(--mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:34vw}
+.rb-clock, .rb-goal, .rb-score{display:grid; line-height:1.15; padding:2px 12px; border-left:1px solid var(--line)}
+.rb-clock small, .rb-goal small, .rb-score small{color:var(--mute); font-size:11px; text-transform:uppercase; letter-spacing:.04em}
+.rb-clock b{font:700 20px/1.1 ui-monospace, Consolas, monospace}
+.rb-goal{flex:1; min-width:0} .rb-goal b{font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.rb-goal i{display:block; height:4px; border-radius:3px; background:var(--card2); margin-top:3px; overflow:hidden} .rb-goal i s{display:block; height:100%; background:var(--acc); text-decoration:none}
+.rb-score b{font-size:15px}
+.rb-tbtn{display:flex; gap:6px} .rb-tbtn .btn{padding:6px 9px} .rb-tbtn .btn.on{background:var(--acc-soft); border-color:var(--acc)}
+.rb-ann{display:grid; grid-template-columns:repeat(10,1fr); gap:6px}
+.rb-ann span{padding:5px 4px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--mute); text-align:center; font-size:11.5px; font-weight:700; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.rb-ann span.red{background:#e11d48; border-color:#e11d48; color:#fff; animation:rbBlink .8s steps(2) infinite}
+.rb-ann span.amber{background:#f59e0b; border-color:#f59e0b; color:#1c1206}
+@keyframes rbBlink{50%{opacity:.45}}
+.rb-grid{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,.92fr) minmax(0,1.28fr) minmax(0,1fr); gap:8px}
+.rb-col{display:flex; flex-direction:column; gap:8px; min-height:0; overflow:auto}
+.rb-p{border:1px solid var(--line); border-radius:14px; background:var(--card); padding:9px 12px}
+.rb-p h3{display:flex; align-items:center; gap:7px; margin:0 0 7px; font-size:13px; font-weight:700} .rb-p h3 svg{width:16px; height:16px; color:var(--acc)}
+.rb-p h3 .fz-lnk{margin-left:auto; font-size:12px}
+.rb-p canvas{display:block; width:100%; height:auto}
+.rb-leg{display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; margin-top:4px} .rb-leg i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:-1px}
+.lg-rr{background:#64748b} .lg-ar{background:#f59e0b} .lg-usp{background:#8b5cf6}
+.rb-axw{display:flex; gap:12px; align-items:center} .rb-axw canvas{width:70px !important; flex:none} .rb-axt p{margin:0 0 4px; font-size:12px; line-height:1.4} .rb-axt b{font-size:18px}
+.rb-bar{display:grid; grid-template-columns:86px 1fr 52px; align-items:center; gap:8px; font-size:12.5px; margin:4px 0}
+.rb-bar i{height:10px; border-radius:6px; background:var(--card2); overflow:hidden} .rb-bar s{display:block; height:100%; background:#a855f7; text-decoration:none}
+.rb-bar.io s{background:#0ea5e9} .rb-bar b{text-align:right}
+.rb-big{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+.rb-big > div{border:1px solid var(--line); border-radius:14px; background:var(--card); padding:8px 12px; display:grid}
+.rb-big small{color:var(--mute); font-size:11.5px} .rb-big b{font:700 26px/1.15 ui-monospace, Consolas, monospace; color:var(--acc)} .rb-big em{font-style:normal; color:var(--mute); font-size:11.5px}
+.rb-ozr{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; align-items:center; padding:8px 10px; border-radius:12px; background:var(--card2); margin-bottom:8px}
+.rb-ozr > div{grid-row:1 / span 2; display:grid; line-height:1.15} .rb-ozr small{font-size:11px; color:var(--mute); max-width:150px} .rb-ozr b{font:800 28px/1.1 ui-monospace, Consolas, monospace} .rb-ozr em{font-style:normal; font-size:11.5px; color:var(--mute)}
+.rb-ozr i{position:relative; height:12px; border-radius:6px; background:var(--card); overflow:hidden; border:1px solid var(--line)}
+.rb-ozr i s{display:block; height:100%; background:var(--ok); text-decoration:none; transition:width .3s}
+.rb-ozr i.bad s{background:#e11d48} .rb-ozr i u{position:absolute; top:-2px; bottom:-2px; width:2px; background:#e11d48}
+.rb-rod{display:grid; grid-template-columns:120px 1fr auto; gap:10px; align-items:center; padding:5px 0; border-top:1px dashed var(--line)}
+.rb-rod > span{display:grid; line-height:1.2} .rb-rod > span small{color:var(--mute); font-size:11px}
+.rb-rodv{display:flex; align-items:center; gap:8px} .rb-rodv i{position:relative; width:100%; height:14px; border-radius:7px; background:var(--card2); overflow:hidden; display:flex; flex-direction:column}
+.rb-rodv i s{display:block; height:100%; width:0; background:linear-gradient(90deg, #64748b, #94a3b8); text-decoration:none}
+.rb-rodv b{min-width:58px; text-align:right; font-size:12.5px}
+.rb-btns{display:flex; gap:4px; align-items:center} .rb-btns .btn{padding:4px 10px; min-height:0; font-size:13px} .rb-btns .btn.on{background:var(--ok-soft); border-color:var(--ok); color:var(--ok)}
+.rb-arset{min-width:46px; text-align:center; font-size:13px}
+.rb-az{display:flex; gap:14px; align-items:center; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line)} .rb-az p{margin:0; line-height:1.35}
+.rb-azc{position:relative; width:96px; height:64px; flex:none}
+.rb-azb{position:absolute; inset:6px; border-radius:12px; border:3px solid #7f1d1d; background:radial-gradient(circle at 40% 35%, #f87171, #b91c1c 70%); color:#fff; font:800 17px/1 inherit; letter-spacing:.04em; cursor:pointer; box-shadow:0 3px 0 #7f1d1d}
+.rb-azb:active{transform:translateY(2px); box-shadow:none}
+.rb-cover{position:absolute; inset:0; z-index:2; border-radius:12px; border:2px solid #b45309; background:repeating-linear-gradient(135deg, rgba(250,204,21,.92) 0 10px, rgba(28,25,23,.92) 10px 20px); color:#fff; display:grid; place-items:center; cursor:pointer; transition:transform .35s; transform-origin:top center; font:700 11px/1 inherit}
+.rb-cover svg{width:18px; height:18px} .rb-cover span{background:rgba(0,0,0,.55); padding:2px 6px; border-radius:6px}
+.rb-azc.open .rb-cover{transform:perspective(300px) rotateX(78deg) translateY(-14px); opacity:.65}
+.rb-azc.fired .rb-azb{background:radial-gradient(circle at 40% 35%, #fecaca, #ef4444 70%); animation:rbBlink .6s steps(2) infinite}
+.rb-pumps{display:grid; grid-template-columns:1fr 1fr; gap:8px} .rb-pumps > div{display:grid; gap:5px} .rb-pumps small{color:var(--mute); font-size:11px}
+.rb-pump{display:grid; grid-template-columns:auto 1fr; gap:1px 8px; text-align:left; padding:5px 8px; border-radius:10px; border:1px solid var(--line); background:var(--card2); color:var(--mute); font:inherit; font-size:12px; cursor:pointer}
+.rb-pump b{font-size:12.5px; color:var(--text)} .rb-pump .st{text-align:right} .rb-pump .fl{grid-column:1 / -1; font-size:11px}
+.rb-pump.on{border-color:var(--ok); color:var(--ok)} .rb-pump.warn{border-color:#f59e0b; color:#d97706} .rb-pump.cav{border-color:#e11d48; color:#e11d48}
+.rb-mini{grid-column:1 / -1; height:4px; border-radius:2px; background:var(--card); overflow:hidden} .rb-mini i{display:block; height:100%; background:linear-gradient(90deg, #22c55e, #f59e0b 60%, #e11d48)}
+.rb-gauges{display:grid; grid-template-columns:1fr 90px; gap:10px; align-items:end}
+.rb-gauge{display:grid; justify-items:center} .rb-gauge canvas{max-width:150px} .rb-gauge b, .rb-lvl b{font:700 18px/1.1 ui-monospace, Consolas, monospace} .rb-gauge small, .rb-lvl small{color:var(--mute); font-size:11px}
+.rb-lvl{display:grid; justify-items:center; gap:2px} .rb-lvl i{position:relative; width:26px; height:80px; border-radius:6px; background:var(--card2); border:1px solid var(--line); display:flex; align-items:flex-end; overflow:hidden}
+.rb-lvl i s{display:block; width:100%; background:#0ea5e9; text-decoration:none} .rb-lvl i u{position:absolute; left:0; right:0; top:50%; height:1px; background:var(--text); opacity:.5}
+.rb-rowb{display:flex; flex-wrap:wrap; gap:5px; margin-top:6px} .rb-rowb .btn{padding:4px 9px; min-height:0; font-size:12px}
+.rb-rowb .btn.on{background:var(--ok-soft); border-color:var(--ok); color:var(--ok)} .rb-rowb .btn.off{background:var(--bad-soft); border-color:var(--bad); color:var(--bad)}
+.rb-prot.hid, .rb-task.hid{display:none}
+.rb-task p{margin:0 0 6px; font-size:12.5px; line-height:1.45} .rb-do{font-weight:700; color:var(--acc)}
+.rb-logp{flex:1; min-height:120px; display:flex; flex-direction:column} .rb-log{flex:1; overflow:auto; font:12px/1.45 ui-monospace, Consolas, monospace}
+.rb-log p{margin:0 0 3px} .rb-log p b{color:var(--mute); font-weight:600} .rb-log p.bad{color:#e11d48} .rb-log p.warn{color:#d97706} .rb-log p.ok{color:var(--ok)}
+.rb-ov{position:absolute; inset:0; z-index:20; display:grid; place-items:center; background:var(--overlay, rgba(10,12,16,.55)); backdrop-filter:blur(4px); padding:20px}
+.rb-ov[hidden]{display:none}
+.rb-dlg{width:min(640px, 96vw); max-height:92vh; overflow:auto; border-radius:20px; border:1px solid var(--line); background:var(--card); padding:22px 26px; box-shadow:var(--sh-pop)}
+.rb-dlg.wide{width:min(900px, 96vw)} .rb-dlg.crash{border-color:#e11d48}
+.rb-dlg h2{margin:8px 0 10px; font-size:24px} .rb-dlg p{line-height:1.55}
+.rb-tag{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:var(--acc-soft); color:var(--acc); font-size:12.5px; font-weight:700}
+.rb-tag svg{width:15px; height:15px} .rb-tag.bad{background:var(--bad-soft); color:var(--bad)} .rb-tag.ok{background:var(--ok-soft); color:var(--ok)} .rb-tag.warn{background:var(--warn-soft); color:var(--warn)}
+.rb-opts{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+.rb-keys{display:flex; flex-wrap:wrap; gap:8px 16px; padding:10px 12px; border-radius:12px; background:var(--card2); font-size:12.5px}
+.rb-help{display:grid; grid-template-columns:1fr 1fr; gap:10px 22px} .rb-help b{font-size:14px} .rb-help p{margin:4px 0 0; font-size:13.5px; color:var(--mute)}
+.rb-why{padding:12px 14px; border-radius:14px; background:var(--bad-soft); margin:10px 0} .rb-why > b{display:flex; gap:6px; align-items:center} .rb-why > b svg{width:16px; height:16px}
+.rb-why ul{margin:8px 0 0; padding-left:20px} .rb-why li{margin:5px 0; line-height:1.5}
+.rb-post{margin:12px 0; padding:10px 12px; border-radius:14px; background:var(--card2)} .rb-post canvas{width:100%; height:auto; display:block; margin-top:6px}
+.rb-pleg{display:flex; flex-wrap:wrap; gap:12px; font-size:12px} .rb-pleg span::before{content:''; display:inline-block; width:14px; height:3px; margin-right:5px; vertical-align:3px; background:currentColor}
+.c-p{color:var(--acc)} .c-tip{color:#e11d48} .c-void{color:#0ea5e9} .c-dop{color:#16a34a} .c-rods{color:#8b5cf6}
+.rb-res{display:grid; grid-template-columns:repeat(4,1fr); gap:8px} .rb-res > div{padding:8px 12px; border-radius:12px; border:1px solid var(--line); display:grid} .rb-res small{color:var(--mute); font-size:11.5px} .rb-res b{font-size:20px}
+@media (max-width:1400px){ .rb-big b{font-size:21px} .rb-ozr b{font-size:24px} .rb-ann span{font-size:10.5px} .rb-rod{grid-template-columns:96px 1fr auto} }
+@media (max-height:820px){ .rb{gap:6px; padding:6px 8px 8px} .rb-p{padding:6px 10px} .rb-p h3{margin-bottom:4px; font-size:12.5px} #rb-core{max-height:190px; width:auto !important; margin:0 auto} #rb-chart{max-height:110px} .rb-big > div{padding:5px 10px} .rb-big b{font-size:19px} .rb-ozr{padding:5px 8px; margin-bottom:4px} .rb-ozr b{font-size:21px} .rb-rod{padding:3px 0} .rb-az{margin-top:4px; padding-top:4px} .rb-azc{height:54px; width:88px} .rb-ann span{padding:3px} .rb-axw canvas{height:96px !important} .rb-axt .mute{display:none} .rb-lvl i{height:60px} .rb-gauge canvas{max-width:120px} .rb-top{padding:4px 8px} }
+
+.rb-arman{display:none; gap:4px} .rb-rod.man .rb-arman{display:flex} .rb-rod.man .rb-arauto{display:none} .rb-arauto{display:flex; gap:4px; align-items:center}

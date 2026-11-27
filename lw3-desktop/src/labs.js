@@ -9,13 +9,13 @@
    Меню прижато к левому краю; кнопкой внизу меню или Ctrl+B оно сворачивается до значков (выбор запоминается).
    Клик по названию программы — на главную. Пока курсант не открыл «Что нового» этой версии, у названия метка «Новое». */
 let PAGE = 'main';
-const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторные работы', 'flask-conical'], ['tests', 'Тесты и экзамены', 'graduation-cap'], ['notes', 'Конспекты', 'notebook-pen'], ['ref', 'Справочник', 'library'], ['results', 'Мои результаты', 'trophy'], ['profile', 'Профиль', 'user'], ['about', 'О программе', 'book-open']];
+const NAV = [['main', 'Главная', 'house'], ['labs', 'Лабораторные работы', 'flask-conical'], ['rbmk', 'Тренажёр РБМК', 'atom'], ['tests', 'Тесты и экзамены', 'graduation-cap'], ['notes', 'Конспекты', 'notebook-pen'], ['ref', 'Справочник', 'library'], ['results', 'Мои результаты', 'trophy'], ['profile', 'Профиль', 'user'], ['about', 'О программе', 'book-open']];
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 let NAVMINI = lsGet('fz-nav-mini', '0') === '1';
 function vApp() {
   document.body.classList.add('noside', 'fzapp'); document.body.classList.remove('full'); ui.side.innerHTML = '';
-  const p = PROFILE, page = ({ main: () => pgMain() + fzWidgets(), labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes, ref: pgRef })[PAGE] || pgMain;
+  const p = PROFILE, page = ({ main: () => pgMain() + fzWidgets(), labs: pgLabs, tests: pgTests, results: pgResults, profile: pgProfile, about: pgAbout, notes: pgNotes, ref: pgRef, rbmk: pgRbmk })[PAGE] || pgMain;
   const tip = t => NAVMINI ? ` title="${t}"` : '';
   ui.main.innerHTML = `<div class="fz-app ${NAVMINI ? 'mini' : ''}"><nav class="fz-nav">
       <button class="fz-brand" data-d="brand" title="На главную">${LOGO}<span class="fz-bt"><b>Физпрактикум</b><small>ЧВВМУ им. П.С. Нахимова</small></span></button>
