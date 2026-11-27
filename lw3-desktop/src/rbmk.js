@@ -155,7 +155,7 @@ function vRbmk() {
             <div class="rb-lvl"><i><s id="rb-lvl"></s><u></u></i><b id="rb-lv">—</b><small>уровень, мм</small></div></div>
           <div class="rb-rowb"><button class="btn line" data-rb="bru" id="rb-bru">БРУ-К: закрыт</button><button class="btn line" data-rb="fwauto" id="rb-fwa">Питание: авто</button></div>
           <div class="rb-rowb">${[0, 1, 2].map(i => `<button class="btn line rb-pen" data-rb="pen" data-v="${i}" id="rb-pen${i}">ПЭН-${i + 1}</button>`).join('')}</div>
-          <div class="rb-rowb">${[0, 1].map(i => `<button class="btn line rb-tg" data-rb="tg" data-v="${i}" id="rb-tg${i}">ТГ-${i + 7}</button>`).join('')}<button class="btn line" data-rb="tgauto" id="rb-tga">Регулятор ТГ</button><button class="btn line" data-rb="eccs" id="rb-eccs">САОР</button></div>
+          <div class="rb-rowb">${[0, 1].map(i => `<button class="btn line rb-tg" data-rb="tg" data-v="${i}" id="rb-tg${i}">ТГ-${i + 7}</button>`).join('')}<button class="btn line" data-rb="tgauto" id="rb-tga">Регулятор ТГ</button><button class="btn line" data-rb="eccs" id="rb-eccs">САОР</button><button class="btn line" data-rb="view" data-v="elec" title="Электрическая часть (E)">${ic('zap')} Электрика</button></div>
         </div>
         <div class="rb-p rb-prot ${G.hist ? '' : 'hid'}" id="rb-prot"><h3>Защиты (по программе испытаний)</h3><div class="rb-rowb">
           ${[['tg', 'Останов 2 ТГ'], ['level', 'Уровень БС'], ['press', 'Давление БС'], ['period', 'По периоду']].map(([k, t]) => `<button class="btn line" data-rb="prot" data-v="${k}" id="rb-prot-${k}">${t}</button>`).join('')}</div></div>
@@ -428,7 +428,7 @@ function rbUpdate(force) {
     const st = b.querySelector('.st'), fl = b.querySelector('.fl'), mi = b.querySelector('.rb-mini i'); const shown = q.spin * 8 * (G.sensor && G.sensor.i === i ? G.sensor.k : 1);
     if (st) st.textContent = q.on ? (q.cav > 0.2 ? 'кавитация' : 'работает') : q.spin > 0.05 ? 'выбег' : 'резерв'; if (fl) fl.textContent = shown.toFixed(1) + ' тыс. м³/ч'; if (mi) mi.style.width = Math.min(100, q.vib) + '%'; });
   S.fwPumps.forEach((on, i) => { const b = document.getElementById('rb-pen' + i); if (b) b.classList.toggle('on', on); });
-  S.tg.forEach((t, i) => { const b = document.getElementById('rb-tg' + i); if (b) b.classList.toggle('on', t.on); });
+  S.tg.forEach((t, i) => { const b = document.getElementById('rb-tg' + i); if (!b) return; b.classList.toggle('on', t.on); const g = G.E && G.E.tg[i], tx = g ? `ТГ-${i + 7} · ${Math.round(g.P)} МВт · ${g.f.toFixed(1).replace('.', ',')} Гц` : 'ТГ-' + (i + 7); if (b.textContent !== tx) b.textContent = tx; });
   const tga = $('#rb-tga'); if (tga) { tga.classList.toggle('on', S.tgAuto); tga.textContent = S.tgAuto ? 'Регулятор ТГ: авто' : 'Регулятор ТГ: ручн.'; }
   const fwa = $('#rb-fwa'); if (fwa) { fwa.classList.toggle('on', S.fwAuto); fwa.textContent = S.fwAuto ? 'Питание: авто' : 'Питание: ручн.'; }
   const bru = $('#rb-bru'); if (bru) { bru.classList.toggle('on', S.bru > 0); bru.textContent = S.bru > 0 ? 'БРУ-К: открыт' : 'БРУ-К: закрыт'; }
@@ -824,20 +824,25 @@ function rbElCabDraw(c, base) {
 }
 /* ---------- 2D: вкладка «Электрика» ---------- */
 let rbElImg = {};
-function rbElImgs() { ['elec-panel', 'elec-keys'].forEach(n => { if (!rbElImg[n]) { const im = new Image(); im.src = 'img/rbmk3d/' + n + '.webp'; rbElImg[n] = im; } }); }
+function rbElImgs() { ['elec-panel', 'elec-keys', 'elec-cab'].forEach(n => { if (!rbElImg[n]) { const im = new Image(); im.src = 'img/rbmk3d/' + n + '.webp'; rbElImg[n] = im; } }); }
 function rbElecHtml() {
   rbElImgs();
   const gen = i => `<section class="rb-p rb-elg"><h3>${ic('zap')} Турбогенератор ТГ-${i + 7}</h3><div class="r3-live" id="rb-elr${i}"></div>
     <div class="rb-rowb"><button class="btn line" data-rb="tgsw" data-v="${i}" id="rb-tgsw${i}">—</button><button class="btn line" data-rb="exc" data-v="${i}" id="rb-exc${i}">—</button></div></section>`;
   return `<div class="rb-elv">
     <section class="rb-p rb-elp"><h3>${ic('gauge')} Электрическая часть блочного щита <span class="mute small">слева ТГ-7, справа ТГ-8: ток статора, напряжение, активная мощность, частота · в центре синхроноскоп · в окошках выработано и отпущено, МВт·ч</span></h3><canvas id="rb-elcv" width="2172" height="724"></canvas></section>
+    <section class="rb-p rb-elp"><h3>${ic('sliders-horizontal')} Пульт ключей <span class="mute small">щёлкните по ключу: выключатели ТГ-7 и ТГ-8, возбуждение, питание секций 6 кВ (зелёная лампа — от генератора, красная — от резерва)</span></h3><canvas id="rb-elkeys" width="2172" height="470" class="rb-click"></canvas></section>
     ${gen(0)}${gen(1)}
+    <section class="rb-p rb-elp"><h3>${ic('zap')} Шкафы собственных нужд 6 кВ <span class="mute small">щёлкните по шкафу секции — перевод на резерв и обратно</span></h3><canvas id="rb-elcab" width="2172" height="724" class="rb-click"></canvas></section>
     <section class="rb-p rb-els"><h3>${ic('zap')} Собственные нужды 6 кВ</h3><div id="rb-elsec"></div><p class="mute small">Секции 1–2 питаются от ТГ-7, 3–4 — от ТГ-8 через трансформаторы собственных нужд. Резерв — от резервного трансформатора (РТСН). Номинальные 20 кВ и cos φ 0,85 — учебные значения.</p></section>
   </div>`;
 }
 function rbElecTick() {
   const G = RBG; if (!G || !G.E || G.view !== 'elec') return; const S = G.S, E = G.E, cv = $('#rb-elcv');
-  if (cv && rbElImg['elec-panel'] && rbElImg['elec-panel'].complete && rbElImg['elec-panel'].naturalWidth) rbElPanelDraw(cv.getContext('2d'), rbElImg['elec-panel']);
+  const ok = n => rbElImg[n] && rbElImg[n].complete && rbElImg[n].naturalWidth;
+  if (cv && ok('elec-panel')) rbElPanelDraw(cv.getContext('2d'), rbElImg['elec-panel']);
+  const kc = $('#rb-elkeys'); if (kc && ok('elec-keys')) rbElKeysDraw(kc.getContext('2d'), rbElImg['elec-keys']);
+  const cc = $('#rb-elcab'); if (cc && ok('elec-cab')) rbElCabDraw(cc.getContext('2d'), rbElImg['elec-cab']);
   const f = (v, d) => v.toFixed(d).replace('.', ',');
   E.tg.forEach((g, i) => {
     const r = $('#rb-elr' + i); if (r) { const h = r3Row('Выключатель', S.tg[i].on ? 'включён, в сети' : 'отключён', S.tg[i].on ? '' : 'bad') + r3Row('Ток статора', f(g.I, 2) + ' кА') + r3Row('Напряжение', f(g.U, 1) + ' кВ') + r3Row('Активная мощность', Math.round(g.P) + ' МВт') + r3Row('Реактивная', Math.round(g.Q) + ' Мвар') + r3Row('cos φ', g.P > 1 ? '0,85' : '—') + r3Row('Частота', f(g.f, 2) + ' Гц', g.U > 1 && Math.abs(g.f - 50) > 0.5 ? 'bad' : '') + r3Row('Собственные нужды', f(g.own, 1) + ' МВт') + r3Row('Выработано / отпущено', f(g.gen, 1) + ' / ' + f(g.out, 1) + ' МВт·ч') + (S.tg[i].on ? '' : r3Row('Синхронизм', g.sync ? 'есть — можно включать' : 'нет', g.sync ? '' : 'bad')); if (r.innerHTML !== h) r.innerHTML = h; }
@@ -846,3 +851,18 @@ function rbElecTick() {
   });
   const sb = $('#rb-elsec'); if (sb) { const h = RB_SEC.map((pr, k) => `<div class="rb-secr"><b>Секция ${k + 1}</b><span>${E.sec[k] === 'tg' ? 'от ТГ-' + (k < 2 ? 7 : 8) : 'от резерва'}</span><span class="${E.secU[k] < 5.5 ? 'bad' : ''}">${f(E.secU[k], 2)} кВ</span><span>${pr.map(j => `ГЦН-${j + 1}: ${Math.round(rbPumpI(S.pumps[j]))} А`).join(' · ')}</span><button class="btn line" data-rb="sec" data-v="${k}">${E.sec[k] === 'tg' ? 'На резерв' : 'На ТГ-' + (k < 2 ? 7 : 8)}</button></div>`).join(''); if (sb._h !== h) { sb._h = h; sb.innerHTML = h; } }
 }
+// щелчки по картинкам пульта ключей и шкафов во вкладке «Электрика»
+document.addEventListener('click', e => {
+  const cv = e.target.closest && e.target.closest('#rb-elkeys, #rb-elcab'); if (!cv || !RBG || RBG.done) return;
+  const r = cv.getBoundingClientRect(), u = (e.clientX - r.left) / r.width, v = (e.clientY - r.top) / r.height;
+  if (cv.id === 'rb-elkeys') { if (v > 0.75) return; let k = 0, best = 9; RB_KEYS.lx.forEach((x, j) => { const d = Math.abs(x / 2172 - 0.03 - u); if (d < best) { best = d; k = j; } }); if (best < 0.06) { const [rb, val] = rbKeyCmd(k); r3Cmd(rb, val); } }
+  else { const k = Math.max(0, Math.min(5, Math.floor(u * 6))); if (k < 4) r3Cmd('sec', k); else toast(k === 4 ? 'Питательными насосами управляют кнопки ПЭН на основном пульте.' : 'Резервный трансформатор всегда под напряжением 6,3 кВ: переводите на него секции 1–4.'); }
+  RBG._elAt = 0;
+});
+// подсказка под курсором над ключами
+document.addEventListener('mousemove', e => {
+  const cv = e.target.closest && e.target.closest('#rb-elkeys'); if (!cv || !RBG) return;
+  const r = cv.getBoundingClientRect(), u = (e.clientX - r.left) / r.width, v = (e.clientY - r.top) / r.height; let k = -1, best = 0.06;
+  if (v < 0.75) RB_KEYS.lx.forEach((x, j) => { const d = Math.abs(x / 2172 - 0.03 - u); if (d < best) { best = d; k = j; } });
+  const t = k < 0 ? '' : RB_KEYN(k) + (rbKeyState(k) ? (k % 4 > 1 ? ': от ТГ' : ': включено') : (k % 4 > 1 ? ': от резерва' : ': отключено')); if (cv.title !== t) cv.title = t; cv.style.cursor = k < 0 ? '' : 'pointer';
+});

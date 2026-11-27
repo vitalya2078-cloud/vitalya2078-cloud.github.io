@@ -695,3 +695,5 @@ body.rbscr #app, body.rbscr main{max-width:none}
 .rb-elp h3 .mute{font-weight:400; margin-left:8px}
 .rb-elg .rb-rowb{margin-top:8px} .rb-elg .btn.sync{background:#dcfce7; border-color:#16a34a; color:#166534}
 .rb-secr{display:grid; grid-template-columns:90px 110px 80px 1fr auto; gap:10px; align-items:center; padding:6px 0; border-bottom:1px dashed var(--line); font-size:13px} .rb-secr .bad{color:var(--bad); font-weight:700} .rb-secr .btn{padding:4px 10px; min-height:0}
+.rb-click{cursor:pointer}
+.rb-rowb .rb-tg{white-space:nowrap}
