@@ -5,6 +5,7 @@
    Текстуры (необязательно): img/rbmk3d/*.webp — развёртки деталей и бесшовные плитки зала; если файла нет, деталь окрашена цветом.
    Если WebGL недоступен (старая видеокарта), остаётся 2D-пульт.
    ===================================================================== */
+function r3MS(p = {}) { const T = window.THREE; if (R3.low) { const q = Object.assign({}, p); delete q.metalness; delete q.roughness; return new T.MeshLambertMaterial(q); } return new T.MeshStandardMaterial(p); }
 const R3 = { ok: null, loading: null, scene: null, cam: null, ren: null, ctl: null, objs: {}, kind: 'unit', pick: [], tex: {}, raf: 0 };
 function r3Supported() {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl')); } catch (e) { return false; }
@@ -56,7 +57,7 @@ function r3CanvasTex(spec) {
 function r3Apply(mat, spec, glow) {
   r3CanvasTex(spec).then(t => { if (!t) return; mat.map = t; mat.color.set(0xffffff); if (glow) { mat.emissiveMap = t; mat.emissive.set(0xffffff); mat.emissiveIntensity = glow; } mat.needsUpdate = true; });
 }
-const r3Mat = (col, spec, extra = {}) => { const T = window.THREE, m = new T.MeshStandardMaterial(Object.assign({ color: col, roughness: 0.55, metalness: spec ? 0.15 : 0.2 }, extra)); if (spec) r3Apply(m, spec); return m; };
+const r3Mat = (col, spec, extra = {}) => { const T = window.THREE, m = r3MS(Object.assign({ color: col, roughness: 0.55, metalness: spec ? 0.15 : 0.2 }, extra)); if (spec) r3Apply(m, spec); return m; };
 // общие материалы: окрашенный металл, нержавейка, оранжевая краска
 const r3Metal = (rep = [1, 1]) => r3Mat(0x55667c, r3Full('metal', { rep }));
 const r3Steel = (rep = [1, 1]) => r3Mat(0xc0c8d2, r3Full('steel', { rep }), { metalness: 0.55, roughness: 0.32 });
@@ -68,11 +69,11 @@ function r3Cap(R, depth, mat) {
   g.scale(1, depth / R, 1); return new T.Mesh(g, mat);
 }
 function r3Drum() {
-  const T = window.THREE, g = new T.Group(), R = 1.25, L = 12, steelM = r3Steel([1, 2]);
+  const T = window.THREE, g = new T.Group(), R = 1.25, L = 12, steelM = r3Steel([1, 2]), supM = r3Metal();
   const body = new T.Mesh(new T.CylinderGeometry(R, R, L, 48, 1, true), r3Mat(0xa9b4c0, r3Full('drum-shell', { rot: true, rep: [2, 1] }), { metalness: 0.35, roughness: 0.4 })); body.rotation.z = Math.PI / 2; g.add(body);
   const capM = r3Mat(0xa9b4c0, r3Crop('drum-head', [0.012, 0.012, 0.988, 0.988]), { metalness: 0.35, roughness: 0.4 });
   [-1, 1].forEach(sd => { const c = r3Cap(R, 0.75, capM); c.rotation.z = -sd * Math.PI / 2; c.position.x = sd * L / 2; g.add(c);
-    const sup = new T.Mesh(new T.CylinderGeometry(0.35, 0.9, 1.5, 4), r3Metal()); sup.rotation.y = Math.PI / 4; sup.position.set(sd * L * 0.33, -R - 0.55, 0); g.add(sup); });
+    const sup = new T.Mesh(new T.CylinderGeometry(0.35, 0.9, 1.5, 4), supM); sup.rotation.y = Math.PI / 4; sup.position.set(sd * L * 0.33, -R - 0.55, 0); g.add(sup); });
   const flM = r3Orange();
   [[-0.35, 0.32], [-0.2, 0.22], [0, 0.42], [0.12, 0.2], [0.22, 0.2], [0.35, 0.32]].forEach(([fx, r]) => {
     const n = new T.Mesh(new T.CylinderGeometry(r, r, 0.7, 16), steelM), fl = new T.Mesh(new T.CylinderGeometry(r + 0.12, r + 0.12, 0.12, 20), flM); n.position.set(fx * L, R + 0.25, 0); fl.position.set(fx * L, R + 0.6, 0); g.add(n, fl); });
@@ -96,7 +97,7 @@ function r3Turbine() {
   const base = new T.Mesh(new T.BoxGeometry(12.5, 0.7, 3.4), metal); base.position.y = -1.6; g.add(base);
   const casM = r3Mat(0x55667c, r3Full('turbine', { rot: true, rep: [1, 1], off: [0.25, 0] }));
   const cas = new T.Mesh(new T.CylinderGeometry(1.35, 1.35, 6.4, 48, 1, true), casM); cas.rotation.z = Math.PI / 2; cas.position.set(-2.4, 0, 0); g.add(cas);
-  [-5.6, 0.8].forEach(x => { const e = new T.Mesh(new T.CylinderGeometry(1.35, 1.35, 0.05, 48), r3Metal()); e.rotation.z = Math.PI / 2; e.position.x = x; g.add(e); });
+  const endD = r3Metal(); [-5.6, 0.8].forEach(x => { const e = new T.Mesh(new T.CylinderGeometry(1.35, 1.35, 0.05, 48), endD); e.rotation.z = Math.PI / 2; e.position.x = x; g.add(e); });
   const coup = new T.Mesh(new T.CylinderGeometry(0.75, 0.75, 0.5, 24), r3Orange()); coup.rotation.z = Math.PI / 2; coup.position.x = 1.1; g.add(coup);
   const endM = r3Mat(0xb8c0c9, r3Crop('gen-end', [0.012, 0.012, 0.988, 0.988]));
   const gen = new T.Mesh(new T.CylinderGeometry(1.4, 1.4, 3.8, 48), [r3Mat(0xb8c0c9, r3Full('generator', { rot: true, rep: [1, 1] })), endM, endM]); gen.rotation.z = Math.PI / 2; gen.position.x = 3.4; g.add(gen);
@@ -106,7 +107,7 @@ function r3Turbine() {
 // блочный щит: вертикальная панель приборов и наклонный пульт с кнопкой АЗ-5 под крышкой
 function r3Desk() {
   const T = window.THREE, g = new T.Group(), metal = r3Metal([2, 1]);
-  const panelM = new T.MeshStandardMaterial({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); R3.objs.panelMat = panelM;   // картинку панели рисует r3DeskTex (живые приборы)
+  const panelM = r3MS({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); R3.objs.panelMat = panelM;   // картинку панели рисует r3DeskTex (живые приборы)
   const panel = new T.Mesh(new T.BoxGeometry(14, 4.67, 0.5), [metal, metal, metal, metal, panelM, metal]); panel.position.set(0, 2.335 + 1, -1.8); g.add(r3Tag(panel, 'desk', 'desk'));
   const plinth = new T.Mesh(new T.BoxGeometry(14.2, 1, 0.8), metal); plinth.position.set(0, 0.5, -1.8); g.add(r3Tag(plinth, 'desk', 'desk'));
   const metal2 = r3Metal([2, 1]), base = new T.Mesh(new T.BoxGeometry(12, 2.1, 3.2), metal2); base.position.set(0, 1.05, 0.6); g.add(r3Tag(base, 'console', 'console'));
@@ -115,10 +116,10 @@ function r3Desk() {
   const slab = new T.Mesh(new T.BoxGeometry(12, 0.24, 4), [metal2, metal2, topM, metal2, metal2, metal2]); top.add(r3Tag(slab, 'console', 'console'));
   // АЗ-5 — в пустом квадрате посередине пульта
   const az = new T.Group(); az.position.set((0.478 - 0.5) * 12, 0.12, 0); top.add(az);
-  const azBase = new T.Mesh(new T.BoxGeometry(0.95, 0.12, 0.95), new T.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.6 }));
-  const btn = new T.Mesh(new T.BoxGeometry(0.62, 0.3, 0.62), new T.MeshStandardMaterial({ color: 0xdc2626, emissive: 0x7f1d1d, emissiveIntensity: 0.3, roughness: 0.35 })); btn.position.y = 0.2;
+  const azBase = new T.Mesh(new T.BoxGeometry(0.95, 0.12, 0.95), r3MS({ color: 0x1f2937, roughness: 0.6 }));
+  const btn = new T.Mesh(new T.BoxGeometry(0.62, 0.3, 0.62), r3MS({ color: 0xdc2626, emissive: 0x7f1d1d, emissiveIntensity: 0.3, roughness: 0.35 })); btn.position.y = 0.2;
   const hinge = new T.Group(); hinge.position.set(0, 0.1, -0.45); hinge.rotation.x = -1.9;
-  const cover = new T.Mesh(new T.BoxGeometry(0.9, 0.06, 0.9), new T.MeshStandardMaterial({ color: 0xfacc15, transparent: true, opacity: 0.75, roughness: 0.3 })); cover.position.z = 0.45; hinge.add(cover);
+  const cover = new T.Mesh(new T.BoxGeometry(0.9, 0.06, 0.9), r3MS({ color: 0xfacc15, transparent: true, opacity: 0.75, roughness: 0.3 })); cover.position.z = 0.45; hinge.add(cover);
   az.add(azBase, btn, hinge); R3.objs.az = { btn, hinge };
   [azBase, btn, cover].forEach(m => r3Tag(m, 'az5', 'az5')); btn.material.userData.dyn = true;
   return g;
@@ -134,7 +135,7 @@ function r3Room(scene, dark) {
     const lo = new T.Mesh(new T.PlaneGeometry(HW * 2, BAND), wallLo); lo.position.y = Y0 + BAND / 2; w.add(lo);
     const hi = new T.Mesh(new T.PlaneGeometry(HW * 2, WH - BAND), wallHi); hi.position.y = Y0 + BAND + (WH - BAND) / 2; w.add(hi);
   }
-  const ceil = new T.Mesh(new T.PlaneGeometry(HW * 2, HW * 2), new T.MeshStandardMaterial({ color: 0x5a6a80, roughness: 0.8, emissive: 0x000000 })); r3Apply(ceil.material, r3Full('ceiling', { rep: [HW / 8, HW / 8] }), dark ? 0.35 : 0.15);
+  const ceil = new T.Mesh(new T.PlaneGeometry(HW * 2, HW * 2), r3MS({ color: 0x5a6a80, roughness: 0.8, emissive: 0x000000 })); r3Apply(ceil.material, r3Full('ceiling', { rep: [HW / 8, HW / 8] }), dark ? 0.35 : 0.15);
   ceil.rotation.x = Math.PI / 2; ceil.position.y = Y0 + WH; room.add(ceil);
   // мостовой кран над залом
   const or = r3Orange(), metal = r3Metal([6, 1]);
@@ -176,22 +177,22 @@ function r3Route(pts, rad) {
 const R3MED = { water: [0x38bdf8, 1], mix: [0xe2e8f0, 0.95], steam: [0xffffff, 0.6], feed: [0x2563eb, 1] };
 function r3Pipe(scene, pts, o) {
   const T = window.THREE, path = r3Route(pts, o.r * 2.5), len = path.getLength();
-  const m = new T.Mesh(new T.TubeGeometry(path, Math.max(8, Math.ceil(len * (R3.low ? 1 : 2))), o.r, R3.low ? 6 : 10, false), o.mat);
-  scene.add(m); r3Tag(m, o.info, o.id);
-  if (o.med) R3.flows.push({ path, len, med: o.med, rate: o.rate, r: o.r, n: Math.max(2, Math.round(len / (R3.low ? 2.6 : 1.6))), off: Math.random() });
+  const m = new T.Mesh(new T.TubeGeometry(path, Math.max(6, Math.ceil(len * (R3.low ? 0.7 : 1.2))), o.r, R3.low ? 6 : 8, false), o.mat);
+  m.userData.pipe = true; scene.add(m); r3Tag(m, o.info, o.id);
+  if (o.med) R3.flows.push({ pts: path.getSpacedPoints(Math.max(8, Math.ceil(len * 2))), len, med: o.med, rate: o.rate, r: o.r, n: Math.max(2, Math.round(len / (R3.low ? 2.6 : 1.8))), off: Math.random() });
   return m;
 }
 function r3FlowInit(scene) {
   const T = window.THREE, cnt = {}; R3.flows.forEach(f => { cnt[f.med] = (cnt[f.med] || 0) + f.n; });
   R3.flowIM = {};
-  for (const k in cnt) { const [c, o] = R3MED[k]; const im = new T.InstancedMesh(new T.SphereGeometry(1, 10, 8), new T.MeshBasicMaterial({ color: c, transparent: o < 1, opacity: o, depthWrite: o >= 1 }), cnt[k]); im.frustumCulled = false; scene.add(im); R3.flowIM[k] = im; }
+  for (const k in cnt) { const [c, o] = R3MED[k]; const im = new T.InstancedMesh(new T.SphereGeometry(1, 7, 5), new T.MeshBasicMaterial({ color: c, transparent: o < 1, opacity: o, depthWrite: o >= 1 }), cnt[k]); im.frustumCulled = false; scene.add(im); R3.flowIM[k] = im; }
 }
 function r3Flows(dt) {
   if (!R3.flowIM) return; const T = window.THREE, m4 = new T.Matrix4(), p = new T.Vector3(), cnt = {};
   R3.flows.forEach(f => {
     const v = Math.max(0, f.rate() || 0), im = R3.flowIM[f.med]; let k = cnt[f.med] || 0;
     f.off = (f.off + v * dt * 3 / f.len) % 1;
-    for (let j = 0; j < f.n; j++) { const s = v > 0.02 ? f.r * 1.12 : 0.0001; f.path.getPointAt((j / f.n + f.off) % 1, p); m4.makeScale(s, s, s); m4.setPosition(p); im.setMatrixAt(k++, m4); }
+    const P = f.pts, L = P.length - 1; for (let j = 0; j < f.n; j++) { const s = v > 0.02 ? f.r * 1.12 : 0.0001, u = ((j / f.n + f.off) % 1) * L, a = Math.floor(u); p.lerpVectors(P[a], P[Math.min(L, a + 1)], u - a); m4.makeScale(s, s, s); m4.setPosition(p); im.setMatrixAt(k++, m4); }
     cnt[f.med] = k;
   });
   for (const k in R3.flowIM) R3.flowIM[k].instanceMatrix.needsUpdate = true;
@@ -230,7 +231,7 @@ function r3Plant(scene) {
     r3Side(s).forEach((i, j) => {
       const z = -7 + j * 4.6, g = new T.Group(); g.position.set(s * 17.5, -4.1, z);
       const body = r3Pump(); body.traverse(o => { if (o.isMesh) r3Tag(o, 'pump', 'pump:' + i); }); g.add(body);
-      const lampM = new T.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 }); lampM.userData.dyn = true;
+      const lampM = r3MS({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 }); lampM.userData.dyn = true;
       const lamp = new T.Mesh(new T.SphereGeometry(0.22, 12, 10), lampM); lamp.position.set(0, 2.85, 0); g.add(lamp);
       scene.add(g); R3.objs.pumps.push({ g, lamp, body, idx: i });
       r3Label('pump:' + i, [s * 17.5, -0.6, z], () => { const q = RBG.S.pumps[i]; return `ГЦН-${i + 1} · ${q.on ? (q.cav > 0.2 ? 'кавитация' : q.vib > 60 ? 'вибрация' : 'работает') : q.spin > 0.05 ? 'выбег' : 'резерв'}`; });
@@ -243,7 +244,7 @@ function r3Plant(scene) {
     const eg = new T.Group(); eg.position.set(s * 25, -3.2, 9); scene.add(eg);
     const tank = new T.Mesh(new T.CylinderGeometry(1.4, 1.4, 5.4, 32), r3Metal([2, 2])); eg.add(tank);
     const dome = r3Cap(1.4, 0.7, r3Metal()); dome.position.y = 2.7; eg.add(dome);
-    const eLampM = new T.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 }); eLampM.userData.dyn = true;
+    const eLampM = r3MS({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 }); eLampM.userData.dyn = true;
     const el = new T.Mesh(new T.SphereGeometry(0.25, 12, 10), eLampM); el.position.y = 3.6; eg.add(el); R3.objs.eccsLamps.push(el);
     [tank, dome].forEach(m => r3Tag(m, 'eccs', 'eccs'));
     r3Pipe(scene, [[s * 25, -5.6, 9], [s * 13.5, -5.6, 9], [s * 13.5, -4.3, 9.4]], { r: 0.22, mat: M('eccsl', () => r3Steel([1, 4])), info: 'eccs', id: 'eccs' });
@@ -275,7 +276,7 @@ function r3Plant(scene) {
   [-4, 0, 4].forEach((x, i) => {
     const g = new T.Group(); g.position.set(x, -4.1, -35); g.scale.setScalar(0.8); g.rotation.y = Math.PI / 2;
     const b = r3Pump(); b.traverse(o => { if (o.isMesh) r3Tag(o, 'pen', 'pen:' + i); }); g.add(b);
-    const lm = new T.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 }); lm.userData.dyn = true; const lamp = new T.Mesh(new T.SphereGeometry(0.22, 12, 10), lm); lamp.position.set(0, 2.85, 0); g.add(lamp);
+    const lm = r3MS({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1 }); lm.userData.dyn = true; const lamp = new T.Mesh(new T.SphereGeometry(0.22, 12, 10), lm); lamp.position.set(0, 2.85, 0); g.add(lamp);
     scene.add(g); R3.objs.pens.push({ g, lamp, i });
     r3Label('pen:' + i, [x, -1.5, -35], () => `ПЭН-${i + 1} · ${RBG.S.fwPumps[i] ? 'работает' : 'резерв'}`);
     const fr = () => RBG.S.fwPumps[i] ? RBG.S.fw / Math.max(1, RBG.S.fwPumps.filter(Boolean).length) * 2 : 0;
@@ -283,6 +284,9 @@ function r3Plant(scene) {
     r3Pipe(scene, [[x, -4.26, -36.2], [x, -4.26, -37], [0, -4.26, -37], [0, 13.6, -37]], { r: 0.2, mat: pipeM('feed'), info: 'feed', id: 'feed', med: 'feed', rate: fr });
   });
   r3Label('reactor', [0, 6.6, 0], () => `Реактор · ${RBN(RBG.S.P)} МВт`);
+  // склейка: агрегаты по отдельности (их подсветка и тряска сохраняются), трубы — по участкам
+  scene.children.filter(o => o.isGroup && o !== R3.objs.reactor).forEach(g => r3MergeIn(g));
+  r3MergeIn(scene, o => o.parent === scene && !!o.userData.pipe);
   r3FlowInit(scene);
 }
 
@@ -290,10 +294,10 @@ function r3Plant(scene) {
 const R3GAUGE = [[154, 162], [391, 162], [629, 162], [1373, 162], [1609, 162], [1853, 162]];
 function r3DeskTex(mat) {
   r3Img('desk-panel').then(im => {
-    if (!im || !R3.ren) return; const T = window.THREE, cv = document.createElement('canvas'); cv.width = 2000; cv.height = 667;
-    const c = cv.getContext('2d'); c.drawImage(im, 0, 0, 2000, 667);
-    const base = document.createElement('canvas'); base.width = 2000; base.height = 667; base.getContext('2d').drawImage(cv, 0, 0);
-    const px = c.getImageData(R3GAUGE[0][0] - 40, R3GAUGE[0][1] + 40, 1, 1).data, face = `rgb(${px[0]},${px[1]},${px[2]})`;
+    if (!im || !R3.ren) return; const T = window.THREE, k = R3.low ? 0.4 : 0.55, cv = document.createElement('canvas'); cv.width = Math.round(2000 * k); cv.height = Math.round(667 * k);
+    const c = cv.getContext('2d'); c.setTransform(k, 0, 0, k, 0, 0);
+    const base = document.createElement('canvas'); base.width = 2000; base.height = 667; const bc = base.getContext('2d'); bc.drawImage(im, 0, 0, 2000, 667);
+    const px = bc.getImageData(R3GAUGE[0][0] - 40, R3GAUGE[0][1] + 40, 1, 1).data, face = `rgb(${px[0]},${px[1]},${px[2]})`;
     const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true;
     R3.desk = { cv, c, base, t, face, at: 0 }; r3DeskDraw();
   });
@@ -338,7 +342,7 @@ function r3Build(kind) {
   const T = window.THREE, box = $('#rb-3dc'); if (!box) return;
   r3Dispose();
   const low = R3Q() === 'low';
-  const ren = new T.WebGLRenderer({ antialias: !low, alpha: false }); ren.setPixelRatio(low ? 1 : Math.min(1.5, window.devicePixelRatio || 1));
+  const ren = new T.WebGLRenderer({ antialias: !low, alpha: false, powerPreference: 'high-performance' }); R3.dprMax = low ? 0.85 : Math.min(1.25, window.devicePixelRatio || 1); R3.dpr = R3.dprMax; ren.setPixelRatio(R3.dpr);
   ren.setSize(box.clientWidth, box.clientHeight); ren.outputColorSpace = T.SRGBColorSpace; box.appendChild(ren.domElement);
   const lbl = document.createElement('div'); lbl.className = 'r3-lbls' + (R3L() ? '' : ' off'); box.appendChild(lbl);
   const tip = document.createElement('div'); tip.className = 'r3-tip'; tip.hidden = true; box.appendChild(tip);
@@ -352,31 +356,31 @@ function r3Build(kind) {
   // ---------- реактор ----------
   const reactor = new T.Group(); scene.add(reactor); R3.objs.reactor = reactor;
   const H = 7, Rr = 5.8, cut = kind === 'core';
-  const gMat = new T.MeshStandardMaterial({ color: 0x3a3f46, roughness: 0.85 }); r3Tex('graphite', gMat, [1, 3]);
+  const gMat = r3MS({ color: 0x3a3f46, roughness: 0.85 }); r3Tex('graphite', gMat, [1, 3]);
   const cells = [], step = 0.62;
   for (let x = -Rr; x <= Rr; x += step) for (let z = -Rr; z <= Rr; z += step) { if (Math.hypot(x, z) > Rr) continue; if (cut && x > 0 && z > 0) continue; cells.push([x, z]); }
   const gi = new T.InstancedMesh(new T.BoxGeometry(step * 0.96, H, step * 0.96), gMat, cells.length), m4 = new T.Matrix4();
   cells.forEach(([x, z], i) => { m4.makeTranslation(x, 0, z); gi.setMatrixAt(i, m4); }); gi.computeBoundingBox(); reactor.add(r3Tag(gi, 'graphite', 'reactor'));
-  const chMat = new T.MeshStandardMaterial({ color: 0xc9d2dc, metalness: 0.5, roughness: 0.3, emissive: new T.Color(0xff7a2e), emissiveIntensity: 0.4 }); chMat.userData.dyn = true; r3Tex('channel', chMat); R3.objs.chMat = chMat;
+  const chMat = r3MS({ color: 0xc9d2dc, metalness: 0.5, roughness: 0.3, emissive: new T.Color(0xff7a2e), emissiveIntensity: 0.4 }); chMat.userData.dyn = true; r3Tex('channel', chMat); R3.objs.chMat = chMat;
   const faceCells = []; if (cut) for (let t = step * 0.8; t < Rr - 0.3; t += step) { faceCells.push([0.05, t]); faceCells.push([t, 0.05]); }
   const fuelCells = faceCells.filter((c, i) => i % 3 !== 1), rodCells = faceCells.filter((c, i) => i % 3 === 1);
   if (fuelCells.length) { const fi = new T.InstancedMesh(new T.CylinderGeometry(0.16, 0.16, H + 0.6, 10), chMat, fuelCells.length); fuelCells.forEach(([x, z], i) => { m4.makeTranslation(x, 0.3, z); fi.setMatrixAt(i, m4); }); fi.computeBoundingBox(); reactor.add(r3Tag(fi, 'fuel', 'reactor')); }
-  const absMat = new T.MeshStandardMaterial({ color: 0x1d232b, roughness: 0.5, metalness: 0.3 }), dispMat = new T.MeshStandardMaterial({ color: 0x8c96a3, roughness: 0.7 }), watMat = new T.MeshStandardMaterial({ color: 0x38a9e8, transparent: true, opacity: 0.55, roughness: 0.1 });
+  const absMat = r3MS({ color: 0x1d232b, roughness: 0.5, metalness: 0.3 }), dispMat = r3MS({ color: 0x8c96a3, roughness: 0.7 }), watMat = r3MS({ color: 0x38a9e8, transparent: true, opacity: 0.55, roughness: 0.1 });
   r3Tex('rod-absorber', absMat); r3Tex('rod-displacer', dispMat);
-  const markM = { RR: new T.MeshStandardMaterial({ color: 0x64748b }), AR: new T.MeshStandardMaterial({ color: 0xf59e0b }), USP: new T.MeshStandardMaterial({ color: 0x8b5cf6 }) };
+  const markM = { RR: r3MS({ color: 0x64748b }), AR: r3MS({ color: 0xf59e0b }), USP: r3MS({ color: 0x8b5cf6 }) };
   rodCells.forEach(([x, z], i) => {
     const g = ['RR', 'RR', 'AR', 'RR', 'USP'][i % 5], grp = new T.Group(); grp.position.set(x, 0, z);
     const abs = new T.Mesh(new T.CylinderGeometry(0.2, 0.2, g === 'USP' ? 3.5 : 6.2, 12), absMat), dis = new T.Mesh(new T.CylinderGeometry(0.2, 0.2, 4.5, 12), dispMat), wat = new T.Mesh(new T.CylinderGeometry(0.19, 0.19, 1.25, 10), watMat);
     const mark = new T.Mesh(new T.CylinderGeometry(0.24, 0.24, 0.3, 12), markM[g]);
     grp.add(r3Tag(abs, 'rod', 'rod:' + g), r3Tag(dis, 'rod', 'rod:' + g), r3Tag(wat, 'water', 'rod:' + g), r3Tag(mark, 'rod', 'rod:' + g)); reactor.add(grp); R3.objs.rods.push({ g, grp, abs, dis, wat, mark });
   });
-  if (fuelCells.length) { const n = fuelCells.length * 6, bi = new T.InstancedMesh(new T.SphereGeometry(0.07, 6, 6), new T.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 }), n); bi.userData.seed = Array.from({ length: n }, (_, k) => ({ c: fuelCells[k % fuelCells.length], y: Math.random(), s: 0.6 + Math.random() })); reactor.add(bi); R3.objs.bubbles = bi; }
-  const topMat = new T.MeshStandardMaterial({ color: 0xb4bcc6, metalness: 0.5, roughness: 0.45, emissive: 0x000000 }); r3Tex('top', topMat); topMat.userData.dyn = true; R3.objs.topMat = topMat;
+  if (fuelCells.length) { const n = fuelCells.length * 6, bi = new T.InstancedMesh(new T.SphereGeometry(0.07, 6, 6), r3MS({ color: 0xffffff, transparent: true, opacity: 0.85 }), n); bi.userData.seed = Array.from({ length: n }, (_, k) => ({ c: fuelCells[k % fuelCells.length], y: Math.random(), s: 0.6 + Math.random() })); reactor.add(bi); R3.objs.bubbles = bi; }
+  const topMat = r3MS({ color: 0xb4bcc6, metalness: 0.5, roughness: 0.45, emissive: 0x000000 }); r3Tex('top', topMat); topMat.userData.dyn = true; R3.objs.topMat = topMat;
   const theta = cut ? Math.PI * 1.5 : Math.PI * 2, th0 = cut ? Math.PI : 0;
   const top = new T.Mesh(new T.CylinderGeometry(Rr + 0.6, Rr + 0.6, 0.9, 64, 1, false, th0, theta), [steel, topMat, steel]); top.position.y = H / 2 + 0.75; reactor.add(r3Tag(top, 'top', 'reactor')); R3.objs.top = top; R3.objs.topY = top.position.y;
   const bot = new T.Mesh(new T.CylinderGeometry(Rr + 0.6, Rr + 0.6, 0.7, 64, 1, false, th0, theta), steel); bot.position.y = -H / 2 - 0.6; reactor.add(bot);
   const ped = new T.Mesh(new T.CylinderGeometry(Rr - 1, Rr - 0.4, 1.8, 48), r3Metal([6, 1])); ped.position.y = -H / 2 - 1.85; reactor.add(ped);
-  const shell = new T.Mesh(new T.CylinderGeometry(Rr + 0.45, Rr + 0.45, H, 64, 1, true, th0, theta), new T.MeshStandardMaterial({ color: 0x7d8794, metalness: 0.4, roughness: 0.5, side: T.DoubleSide, transparent: true, opacity: 0.35 })); reactor.add(shell);
+  const shell = new T.Mesh(new T.CylinderGeometry(Rr + 0.45, Rr + 0.45, H, 64, 1, true, th0, theta), r3MS({ color: 0x7d8794, metalness: 0.4, roughness: 0.5, side: T.DoubleSide, transparent: true, opacity: 0.35 })); reactor.add(shell);
   if (kind === 'unit') { r3Plant(scene); }
   else if (kind === 'desk') {
     reactor.visible = false; R3.pick = R3.pick.filter(m => !m.userData.id.startsWith('r')); delete R3.parts.reactor;
@@ -397,7 +401,7 @@ function r3Build(kind) {
     if (id === 'epanel') return r3Select('elec:' + (u < 0.5 ? 0 : 1));
     if (id === 'ecab') return r3Select('cab:' + Math.max(0, Math.min(5, Math.floor(u * 6))));
     r3Select(id); });
-  ren.domElement.addEventListener('pointermove', e => { R3.mouse = [e.clientX, e.clientY]; });
+  ren.domElement.addEventListener('pointermove', e => { R3.mouse = [e.clientX, e.clientY]; R3.moved = true; });
   ren.domElement.addEventListener('pointerleave', () => { R3.mouse = null; R3.hover = null; tip.hidden = true; });
   lbl.addEventListener('click', e => { const l = e.target.closest('.r3-lbl'); if (l) r3Select(l.dataset.id); });
   r3Views(); r3Select(null);
@@ -502,7 +506,7 @@ function r3Boom(kind) {
   const fx = { kind, t: 0, cap: -1, done: false, light: new T.PointLight(0xff7a2e, 0, 80, 1.5),
     steam: mk(new T.SphereGeometry(1, 10, 8), new T.MeshBasicMaterial({ color: 0xf1f5f9, transparent: true, opacity: 0.16, depthWrite: false }), Math.round(320 * N)),
     smoke: mk(new T.SphereGeometry(1, 10, 8), new T.MeshBasicMaterial({ color: 0x2b2f36, transparent: true, opacity: 0.28, depthWrite: false }), Math.round(240 * N)),
-    debris: mk(new T.BoxGeometry(1, 1, 1), new T.MeshStandardMaterial({ color: 0x2d3137, roughness: 0.9 }), Math.round(110 * N)),
+    debris: mk(new T.BoxGeometry(1, 1, 1), r3MS({ color: 0x2d3137, roughness: 0.9 }), Math.round(110 * N)),
     ember: mk(new T.SphereGeometry(1, 6, 5), new T.MeshBasicMaterial({ color: 0xff8a3d }), Math.round(140 * N)) };
   let o = new T.Vector3(0, 4.6, 0);
   if (kind === 'drum') { const d = R3.objs.drums[0]; if (d) o = d.g.position.clone(); fx.drum = d; }
@@ -571,18 +575,20 @@ function r3Frame() {
   if (R3.fly) { const f = R3.fly; f.t += dt; const k = Math.min(1, f.t / f.d), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; R3.ctl.target.lerpVectors(f.t0, f.t1, e); R3.cam.position.lerpVectors(f.p0, f.p1, e); if (k >= 1) R3.fly = null; }
   R3.ctl.update();
   // наведение (не чаще 20 раз в секунду)
-  if (R3.mouse && !R3.drag && now - (R3.hoverAt || 0) > 50) { R3.hoverAt = now; const o = r3PickAt(R3.mouse[0], R3.mouse[1]), id = o ? o.userData.id : null; R3.hover = id; R3.ren.domElement.style.cursor = id ? 'pointer' : '';
+  if (R3.mouse && R3.moved && !R3.drag && now - (R3.hoverAt || 0) > 60) { R3.hoverAt = now; R3.moved = false; const o = r3PickAt(R3.mouse[0], R3.mouse[1]), id = o ? o.userData.id : null; R3.hover = id; R3.ren.domElement.style.cursor = id ? 'pointer' : '';
     const tip = R3.tip; if (id) { const r = R3.ren.domElement.getBoundingClientRect(), c = r3Card(id); tip.innerHTML = `<b>${c.t}</b>`; tip.style.transform = `translate(${R3.mouse[0] - r.left + 14}px,${R3.mouse[1] - r.top + 12}px)`; tip.hidden = false; } else tip.hidden = true; }
   r3Glow(now);
   // подписи
   if (R3.labels.length && !R3.lblBox.classList.contains('off')) { const W = R3.ren.domElement.clientWidth, Hh = R3.ren.domElement.clientHeight, v = new T.Vector3(), upd = now - (R3.lblAt || 0) > 250; if (upd) R3.lblAt = now;
-    R3.labels.forEach(l => { v.copy(l.pos).project(R3.cam); const vis = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05; l.el.style.display = vis ? '' : 'none'; if (!vis) return; l.el.style.transform = `translate(${((v.x + 1) / 2 * W).toFixed(0)}px,${((1 - v.y) / 2 * Hh).toFixed(0)}px) translate(-50%,-100%)`; if (upd) { const s = l.text(); if (l.el.textContent !== s) l.el.textContent = s; } l.el.classList.toggle('sel', l.id === R3.sel); }); }
+    R3.labels.forEach(l => { v.copy(l.pos).project(R3.cam); const vis = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05; if (l.vis !== vis) { l.vis = vis; l.el.style.display = vis ? '' : 'none'; } if (!vis) return; const tr = `translate(${((v.x + 1) / 2 * W).toFixed(0)}px,${((1 - v.y) / 2 * Hh).toFixed(0)}px) translate(-50%,-100%)`; if (l.tr !== tr) { l.tr = tr; l.el.style.transform = tr; } if (upd) { const s = l.text(); if (l.el.textContent !== s) l.el.textContent = s; } l.el.classList.toggle('sel', l.id === R3.sel); }); }
   if (now - (R3.tick || 0) > 250) { R3.tick = now; r3CardTick(); r3HudTick(); }
-  if (R3.desk && now - R3.desk.at > 200) { R3.desk.at = now; r3DeskDraw(); }
-  if (R3.live.length && now - (R3.liveAt || 0) > 150) { R3.liveAt = now; R3.live.forEach(L => { L.draw(L.c, L.im); L.t.needsUpdate = true; }); }
+  if ((R3.desk || R3.live.length) && now - (R3.liveAt || 0) > 250) { R3.liveAt = now; const sig = r3LiveSig(now); if (sig !== R3.liveSig) { R3.liveSig = sig; if (R3.desk) r3DeskDraw(); R3.live.forEach(L => { L.draw(L.c, L.im); L.t.needsUpdate = true; }); } }
   // толчок при взрыве
   let sh = null; if (R3.shake > 0.01) { sh = new T.Vector3((Math.random() - 0.5) * R3.shake, (Math.random() - 0.5) * R3.shake, (Math.random() - 0.5) * R3.shake); R3.cam.position.add(sh); R3.shake *= Math.pow(0.08, dt); }
   R3.ren.render(R3.scene, R3.cam); if (sh) R3.cam.position.sub(sh);
+  // если кадры идут медленно — понижаем плотность пикселей, если быстро — возвращаем
+  R3.ft = (R3.ft || 16) * 0.95 + dt * 1000 * 0.05;
+  if (now - (R3.dprAt || 0) > 2500) { R3.dprAt = now; const d0 = R3.dpr; if (R3.ft > 26 && R3.dpr > 0.6) R3.dpr = Math.max(0.6, R3.dpr - 0.15); else if (R3.ft < 17.5 && R3.dpr < R3.dprMax) R3.dpr = Math.min(R3.dprMax, R3.dpr + 0.1); if (d0 !== R3.dpr) R3.ren.setPixelRatio(R3.dpr); }
 }
 function r3Resize() { const box = $('#rb-3dc'); if (!R3.ren || !box) return; R3.ren.setSize(box.clientWidth, box.clientHeight); R3.cam.aspect = box.clientWidth / box.clientHeight; R3.cam.updateProjectionMatrix(); }
 window.addEventListener('resize', () => { if (RBG && RBG.view === '3d') r3Resize(); });
@@ -602,24 +608,26 @@ const r3LblOn = () => R3L();
 /* ---------- электрическая секция блочного щита: панель приборов, пульт с ключами, шкафы 6 кВ (живые текстуры) ---------- */
 function r3LiveTex(name, mat, draw) {
   r3Img(name).then(im => {
-    if (!im || !R3.ren) return; const T = window.THREE, cv = document.createElement('canvas'); cv.width = im.width; cv.height = im.height;
-    const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true;
-    const L = { c: cv.getContext('2d'), im, t, draw }; R3.live.push(L); draw(L.c, im); t.needsUpdate = true;
+    if (!im || !R3.ren) return; const T = window.THREE, k = R3.low ? 0.4 : 0.55, cv = document.createElement('canvas'); cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k);
+    const base = document.createElement('canvas'); base.width = im.width; base.height = im.height; base.getContext('2d').drawImage(im, 0, 0);   // для пипетки цвета циферблатов — в полном размере
+    const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4; mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true;
+    const c = cv.getContext('2d'); c.setTransform(k, 0, 0, k, 0, 0); c._face = rbFaceFrom(base, draw); c._plate = c._face;
+    const L = { c, im: base, t, draw }; R3.live.push(L); draw(L.c, base); t.needsUpdate = true;
   });
 }
 function r3ElecDesk() {
   const T = window.THREE, g = new T.Group(), metal = r3Metal([2, 1]), metal2 = r3Metal([2, 1]);
-  const pm = new T.MeshStandardMaterial({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); r3LiveTex('elec-panel', pm, rbElPanelDraw);
+  const pm = r3MS({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); r3LiveTex('elec-panel', pm, rbElPanelDraw);
   const panel = new T.Mesh(new T.BoxGeometry(14, 4.67, 0.5), [metal, metal, metal, metal, pm, metal]); panel.position.set(0, 2.335 + 1, -1.8); g.add(r3Tag(panel, 'epanel', 'epanel'));
   const plinth = new T.Mesh(new T.BoxGeometry(14.2, 1, 0.8), metal); plinth.position.set(0, 0.5, -1.8); g.add(r3Tag(plinth, 'epanel', 'epanel'));
   const base = new T.Mesh(new T.BoxGeometry(12, 2.1, 3.2), metal2); base.position.set(0, 1.05, 0.6); g.add(r3Tag(base, 'ekeys', 'ekeys'));
-  const km = new T.MeshStandardMaterial({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); r3LiveTex('elec-keys', km, rbElKeysDraw);
+  const km = r3MS({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); r3LiveTex('elec-keys', km, rbElKeysDraw);
   const top = new T.Group(); top.position.set(0, 2.25, 0.6); top.rotation.x = 0.22; g.add(top);
   const slab = new T.Mesh(new T.BoxGeometry(12, 0.24, 4), [metal2, metal2, km, metal2, metal2, metal2]); top.add(r3Tag(slab, 'ekeys', 'ekeys'));
   return g;
 }
 function r3Cabinets() {
-  const T = window.THREE, m = r3Metal([3, 1]), cm = new T.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.6, metalness: 0.1 }); r3LiveTex('elec-cab', cm, rbElCabDraw);
+  const T = window.THREE, m = r3Metal([3, 1]), cm = r3MS({ color: 0xb8bec6, roughness: 0.6, metalness: 0.1 }); r3LiveTex('elec-cab', cm, rbElCabDraw);
   const b = new T.Mesh(new T.BoxGeometry(21, 7, 1.4), [m, m, m, m, cm, m]); b.position.y = 3.5; return r3Tag(b, 'ecab', 'ecab');
 }
 Object.assign(R3INFO, {
@@ -627,3 +635,39 @@ Object.assign(R3INFO, {
   ekeys: ['Пульт ключей управления', 'Ключи выключателей генераторов, возбуждения и питания секций собственных нужд 6 кВ.'],
   ecab: ['Шкафы собственных нужд 6 кВ', 'От секций 6 кВ питаются главные циркуляционные и питательные насосы.'],
 });
+
+// подпись состояния для живых панелей: перерисовываем и заливаем в видеокарту только при изменении показаний
+function r3LiveSig(now) {
+  const G = RBG; if (!G) return ''; const S = G.S, E = G.E, r = (v, k = 1) => Math.round(v * k);
+  return [r(S.P, 400), isFinite(S.period) ? r(S.period) : 0, r(RB.ozr(S), 4), r(S.p, 100), r(S.lvl / 5), r(S.G, 100), r(S.X, 50), r(S.axial, 20), S.az, !!S.broken, Math.floor(now / 400) % 2,
+    E ? E.tg.map(g => [r(g.I, 20), r(g.U, 10), r(g.P / 2), r(g.f, 50), r(g.gen, 10), r(g.out, 10), r(g.ph, 8), g.sync, g.exc]).join() : '', E ? E.sec.join() + E.secU.map(u => r(u, 10)).join() : '', S.tg.map(t => t.on).join(), S.fwPumps.join(), S.pumps.map(q => r(q.spin, 20)).join(), JSON.stringify(G.alarms || {})].join('|');
+}
+function rbFaceFrom(base, draw) { const x = draw === rbElKeysDraw ? RB_KEYS.lx[0] - 150 : RB_ELP.g[0][0] - 45, y = draw === rbElKeysDraw ? 165 : RB_ELP.g[0][1] + 45; const p = base.getContext('2d').getImageData(x, y, 1, 1).data; return `rgb(${p[0]},${p[1]},${p[2]})`; }
+/* ---------- склейка статичных деталей: одна сетка на материал вместо десятков (меньше вызовов отрисовки) ---------- */
+function r3MergeGeos(list) {
+  const T = window.THREE; let nv = 0, ni = 0;
+  const gs = list.map(({ geo, mat }) => { const g = geo.clone().applyMatrix4(mat); if (!g.index) { const a = []; for (let i = 0; i < g.attributes.position.count; i++) a.push(i); g.setIndex(a); } nv += g.attributes.position.count; ni += g.index.count; return g; });
+  const pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), idx = new Uint32Array(ni); let ov = 0, oi = 0;
+  gs.forEach(g => { const n = g.attributes.position.count; pos.set(g.attributes.position.array, ov * 3); if (g.attributes.normal) nor.set(g.attributes.normal.array, ov * 3); if (g.attributes.uv) uv.set(g.attributes.uv.array, ov * 2);
+    const ix = g.index.array; for (let k = 0; k < ix.length; k++) idx[oi + k] = ix[k] + ov; ov += n; oi += ix.length; g.dispose(); });
+  const m = new T.BufferGeometry(); m.setAttribute('position', new T.BufferAttribute(pos, 3)); m.setAttribute('normal', new T.BufferAttribute(nor, 3)); m.setAttribute('uv', new T.BufferAttribute(uv, 2)); m.setIndex(new T.BufferAttribute(idx, 1)); m.computeBoundingSphere(); m.computeBoundingBox(); return m;
+}
+function r3MergeIn(root, only) {
+  const T = window.THREE;
+  // детали с несколькими материалами (боковина + торцы) режем на части по материалам — тогда их тоже можно склеить
+  const multi = []; root.traverse(o => { if (o.isMesh && !o.isInstancedMesh && Array.isArray(o.material) && o.geometry.index && o.geometry.groups.length && !o.userData.keep && (!only || only(o))) multi.push(o); });
+  multi.forEach(o => { const g = o.geometry, ix = g.index.array;
+    g.groups.forEach(gr => { const sub = new T.BufferGeometry(); for (const k in g.attributes) sub.setAttribute(k, g.attributes[k]); sub.setIndex(Array.from(ix.slice(gr.start, gr.start + gr.count)));
+      const m = new T.Mesh(sub, o.material[gr.materialIndex]); m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale); o.parent.add(m); if (o.userData.id) r3Tag(m, o.userData.info, o.userData.id); else m.userData = Object.assign({}, o.userData); });
+    o.parent.remove(o); if (o.userData.id) { R3.pick = R3.pick.filter(x => x !== o); if (R3.parts[o.userData.id]) R3.parts[o.userData.id] = R3.parts[o.userData.id].filter(x => x !== o); } });
+  root.updateMatrixWorld(true); const inv = root.matrixWorld.clone().invert(), buckets = new Map();
+  root.traverse(o => { if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material) || o.material.userData.dyn || o.userData.keep || (only && !only(o))) return; const k = o.material.uuid + '|' + (o.userData.id || ''); if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push(o); });
+  buckets.forEach(list => {
+    if (list.length < 2) return;
+    const geo = r3MergeGeos(list.map(o => ({ geo: o.geometry, mat: new T.Matrix4().multiplyMatrices(inv, o.matrixWorld) })));
+    const m = new T.Mesh(geo, list[0].material); root.add(m);
+    const id = list[0].userData.id, info = list[0].userData.info;
+    list.forEach(o => { o.parent.remove(o); o.geometry.dispose(); });
+    if (id) { R3.pick = R3.pick.filter(x => !list.includes(x)); if (R3.parts[id]) R3.parts[id] = R3.parts[id].filter(x => !list.includes(x)); r3Tag(m, info, id); }
+  });
+}

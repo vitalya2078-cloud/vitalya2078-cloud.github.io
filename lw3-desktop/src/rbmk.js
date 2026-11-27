@@ -446,7 +446,7 @@ function rbUpdate(force) {
   if (rbDirty.log) { rbDirty.log = false; const L = $('#rb-log'); if (L) L.innerHTML = G.log.map(l => `<p class="${l.kind}"><b>${l.c}</b> ${esc(l.text)}</p>`).join('') || '<p class="mute">Записей нет.</p>'; }
   if (G.hist && (rbDirty.task || force)) { rbDirty.task = false; const T = $('#rb-task'), st = RB_HSTEPS[G.hist.step]; if (T && st) T.innerHTML = `<h3>${ic('list-checks')} Ход событий</h3><p>${st.t}</p><p class="rb-do">${st.task}</p>${G.hist.step === 'prot' ? `<button class="btn" data-rb="htest" id="rb-htest">${ic('play')} Начать испытание выбега ТГ-8</button><p class="mute small" id="rb-htw"></p>` : ''}`; }
   if (G.hist && G.hist.step === 'prot') { const w = $('#rb-htw'), early = rbHistEarly(); if (w) w.textContent = early ? `Испытание — в 01:23. Сейчас ${rbClock(S.clock)}: держите мощность, ксенон растёт (можно ×5).` : 'Время испытания.'; const hb = $('#rb-htest'); if (hb) hb.disabled = early; }
-  rbDraw();
+  if ((G.view || '2d') === '2d') rbDraw();   // скрытые холсты 2D-пульта не перерисовываем
   // щелчки счётчика на малой мощности
   if (!G.paused && G.started && S.P < 0.02 && S.P > 1e-5 && Math.random() < Math.min(0.6, S.P * 400)) rbSnd.click();
 }
