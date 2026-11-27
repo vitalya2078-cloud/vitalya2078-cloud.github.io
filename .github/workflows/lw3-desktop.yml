@@ -195,7 +195,7 @@ jobs:
           for d in "/c/Program Files (x86)/NSIS" "/c/Program Files/NSIS"; do [ -x "$d/makensis.exe" ] && export PATH="$PATH:$d"; done
           command -v makensis || { choco install nsis -y --no-progress > /dev/null; for d in "/c/Program Files (x86)/NSIS" "/c/Program Files/NSIS"; do [ -x "$d/makensis.exe" ] && export PATH="$PATH:$d"; done; }
           makensis -VERSION
-          makensis -V2 -DVERSION=$FZ_VERSION -DSRC="$(cygpath -w "$PWD/out/app")" -DOUT="$(cygpath -w "$PWD/out/Fizpraktikum-setup.exe")" lw3-desktop/win/installer.nsi
+          makensis -V2 -INPUTCHARSET UTF8 -DVERSION=$FZ_VERSION -DSRC="$(cygpath -w "$PWD/out/app")" -DOUT="$(cygpath -w "$PWD/out/Fizpraktikum-setup.exe")" lw3-desktop/win/installer.nsi
           mkdir -p portable && cp -r out/app portable/Fizpraktikum
           cp lw3-desktop/src-tauri/license.txt "portable/Fizpraktikum/Лицензионное соглашение.txt"
           (cd portable && 7z a -tzip -mx=7 ../out/Fizpraktikum-portable.zip Fizpraktikum > /dev/null)

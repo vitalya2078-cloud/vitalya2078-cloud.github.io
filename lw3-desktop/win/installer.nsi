@@ -1,4 +1,4 @@
-; Установщик «Физпрактикума» для Windows 7 и новее (32- и 64-битной): одна 32-битная программа подходит обеим.
+﻿; Установщик «Физпрактикума» для Windows 7 и новее (32- и 64-битной): одна 32-битная программа подходит обеим.
 ; Ставит для текущего пользователя, права администратора не нужны. Обновляет и прежние версии (та же папка и запись).
 ; makensis -DVERSION=2.4.0 -DSRC=<папка с Fizpraktikum.exe и WebView2Runtime> -DOUT=<setup.exe> installer.nsi
 Unicode true
@@ -49,7 +49,27 @@ Function .onInit
   done:
 FunctionEnd
 
+; версии 2.4.0–2.5.0 собирались без метки кодировки, и русское название превратилось в «Ð¤Ð¸Ð·…».
+; Такую установку убираем (файлы, ярлыки, запись в «Программах»); данные пользователей лежат отдельно и остаются.
+!define OLDNAME "Ð¤Ð¸Ð·Ð¿Ñ€Ð°ÐºÑ‚Ð¸ÐºÑƒÐ¼"
+!define OLDKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${OLDNAME}"
+Function RemoveGarbled
+  ReadRegStr $0 HKCU "${OLDKEY}" "InstallLocation"
+  StrCmp $0 "" +5
+    Delete "$0\Fizpraktikum.exe"
+    RMDir /r "$0\WebView2Runtime"
+    Delete "$0\Uninstall.exe"
+    RMDir "$0"
+  Delete "$SMPROGRAMS\${OLDNAME}\${OLDNAME}.lnk"
+  RMDir "$SMPROGRAMS\${OLDNAME}"
+  Delete "$SMPROGRAMS\${OLDNAME}.lnk"
+  Delete "$DESKTOP\${OLDNAME}.lnk"
+  DeleteRegKey HKCU "${OLDKEY}"
+  DeleteRegKey HKCU "Software\${OLDNAME}"
+FunctionEnd
+
 Section "Программа" main
+  Call RemoveGarbled
   SetOutPath "$INSTDIR"
   ; движок прежней версии другой: убираем целиком, чтобы файлы версий не смешались
   RMDir /r "$INSTDIR\WebView2Runtime"
