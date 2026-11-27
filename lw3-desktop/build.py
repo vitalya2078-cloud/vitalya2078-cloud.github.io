@@ -71,8 +71,9 @@ def teacher_pw():
 js = '\n'.join(['const APP_VER = %s;' % json.dumps(version), 'const TEACHER_PW = %s;' % json.dumps(teacher_pw()), 'const EULA_TXT = %s;' % json.dumps(open(os.path.join(D, 'src-tauri', 'license.txt'), encoding='utf-8-sig').read(), ensure_ascii=False), 'const LAB_BG = %s;' % json.dumps(bg_cfg(bg, 'lab-bg.json'), ensure_ascii=False),
                 'const LAB_BG_LIGHT = %s;' % json.dumps(bg_cfg(bgl, 'lab-bg-light.json'), ensure_ascii=False),
                 'const LAB_BG2 = %s;' % json.dumps(bg_cfg('lab-bg2.webp', 'lab-bg2.json'), ensure_ascii=False),
+                'const RB3D_TEX = %s;' % json.dumps(sorted(f[:-5] for f in os.listdir(os.path.join(D, 'assets', 'rbmk3d')) if f.endswith('.webp')) if os.path.isdir(os.path.join(D, 'assets', 'rbmk3d')) else []),
                 'const LAB_BG2_LIGHT = %s;' % json.dumps(bg_cfg('lab-bg2-light.webp', 'lab-bg2-light.json'), ensure_ascii=False), helpers, icons, rd(os.path.join(D, 'src', 'icons-x.js')), core] +
-               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'le-nuc.js', 'le9.js', 'le10.js', 'le11.js', 'le12.js', 'le13.js', 'le14.js', 'app-core.js', 'qpool.js', 'labs.js', 'rbmk-core.js', 'rbmk.js', 'notes.js', 'widgets.js', 'about-win.js', 'teacher.js', 'guard.js', 'license-ui.js')])
+               [rd(os.path.join(D, 'src', f)) for f in ('sha256.js', 'result.js', 'hints.js', 'summary-core.js', 'desktop.js', 'layout2.js', 'hod.js', 'extras.js', 'summary.js', 'labs-core.js', 'labs-e.js', 'le4.js', 'le5.js', 'le6.js', 'le7.js', 'le8.js', 'le-nuc.js', 'le9.js', 'le10.js', 'le11.js', 'le12.js', 'le13.js', 'le14.js', 'app-core.js', 'qpool.js', 'labs.js', 'rbmk-core.js', 'rbmk.js', 'rbmk-task.js', 'rbmk3d.js', 'notes.js', 'widgets.js', 'about-win.js', 'teacher.js', 'guard.js', 'license-ui.js')])
 html = rd(os.path.join(D, 'src', 'shell.html')).replace('/*{{REPORT_CSS}}*/', report_css + '\n' + rd(os.path.join(D, 'src', 'app.css'))).replace('{{JS}}', js.replace('</script', '<\\/script'))
 assert not re.search(r'\{\{[A-Z_]+\}\}', html), 'остались незаполненные метки'
 # тексты Windows-версии: обращение на «Вы», дефис вместо длинного тире (исходники общие с сайтом и телефоном не меняются)
@@ -114,6 +115,9 @@ with open(os.path.join(DIST, 'notes', 'notes.json'), 'w', encoding='utf-8') as f
     import textfix
     fh.write(textfix.fix(json.dumps(NOTES, ensure_ascii=False, separators=(',', ':'))))
 shutil.copytree(os.path.join(D, 'vendor', 'katex'), os.path.join(DIST, 'katex'), dirs_exist_ok=True)
+# three.js для 3D-вида тренажёра РБМК (загружается по требованию) и текстуры моделей assets/rbmk3d/*.webp
+shutil.copytree(os.path.join(D, 'vendor', 'three'), os.path.join(DIST, 'three'), dirs_exist_ok=True)
+if os.path.isdir(os.path.join(D, 'assets', 'rbmk3d')): shutil.copytree(os.path.join(D, 'assets', 'rbmk3d'), os.path.join(DIST, 'img', 'rbmk3d'), dirs_exist_ok=True)
 if os.path.isdir(os.path.join(D, 'assets', 'video')):
     shutil.copytree(os.path.join(D, 'assets', 'video'), os.path.join(DIST, 'video'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src*', '*.txt', '*.json'))
 # иконка программы для интерфейса (assets/brand → dist/img/brand)

@@ -578,3 +578,26 @@ body.rbscr #app, body.rbscr main{max-width:none}
 @media (max-height:820px){ .rb{gap:6px; padding:6px 8px 8px} .rb-p{padding:6px 10px} .rb-p h3{margin-bottom:4px; font-size:12.5px} #rb-core{max-height:190px; width:auto !important; margin:0 auto} #rb-chart{max-height:110px} .rb-big > div{padding:5px 10px} .rb-big b{font-size:19px} .rb-ozr{padding:5px 8px; margin-bottom:4px} .rb-ozr b{font-size:21px} .rb-rod{padding:3px 0} .rb-az{margin-top:4px; padding-top:4px} .rb-azc{height:54px; width:88px} .rb-ann span{padding:3px} .rb-axw canvas{height:96px !important} .rb-axt .mute{display:none} .rb-lvl i{height:60px} .rb-gauge canvas{max-width:120px} .rb-top{padding:4px 8px} }
 
 .rb-arman{display:none; gap:4px} .rb-rod.man .rb-arman{display:flex} .rb-rod.man .rb-arauto{display:none} .rb-arauto{display:flex; gap:4px; align-items:center}
+
+/* тренажёр: вкладки 2D / 3D / Задача */
+.rb-tabs{display:flex; gap:2px; padding:3px; border-radius:12px; background:var(--card2); border:1px solid var(--line)}
+.rb-tabs button{display:inline-flex; align-items:center; gap:6px; border:0; background:none; color:var(--mute); font:600 13px/1 inherit; padding:7px 11px; border-radius:9px; cursor:pointer}
+.rb-tabs button svg{width:15px; height:15px} .rb-tabs button.on{background:var(--card); color:var(--acc); box-shadow:var(--sh)}
+.rb-grid[hidden], .rb-3dw[hidden], .rb-taskw[hidden]{display:none !important}
+.rb-3dw{flex:1; min-height:0; display:grid; grid-template-columns:1fr 300px; gap:8px}
+.rb-3dc{position:relative; min-height:0; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--card2)}
+.rb-3dc canvas{display:block; width:100% !important; height:100% !important; cursor:grab} .rb-3dc canvas:active{cursor:grabbing}
+.rb-3dhud{display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; border:1px solid var(--line); background:var(--card); overflow:auto}
+.rb-3dnum{display:grid; grid-template-columns:repeat(3,1fr); gap:6px} .rb-3dnum > div{display:grid; padding:6px 8px; border-radius:10px; background:var(--card2)}
+.rb-3dnum small{font-size:11px; color:var(--mute)} .rb-3dnum b{font:700 18px/1.15 ui-monospace, Consolas, monospace; color:var(--acc)} .rb-3dnum em{font-style:normal; font-size:10.5px; color:var(--mute)}
+.rb-3dsc{display:grid; gap:6px} .rb-3dsc .btn{justify-content:center} .rb-3dsc .btn.on{background:var(--acc-soft); border-color:var(--acc); color:var(--acc)}
+.rb-3dinfo{padding:10px 12px; border-radius:12px; background:var(--card2); font-size:13px; line-height:1.5; min-height:80px} .rb-3dinfo p{margin:4px 0 0}
+.rb-az3{margin-top:auto; border-top:1px dashed var(--line); padding-top:10px; justify-content:center}
+.rb-taskw{flex:1; min-height:0; overflow:auto}
+.rb-taskv{display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:1300px; margin:0 auto}
+.rb-taskv .rb-p{padding:14px 18px} .rb-taskv h3{font-size:15px}
+.rb-tgoal{grid-column:1 / -1; border-left:4px solid var(--acc)} .rb-tgoal p{margin:0 0 6px; font-size:16px; line-height:1.5}
+.rb-tl{margin:0; padding-left:22px; display:grid; gap:10px} .rb-tl li{line-height:1.45} .rb-tl b{display:block} .rb-tl span{color:var(--mute); font-size:13.5px}
+.rb-live{grid-column:1 / -1} .rb-live ul{margin:0; padding-left:20px; display:grid; gap:6px} .rb-live li.bad{color:#e11d48; font-weight:600} .rb-live li.warn{color:#d97706}
+.rb-tpause{display:flex; align-items:center; gap:8px; justify-content:center; color:var(--mute); margin:12px 0} .rb-tpause svg{width:16px; height:16px}
+@media (max-width:1400px){ .rb-tabs button{padding:6px 8px} .rb-tt small{max-width:22vw} }

@@ -100,6 +100,7 @@ function vRbmk() {
     <header class="rb-top">
       <button class="btn line" data-rb="exit">${ic('chevron-left')} Выйти</button>
       <div class="rb-tt"><b>Пульт РБМК-1000 · 4-й энергоблок</b><small>${esc(title)}</small></div>
+      <div class="rb-tabs" role="tablist"><button data-rb="view" data-v="2d" class="on" title="Пульт (V)">${ic('sliders-horizontal')} 2D</button><button data-rb="view" data-v="3d" title="3D-вид (V)">${ic('box')} 3D</button><button data-rb="view" data-v="task" title="Задача, способы, риски (T)">${ic('list-checks')} Задача</button></div>
       <div class="rb-clock"><small>Время</small><b id="rb-clock">--:--</b></div>
       <div class="rb-goal"><small>Задание</small><b id="rb-goal"></b><i id="rb-prog"><s></s></i></div>
       <div class="rb-score"><small>Оценка</small><b id="rb-score">—</b></div>
@@ -157,11 +158,27 @@ function vRbmk() {
         <div class="rb-p rb-logp"><h3>Журнал смены</h3><div class="rb-log" id="rb-log"></div></div>
       </section>
     </div>
+    <div class="rb-3dw" id="rb-3dw" hidden><div class="rb-3dc" id="rb-3dc"></div>
+      <div class="rb-3dhud"><div class="rb-3dnum"><div><small>Мощность</small><b id="rb-pt3">—</b><em>МВт</em></div><div><small>Период</small><b id="rb-per3">—</b><em>с</em></div><div><small>ОЗР</small><b id="rb-ozr3">—</b><em>стержней</em></div></div>
+        <div class="rb-3dsc"><button class="btn line on" data-rb="scene" data-v="core">Реактор в разрезе</button><button class="btn line" data-rb="scene" data-v="unit">Энергоблок</button></div>
+        <div class="rb-3dinfo" id="rb-3dinfo"></div>
+        <p class="mute small">Мышь — вращать, колесо — приблизить, щелчок — что это. Стержни: W/S, A/D.</p>
+        <div class="rb-az rb-az3"><div class="rb-azc ${G.cover ? 'open' : ''}"><button class="rb-cover" data-rb="cover" title="Откройте крышку">${ic('shield-check')}<span>Крышка АЗ-5</span></button><button class="rb-azb" data-rb="az">АЗ-5</button></div></div></div></div>
+    <div class="rb-taskw" id="rb-taskw" hidden></div>
     <div class="rb-ov" id="rb-ov" hidden></div>
   </div>`;
+  G.view = G.view || '2d'; rbView();
   rbDirty.log = true; rbUpdate(true);
   if (!G.started) rbBrief();
   rbLoop();
+}
+function rbView() {
+  const G = RBG; if (!G || !$('.rb')) return; const v = G.view || '2d';
+  $('.rb-grid').hidden = v !== '2d'; $('#rb-3dw').hidden = v !== '3d'; $('#rb-taskw').hidden = v !== 'task';
+  document.querySelectorAll('.rb-tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  if (v === '3d') r3Show(); else r3Hide();
+  if (v === 'task') { if (G.started && !G.done && !G.paused) { G.paused = true; G.taskPaused = true; } $('#rb-taskw').innerHTML = rbTaskHtml() + (G.taskPaused ? `<p class="rb-tpause">${ic('pause')} Смена на паузе, пока открыта вкладка «Задача».</p>` : ''); }
+  else if (G.taskPaused) { G.taskPaused = false; G.paused = false; }
 }
 const RB_ANN = [['az', 'АЗ-5'], ['ozr', 'ОЗР < 15'], ['per', 'Период < 20 с'], ['pw', 'Мощность > 105 %'], ['press', 'Давление БС'], ['lvl', 'Уровень БС'], ['pump', 'ГЦН'], ['arof', 'АР отключён'], ['xe', 'Ксенон'], ['fault', 'Неисправность']];
 
@@ -173,7 +190,7 @@ function rbLoop() {
     if (SCREEN !== 'rbmk' || !RBG) return;
     const dt = Math.min(0.1, (now - rbLast) / 1000); rbLast = now;
     if (!RBG.paused && RBG.started && !RBG.done) rbTick(dt * RBG.speed);
-    rbUpdate(); rbRaf = requestAnimationFrame(f);
+    rbUpdate(); if (RBG.view === '3d') r3Frame(); rbRaf = requestAnimationFrame(f);
   };
   rbRaf = requestAnimationFrame(f);
 }
@@ -302,7 +319,7 @@ function rbBrief() {
     : G.mode === 'free' ? '<p>Держите мощность по заданию диспетчера, следите за насосами, барабанами-сепараторами и ОЗР. Неисправности будут случаться всё чаще. Смена идёт, пока реактор работает.</p>'
     : `<p>${esc(G.sh.brief)}</p>`;
   rbOverlay(`<div class="rb-dlg"><span class="rb-tag">${G.hist ? 'Историческая реконструкция' : G.mode === 'free' ? 'Свободная смена' : 'Смена ' + (G.k + 1) + ' из 7'}</span><h2>${G.hist ? 'Ночь 25–26 апреля 1986 г.' : G.mode === 'free' ? 'Свободная смена' : esc(G.sh.t)}</h2>${b}
-    <div class="rb-keys"><span>${kbd('W')} ${kbd('↑')} вывести РР</span><span>${kbd('S')} ${kbd('↓')} погрузить РР</span><span>${kbd('Shift')} быстрее</span><span>${kbd('A')} ${kbd('D')} УСП</span><span>${kbd('Q')} БРУ-К</span><span>${kbd('Пробел')} пауза</span><span>${kbd('H')} справка</span></div>
+    <div class="rb-keys"><span>${kbd('W')} ${kbd('↑')} вывести РР</span><span>${kbd('S')} ${kbd('↓')} погрузить РР</span><span>${kbd('Shift')} быстрее</span><span>${kbd('A')} ${kbd('D')} УСП</span><span>${kbd('Q')} БРУ-К</span><span>${kbd('Пробел')} пауза</span><span>${kbd('H')} справка</span><span>${kbd('V')} 2D / 3D</span><span>${kbd('T')} задача и риски</span></div>
     <div class="rb-opts"><button class="btn" data-rb="go" data-primary>${ic('play')} Принять смену ${kbd('Enter')}</button></div></div>`);
 }
 function rbHelpHtml() {
@@ -377,7 +394,7 @@ let rbChartMode = 'p';
 function rbUpdate(force) {
   const G = RBG; if (!G || !$('.rb')) return; const S = G.S, set = (id, v) => { const e = document.getElementById(id); if (e && e.textContent !== v) e.textContent = v; };
   set('rb-clock', rbClock(S.clock, G.hist && (G.hist.step === 'test' || G.hist.step === 'az')));
-  set('rb-pt', RBN(S.P)); const pe = S.tg.reduce((a, t) => a + (t.on ? Math.max(0, t.load) : 0), 0) * 1000 * Math.min(1, S.P / 0.3 + 0.2); set('rb-pe', Math.round(Math.max(0, pe)).toLocaleString('ru-RU'));
+  set('rb-pt', RBN(S.P)); set('rb-pt3', RBN(S.P)); set('rb-ozr3', RB.ozr(S).toFixed(1)); set('rb-per3', !isFinite(S.period) || Math.abs(S.period) > 999 ? '∞' : (S.period > 0 ? '+' : '') + S.period.toFixed(0)); const pe = S.tg.reduce((a, t) => a + (t.on ? Math.max(0, t.load) : 0), 0) * 1000 * Math.min(1, S.P / 0.3 + 0.2); set('rb-pe', Math.round(Math.max(0, pe)).toLocaleString('ru-RU'));
   set('rb-per', !isFinite(S.period) || Math.abs(S.period) > 999 ? '∞' : (S.period > 0 ? '+' : '') + S.period.toFixed(0)); set('rb-rho', (S.rho >= 0 ? '+' : '') + S.rho.toFixed(2));
   const oz = RB.ozr(S); set('rb-ozr', oz.toFixed(1)); const ob = $('#rb-ozrb s'); if (ob) ob.style.width = Math.min(100, oz / 60 * 100) + '%'; $('#rb-ozrb') && $('#rb-ozrb').classList.toggle('bad', oz < 15);
   const rod = (id, v) => { const e = document.getElementById(id); if (e) e.style.width = (v * 100).toFixed(1) + '%'; set(id + 'v', (v * 100).toFixed(1) + ' %'); };
@@ -406,7 +423,7 @@ function rbUpdate(force) {
   set('rb-speed', '×' + G.speed); const ps = $('#rb-pause'); if (ps) ps.classList.toggle('on', G.paused);
   // табло
   const an = $('#rb-ann'); if (an) an.querySelectorAll('span').forEach(s => s.className = G.alarms[s.dataset.a] ? (['az', 'ozr', 'per', 'pw', 'press', 'lvl'].includes(s.dataset.a) ? 'red' : 'amber') : '');
-  const azc = $('#rb-azc'); if (azc) { azc.classList.toggle('open', G.cover); azc.classList.toggle('fired', S.az); }
+  document.querySelectorAll('.rb-azc').forEach(azc => { azc.classList.toggle('open', G.cover); azc.classList.toggle('fired', S.az); });
   // журнал
   if (rbDirty.log) { rbDirty.log = false; const L = $('#rb-log'); if (L) L.innerHTML = G.log.map(l => `<p class="${l.kind}"><b>${l.c}</b> ${esc(l.text)}</p>`).join('') || '<p class="mute">Записей нет.</p>'; }
   if (G.hist && (rbDirty.task || force)) { rbDirty.task = false; const T = $('#rb-task'), st = RB_HSTEPS[G.hist.step]; if (T && st) T.innerHTML = `<h3>${ic('list-checks')} Ход событий</h3><p>${st.t}</p><p class="rb-do">${st.task}</p>${G.hist.step === 'prot' ? `<button class="btn" data-rb="htest" id="rb-htest">${ic('play')} Начать испытание выбега ТГ-8</button><p class="mute small" id="rb-htw"></p>` : ''}`; }
@@ -468,7 +485,7 @@ function rbDraw() {
 function rbStart(mode, k) {
   RBG = rbNew(mode, k == null ? null : +k); RBG.started = false; SCREEN = 'rbmk'; rbKeys = {}; render();
 }
-function rbExit() { cancelAnimationFrame(rbRaf); rbSnd.sirenOff(); RBG = null; rbKeys = {}; SCREEN = 'labs'; PAGE = 'rbmk'; render(); }
+function rbExit() { r3Hide(); cancelAnimationFrame(rbRaf); rbSnd.sirenOff(); RBG = null; rbKeys = {}; SCREEN = 'labs'; PAGE = 'rbmk'; render(); }
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-rb]'); if (!b) return; const d = b.dataset, G = RBG, S = G && G.S;
   switch (d.rb) {
@@ -486,6 +503,8 @@ document.addEventListener('click', e => {
     case 'ar': if (S.az) break; S.ar.on = !S.ar.on; if (S.ar.on) { S.ar.set = Math.max(0.06, S.P); S.ar.cur = S.P; rbLog('ok', `АР включён, уставка ${RBN(S.ar.set)} МВт.`); } else rbLog('warn', 'АР отключён оператором.'); break;
     case 'arset': S.ar.set = Math.max(0.06, Math.min(1.05, S.ar.set + (+d.v))); break;
     case 'cover': G.cover = !G.cover; break;
+    case 'view': G.view = d.v; rbView(); break;
+    case 'scene': document.querySelectorAll('.rb-3dsc .btn').forEach(x => x.classList.toggle('on', x === b)); R3.kind = d.v; if (R3.ok) r3Build(d.v); break;
     case 'az': if (!G.cover) { toast('Сначала откройте крышку кнопки АЗ-5', 'bad'); break; } if (!S.az) { RB.scram(S, 'нажата кнопка на пульте'); if (G.hist) G.hist.choices.push('АЗ-5 нажата при ОЗР ' + RB.ozr(S).toFixed(1)); } break;
     case 'pump': { const i = +d.v, q = S.pumps[i]; if (G.sh && !G.hist && G.k === 0) { toast('В этой смене насосами управляет другой оператор'); break; }
       q.on = !q.on; q.coast = !q.on; if (q.on) { q.fault = q.fault || 0; } rbLog(q.on ? 'ok' : 'warn', `ГЦН-${i + 1} ${q.on ? 'включён' : 'отключён'}.`);
@@ -526,6 +545,8 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); if (G.started && !G.done) G.paused = !G.paused; }
   if (e.code === 'KeyQ') RBG.S.bru = RBG.S.bru > 0 ? 0 : 1;
   if (e.code === 'KeyH') rbHelp();
+  if (e.code === 'KeyV') { G.view = G.view === '3d' ? '2d' : '3d'; rbView(); }
+  if (e.code === 'KeyT') { G.view = G.view === 'task' ? '2d' : 'task'; rbView(); }
 });
 document.addEventListener('keyup', e => {
   const m = { w: 'w', ArrowUp: 'w', 'ц': 'w', s: 's', ArrowDown: 's', 'ы': 's', a: 'a', 'ф': 'a', d: 'd', 'в': 'd' }[e.key] || { KeyW: 'w', KeyS: 's', KeyA: 'a', KeyD: 'd' }[e.code];
