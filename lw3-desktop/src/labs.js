@@ -53,7 +53,7 @@ function pgMain() {
         <div class="fz-stat"><b>${solved}</b><span>вопросов решено верно</span></div><div class="fz-stat"><b>${last ? last.score : '—'}</b><span>${last ? `баллов, «${last.grade}» — последний экзамен` : 'экзамены не сдавались'}</span></div></div></section></div>`;
 }
 const pgLabs = () => pgHead('Лабораторные работы', 'Работы выполняются по методическим указаниям кафедры. Каждая сохраняется отдельно, её можно продолжить позже.') + labCards('data-d');
-const pgTests = () => pgHead('Тесты и экзамены', '900 вопросов по 9 темам курса: самопроверка с разбором и экзамены.') + testsHome().replace(/<button class="btn line" data-fz="self" data-v="(\d)">/g, (m, t) => `<button class="btn ghost" data-d="note" data-v="t${t}" title="Конспект темы">${ic('notebook-pen')} Конспект</button>` + m);
+const pgTests = () => pgHead('Тесты и экзамены', '960 вопросов по 9 темам курса: самопроверка с разбором и экзамены.') + testsHome().replace(/<button class="btn line" data-fz="self" data-v="(\d)">/g, (m, t) => `<button class="btn ghost" data-d="note" data-v="t${t}" title="Конспект темы">${ic('notebook-pen')} Конспект</button>` + m);
 const pgResults = () => pgHead('Мои результаты', 'Ваши лабораторные работы и экзамены. Результат экзамена можно сохранить файлом для преподавателя.') + resChart() + resultsHtml('data-d');
 const pgAbout = () => aboutHtml('data-d');
 function pgProfile() {

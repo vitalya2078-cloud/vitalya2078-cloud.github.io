@@ -131,6 +131,14 @@ shutil.rmtree(os.path.join(DIST, 'bank'), ignore_errors=True)
 os.makedirs(os.path.join(DIST, 'bank'))
 shutil.copy2(os.path.join(BANK_DIR, 'bank.json'), os.path.join(DIST, 'bank', 'bank.json'))
 shutil.copytree(os.path.join(BANK_DIR, 'img'), os.path.join(DIST, 'bank', 'img'))
+# вопросы к лабораторным работам раздела 9 (ЛР 9–14) — дополнение к банку кафедры (bank/nuc-extra.json)
+NUC = os.path.join(BANK_DIR, 'nuc-extra.json')
+if os.path.exists(NUC):
+    bk = json.load(open(os.path.join(DIST, 'bank', 'bank.json'), encoding='utf-8'))
+    have = {q['id'] for q in bk['q']}; bk['q'] += [q for q in json.load(open(NUC, encoding='utf-8')) if q['id'] not in have]
+    for tp in bk['topics']:
+        if tp['id'] == 9: tp['title'] = 'Физика атомного ядра и элементарных частиц'
+    json.dump(bk, open(os.path.join(DIST, 'bank', 'bank.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 # картинки к вопросам без рисунка (только ПК-версия): в банк — после проверки преподавателем (bank/pc/pc-fix.json, approved)
 PC_FIX = os.path.join(BANK_DIR, 'pc', 'pc-fix.json')
 if os.path.exists(PC_FIX):

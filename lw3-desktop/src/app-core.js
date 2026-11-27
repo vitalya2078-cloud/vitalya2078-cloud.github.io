@@ -54,7 +54,7 @@ async function bankLoad() {
   return BANK;
 }
 const bankTopic = t => BANK ? BANK.q.filter(q => q.id.split('.')[0] === String(t) && !q.broken) : [];
-const TOPIC_SHORT = { 1: 'Механика', 2: 'Электростатика и постоянный ток', 3: 'Электромагнетизм', 4: 'Молекулярная физика и термодинамика', 5: 'Колебания и волны', 6: 'Волновая оптика', 7: 'Квантовая физика', 8: 'Физика твёрдого тела', 9: 'Ядерная физика' };
+const TOPIC_SHORT = { 1: 'Механика', 2: 'Электростатика и постоянный ток', 3: 'Электромагнетизм', 4: 'Молекулярная физика и термодинамика', 5: 'Колебания и волны', 6: 'Волновая оптика', 7: 'Квантовая физика', 8: 'Физика твёрдого тела', 9: 'Атомное ядро и элементарные частицы' };
 const EXAM_N = 30;
 const examGrade = s => (s >= 90 ? 5 : s >= 75 ? 4 : s >= 60 ? 3 : 2);
 const GRADE_T = { 5: 'отлично', 4: 'хорошо', 3: 'удовлетворительно', 2: 'неудовлетворительно' };
@@ -136,7 +136,7 @@ function testsHome() {
       ${b ? `<span class="fz-best g${b.grade}" title="Лучший экзамен">${b.score} · «${b.grade}»</span>` : '<span class="fz-best none">экзамен не сдавался</span>'}
       <div class="fz-tb"><button class="btn line" data-fz="self" data-v="${t}">${ic('book-open')} Самопроверка</button>${wrong ? `<button class="btn ghost" data-fz="selfw" data-v="${t}">${ic('rotate-ccw')} Ошибки (${wrong})</button>` : ''}<button class="btn" data-fz="exam" data-v="${t}">${ic('timer')} Экзамен</button></div></div>`; }).join('');
   return head + `<p class="fz-h">Темы курса</p><div class="fz-topics">${rows}</div>
-    <p class="mute small">Экзамен по теме — ${EXAM_N} вопросов из 100, при каждом запуске разные. Шкала: до 60 баллов — «2», 60–74 — «3», 75–89 — «4», 90–100 — «5». Самопроверка — без ограничения времени, с разбором каждого ответа.</p>`;
+    <p class="mute small">Экзамен по теме — ${EXAM_N} вопросов из банка темы (100–160), при каждом запуске разные. Шкала: до 60 баллов — «2», 60–74 — «3», 75–89 — «4», 90–100 — «5». Самопроверка — без ограничения времени, с разбором каждого ответа.</p>`;
 }
 function qHtml(q) {
   return `<div class="fz-q">${esc(q.t).replace(/\n/g, '<br>')}</div>${q.p.map(p => `<div class="fz-qimg"><img src="bank/img/${encodeURIComponent(p)}" alt="Рисунок к вопросу"></div>`).join('')}`;
