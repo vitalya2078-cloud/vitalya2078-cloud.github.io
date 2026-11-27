@@ -68,7 +68,7 @@ if (await page.locator('#np-fio').count()) {
   await page.fill('#np-fio', 'Проверкин Пётр Петрович'); await page.fill('#np-group', '103'); await page.fill('#np-pw', '1234'); await page.fill('#np-pw2', '1234');
   await page.check('#np-eula'); await page.click('[data-d="register"]'); await W(600); await page.keyboard.press('Escape'); await W(600);
 }
-must(await page.locator('.fz-mlabs .fz-ml').count() === 8, 'главная не открылась после регистрации');
+must(await page.locator('.fz-mlabs .fz-ml').count() === await page.evaluate(() => labNums().length), 'главная не открылась после регистрации');
 await page.click('[data-d="page"][data-v="notes"]'); await W(400);
 await page.click('[data-d="note"][data-v="t2"]');
 await page.waitForFunction(() => document.querySelectorAll('.fz-note .katex').length > 50, null, { timeout: 15000 });
