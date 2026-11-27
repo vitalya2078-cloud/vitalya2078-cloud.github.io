@@ -128,11 +128,13 @@ jobs:
       - name: Version
         run: echo "FZ_VERSION=$(python -c "import json;print(json.load(open('lw3-desktop/src-tauri/tauri.conf.json',encoding='utf-8'))['version'])")" >> "$GITHUB_ENV"
 
-      # открытый ключ лицензии (из генератора ключей кафедры) вшивается в программу; без него выпуск не собирается
+      # открытый ключ лицензии (из генератора ключей кафедры, файл lw3-desktop/license-pubkey.txt) вшивается в программу; без него выпуск не собирается
       - name: License public key
         env:
           PK: ${{ vars.FZ_LICENSE_PUBKEY || secrets.FZ_LICENSE_PUBKEY }}
         run: |
+          # главный источник — файл в репозитории (открытый ключ не секретный); переменная GitHub — запасной
+          F=$(tr -d ' \r\n' < lw3-desktop/license-pubkey.txt 2>/dev/null || true); [ -n "$F" ] && PK="$F"
           [ ${#PK} -eq 64 ] || { echo "::error::нет открытого ключа лицензии: задайте переменную или секрет FZ_LICENSE_PUBKEY (64 шестнадцатеричных знака из генератора ключей)"; exit 1; }
           [[ "$PK" =~ ^[0-9a-fA-F]{64}$ ]] || { echo "::error::FZ_LICENSE_PUBKEY должен состоять из 64 шестнадцатеричных знаков"; exit 1; }
           echo "FZ_LICENSE_PUBKEY=$PK" >> "$GITHUB_ENV"
