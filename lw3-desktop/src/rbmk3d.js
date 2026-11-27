@@ -332,7 +332,7 @@ const R3L = () => { try { return localStorage.getItem('fz-rb-lbl') !== '0'; } ca
 const R3VIEWS = {
   unit: { all: ['Обзор', [32, 24, 36], [0, 0, -8]], reactor: ['Реактор', [12, 10, 14], [0, 0, 0]], pumps: ['ГЦН', [-31, 4, 15], [-17, -3, 0]], drums: ['Барабаны', [0, 17, 17], [0, 8, 0]], tg: ['Турбины', [0, 7, -7], [0, -3, -24]], feed: ['Питание', [16, 7, -20], [0, 0, -32]] },
   core: { all: ['Обзор', [15, 9, 17], [0, 0.5, 0]], top: ['Сверху', [3, 20, 4], [0, 0, 0]], bottom: ['Низ зоны', [9, -3, 11], [0, -2.5, 0]] },
-  desk: { all: ['Щит', [0, 2.5, 12], [0, -2.6, -0.5]], console: ['Пульт', [0, 3.5, 6], [0, -3.8, 0.3]], panel: ['Приборы', [0, -1.5, 7], [0, -2.9, -1.8]] },
+  desk: { all: ['Весь щит', [1, 6, 21], [0.5, -2.8, -1]], reactor: ['Реактор', [0, 2.5, 12], [0, -2.6, -0.5]], console: ['Пульт СИУР', [0, 3.5, 6], [0, -3.8, 0.3]], elec: ['Электрика', [11.7, 1.1, 10.3], [17.4, -2.9, 1]], ekeys: ['Ключи', [13.6, 2, 7.3], [16.2, -3.9, 3]], cab: ['Шкафы 6 кВ', [-9.6, -0.4, 10.5], [-17, -2.7, 1]] },
 };
 function r3Build(kind) {
   const T = window.THREE, box = $('#rb-3dc'); if (!box) return;
@@ -346,7 +346,7 @@ function r3Build(kind) {
   const cam = new T.PerspectiveCamera(42, box.clientWidth / box.clientHeight, 0.1, 400);
   scene.add(new T.HemisphereLight(dark ? 0xc9d6ff : 0xffffff, dark ? 0x141a22 : 0xb8c2d0, dark ? 0.75 : 1.2));
   const sun = new T.DirectionalLight(dark ? 0xffe2b8 : 0xffffff, dark ? 1.1 : 1.6); sun.position.set(14, 22, 10); scene.add(sun);
-  Object.assign(R3, { scene, cam, ren, kind, low, lblBox: lbl, tip, objs: { rods: [], pumps: [], tgs: [], drums: [], pens: [], eccsLamps: [] }, pick: [], parts: {}, flows: [], flowIM: null, labels: [], sel: null, hover: null, fly: null, fx: null, glow: {}, desk: null, mouse: null, last: performance.now(), tick: 0 });
+  Object.assign(R3, { scene, cam, ren, kind, low, lblBox: lbl, tip, objs: { rods: [], pumps: [], tgs: [], drums: [], pens: [], eccsLamps: [] }, live: [], pick: [], parts: {}, flows: [], flowIM: null, labels: [], sel: null, hover: null, fly: null, fx: null, glow: {}, desk: null, mouse: null, last: performance.now(), tick: 0 });
   r3Room(scene, dark);
   const steel = r3Steel([4, 1]);
   // ---------- реактор ----------
@@ -381,15 +381,22 @@ function r3Build(kind) {
   else if (kind === 'desk') {
     reactor.visible = false; R3.pick = R3.pick.filter(m => !m.userData.id.startsWith('r')); delete R3.parts.reactor;
     const desk = r3Desk(); desk.position.set(0, -6.2, 0); scene.add(desk);
+    const el = r3ElecDesk(); el.position.set(16.5, -6.2, 2.5); el.rotation.y = -0.55; scene.add(el);
+    const cab = r3Cabinets(); cab.position.set(-17, -6.2, 1); cab.rotation.y = 0.55; scene.add(cab);
+    r3Label('desk', [0, 1.4, -1.8], () => 'Реакторная часть'); r3Label('epanel', [17.4, 1.4, 1], () => 'Электрическая часть'); r3Label('ecab', [-17, 1.6, 1], () => 'Шкафы 6 кВ');
   } else { r3Label('reactor', [0, 6.4, 0], () => `Реактор · ${RBN(RBG.S.P)} МВт`); ['RR', 'AR', 'USP'].forEach((g, j) => { const r = R3.objs.rods.find(o => o.g === g); if (r) r3Label('rod:' + g, [r.grp.position.x, 5.6 + j * 0.01, r.grp.position.z], () => `${{ RR: 'РР', AR: 'АР', USP: 'УСП' }[g]} · ${(RBG.S.rods[g] * 100).toFixed(0)} %`); }); }
   const v = (R3VIEWS[kind] || R3VIEWS.core).all; cam.position.set(...v[1]);
   const ctl = new window.THREE_OrbitControls(cam, ren.domElement); ctl.enableDamping = true; ctl.target.set(...v[2]);
-  ctl.maxDistance = kind === 'desk' ? 30 : 62; ctl.minDistance = kind === 'desk' ? 3 : 4; ctl.maxPolarAngle = Math.PI * 0.49; ctl.minPolarAngle = Math.PI * 0.08; R3.ctl = ctl;
+  ctl.maxDistance = kind === 'desk' ? 34 : 62; ctl.minDistance = kind === 'desk' ? 3 : 4; ctl.maxPolarAngle = Math.PI * 0.49; ctl.minPolarAngle = Math.PI * 0.08; R3.ctl = ctl;
   // наведение, щелчок
   let down = null;
   ren.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; R3.drag = true; });
   ren.domElement.addEventListener('pointerup', e => { R3.drag = false; if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return; const o = r3PickAt(e.clientX, e.clientY);
-    if (!o) return r3Select(null); const id = o.userData.id; if (id === 'az5') return r3Cmd(RBG.cover ? 'az' : 'cover'); r3Select(id); });
+    if (!o) return r3Select(null); const id = o.userData.id, u = R3.lastUV ? R3.lastUV.x : 0.5; if (id === 'az5') return r3Cmd(RBG.cover ? 'az' : 'cover');
+    if (id === 'ekeys') { let k = 0, best = 9; RB_KEYS.lx.forEach((x, j) => { const d = Math.abs(x / 2172 - u); if (d < best) { best = d; k = j; } }); if (best < 0.05) { const [rb, v] = rbKeyCmd(k); r3Cmd(rb, v); } return r3Select('elec:' + (k < 4 ? 0 : 1)); }
+    if (id === 'epanel') return r3Select('elec:' + (u < 0.5 ? 0 : 1));
+    if (id === 'ecab') return r3Select('cab:' + Math.max(0, Math.min(5, Math.floor(u * 6))));
+    r3Select(id); });
   ren.domElement.addEventListener('pointermove', e => { R3.mouse = [e.clientX, e.clientY]; });
   ren.domElement.addEventListener('pointerleave', () => { R3.mouse = null; R3.hover = null; tip.hidden = true; });
   lbl.addEventListener('click', e => { const l = e.target.closest('.r3-lbl'); if (l) r3Select(l.dataset.id); });
@@ -400,7 +407,7 @@ function r3Build(kind) {
 function r3PickAt(x, y) {
   const T = window.THREE, r = R3.ren.domElement.getBoundingClientRect(), rc = new T.Raycaster();
   rc.setFromCamera(new T.Vector2((x - r.left) / r.width * 2 - 1, -(y - r.top) / r.height * 2 + 1), R3.cam);
-  const h = rc.intersectObjects(R3.pick, false)[0]; return h ? h.object : null;
+  const h = rc.intersectObjects(R3.pick, false)[0]; R3.lastUV = h && h.uv ? h.uv.clone() : null; return h ? h.object : null;
 }
 // команда пульта из 3D: та же кнопка data-rb, что и на 2D-пульте
 function r3Cmd(rb, v, g) { const b = document.createElement('button'); b.dataset.rb = rb; if (v != null) b.dataset.v = v; if (g) b.dataset.g = g; b.hidden = true; document.body.appendChild(b); b.click(); b.remove(); }
@@ -426,7 +433,7 @@ function r3RodsHtml() {
   return rod('RR', 'РР') + rod('USP', 'УСП') + `<div class="r3-rod"><span>АР</span><i><s style="width:${(S.rods.AR * 100).toFixed(1)}%"></s></i>${S.ar.on ? r3B('arset', -0.025, '−') + r3B('arset', 0.025, '+') : `<button class="btn line" data-rb="rod" data-g="AR" data-v="-1">▲</button><button class="btn line" data-rb="rod" data-g="AR" data-v="1">▼</button>`}</div>`;
 }
 function r3Card(id) {
-  const S = RBG.S, [k, n] = id.split(':'), i = +n, info = R3INFO[k] || R3INFO[{ reactor: 'graphite', rod: 'rod', drum: 'drum', pump: 'pump', tg: 'tg', az5: 'desk', desk: 'desk', cond: 'cond', steam: 'steam', down: 'down', press: 'press', pvk: 'pvk' }[k]] || ['Деталь', ''];
+  const S = RBG.S, [k, n] = id.split(':'), i = +n, info = R3INFO[k] || R3INFO[{ elec: 'epanel', cab: 'ecab',  reactor: 'graphite', rod: 'rod', drum: 'drum', pump: 'pump', tg: 'tg', az5: 'desk', desk: 'desk', cond: 'cond', steam: 'steam', down: 'down', press: 'press', pvk: 'pvk' }[k]] || ['Деталь', ''];
   const main = () => r3Row('Мощность', RBN(S.P) + ' МВт') + r3Row('Период', r3Per(S), S.period > 0 && S.period < 40 ? 'bad' : '') + r3Row('ОЗР', RB.ozr(S).toFixed(1) + ' ст.', RB.ozr(S) < 15 ? 'bad' : '');
   const C = {
     reactor: { t: 'Реактор РБМК-1000', live: () => main() + r3Row('Реактивность', (S.rho >= 0 ? '+' : '') + S.rho.toFixed(2) + ' β') + r3Row('Пар в каналах', (S.phi * 100).toFixed(0) + ' %') + r3Row('Ксенон', (S.X * 100).toFixed(0) + ' %') + r3Row('Поле к низу', (S.axial * 100).toFixed(0) + ' %'), btns: r3RodsHtml },
@@ -441,6 +448,8 @@ function r3Card(id) {
     cond: { t: `Конденсатор ТГ-${i + 7}`, live: () => r3Row('Пар из турбины', S.tg[i].on ? Math.round(r3Steam() * 800) + ' МВт' : 'нет') },
     desk: { live: main, btns: r3RodsHtml }, console: { live: main, btns: () => r3RodsHtml() + r3B('ar', null, S.ar.on ? 'АР включён' : 'Включить АР', S.ar.on) },
     az5: { t: 'Кнопка АЗ-5', live: () => r3Row('Крышка', RBG.cover ? 'открыта' : 'закрыта') + r3Row('АЗ-5', S.az ? 'сработала' : 'не нажата', S.az ? 'bad' : ''), btns: () => r3B('cover', null, RBG.cover ? 'Закрыть крышку' : 'Открыть крышку') + (RBG.cover ? r3B('az', null, 'Нажать АЗ-5', false, 'style="background:#dc2626;color:#fff;border-color:#dc2626"') : '') },
+    elec: { t: `ТГ-${i + 7}: электрическая часть`, live: () => { const g = RBG.E.tg[i], f = (v, d) => v.toFixed(d).replace('.', ','); return r3Row('Выключатель', S.tg[i].on ? 'в сети' : 'отключён', S.tg[i].on ? '' : 'bad') + r3Row('Ток статора', f(g.I, 2) + ' кА') + r3Row('Напряжение', f(g.U, 1) + ' кВ') + r3Row('Активная / реактивная', Math.round(g.P) + ' МВт / ' + Math.round(g.Q) + ' Мвар') + r3Row('Частота', f(g.f, 2) + ' Гц') + r3Row('Выработано', f(g.gen, 1) + ' МВт·ч') + (S.tg[i].on ? '' : r3Row('Синхронизм', g.sync ? 'есть' : 'нет', g.sync ? '' : 'bad')); }, btns: () => r3B('tgsw', i, S.tg[i].on ? 'Отключить от сети' : 'Включить в сеть', S.tg[i].on) + r3B('exc', i, RBG.E.tg[i].exc ? 'Возбуждение: вкл' : 'Возбуждение: выкл', RBG.E.tg[i].exc) },
+    cab: { t: i < 4 ? `Секция 6 кВ № ${i + 1}` : i === 4 ? 'Секция питательных насосов' : 'Резервный трансформатор (РТСН)', live: () => i < 4 ? r3Row('Питание', RBG.E.sec[i] === 'tg' ? 'от ТГ-' + (i < 2 ? 7 : 8) : 'от резерва') + r3Row('Напряжение', RBG.E.secU[i].toFixed(2).replace('.', ',') + ' кВ', RBG.E.secU[i] < 5.5 ? 'bad' : '') + RB_SEC[i].map(j => r3Row('ГЦН-' + (j + 1), Math.round(rbPumpI(S.pumps[j])) + ' А')).join('') : i === 4 ? S.fwPumps.map((on, j) => r3Row('ПЭН-' + (j + 1), on ? 'работает' : 'резерв')).join('') : r3Row('Напряжение', '6,3 кВ') + r3Row('Питает секций', String(RBG.E.sec.filter(x => x === 'res').length)), btns: () => i < 4 ? r3B('sec', i, RBG.E.sec[i] === 'tg' ? 'Перевести на резерв' : 'Вернуть на ТГ-' + (i < 2 ? 7 : 8)) : i === 4 ? S.fwPumps.map((on, j) => r3B('pen', j, 'ПЭН-' + (j + 1), on)).join('') : '' },
     down: { live: () => r3Row('Расход стороны', Math.round(r3SideFlow(i) * 24) + ' тыс. м³/ч') }, press: { live: () => r3Row('Расход стороны', Math.round(r3SideFlow(i) * 24) + ' тыс. м³/ч') }, pvk: { live: () => r3Row('Пар в смеси', (S.phi * 100).toFixed(0) + ' %') },
     steam: { t: `Паропровод к ТГ-${i + 7}`, live: () => r3Row('Пар', S.tg[i].on ? Math.round(r3Steam() * 800) + ' МВт' : 'нет — ТГ отключён') }, feed: { live: () => r3Row('Подача', Math.round(S.fw * 100) + ' %') }, condl: { live: () => r3Row('Конденсат', Math.round(S.tg.reduce((a, t) => a + (t.on ? Math.max(0, t.load) : 0), 0) * 100) + ' %') },
   }[k] || { live: () => '' };
@@ -570,6 +579,7 @@ function r3Frame() {
     R3.labels.forEach(l => { v.copy(l.pos).project(R3.cam); const vis = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05; l.el.style.display = vis ? '' : 'none'; if (!vis) return; l.el.style.transform = `translate(${((v.x + 1) / 2 * W).toFixed(0)}px,${((1 - v.y) / 2 * Hh).toFixed(0)}px) translate(-50%,-100%)`; if (upd) { const s = l.text(); if (l.el.textContent !== s) l.el.textContent = s; } l.el.classList.toggle('sel', l.id === R3.sel); }); }
   if (now - (R3.tick || 0) > 250) { R3.tick = now; r3CardTick(); r3HudTick(); }
   if (R3.desk && now - R3.desk.at > 200) { R3.desk.at = now; r3DeskDraw(); }
+  if (R3.live.length && now - (R3.liveAt || 0) > 150) { R3.liveAt = now; R3.live.forEach(L => { L.draw(L.c, L.im); L.t.needsUpdate = true; }); }
   // толчок при взрыве
   let sh = null; if (R3.shake > 0.01) { sh = new T.Vector3((Math.random() - 0.5) * R3.shake, (Math.random() - 0.5) * R3.shake, (Math.random() - 0.5) * R3.shake); R3.cam.position.add(sh); R3.shake *= Math.pow(0.08, dt); }
   R3.ren.render(R3.scene, R3.cam); if (sh) R3.cam.position.sub(sh);
@@ -588,3 +598,32 @@ async function r3Show(kind) {
 function r3Dispose() { if (R3.ren) { R3.ren.dispose(); R3.ren.domElement.remove(); R3.ren = null; } if (R3.lblBox) { R3.lblBox.remove(); R3.lblBox = null; } if (R3.tip) { R3.tip.remove(); R3.tip = null; } R3.fx = null; R3.desk = null; R3.card = null; R3.scene = null; }
 function r3Hide() { r3Dispose(); }
 const r3LblOn = () => R3L();
+
+/* ---------- электрическая секция блочного щита: панель приборов, пульт с ключами, шкафы 6 кВ (живые текстуры) ---------- */
+function r3LiveTex(name, mat, draw) {
+  r3Img(name).then(im => {
+    if (!im || !R3.ren) return; const T = window.THREE, cv = document.createElement('canvas'); cv.width = im.width; cv.height = im.height;
+    const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true;
+    const L = { c: cv.getContext('2d'), im, t, draw }; R3.live.push(L); draw(L.c, im); t.needsUpdate = true;
+  });
+}
+function r3ElecDesk() {
+  const T = window.THREE, g = new T.Group(), metal = r3Metal([2, 1]), metal2 = r3Metal([2, 1]);
+  const pm = new T.MeshStandardMaterial({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); r3LiveTex('elec-panel', pm, rbElPanelDraw);
+  const panel = new T.Mesh(new T.BoxGeometry(14, 4.67, 0.5), [metal, metal, metal, metal, pm, metal]); panel.position.set(0, 2.335 + 1, -1.8); g.add(r3Tag(panel, 'epanel', 'epanel'));
+  const plinth = new T.Mesh(new T.BoxGeometry(14.2, 1, 0.8), metal); plinth.position.set(0, 0.5, -1.8); g.add(r3Tag(plinth, 'epanel', 'epanel'));
+  const base = new T.Mesh(new T.BoxGeometry(12, 2.1, 3.2), metal2); base.position.set(0, 1.05, 0.6); g.add(r3Tag(base, 'ekeys', 'ekeys'));
+  const km = new T.MeshStandardMaterial({ color: 0x5c6f86, roughness: 0.55, metalness: 0.15 }); r3LiveTex('elec-keys', km, rbElKeysDraw);
+  const top = new T.Group(); top.position.set(0, 2.25, 0.6); top.rotation.x = 0.22; g.add(top);
+  const slab = new T.Mesh(new T.BoxGeometry(12, 0.24, 4), [metal2, metal2, km, metal2, metal2, metal2]); top.add(r3Tag(slab, 'ekeys', 'ekeys'));
+  return g;
+}
+function r3Cabinets() {
+  const T = window.THREE, m = r3Metal([3, 1]), cm = new T.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.6, metalness: 0.1 }); r3LiveTex('elec-cab', cm, rbElCabDraw);
+  const b = new T.Mesh(new T.BoxGeometry(21, 7, 1.4), [m, m, m, m, cm, m]); b.position.y = 3.5; return r3Tag(b, 'ecab', 'ecab');
+}
+Object.assign(R3INFO, {
+  epanel: ['Электрическая панель', 'Приборы генераторов ТГ-7 и ТГ-8: ток статора, напряжение, активная мощность, частота; синхроноскоп; счётчики энергии.'],
+  ekeys: ['Пульт ключей управления', 'Ключи выключателей генераторов, возбуждения и питания секций собственных нужд 6 кВ.'],
+  ecab: ['Шкафы собственных нужд 6 кВ', 'От секций 6 кВ питаются главные циркуляционные и питательные насосы.'],
+});

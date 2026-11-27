@@ -43,6 +43,15 @@ must(await page.locator('#rb-hint').isVisible() && await page.locator('.rb-hl').
 must(await page.evaluate(() => window.__rb.G.usedHints === true), 'включённые подсказки не отмечены для оценки');
 await shot('hint'); await page.keyboard.press('l'); await page.evaluate(() => { window.__rb.G.target = 1; }); await W(700);
 must(!(await page.locator('#rb-hint').isVisible()), 'подсказка не скрылась после выключения');
+// электрическая часть: вкладка, перевод секции 6 кВ на резерв, включение ТГ только по синхроноскопу
+await page.click('[data-rb="view"][data-v="elec"]'); await W(500);
+must(await page.locator('#rb-elcv').count() === 1 && /кА/.test(await page.textContent('#rb-elr0')), 'нет вкладки «Электрика» или показаний генератора');
+await page.click('[data-rb="sec"][data-v="0"]'); await W(200); must(await page.evaluate(() => window.__rb.G.E.sec[0] === 'res'), 'секция 6 кВ не перевелась на резерв');
+await page.click('[data-rb="sec"][data-v="0"]'); await W(200);
+await page.click('#rb-tgsw1'); await W(200); must(await page.evaluate(() => !window.__rb.G.S.tg[1].on), 'ТГ-8 не отключился');
+await page.evaluate(() => { window.__rb.G.E.tg[1].sync = false; }); await page.dispatchEvent('#rb-tgsw1', 'click'); await W(100);
+must(await page.evaluate(() => !window.__rb.G.S.tg[1].on), 'ТГ-8 включился без синхронизма');
+await shot('elec'); await page.evaluate(() => { window.__rb.G.S.tg[1].on = true; }); await page.click('[data-rb="view"][data-v="2d"]'); await W(300);
 await page.dispatchEvent('[data-rb="az"]', 'click'); await W(150); must(!(await G()).az, 'АЗ-5 нажалась без открытой крышки');
 await page.click('[data-rb="cover"]'); await W(400); await page.click('[data-rb="az"]'); await W(100);
 must((await G()).az, 'АЗ-5 не сработала'); await tick(25, 0.25); await W(400);

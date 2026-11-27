@@ -687,3 +687,11 @@ body.rbscr #app, body.rbscr main{max-width:none}
 .rb-epi-dots{position:absolute; left:6vw; bottom:calc(6vh + 22px); z-index:4; display:flex; gap:6px}
 .rb-epi-dots i{width:26px; height:3px; border-radius:2px; background:rgba(255,255,255,.25)} .rb-epi-dots i.on{background:#fb923c}
 .rb-epi-src{position:absolute; right:24px; bottom:calc(6vh + 16px); z-index:4; margin:0; font-size:11px; color:rgba(255,255,255,.5); max-width:420px; text-align:right}
+/* ---------- вкладка «Электрика» ---------- */
+.rb-elecw[hidden]{display:none !important}
+.rb-elecw{flex:1; min-height:0; overflow:auto}
+.rb-elv{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.rb-elp, .rb-els{grid-column:1 / -1} .rb-elp canvas{display:block; width:100%; height:auto; border-radius:10px}
+.rb-elp h3 .mute{font-weight:400; margin-left:8px}
+.rb-elg .rb-rowb{margin-top:8px} .rb-elg .btn.sync{background:#dcfce7; border-color:#16a34a; color:#166534}
+.rb-secr{display:grid; grid-template-columns:90px 110px 80px 1fr auto; gap:10px; align-items:center; padding:6px 0; border-bottom:1px dashed var(--line); font-size:13px} .rb-secr .bad{color:var(--bad); font-weight:700} .rb-secr .btn{padding:4px 10px; min-height:0}

@@ -104,7 +104,7 @@ function vRbmk() {
     <header class="rb-top">
       <button class="btn line" data-rb="exit">${ic('chevron-left')} Выйти</button>
       <div class="rb-tt"><b>Пульт РБМК-1000 · 4-й энергоблок</b><small>${esc(title)}</small></div>
-      <div class="rb-tabs" role="tablist"><button data-rb="view" data-v="2d" class="on" title="Пульт (V)">${ic('sliders-horizontal')} 2D</button><button data-rb="view" data-v="3d" title="3D-вид (V)">${ic('box')} 3D</button><button data-rb="view" data-v="task" title="Задача, способы, риски (T)">${ic('list-checks')} Задача</button></div>
+      <div class="rb-tabs" role="tablist"><button data-rb="view" data-v="2d" class="on" title="Пульт (V)">${ic('sliders-horizontal')} 2D</button><button data-rb="view" data-v="3d" title="3D-вид (V)">${ic('box')} 3D</button><button data-rb="view" data-v="elec" title="Электрическая часть (E)">${ic('zap')} Электрика</button><button data-rb="view" data-v="task" title="Задача, способы, риски (T)">${ic('list-checks')} Задача</button></div>
       <div class="rb-clock"><small>Время</small><b id="rb-clock">--:--</b></div>
       <div class="rb-goal"><small>Задание</small><b id="rb-goal"></b><i id="rb-prog"><s></s></i></div>
       <div class="rb-score"><small>Оценка</small><b id="rb-score">—</b></div>
@@ -174,6 +174,7 @@ function vRbmk() {
         <div class="r3-opts"><button class="btn line ${r3LblOn() ? 'on' : ''}" data-rb="r3lbl" id="r3-lblb">${ic('tag')} Подписи</button><button class="btn line" data-rb="r3q" id="r3-qb">${ic('gauge')} ${R3Q() === 'low' ? 'Качество: простое' : 'Качество: высокое'}</button></div>
         <p class="mute small">Мышь — вращать, колесо — приблизить. Стержни: W/S, A/D. Подсказки: L.</p></div></div>
     <div class="rb-taskw" id="rb-taskw" hidden></div>
+    <div class="rb-elecw" id="rb-elecw" hidden></div>
     <div class="rb-hint" id="rb-hint" hidden></div>
     <div class="rb-crashbar" id="rb-crashbar" hidden></div>
     <div class="rb-ov" id="rb-ov" hidden></div>
@@ -185,7 +186,7 @@ function vRbmk() {
 }
 function rbView() {
   const G = RBG; if (!G || !$('.rb')) return; const v = G.view || '2d';
-  $('.rb-grid').hidden = v !== '2d'; $('#rb-3dw').hidden = v !== '3d'; $('#rb-taskw').hidden = v !== 'task';
+  $('.rb-grid').hidden = v !== '2d'; $('#rb-3dw').hidden = v !== '3d'; $('#rb-taskw').hidden = v !== 'task'; $('#rb-elecw').hidden = v !== 'elec'; if (v === 'elec') { $('#rb-elecw').innerHTML = rbElecHtml(); rbElecTick(); }
   document.querySelectorAll('.rb-tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   if (v === '3d') r3Show(); else r3Hide();
   if (v === 'task') { if (G.started && !G.done && !G.paused) { G.paused = true; G.taskPaused = true; } $('#rb-taskw').innerHTML = rbTaskHtml() + (G.taskPaused ? `<p class="rb-tpause">${ic('pause')} Смена на паузе, пока открыта вкладка «Задача».</p>` : ''); }
@@ -205,7 +206,7 @@ function rbLoop() {
     const dt = Math.min(0.1, (now - rbLast) / 1000); rbLast = now;
     if (!RBG.paused && RBG.started && !RBG.done) rbTick(dt * RBG.speed);
     if (RBG.crash) rbCrashLoop(dt);
-    rbUpdate(); rbHintLoop(now); if (RBG.view === '3d' && !rbEpiS) r3Frame(); /* под эпилогом 3D не рисуем */ rbRaf = requestAnimationFrame(f);
+    rbUpdate(); rbHintLoop(now); if (RBG.view === 'elec' && now - (RBG._elAt || 0) > 120) { RBG._elAt = now; rbElecTick(); } if (RBG.view === '3d' && !rbEpiS) r3Frame(); /* под эпилогом 3D не рисуем */ rbRaf = requestAnimationFrame(f);
   };
   rbRaf = requestAnimationFrame(f);
 }
@@ -224,7 +225,7 @@ function rbStep(h) {
   S.rodCmd.AR = 0;
   if (G.btnRod && !(G.stuck > 0 && G.btnRod.g === 'RR') && !(G.btnRod.g === 'AR' && S.ar.on)) { S.rodCmd[G.btnRod.g] = G.btnRod.v * (G.btnRod.g === 'RR' ? 0.0015 : 0.003) * fast; }
   const before = { az: S.az, ar: S.ar.on, ev: S.ev.length };
-  RB.step(S, h); G.t += h;
+  RB.step(S, h); G.t += h; rbElecStep(h);
   for (let i = before.ev; i < S.ev.length; i++) rbLog(S.ev[i].kind, S.ev[i].text);
   if (!before.az && S.az) { G.score.az++; G.score.events.push({ t: G.t, text: 'АЗ-5' }); }
   // насосы: вибрация растёт у неисправного; при 100 — аварийный останов
@@ -500,7 +501,7 @@ function rbDraw() {
 
 /* ---------- действия ---------- */
 function rbStart(mode, k) {
-  RBG = rbNew(mode, k == null ? null : +k); RBG.started = false; SCREEN = 'rbmk'; rbKeys = {}; render();
+  RBG = rbNew(mode, k == null ? null : +k); RBG.E = rbElecNew(); RBG.started = false; SCREEN = 'rbmk'; rbKeys = {}; render();
 }
 function rbExit() { rbEpiClose(true); r3Hide(); cancelAnimationFrame(rbRaf); rbSnd.sirenOff(); RBG = null; rbKeys = {}; SCREEN = 'labs'; PAGE = 'rbmk'; render(); }
 document.addEventListener('click', e => {
@@ -537,6 +538,10 @@ document.addEventListener('click', e => {
       q.on = !q.on; q.coast = !q.on; if (q.on) { q.fault = q.fault || 0; } rbLog(q.on ? 'ok' : 'warn', `ГЦН-${i + 1} ${q.on ? 'включён' : 'отключён'}.`);
       if (!q.on && q.fault) { q.fault = 0; const f = G.faults.find(f => f.kind === 'vib' && f.i === i); if (f) { f.fixed = true; rbLog('ok', `Неисправный ГЦН-${i + 1} выведен в ремонт.`); } } break; }
     case 'pen': { const i = +d.v; S.fwPumps[i] = !S.fwPumps[i]; rbLog(S.fwPumps[i] ? 'ok' : 'warn', `ПЭН-${i + 1} ${S.fwPumps[i] ? 'включён' : 'отключён'}.`); if (S.fwPumps.filter(Boolean).length >= 2) G.faults.filter(f => f.kind === 'pen').forEach(f => f.fixed = true); break; }
+    case 'tgsw': { const i = +d.v, g = G.E.tg[i]; if (S.tg[i].on) { S.tg[i].on = false; rbLog('warn', `ТГ-${i + 7}: выключатель генератора отключён.`); } else if (!g.sync) toast('Нет синхронизма. Включайте, когда стрелка синхроноскопа у верхней отметки и горит зелёная лампа.', 'bad'); else { S.tg[i].on = true; rbLog('ok', `ТГ-${i + 7} включён в сеть по синхроноскопу.`); } break; }
+    case 'exc': { const i = +d.v; G.E.tg[i].exc = !G.E.tg[i].exc; rbLog(G.E.tg[i].exc ? 'ok' : 'warn', `ТГ-${i + 7}: возбуждение ${G.E.tg[i].exc ? 'включено' : 'снято'}.`); break; }
+    case 'sec': { const k = +d.v; G.E.sec[k] = G.E.sec[k] === 'tg' ? 'res' : 'tg'; rbLog('ok', `Секция 6 кВ № ${k + 1}: питание ${G.E.sec[k] === 'res' ? 'от резервного трансформатора' : 'от ТГ-' + (k < 2 ? 7 : 8)}.`); break; }
+    case 'ekey': { const [rb, v] = rbKeyCmd(+d.v); r3Cmd(rb, v); break; }
     case 'tg': { const i = +d.v; S.tg[i].on = !S.tg[i].on; rbLog('warn', `ТГ-${i + 7} ${S.tg[i].on ? 'включён в сеть' : 'отключён'}.`); break; }
     case 'tgauto': { const f = G.faults.find(x => x.kind === 'tgreg' && !x.fixed); if (!S.tgAuto && f && G.t - f.at < 40) { toast('Регулятор турбин ещё в ремонте: держите давление вручную', 'bad'); break; } S.tgAuto = !S.tgAuto; if (S.tgAuto && f) f.fixed = true; break; }
     case 'fwauto': S.fwAuto = !S.fwAuto; break;
@@ -574,6 +579,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'KeyH') rbHelp();
   if (e.code === 'KeyL') rbHintsToggle();
   if (e.code === 'KeyV') { G.view = G.view === '3d' ? '2d' : '3d'; rbView(); }
+  if (e.code === 'KeyE') { G.view = G.view === 'elec' ? '2d' : 'elec'; rbView(); }
   if (e.code === 'KeyT') { G.view = G.view === 'task' ? '2d' : 'task'; rbView(); }
 });
 document.addEventListener('keyup', e => {
@@ -714,3 +720,129 @@ document.addEventListener('click', e => {
   else if (b.dataset.epi === 'pause') { E.paused = !E.paused; b.innerHTML = ic(E.paused ? 'play' : 'pause'); if (E.anim) E.paused ? E.anim.pause() : E.anim.play(); }
 });
 document.addEventListener('keydown', e => { if (!rbEpiS) return; if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); rbEpiClose(); } else if (e.code === 'Space' || e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); e.stopImmediatePropagation(); rbEpiS.el.querySelector('[data-epi="next"]').click(); } }, true);
+
+/* ---------- электрическая часть: генераторы ТГ-7/8, синхронизация, собственные нужды 6 кВ, счётчики энергии ----------
+   Номинальные 20 кВ и cos φ 0,85 — учебные значения (паспорт генераторов блока в открытых источниках не подтверждён). */
+const RB_EL = { U: 20, cos: 0.85, Usec: 6.3, Ppump: 5.5 };
+const RB_SEC = [[0, 1], [2, 3], [4, 5], [6, 7]];   // секции 6 кВ и их ГЦН: секции 1–2 — от ТГ-7, 3–4 — от ТГ-8
+function rbElecNew() { return { tg: [0, 1].map(() => ({ rpm: 1, exc: true, ph: 0, gen: 0, out: 0, P: 0, U: 20, f: 50, I: 0, Q: 0, sync: false, own: 0 })), sec: ['tg', 'tg', 'tg', 'tg'], secU: [6.3, 6.3, 6.3, 6.3] }; }
+const rbPumpI = q => RB_EL.Ppump * Math.pow(q.spin, 3) / (Math.sqrt(3) * RB_EL.Usec * 0.9) * 1000;   // ток ГЦН, А
+function rbElecStep(h) {
+  const G = RBG, S = G.S; if (!G.E) G.E = rbElecNew(); const E = G.E;
+  const cut = i => G.hist && i === 1 && (G.hist.step === 'test' || G.hist.step === 'az');   // стопорные клапаны ТГ-8 закрыты — выбег
+  const dtc = h * (S.acc || RB.TIME_ACC);
+  E.tg.forEach((g, i) => {
+    const steam = !cut(i) && S.P > 0.03 && !S.broken, drive = steam || S.tg[i].on && !cut(i);
+    g.rpm += ((drive ? 1 : 0) - g.rpm) * (drive ? 0.5 : 0.008) * h;
+    g.own = RB_SEC.reduce((a, pr, k) => a + (E.sec[k] === 'tg' && (k < 2) === (i === 0) ? pr.reduce((b, j) => b + RB_EL.Ppump * Math.pow(S.pumps[j].spin, 3), 0) : 0), 0);
+    const grid = S.tg[i].on ? Math.max(0, S.tg[i].load) * 1000 * Math.min(1, S.P / 0.3 + 0.2) : 0;
+    g.P = grid + (g.exc && g.rpm > 0.05 ? g.own : 0);
+    g.f = S.tg[i].on ? 50 : 50 * g.rpm + (steam ? 0.12 * Math.sin(G.t * 0.15 + i * 2) : 0);
+    g.U = g.exc ? RB_EL.U * Math.min(1, g.rpm) : 0;
+    g.I = g.U > 0.5 ? g.P / (Math.sqrt(3) * g.U * RB_EL.cos) : 0;
+    g.Q = g.P * Math.tan(Math.acos(RB_EL.cos));
+    g.ph = S.tg[i].on ? 0 : (g.ph + (g.f - 50) * h * 2 * Math.PI + 2 * Math.PI) % (2 * Math.PI);
+    g.sync = !S.tg[i].on && g.exc && steam && Math.abs(g.f - 50) < 0.06 && Math.cos(g.ph) > 0.94;
+    g.gen += g.P * dtc / 3600; g.out += grid * dtc / 3600;
+    if (S.tg[i].on && !g.exc) { S.tg[i].on = false; rbLog('bad', `ТГ-${i + 7} отключён защитой: потеря возбуждения.`); }
+  });
+  RB_SEC.forEach((pr, k) => {
+    const g = E.tg[k < 2 ? 0 : 1], U = E.sec[k] === 'res' ? RB_EL.Usec : RB_EL.Usec * (g.exc ? Math.min(1, g.rpm) : 0);
+    E.secU[k] = U;
+    pr.forEach(j => { const q = S.pumps[j]; if (q.on && U < 4.4 && !cut(k < 2 ? 0 : 1)) { q.on = false; q.coast = true; rbLog('warn', `ГЦН-${j + 1}: пропало напряжение секции 6 кВ № ${k + 1} — насос на выбеге.`); } });
+  });
+}
+// рисунок электрической панели поверх картинки (общий для 2D и 3D): 4 прибора на генератор, синхроноскоп, счётчики, мнемосхема
+const RB_ELP = { g: [[163, 189], [371, 189], [579, 189], [786, 189], [1385, 189], [1592, 189], [1800, 189], [2008, 189]], sy: [1086, 211], cnt: [[274, 400], [679, 400], [1492, 400], [1897, 400]], lamp: [405, 455, 506], br: [[268, 540], [681, 540], [1491, 540], [1903, 540]], sec: [[372, 626], [579, 626], [1593, 626], [1800, 626]], res: [1086, 615] };
+function rbElDial(c, x, y, v, txt, face, bad) {
+  c.fillStyle = face; c.beginPath(); c.arc(x, y, 56, 0, Math.PI * 2); c.fill();
+  const a = Math.PI * (0.75 + 1.5 * Math.max(0, Math.min(1, v)));
+  c.fillStyle = '#374151'; c.font = '600 19px Arial'; c.textAlign = 'center'; c.fillText(txt, x, y + 38);
+  c.strokeStyle = bad ? '#dc2626' : '#111827'; c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * 66, y + Math.sin(a) * 66); c.stroke();
+  c.fillStyle = '#111827'; c.beginPath(); c.arc(x, y, 9, 0, Math.PI * 2); c.fill();
+}
+function rbElPanelDraw(c, base) {
+  const G = RBG; if (!G || !G.E) return; const S = G.S, E = G.E, now = performance.now();
+  c.drawImage(base, 0, 0);
+  if (!c._face) { const p = c.getImageData(RB_ELP.g[0][0] - 45, RB_ELP.g[0][1] + 45, 1, 1).data; c._face = `rgb(${p[0]},${p[1]},${p[2]})`; }
+  const fmt = (v, d) => v.toFixed(d).replace('.', ',');
+  E.tg.forEach((g, i) => {
+    const o = i * 4, vals = [[g.I / 20, fmt(g.I, 1) + ' кА', g.I > 18.5], [g.U / 24, fmt(g.U, 1) + ' кВ', g.U < 18 && g.rpm > 0.1 && g.exc], [g.P / 600, Math.round(g.P) + ' МВт', g.P > 520], [(g.f - 45) / 10, fmt(g.f, 2) + ' Гц', g.U > 1 && Math.abs(g.f - 50) > 0.5]];
+    vals.forEach(([v, t, bad], k) => rbElDial(c, RB_ELP.g[o + k][0], RB_ELP.g[o + k][1], v, t, c._face, bad));
+    [[g.gen, RB_ELP.cnt[i * 2]], [g.out, RB_ELP.cnt[i * 2 + 1]]].forEach(([val, [x, y]]) => {
+      c.fillStyle = '#0b0d10'; c.fillRect(x - 136, y - 36, 272, 72);
+      const s = String(Math.floor(val)).padStart(7, '0').slice(-7), fr = val % 1;
+      for (let d = 0; d < 7; d++) { const dx = x - 126 + d * 36; c.fillStyle = d === 6 ? '#7f1d1d' : '#1f2329'; c.fillRect(dx, y - 28, 31, 56); c.fillStyle = '#f3f4f6'; c.font = '700 38px "Courier New", monospace'; c.textAlign = 'center';
+        if (d === 6) { const n = +s[6], off = fr * 46; c.save(); c.beginPath(); c.rect(dx, y - 28, 31, 56); c.clip(); c.fillText(String(n), dx + 15.5, y + 13 - off); c.fillText(String((n + 1) % 10), dx + 15.5, y + 59 - off); c.restore(); }
+        else c.fillText(s[d], dx + 15.5, y + 13); }
+    });
+    const br = (on, [x, y]) => { c.fillStyle = on ? 'rgba(34,197,94,.85)' : 'rgba(220,38,38,.85)'; c.fillRect(x - 21, y - 21, 42, 42); };
+    br(S.tg[i].on, RB_ELP.br[i * 2]); br(g.exc, RB_ELP.br[i * 2 + 1]);
+  });
+  RB_ELP.sec.forEach(([x, y], k) => { const U = E.secU[k]; c.fillStyle = U > 5.5 ? (E.sec[k] === 'res' ? '#f59e0b' : '#22c55e') : U > 1 ? '#f59e0b' : '#dc2626'; c.fillRect(x - 13, y - 13, 26, 26); });
+  c.fillStyle = E.sec.includes('res') ? '#f59e0b' : '#4b5563'; c.fillRect(RB_ELP.res[0] - 13, RB_ELP.res[1] - 13, 26, 26);
+  // синхроноскоп: показывает генератор, который не в сети
+  const k = E.tg.findIndex((g, i) => !S.tg[i].on && g.exc && g.rpm > 0.3), [sx, sy] = RB_ELP.sy;
+  c.fillStyle = c._face; c.beginPath(); c.arc(sx, sy, 96, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#374151'; c.font = '600 20px Arial'; c.textAlign = 'center'; c.fillText(k < 0 ? 'синхроноскоп' : 'ТГ-' + (k + 7) + ' → сеть', sx, sy + 56);
+  const a = -Math.PI / 2 + (k < 0 ? 0 : E.tg[k].ph);
+  c.strokeStyle = k >= 0 && E.tg[k].sync ? '#15803d' : '#111827'; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + Math.cos(a) * 100, sy + Math.sin(a) * 100); c.stroke();
+  c.fillStyle = '#111827'; c.beginPath(); c.arc(sx, sy, 12, 0, Math.PI * 2); c.fill();
+  const lit = [k >= 0, k >= 0 && E.tg[k].sync, E.tg.some((g, i) => !S.tg[i].on && g.rpm < 0.97 && g.rpm > 0.05)];
+  lit.forEach((on, j) => { if (!on || (j === 2 && Math.floor(now / 500) % 2)) { c.fillStyle = 'rgba(0,0,0,.62)'; c.fillRect(RB_ELP.sy[0] - 20, RB_ELP.lamp[j] - 20, 40, 40); } });
+}
+// ключи электрического пульта: [ТГ-7 выключатель, ТГ-7 возбуждение, секция 1, секция 2 | ТГ-8 …]
+const RB_KEYS = { lx: [209, 420, 635, 850, 1441, 1654, 1869, 2082], gy: 188, ry: 242 };
+const rbKeyState = k => { const G = RBG, S = G.S, E = G.E, i = k < 4 ? 0 : 1, j = k % 4; return j === 0 ? S.tg[i].on : j === 1 ? E.tg[i].exc : E.sec[i * 2 + j - 2] === 'tg'; };
+const rbKeyCmd = k => { const i = k < 4 ? 0 : 1, j = k % 4; return j === 0 ? ['tgsw', i] : j === 1 ? ['exc', i] : ['sec', i * 2 + j - 2]; };
+const RB_KEYN = k => { const i = k < 4 ? 0 : 1, j = k % 4; return j === 0 ? `Выключатель ТГ-${i + 7}` : j === 1 ? `Возбуждение ТГ-${i + 7}` : `Секция 6 кВ № ${i * 2 + j - 1}: питание`; };
+function rbElKeysDraw(c, base) {
+  const G = RBG; if (!G || !G.E) return; c.drawImage(base, 0, 0);
+  if (!c._plate) { const p = c.getImageData(RB_KEYS.lx[0] - 150, 165, 1, 1).data; c._plate = `rgb(${p[0]},${p[1]},${p[2]})`; }
+  RB_KEYS.lx.forEach((lx, k) => {
+    const on = rbKeyState(k), px = lx - 81, py = 205;
+    c.fillStyle = c._plate; c.fillRect(lx - 152, 150, 120, 150);
+    c.save(); c.translate(px, py); c.fillStyle = '#16191e'; c.beginPath(); c.arc(0, 0, 44, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#3b4250'; c.lineWidth = 3; c.stroke();
+    c.rotate(on ? -Math.PI / 3 : 0); c.fillStyle = '#23272e'; c.beginPath(); c.roundRect ? c.roundRect(-15, -6, 30, 92, 8) : c.rect(-15, -6, 30, 92); c.fill(); c.strokeStyle = '#9ca3af'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 8); c.lineTo(0, 74); c.stroke();
+    c.fillStyle = '#0b0d10'; c.beginPath(); c.arc(0, 0, 9, 0, Math.PI * 2); c.fill(); c.restore();
+    c.fillStyle = 'rgba(0,0,0,.6)'; c.beginPath(); c.arc(lx, on ? RB_KEYS.ry : RB_KEYS.gy, 17, 0, Math.PI * 2); c.fill();
+  });
+}
+// шкафы 6 кВ: в окошке — напряжение и токи; лампы — состояние
+const RB_CAB = [190, 546, 902, 1268, 1626, 1983];
+function rbElCabDraw(c, base) {
+  const G = RBG; if (!G || !G.E) return; const S = G.S, E = G.E; c.drawImage(base, 0, 0);
+  RB_CAB.forEach((x, k) => {
+    c.fillStyle = '#0b1220'; c.fillRect(x - 96, 92, 192, 72); c.fillStyle = '#86efac'; c.font = '700 22px "Courier New", monospace'; c.textAlign = 'center';
+    let l1, l2, st;
+    if (k < 4) { const U = E.secU[k]; l1 = 'C' + (k + 1) + ' ' + U.toFixed(1) + 'кВ'; l2 = RB_SEC[k].map(j => Math.round(rbPumpI(S.pumps[j])) + 'А').join(' '); st = U > 5.5 ? (E.sec[k] === 'res' ? 2 : 0) : U > 1 ? 2 : 1; }
+    else if (k === 4) { l1 = 'ПЭН ' + S.fwPumps.filter(Boolean).length + '/3'; l2 = Math.round(S.fw * 100) + '%'; st = S.fwPumps.filter(Boolean).length >= 2 ? 0 : 2; }
+    else { l1 = 'РТСН 6,3кВ'; l2 = E.sec.filter(s => s === 'res').length + ' секц.'; st = E.sec.includes('res') ? 2 : 0; }
+    c.fillText(l1, x, 122); c.fillText(l2, x, 152);
+    [-69, 0, 69].forEach((dx, j) => { if (j !== st) { c.fillStyle = 'rgba(0,0,0,.6)'; c.beginPath(); c.arc(x + dx, 233, 27, 0, Math.PI * 2); c.fill(); } });
+  });
+}
+/* ---------- 2D: вкладка «Электрика» ---------- */
+let rbElImg = {};
+function rbElImgs() { ['elec-panel', 'elec-keys'].forEach(n => { if (!rbElImg[n]) { const im = new Image(); im.src = 'img/rbmk3d/' + n + '.webp'; rbElImg[n] = im; } }); }
+function rbElecHtml() {
+  rbElImgs();
+  const gen = i => `<section class="rb-p rb-elg"><h3>${ic('zap')} Турбогенератор ТГ-${i + 7}</h3><div class="r3-live" id="rb-elr${i}"></div>
+    <div class="rb-rowb"><button class="btn line" data-rb="tgsw" data-v="${i}" id="rb-tgsw${i}">—</button><button class="btn line" data-rb="exc" data-v="${i}" id="rb-exc${i}">—</button></div></section>`;
+  return `<div class="rb-elv">
+    <section class="rb-p rb-elp"><h3>${ic('gauge')} Электрическая часть блочного щита <span class="mute small">слева ТГ-7, справа ТГ-8: ток статора, напряжение, активная мощность, частота · в центре синхроноскоп · в окошках выработано и отпущено, МВт·ч</span></h3><canvas id="rb-elcv" width="2172" height="724"></canvas></section>
+    ${gen(0)}${gen(1)}
+    <section class="rb-p rb-els"><h3>${ic('zap')} Собственные нужды 6 кВ</h3><div id="rb-elsec"></div><p class="mute small">Секции 1–2 питаются от ТГ-7, 3–4 — от ТГ-8 через трансформаторы собственных нужд. Резерв — от резервного трансформатора (РТСН). Номинальные 20 кВ и cos φ 0,85 — учебные значения.</p></section>
+  </div>`;
+}
+function rbElecTick() {
+  const G = RBG; if (!G || !G.E || G.view !== 'elec') return; const S = G.S, E = G.E, cv = $('#rb-elcv');
+  if (cv && rbElImg['elec-panel'] && rbElImg['elec-panel'].complete && rbElImg['elec-panel'].naturalWidth) rbElPanelDraw(cv.getContext('2d'), rbElImg['elec-panel']);
+  const f = (v, d) => v.toFixed(d).replace('.', ',');
+  E.tg.forEach((g, i) => {
+    const r = $('#rb-elr' + i); if (r) { const h = r3Row('Выключатель', S.tg[i].on ? 'включён, в сети' : 'отключён', S.tg[i].on ? '' : 'bad') + r3Row('Ток статора', f(g.I, 2) + ' кА') + r3Row('Напряжение', f(g.U, 1) + ' кВ') + r3Row('Активная мощность', Math.round(g.P) + ' МВт') + r3Row('Реактивная', Math.round(g.Q) + ' Мвар') + r3Row('cos φ', g.P > 1 ? '0,85' : '—') + r3Row('Частота', f(g.f, 2) + ' Гц', g.U > 1 && Math.abs(g.f - 50) > 0.5 ? 'bad' : '') + r3Row('Собственные нужды', f(g.own, 1) + ' МВт') + r3Row('Выработано / отпущено', f(g.gen, 1) + ' / ' + f(g.out, 1) + ' МВт·ч') + (S.tg[i].on ? '' : r3Row('Синхронизм', g.sync ? 'есть — можно включать' : 'нет', g.sync ? '' : 'bad')); if (r.innerHTML !== h) r.innerHTML = h; }
+    const b = $('#rb-tgsw' + i); if (b) { const t = S.tg[i].on ? 'Отключить от сети' : 'Включить в сеть'; if (b.textContent !== t) b.textContent = t; b.classList.toggle('on', S.tg[i].on); b.classList.toggle('sync', !S.tg[i].on && g.sync); }
+    const x = $('#rb-exc' + i); if (x) { const t = g.exc ? 'Возбуждение: вкл' : 'Возбуждение: выкл'; if (x.textContent !== t) x.textContent = t; x.classList.toggle('on', g.exc); }
+  });
+  const sb = $('#rb-elsec'); if (sb) { const h = RB_SEC.map((pr, k) => `<div class="rb-secr"><b>Секция ${k + 1}</b><span>${E.sec[k] === 'tg' ? 'от ТГ-' + (k < 2 ? 7 : 8) : 'от резерва'}</span><span class="${E.secU[k] < 5.5 ? 'bad' : ''}">${f(E.secU[k], 2)} кВ</span><span>${pr.map(j => `ГЦН-${j + 1}: ${Math.round(rbPumpI(S.pumps[j]))} А`).join(' · ')}</span><button class="btn line" data-rb="sec" data-v="${k}">${E.sec[k] === 'tg' ? 'На резерв' : 'На ТГ-' + (k < 2 ? 7 : 8)}</button></div>`).join(''); if (sb._h !== h) { sb._h = h; sb.innerHTML = h; } }
+}
