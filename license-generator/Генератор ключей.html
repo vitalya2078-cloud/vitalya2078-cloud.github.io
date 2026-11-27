@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Генератор ключей Физпрактикума</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Генератор ключей Физпрактикума</title>
 <style>
 body{margin:0; background:#0E1013; color:#EEF1F6; font:15px/1.5 "Segoe UI", system-ui, sans-serif}
 main{max-width:980px; margin:0 auto; padding:28px 24px 60px}
@@ -19,7 +19,7 @@ pre{white-space:pre-wrap; word-break:break-all; background:#0E1013; border:1px s
 <div class="warn">Секретный ключ создаётся один раз. Храните файл <b>fizpraktikum-secret.key</b> в надёжном месте и не передавайте его. Без него нельзя выдать новые ключи; если он попадёт к посторонним, они смогут выпускать ключи сами.</div>
 <div class="row"><button id="load">Открыть файл секретного ключа</button><button class="l" id="gen">Создать новый секретный ключ</button></div>
 <p id="kst" class="m" style="margin-top:12px">Секретный ключ не загружен.</p>
-<div id="pub" hidden><label>Открытый ключ (его вписывают в программу при сборке — секрет FZ_LICENSE_PUBKEY):</label><input id="pubv" readonly></div>
+<div id="pub" hidden><label>Открытый ключ (вшит в программу при сборке; файл lw3-desktop/license-pubkey.txt):</label><input id="pubv" readonly></div>
 <input type="file" id="file" accept=".key,.json" hidden></section>
 
 <section><h2>2. Выдать ключи</h2>
@@ -664,12 +664,16 @@ const days = s => { const [y, m, d] = s.split('-').map(Number); return Math.roun
 const normCode = c => { const s = c.toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1').replace(/[^0-9A-Z]/g, ''); const t = s.startsWith('FZ') ? s.slice(2) : s;
   return t.length === 16 && [...t].every(ch => A.includes(ch)) ? `FZ-${t.slice(0, 4)}-${t.slice(4, 8)}-${t.slice(8, 12)}-${t.slice(12)}` : null; };
 let SK = null, LAST = [];
+// открытый ключ, вшитый в программу (lw3-desktop/license-pubkey.txt): генератор сразу говорит, подходит ли файл секретного ключа
+const EXPECTED_PK = 'bb494597e32966110c52bc2df5d82c95b5f54bb9e09e6a73341b41079184479f';
 const showErr = x => { $('kst').innerHTML = '<span class="bad">Ошибка: ' + String(x && x.message || x).replace(/[<&]/g, '') + '. Откройте генератор на компьютере в Chrome, Edge или Firefox.</span>'; };
 window.addEventListener('error', e => showErr(e.error || e.message)); window.addEventListener('unhandledrejection', e => showErr(e.reason));
 if (!(window.crypto && crypto.getRandomValues)) showErr('браузер не умеет создавать случайные числа');
 const save = (name, text, type = 'text/plain') => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + text], { type })); a.download = name; a.click(); };
 async function setKey(sk) { SK = sk; const pk = await ed.getPublicKeyAsync(sk); $('pubv').value = hex(pk); $('pub').hidden = false; $('make').disabled = false;
-  $('kst').innerHTML = '<span class="ok">Секретный ключ загружен.</span>'; }
+  $('kst').innerHTML = EXPECTED_PK && $('pubv').value !== EXPECTED_PK
+    ? '<span class="bad">Этот секретный ключ не подходит к программе: в ней открытый ключ ' + EXPECTED_PK.slice(0, 8) + '…, а у этого файла ' + $('pubv').value.slice(0, 8) + '…. Откройте другой файл fizpraktikum-secret.key.</span>'
+    : '<span class="ok">Секретный ключ загружен и подходит к программе.</span>'; }
 $('gen').onclick = async () => { if (SK && !confirm('Секретный ключ уже загружен. Создать новый? Ключи, выданные старым, не будут работать в программе с новым открытым ключом.')) return;
   try {
     const sk = ed.utils.randomPrivateKey(); await setKey(sk);

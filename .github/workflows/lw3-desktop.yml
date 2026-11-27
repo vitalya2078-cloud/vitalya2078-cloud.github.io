@@ -182,6 +182,13 @@ jobs:
           mkdir -p shots
           FZ_EXE="$PWD/test-app/Fizpraktikum.exe" SHOTS=shots node lw3-desktop/win/tests/e2e-win.mjs
 
+      - name: Key generator
+        run: |
+          # генератор кафедры должен знать тот же открытый ключ, что вшит в программу
+          grep -aqF "$FZ_LICENSE_PUBKEY" "license-generator/Генератор ключей.exe" || { echo "::error::Генератор ключей.exe собран под другой открытый ключ: пересоберите license-generator/win/build.sh"; exit 1; }
+          grep -qF "'$FZ_LICENSE_PUBKEY'" "license-generator/Генератор ключей.html" || { echo "::error::в «Генератор ключей.html» другой EXPECTED_PK"; exit 1; }
+          pwsh -NoProfile -File license-generator/win/shot.ps1 -Exe "license-generator/Генератор ключей.exe" -Out shots || echo "::warning::снимки генератора не сделаны"
+
       - name: Installer and portable
         run: |
           # NSIS: на сервере сборки может не быть — ставим из Chocolatey
