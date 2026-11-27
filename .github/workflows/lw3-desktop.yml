@@ -148,10 +148,12 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          Invoke-WebRequest -UseBasicParsing "https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/$env:WV2_SDK/microsoft.web.webview2.$env:WV2_SDK.nupkg" -OutFile sdk.zip
+          # скачивание с повтором: сервер иногда обрывает ответ («The response ended prematurely»)
+          function Get-File($u, $o) { for ($i = 1; $i -le 4; $i++) { try { Invoke-WebRequest -UseBasicParsing $u -OutFile $o; return } catch { if ($i -eq 4) { throw }; Write-Host "повтор $i`: $_"; Start-Sleep -Seconds (10 * $i) } } }
+          Get-File "https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/$env:WV2_SDK/microsoft.web.webview2.$env:WV2_SDK.nupkg" sdk.zip
           if ((Get-FileHash sdk.zip -Algorithm SHA256).Hash -ne $env:WV2_SDK_SHA256) { throw 'Контрольная сумма WebView2 SDK не совпадает' }
           Expand-Archive sdk.zip -DestinationPath wv2sdk
-          Invoke-WebRequest -UseBasicParsing $env:WV2_RT_URL -OutFile wv2rt.exe
+          Get-File $env:WV2_RT_URL wv2rt.exe
           if ((Get-FileHash wv2rt.exe -Algorithm SHA256).Hash -ne $env:WV2_RT_SHA256) { throw 'Контрольная сумма WebView2 Runtime не совпадает' }
           $sig = Get-AuthenticodeSignature wv2rt.exe
           if ($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') { throw "Подпись WebView2 Runtime неверна: $($sig.Status) $($sig.SignerCertificate.Subject)" }
