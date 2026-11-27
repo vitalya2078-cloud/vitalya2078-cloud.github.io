@@ -2,7 +2,7 @@
    Тренажёр РБМК: 3D-вид (three.js r162, загружается по требованию из three/three3d.js).
    Две сцены: «Реактор в разрезе» (графитовая кладка, каналы, стержни с вытеснителями, пар) и «Энергоблок»
    (реактор, барабаны-сепараторы, ГЦН, турбогенераторы). Всё связано с состоянием модели RBG.S.
-   Текстуры (необязательно): img/rbmk3d/*.webp — если файла нет, деталь окрашена цветом.
+   Текстуры (необязательно): img/rbmk3d/*.webp — развёртки деталей и бесшовные плитки зала; если файла нет, деталь окрашена цветом.
    Если WebGL недоступен (старая видеокарта), остаётся 2D-пульт.
    ===================================================================== */
 const R3 = { ok: null, loading: null, scene: null, cam: null, ren: null, ctl: null, objs: {}, kind: 'core', pick: [], tex: {}, raf: 0 };
@@ -29,26 +29,38 @@ const R3INFO = {
   top: ['Верхняя плита («пятачок»)', 'Металлоконструкция над зоной: через неё проходят каналы, на ней — съёмные плиты настила.'],
   drum: ['Барабан-сепаратор', 'Здесь пароводяная смесь из каналов разделяется: пар идёт на турбины, вода — обратно к насосам. Давление около 7 МПа.'],
   pump: ['Главный циркуляционный насос', 'Гонит воду через каналы реактора. На блоке 8 насосов: 6 работают, 2 в резерве.'],
+  az5: ['Кнопка АЗ-5', 'Аварийная защита пятой категории: все стержни СУЗ идут в зону. Крышка защищает от случайного нажатия. Нажимают её на 2D-пульте (щелчок по крышке, затем по кнопке).'],
   desk: ['Блочный щит управления', 'Пульт СИУР: управление стержнями, картограмма зоны, кнопка АЗ-5 под крышкой, приборы контура.'],
   tg: ['Турбогенератор', 'Пар вращает турбину, генератор даёт электричество: два ТГ по 500 МВт.'],
   pipe: ['Трубопроводы', 'Пароводяные коммуникации и опускные трубопроводы контура многократной принудительной циркуляции.'],
 };
 
-/* ---------- модели «потекстурно»: объёмные формы, на каждую натянут вырезанный кусок листа ---------- */
-const R3IMG = {};
+/* ---------- модели «потекстурно»: объёмные формы, на каждую натянута своя развёртка ---------- */
+const R3IMG = {}, R3CT = {};
 function r3Img(name) { if (!R3IMG[name]) { const im = new Image(); R3IMG[name] = new Promise(res => { im.onload = () => res(im); im.onerror = () => res(null); }); if (RB3D_TEX.includes(name)) im.src = 'img/rbmk3d/' + name + '.webp'; else R3IMG[name] = Promise.resolve(null); } return R3IMG[name]; }
-// кусок листа [x0, y0, x1, y1] (доли) → текстура; rot — повернуть на 90° (длина картинки → высота цилиндра); wrap — повтор с отражением по окружности
+// кусок картинки [x0, y0, x1, y1] (доли) → текстура; rot — повернуть на 90° (длина картинки → высота цилиндра);
+// rep: [по u, по v] — повтор; mirror — повтор с отражением (для картинок без бесшовного стыка)
 const r3Crop = (name, box, o = {}) => ({ name, box, o });
-function r3Apply(mat, spec) {
-  const T = window.THREE;
-  r3Img(spec.name).then(im => { if (!im) return; const [x0, y0, x1, y1] = spec.box, o = spec.o, sw = (x1 - x0) * im.width, sh = (y1 - y0) * im.height;
+const r3Full = (name, o) => r3Crop(name, [0, 0, 1, 1], o);
+function r3CanvasTex(spec) {
+  const key = spec.name + JSON.stringify(spec.box) + JSON.stringify(spec.o);
+  if (!R3CT[key]) R3CT[key] = r3Img(spec.name).then(im => { if (!im) return null; const T = window.THREE, [x0, y0, x1, y1] = spec.box, o = spec.o, sw = (x1 - x0) * im.width, sh = (y1 - y0) * im.height;
     const W = Math.min(1024, Math.round(o.rot ? sh : sw)), H = Math.min(1024, Math.round(o.rot ? sw : sh)), cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
     if (o.rot) { c.translate(W, 0); c.rotate(Math.PI / 2); c.drawImage(im, x0 * im.width, y0 * im.height, sw, sh, 0, 0, H, W); } else c.drawImage(im, x0 * im.width, y0 * im.height, sw, sh, 0, 0, W, H);
-    const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4;
-    if (o.wrap) { t.wrapS = T.MirroredRepeatWrapping; t.repeat.x = o.wrap; } if (o.repeat) { t.wrapS = T.RepeatWrapping; t.repeat.x = o.repeat; }
-    mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true; });
+    const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8;
+    if (o.rep) { t.wrapS = t.wrapT = o.mirror ? T.MirroredRepeatWrapping : T.RepeatWrapping; t.repeat.set(o.rep[0], o.rep[1]); }
+    if (o.off) t.offset.set(o.off[0], o.off[1]);
+    return t; });
+  return R3CT[key];
+}
+function r3Apply(mat, spec, glow) {
+  r3CanvasTex(spec).then(t => { if (!t) return; mat.map = t; mat.color.set(0xffffff); if (glow) { mat.emissiveMap = t; mat.emissive.set(0xffffff); mat.emissiveIntensity = glow; } mat.needsUpdate = true; });
 }
 const r3Mat = (col, spec, extra = {}) => { const T = window.THREE, m = new T.MeshStandardMaterial(Object.assign({ color: col, roughness: 0.55, metalness: spec ? 0.15 : 0.2 }, extra)); if (spec) r3Apply(m, spec); return m; };
+// общие материалы: окрашенный металл, нержавейка, оранжевая краска
+const r3Metal = (rep = [1, 1]) => r3Mat(0x55667c, r3Full('metal', { rep }));
+const r3Steel = (rep = [1, 1]) => r3Mat(0xc0c8d2, r3Full('steel', { rep }), { metalness: 0.55, roughness: 0.32 });
+const r3Orange = () => r3Mat(0xf08a24, null, { metalness: 0.1, roughness: 0.6 });
 // полусфера-днище с плоской развёрткой (картинка торца ложится «как на фото»)
 function r3Cap(R, depth, mat) {
   const T = window.THREE, g = new T.SphereGeometry(R, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), p = g.attributes.position, uv = g.attributes.uv;
@@ -56,52 +68,96 @@ function r3Cap(R, depth, mat) {
   g.scale(1, depth / R, 1); return new T.Mesh(g, mat);
 }
 function r3Drum() {
-  const T = window.THREE, g = new T.Group(), R = 1.25, L = 12, steelM = r3Mat(0xa9b4c0, null, { metalness: 0.6, roughness: 0.3 });
-  const body = new T.Mesh(new T.CylinderGeometry(R, R, L, 48, 1, true), r3Mat(0xa9b4c0, r3Crop('drum-side', [0.10, 0.16, 0.90, 0.79], { rot: true, wrap: 2 }))); body.rotation.z = Math.PI / 2; g.add(body);
-  const capM = r3Mat(0xa9b4c0, r3Crop('drum-end', [0.10, 0.165, 0.90, 0.805]));
+  const T = window.THREE, g = new T.Group(), R = 1.25, L = 12, steelM = r3Steel([1, 2]);
+  const body = new T.Mesh(new T.CylinderGeometry(R, R, L, 48, 1, true), r3Mat(0xa9b4c0, r3Full('drum-shell', { rot: true, rep: [2, 1] }), { metalness: 0.35, roughness: 0.4 })); body.rotation.z = Math.PI / 2; g.add(body);
+  const capM = r3Mat(0xa9b4c0, r3Crop('drum-head', [0.012, 0.012, 0.988, 0.988]), { metalness: 0.35, roughness: 0.4 });
   [-1, 1].forEach(sd => { const c = r3Cap(R, 0.75, capM); c.rotation.z = -sd * Math.PI / 2; c.position.x = sd * L / 2; g.add(c);
-    const sup = new T.Mesh(new T.CylinderGeometry(0.35, 0.9, 1.5, 4), steelM); sup.rotation.y = Math.PI / 4; sup.position.set(sd * L * 0.33, -R - 0.55, 0); g.add(sup); });
+    const sup = new T.Mesh(new T.CylinderGeometry(0.35, 0.9, 1.5, 4), r3Metal()); sup.rotation.y = Math.PI / 4; sup.position.set(sd * L * 0.33, -R - 0.55, 0); g.add(sup); });
+  const flM = r3Orange();
   [[-0.35, 0.32], [-0.2, 0.22], [0, 0.42], [0.12, 0.2], [0.22, 0.2], [0.35, 0.32]].forEach(([fx, r]) => {
-    const n = new T.Mesh(new T.CylinderGeometry(r, r, 0.7, 16), steelM), fl = new T.Mesh(new T.CylinderGeometry(r + 0.12, r + 0.12, 0.12, 20), steelM); n.position.set(fx * L, R + 0.25, 0); fl.position.set(fx * L, R + 0.6, 0); g.add(n, fl); });
+    const n = new T.Mesh(new T.CylinderGeometry(r, r, 0.7, 16), steelM), fl = new T.Mesh(new T.CylinderGeometry(r + 0.12, r + 0.12, 0.12, 20), flM); n.position.set(fx * L, R + 0.25, 0); fl.position.set(fx * L, R + 0.6, 0); g.add(n, fl); });
   return g;
 }
 function r3Pump() {
-  const T = window.THREE, g = new T.Group(), grey = r3Mat(0x55667c), orange = r3Mat(0xf59e0b, r3Crop('pump-front', [0.32, 0.015, 0.70, 0.13], { wrap: 2 }));
-  const motor = new T.Mesh(new T.CylinderGeometry(0.62, 0.62, 1.35, 32, 1, true), r3Mat(0x55667c, r3Crop('pump-front', [0.31, 0.15, 0.69, 0.40], { wrap: 2 }))); motor.position.y = 1.55; g.add(motor);
-  const capTop = r3Mat(0xf59e0b, null, { metalness: 0.1 }), cap = new T.Mesh(new T.CylinderGeometry(0.66, 0.68, 0.38, 32), [orange, capTop, capTop]); cap.position.y = 2.4; g.add(cap);
-  const collar = new T.Mesh(new T.CylinderGeometry(0.74, 0.74, 0.16, 32), r3Mat(0xf59e0b, null, { metalness: 0.1 })); collar.position.y = 0.8; g.add(collar);
+  const T = window.THREE, g = new T.Group(), grey = r3Metal(), orange = r3Orange();
+  const motor = new T.Mesh(new T.CylinderGeometry(0.62, 0.62, 1.35, 40, 1, true), r3Mat(0x55667c, r3Full('motor', { rep: [1, 1] }))); motor.position.y = 1.55; g.add(motor);
+  const capTop = r3Mat(0xf59e0b, r3Crop('motor-cap', [0.012, 0.012, 0.988, 0.988]), { metalness: 0.1 }), cap = new T.Mesh(new T.CylinderGeometry(0.66, 0.66, 0.3, 40), [orange, capTop, orange]); cap.position.y = 2.37; g.add(cap);
+  const collar = new T.Mesh(new T.CylinderGeometry(0.74, 0.74, 0.16, 32), orange); collar.position.y = 0.8; g.add(collar);
   const neck = new T.Mesh(new T.CylinderGeometry(0.4, 0.5, 0.45, 20), grey); neck.position.y = 0.5; g.add(neck);
-  const face = r3Mat(0x55667c, r3Crop('pump-front', [0.245, 0.555, 0.755, 0.915]));
+  const face = r3Mat(0x55667c, r3Crop('pump-face', [0.012, 0.012, 0.988, 0.988]));
   const casing = new T.Mesh(new T.CylinderGeometry(0.88, 0.88, 0.95, 40), [grey, face, face]); casing.rotation.x = Math.PI / 2; casing.position.y = -0.2; g.add(casing);
-  const pipe = new T.Mesh(new T.CylinderGeometry(0.36, 0.36, 3.1, 20), grey); pipe.rotation.z = Math.PI / 2; pipe.position.y = -0.2; g.add(pipe);
-  [-1, 1].forEach(sd => { const fl = new T.Mesh(new T.CylinderGeometry(0.58, 0.58, 0.2, 28), r3Mat(0xf59e0b, null, { metalness: 0.1 })); fl.rotation.z = Math.PI / 2; fl.position.set(sd * 1.45, -0.2, 0); g.add(fl); });
+  const pipe = new T.Mesh(new T.CylinderGeometry(0.36, 0.36, 3.1, 20), r3Steel([1, 2])); pipe.rotation.z = Math.PI / 2; pipe.position.y = -0.2; g.add(pipe);
+  [-1, 1].forEach(sd => { const fl = new T.Mesh(new T.CylinderGeometry(0.58, 0.58, 0.2, 28), orange); fl.rotation.z = Math.PI / 2; fl.position.set(sd * 1.45, -0.2, 0); g.add(fl); });
   const base = new T.Mesh(new T.BoxGeometry(1.9, 0.28, 1.3), grey); base.position.y = -1.2; g.add(base);
   return g;
 }
 function r3Turbine() {
-  const T = window.THREE, g = new T.Group(), steelM = r3Mat(0xc0c8d2, null, { metalness: 0.6, roughness: 0.3 });
-  const baseTex = r3Crop('tg-side', [0.04, 0.83, 0.98, 0.99]);
-  const base = new T.Mesh(new T.BoxGeometry(12.5, 0.7, 3.4), [r3Mat(0x55667c), r3Mat(0x55667c), r3Mat(0x55667c), r3Mat(0x55667c), r3Mat(0x55667c, baseTex), r3Mat(0x55667c, baseTex)]); base.position.y = -1.6; g.add(base);
-  const cas = new T.Mesh(new T.CylinderGeometry(1.35, 1.35, 6.4, 40), [r3Mat(0x55667c, r3Crop('tg-side', [0.08, 0.22, 0.59, 0.76], { rot: true, wrap: 2 })), r3Mat(0x55667c), r3Mat(0x55667c)]); cas.rotation.z = Math.PI / 2; cas.position.set(-2.4, 0, 0); g.add(cas);
-  const coup = new T.Mesh(new T.CylinderGeometry(0.75, 0.75, 0.5, 24), r3Mat(0xf59e0b, null, { metalness: 0.1 })); coup.rotation.z = Math.PI / 2; coup.position.x = 1.1; g.add(coup);
-  const endM = r3Mat(0xb8c0c9, r3Crop('tg-end', [0.14, 0.09, 0.86, 0.80]));
-  const gen = new T.Mesh(new T.CylinderGeometry(1.4, 1.4, 3.8, 40), [r3Mat(0xb8c0c9, r3Crop('tg-side', [0.645, 0.20, 0.935, 0.80], { rot: true, wrap: 2 })), endM, endM]); gen.rotation.z = Math.PI / 2; gen.position.x = 3.4; g.add(gen);
-  const sp = new T.Mesh(new T.TorusGeometry(1.1, 0.16, 10, 24, Math.PI), steelM); sp.position.set(-2.4, 1.35, 0); g.add(sp);
+  const T = window.THREE, g = new T.Group(), metal = r3Metal([4, 1]);
+  const base = new T.Mesh(new T.BoxGeometry(12.5, 0.7, 3.4), metal); base.position.y = -1.6; g.add(base);
+  const casM = r3Mat(0x55667c, r3Full('turbine', { rot: true, rep: [1, 1], off: [0.25, 0] }));
+  const cas = new T.Mesh(new T.CylinderGeometry(1.35, 1.35, 6.4, 48, 1, true), casM); cas.rotation.z = Math.PI / 2; cas.position.set(-2.4, 0, 0); g.add(cas);
+  [-5.6, 0.8].forEach(x => { const e = new T.Mesh(new T.CylinderGeometry(1.35, 1.35, 0.05, 48), r3Metal()); e.rotation.z = Math.PI / 2; e.position.x = x; g.add(e); });
+  const coup = new T.Mesh(new T.CylinderGeometry(0.75, 0.75, 0.5, 24), r3Orange()); coup.rotation.z = Math.PI / 2; coup.position.x = 1.1; g.add(coup);
+  const endM = r3Mat(0xb8c0c9, r3Crop('gen-end', [0.012, 0.012, 0.988, 0.988]));
+  const gen = new T.Mesh(new T.CylinderGeometry(1.4, 1.4, 3.8, 48), [r3Mat(0xb8c0c9, r3Full('generator', { rot: true, rep: [1, 1] })), endM, endM]); gen.rotation.z = Math.PI / 2; gen.position.x = 3.4; g.add(gen);
+  const sp = new T.Mesh(new T.TorusGeometry(1.1, 0.16, 10, 24, Math.PI), r3Steel([2, 1])); sp.position.set(-2.4, 1.35, 0); g.add(sp);
   return g;
+}
+// блочный щит: вертикальная панель приборов и наклонный пульт с кнопкой АЗ-5 под крышкой
+function r3Desk() {
+  const T = window.THREE, g = new T.Group(), metal = r3Metal([2, 1]);
+  const panelM = r3Mat(0x5c6f86, r3Full('desk-panel'));
+  const panel = new T.Mesh(new T.BoxGeometry(14, 4.67, 0.5), [metal, metal, metal, metal, panelM, metal]); panel.position.set(0, 2.335 + 1, -1.8); g.add(panel);
+  const plinth = new T.Mesh(new T.BoxGeometry(14.2, 1, 0.8), metal); plinth.position.set(0, 0.5, -1.8); g.add(plinth);
+  const base = new T.Mesh(new T.BoxGeometry(12, 2.1, 3.2), metal); base.position.set(0, 1.05, 0.6); g.add(base);
+  const topM = r3Mat(0x5c6f86, r3Full('desk-top'));
+  const top = new T.Group(); top.position.set(0, 2.25, 0.6); top.rotation.x = 0.22; g.add(top);
+  const slab = new T.Mesh(new T.BoxGeometry(12, 0.24, 4), [metal, metal, topM, metal, metal, metal]); top.add(slab);
+  // АЗ-5 — в пустом квадрате посередине пульта
+  const az = new T.Group(); az.position.set((0.478 - 0.5) * 12, 0.12, 0); top.add(az);
+  const azBase = new T.Mesh(new T.BoxGeometry(0.95, 0.12, 0.95), new T.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.6 }));
+  const btn = new T.Mesh(new T.BoxGeometry(0.62, 0.3, 0.62), new T.MeshStandardMaterial({ color: 0xdc2626, emissive: 0x7f1d1d, emissiveIntensity: 0.3, roughness: 0.35 })); btn.position.y = 0.2;
+  const hinge = new T.Group(); hinge.position.set(0, 0.1, -0.45); hinge.rotation.x = -1.9;
+  const cover = new T.Mesh(new T.BoxGeometry(0.9, 0.06, 0.9), new T.MeshStandardMaterial({ color: 0xfacc15, transparent: true, opacity: 0.75, roughness: 0.3 })); cover.position.z = 0.45; hinge.add(cover);
+  az.add(azBase, btn, hinge); R3.objs.az = { btn, hinge };
+  [azBase, btn, cover].forEach(m => { m.userData.info = 'az5'; R3.pick.push(m); });
+  return g;
+}
+// реакторный зал: пол, стены, потолок и кран-балка (бесшовные текстуры повторяются плиткой)
+function r3Room(scene, dark) {
+  const T = window.THREE, Y0 = -6.2, HW = 70, WH = 56, BAND = 16, room = new T.Group(); scene.add(room);
+  const floor = new T.Mesh(new T.PlaneGeometry(HW * 2, HW * 2), r3Mat(0x5a6a80, r3Full('floor', { rep: [HW / 3.2, HW / 3.2] }), { roughness: 0.7, metalness: 0.25 })); floor.rotation.x = -Math.PI / 2; floor.position.y = Y0; room.add(floor);
+  const pad = new T.Mesh(new T.PlaneGeometry(20, 20), r3Mat(0x5a6a80, r3Full('floor-hazard', { rep: [3, 3] }), { roughness: 0.7, metalness: 0.25 })); pad.rotation.x = -Math.PI / 2; pad.position.y = Y0 + 0.02; room.add(pad);
+  const wallLo = r3Mat(0x6b7c92, r3Full('wall', { rep: [HW * 2 / BAND, 1] }), { roughness: 0.75 }), wallHi = r3Mat(0xb8bec6, r3Crop('wall', [0, 0, 1, 0.36], { rep: [HW * 2 / BAND, (WH - BAND) / (BAND * 0.36)] }), { roughness: 0.85 });
+  for (let k = 0; k < 4; k++) {
+    const a = k * Math.PI / 2, w = new T.Group(); w.rotation.y = a; w.position.set(Math.sin(a) * -HW, 0, Math.cos(a) * -HW); room.add(w);
+    const lo = new T.Mesh(new T.PlaneGeometry(HW * 2, BAND), wallLo); lo.position.y = Y0 + BAND / 2; w.add(lo);
+    const hi = new T.Mesh(new T.PlaneGeometry(HW * 2, WH - BAND), wallHi); hi.position.y = Y0 + BAND + (WH - BAND) / 2; w.add(hi);
+  }
+  const ceil = new T.Mesh(new T.PlaneGeometry(HW * 2, HW * 2), new T.MeshStandardMaterial({ color: 0x5a6a80, roughness: 0.8, emissive: 0x000000 })); r3Apply(ceil.material, r3Full('ceiling', { rep: [HW / 8, HW / 8] }), dark ? 0.35 : 0.15);
+  ceil.rotation.x = Math.PI / 2; ceil.position.y = Y0 + WH; room.add(ceil);
+  // мостовой кран над залом
+  const or = r3Orange(), metal = r3Metal([6, 1]);
+  const beam = new T.Mesh(new T.BoxGeometry(HW * 2 - 2, 2.2, 2.6), or); beam.position.set(0, Y0 + 40, -14); room.add(beam);
+  [-1, 1].forEach(sd => { const rail = new T.Mesh(new T.BoxGeometry(1.4, 1.2, HW * 2), metal); rail.position.set(sd * (HW - 1.2), Y0 + 38.4, 0); room.add(rail); });
+  const trolley = new T.Mesh(new T.BoxGeometry(4, 1.8, 4), r3Metal()); trolley.position.set(18, Y0 + 38.3, -14); room.add(trolley);
+  const rope = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 14, 6), r3Steel()); rope.position.set(18, Y0 + 30.5, -14); room.add(rope);
+  const hook = new T.Mesh(new T.BoxGeometry(1.2, 1.4, 0.8), or); hook.position.set(18, Y0 + 23, -14); room.add(hook);
+  return room;
 }
 function r3Build(kind) {
   const T = window.THREE, S = RBG.S, box = $('#rb-3dc'); if (!box) return;
   if (R3.ren) { R3.ren.dispose(); R3.ren.domElement.remove(); }
   const ren = new T.WebGLRenderer({ antialias: true, alpha: false }); ren.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
   ren.setSize(box.clientWidth, box.clientHeight); ren.outputColorSpace = T.SRGBColorSpace; box.appendChild(ren.domElement);
-  const dark = !isLight(), scene = new T.Scene(); scene.background = new T.Color(dark ? 0x0f1319 : 0xe9eef5); scene.fog = new T.Fog(scene.background, 40, 110);
+  const dark = !isLight(), scene = new T.Scene(); scene.background = new T.Color(dark ? 0x0c1016 : 0xc3ccd8); scene.fog = new T.Fog(scene.background, 70, 190);
   const cam = new T.PerspectiveCamera(42, box.clientWidth / box.clientHeight, 0.1, 300);
-  scene.add(new T.HemisphereLight(0xffffff, dark ? 0x202830 : 0xb8c2d0, dark ? 0.9 : 1.2));
-  const sun = new T.DirectionalLight(0xffffff, 1.6); sun.position.set(14, 22, 10); scene.add(sun);
-  const floor = new T.Mesh(new T.CircleGeometry(60, 48), new T.MeshStandardMaterial({ color: dark ? 0x161c24 : 0xd5dde8, roughness: 0.95 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -6.2; scene.add(floor);
-  R3.objs = { channels: null, rods: [], bubbles: null }; R3.pick = []; R3.sheets = [];
+  scene.add(new T.HemisphereLight(dark ? 0xc9d6ff : 0xffffff, dark ? 0x141a22 : 0xb8c2d0, dark ? 0.75 : 1.2));
+  const sun = new T.DirectionalLight(dark ? 0xffe2b8 : 0xffffff, dark ? 1.1 : 1.6); sun.position.set(14, 22, 10); scene.add(sun);
+  R3.objs = { channels: null, rods: [], bubbles: null }; R3.pick = [];
+  r3Room(scene, dark);
   const tag = (m, key) => { m.userData.info = key; R3.pick.push(m); return m; };
-  const steel = new T.MeshStandardMaterial({ color: 0x9aa6b4, metalness: 0.6, roughness: 0.35 });
+  const steel = r3Steel([4, 1]);
   // ---------- реактор (общий для обеих сцен) ----------
   const reactor = new T.Group(); scene.add(reactor);
   const H = 7, Rr = 5.8, cut = kind === 'core';
@@ -133,20 +189,11 @@ function r3Build(kind) {
   const theta = cut ? Math.PI * 1.5 : Math.PI * 2, th0 = cut ? Math.PI : 0;   // в разрезе плиты и кожух тоже без четверти
   const top = new T.Mesh(new T.CylinderGeometry(Rr + 0.6, Rr + 0.6, 0.9, 64, 1, false, th0, theta), [steel, topMat, steel]); top.position.y = H / 2 + 0.75; reactor.add(tag(top, 'top'));
   const bot = new T.Mesh(new T.CylinderGeometry(Rr + 0.6, Rr + 0.6, 0.7, 64, 1, false, th0, theta), steel); bot.position.y = -H / 2 - 0.6; reactor.add(bot);
+  const ped = new T.Mesh(new T.CylinderGeometry(Rr - 1, Rr - 0.4, 1.8, 48), r3Metal([6, 1])); ped.position.y = -H / 2 - 1.85; reactor.add(ped);   // опора до пола зала
   const shell = new T.Mesh(new T.CylinderGeometry(Rr + 0.45, Rr + 0.45, H, 64, 1, true, th0, theta), new T.MeshStandardMaterial({ color: 0x7d8794, metalness: 0.4, roughness: 0.5, side: T.DoubleSide, transparent: true, opacity: 0.35 })); reactor.add(shell);
-  // ---------- модели из листов: коробка, на грани которой натянуты виды спереди, сбоку и сверху (с прозрачным фоном) ----------
-  const sheetBox = (w, h, d, v, key, col) => {
-    const mk = name => { const m = new T.MeshStandardMaterial({ color: col, roughness: 0.55, metalness: 0.2, alphaTest: 0.45, side: T.DoubleSide }); if (name) r3Tex(name, m); return m; };
-    const side = mk(v.side), front = mk(v.front), top = mk(v.top || v.side), none = new T.MeshStandardMaterial({ visible: false });
-    if (!RB3D_TEX.includes(v.front)) [side, front, top].forEach(m => { m.alphaTest = 0; });   // без текстур — обычная коробка
-    const mats = [side, side.clone(), top, none, front, front.clone()];
-    const m = tag(new T.Mesh(new T.BoxGeometry(w, h, d), mats), key);
-    if (RB3D_TEX.includes(v.front)) { m.userData.sheet = true; mats[1].map = side.map; mats[5].map = front.map; R3.sheets.push(m); }
-    return m;
-  };
   // ---------- энергоблок ----------
   if (kind === 'unit') {
-    const pipeMat = new T.MeshStandardMaterial({ color: 0xc0c8d2, metalness: 0.6, roughness: 0.3 });
+    const pipeMat = r3Steel([1, 4]);
     R3.objs.pumps = [];
     [-1, 1].forEach(side => {
       for (const k of [0, 1]) { const d = r3Drum(); d.position.set(side * 11, 8.2, (k ? 1 : -1) * 3); d.traverse(o => { if (o.isMesh) tag(o, 'drum'); }); scene.add(d); }
@@ -167,10 +214,10 @@ function r3Build(kind) {
     cam.position.set(30, 22, 34);
   } else if (kind === 'desk') {
     reactor.visible = false;
-    const desk = sheetBox(14, 4.2, 1.6, { front: 'desk', side: null, top: null }, 'desk', 0x5c6f86); desk.position.set(0, -4, 0); scene.add(desk);
-    cam.position.set(0, -1.5, 13);
+    const desk = r3Desk(); desk.position.set(0, -6.2, 0); desk.traverse(o => { if (o.isMesh && !o.userData.info) tag(o, 'desk'); }); scene.add(desk);
+    cam.position.set(0, 0.5, 12);
   } else cam.position.set(15, 9, 17);
-  const ctl = new window.THREE_OrbitControls(cam, ren.domElement); ctl.enableDamping = true; ctl.target.set(0, kind === 'unit' ? 0 : kind === 'desk' ? -4 : 0.5, kind === 'unit' ? -3 : 0); ctl.maxDistance = 90; ctl.minDistance = 6; ctl.maxPolarAngle = Math.PI * 0.49;
+  const ctl = new window.THREE_OrbitControls(cam, ren.domElement); ctl.enableDamping = true; ctl.target.set(0, kind === 'unit' ? 0 : kind === 'desk' ? -3.2 : 0.5, kind === 'unit' ? -3 : 0); ctl.maxDistance = kind === 'desk' ? 30 : 55; ctl.minDistance = kind === 'desk' ? 3 : 6; ctl.maxPolarAngle = Math.PI * 0.49; ctl.minPolarAngle = Math.PI * 0.12;
   Object.assign(R3, { scene, cam, ren, ctl, kind });
   // выбор детали щелчком
   let down = null; ren.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; });
@@ -195,12 +242,8 @@ function r3Frame() {
     bi.userData.seed.forEach((q, i) => { q.y += 0.004 * q.s * (0.3 + S.G); if (q.y > 1) q.y = 0; const y = -H / 2 + q.y * H; m.makeScale(i < show ? 1 : 0.0001, i < show ? 1 : 0.0001, i < show ? 1 : 0.0001); m.setPosition(q.c[0] + Math.sin(i) * 0.05, y, q.c[1] + Math.cos(i) * 0.05); bi.setMatrixAt(i, m); });
     bi.instanceMatrix.needsUpdate = true; }
   (R3.objs.pumps || []).forEach(p => { const q = S.pumps[p.idx]; p.lamp.material.color.set(q.on ? (q.vib > 60 ? 0xf59e0b : 0x22c55e) : q.spin > 0.05 ? 0x38bdf8 : 0x64748b); p.lamp.material.emissive.copy(p.lamp.material.color); p.body.position.x = q.on && q.vib > 60 ? Math.sin(performance.now() / 30) * 0.04 : 0; });
-  // модели из листов: видна только грань, обращённая к камере (иначе сквозь прозрачный фон просвечивают другие виды)
-  const cp = R3.cam.position, wp = new T.Vector3(), q = new T.Quaternion();
-  R3.sheets.forEach(m => { const ms = m.material; if (!ms[1].map && ms[0].map) { ms[1].map = ms[0].map; ms[1].needsUpdate = true; } if (!ms[5].map && ms[4].map) { ms[5].map = ms[4].map; ms[5].needsUpdate = true; }
-    m.getWorldPosition(wp); m.getWorldQuaternion(q); const v = cp.clone().sub(wp).applyQuaternion(q.invert()), ax = Math.abs(v.x), ay = Math.abs(v.y), az = Math.abs(v.z);
-    const k = ay > Math.max(ax, az) * 1.6 ? 'y' : ax > az ? 'x' : 'z';
-    ms[0].visible = k === 'x' && v.x > 0; ms[1].visible = k === 'x' && v.x <= 0; ms[2].visible = k === 'y'; ms[4].visible = k === 'z' && v.z > 0; ms[5].visible = k === 'z' && v.z <= 0; });
+  // АЗ-5 на щите: после нажатия крышка откинута, кнопка утоплена и светится
+  const az = R3.objs.az; if (az) { const on = !!S.az; az.btn.position.y = on ? 0.12 : 0.2; az.btn.material.emissiveIntensity = on ? 0.9 + 0.5 * Math.sin(performance.now() / 160) : 0.3; }
   R3.ctl.update(); R3.ren.render(R3.scene, R3.cam);
 }
 function r3Resize() { const box = $('#rb-3dc'); if (!R3.ren || !box) return; R3.ren.setSize(box.clientWidth, box.clientHeight); R3.cam.aspect = box.clientWidth / box.clientHeight; R3.cam.updateProjectionMatrix(); }

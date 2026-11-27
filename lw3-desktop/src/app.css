@@ -585,7 +585,7 @@ body.rbscr #app, body.rbscr main{max-width:none}
 .rb-tabs button svg{width:15px; height:15px} .rb-tabs button.on{background:var(--card); color:var(--acc); box-shadow:var(--sh)}
 .rb-grid[hidden], .rb-3dw[hidden], .rb-taskw[hidden]{display:none !important}
 .rb-3dw{flex:1; min-height:0; display:grid; grid-template-columns:1fr 300px; gap:8px}
-.rb-3dc{position:relative; min-height:0; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--card2)}
+.rb-3dc{position:relative; min-height:0; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--card2) url(img/rbmk/hall.webp) center/cover}
 .rb-3dc canvas{display:block; width:100% !important; height:100% !important; cursor:grab} .rb-3dc canvas:active{cursor:grabbing}
 .rb-3dhud{display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; border:1px solid var(--line); background:var(--card); overflow:auto}
 .rb-3dnum{display:grid; grid-template-columns:repeat(3,1fr); gap:6px} .rb-3dnum > div{display:grid; padding:6px 8px; border-radius:10px; background:var(--card2)}
