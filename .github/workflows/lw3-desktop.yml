@@ -63,6 +63,7 @@ jobs:
           SHOTS=shots node lw3-desktop/tests/e2e-labs.mjs
           node lw3-desktop/tests/notes-tex.mjs
           node lw3-desktop/tests/e2e-ui.mjs
+          SHOTS=shots node lw3-desktop/tests/e2e-account.mjs
           node lw3-desktop/tests/e2e-license.mjs
           SHOTS=shots node lw3-desktop/tests/e2e-nuc.mjs
 
@@ -76,6 +77,7 @@ jobs:
           node lw3-desktop/tests/e2e.mjs
           node lw3-desktop/tests/e2e-labs.mjs
           node lw3-desktop/tests/e2e-ui.mjs
+          node lw3-desktop/tests/e2e-account.mjs
           node lw3-desktop/tests/e2e-license.mjs
           node lw3-desktop/tests/e2e-nuc.mjs
 

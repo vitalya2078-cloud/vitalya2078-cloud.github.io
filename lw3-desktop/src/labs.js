@@ -88,8 +88,9 @@ function pgProfile() {
     <section class="fz-tile"><h2>${ic('key-round')} Пароль</h2><div class="fz-form"><label class="field">Текущий пароль<input type="password" id="pf-old" autocomplete="current-password"></label>
       <label class="field">Новый пароль<input type="password" id="pf-n1" autocomplete="new-password"></label><label class="field">Ещё раз<input type="password" id="pf-n2" autocomplete="new-password"></label>
       <button class="btn" data-d="pf-pw">${ic('lock')} Сменить пароль</button><p class="fz-msg" id="pf-msg"></p></div></section>
-    <section class="fz-tile"><h2>${ic('settings')} Сеанс</h2><p>Учётная запись и результаты хранятся только на этом компьютере.</p><div class="fz-form"><button class="btn line" data-d="home">${ic('log-out')} Выйти из учётной записи</button>
-      <button class="btn ghost" data-d="pf-del" style="color:var(--bad)">${ic('trash-2')} Удалить учётную запись и её результаты</button></div></section></div></div>`;
+    <section class="fz-tile"><h2>${ic('settings')} Сеанс</h2><p>Учётная запись и результаты хранятся только на этом компьютере.</p><div class="fz-form"><button class="btn line" data-d="home">${ic('log-out')} Выйти из учётной записи</button></div></section>
+    <section class="fz-tile fz-dangert"><h2>${ic('trash-2')} Удаление учётной записи</h2><p>Удаляет учётную запись и все её работы и результаты с этого компьютера. Понадобится пароль.</p>
+      <div class="fz-form"><button class="btn fz-danger" data-d="acc-del" data-v="${p.id}">${ic('trash-2')} Удалить учётную запись</button></div></section></div></div>`;
 }
 const pfMsg = t => { const m = $('#pf-msg'); if (m) m.textContent = t; };
 document.addEventListener('click', e => {
@@ -104,10 +105,6 @@ document.addEventListener('click', e => {
     case 'pf-pw': { if (!acctCheck(PROFILE, $('#pf-old').value)) { pfMsg('Текущий пароль неверный.'); break; } const a = $('#pf-n1').value;
       if (a.length < 4) { pfMsg('Новый пароль — не короче 4 символов.'); break; } if (a !== $('#pf-n2').value) { pfMsg('Пароли не совпадают.'); break; }
       PROFILE = acctSetPw(PROFILE.id, a); render(); toast('Пароль изменён'); break; }
-    case 'pf-del': { const pw = prompt('Удалить учётную запись и все её результаты с этого компьютера? Для подтверждения введи пароль.');
-      if (pw == null) break; if (!acctCheck(PROFILE, pw)) { toast('Неверный пароль — учётная запись не удалена.', 'bad'); break; }
-      const id = PROFILE.id; store.set(PKEY, profiles().filter(x => x.id !== id)); labNums().forEach(n => store.del(LABS[n].key(id))); store.del(testKey(id));
-      PROFILE = null; SCREEN = 'home'; render(); toast('Учётная запись удалена'); break; }
   }
 });
 function openLab(n) {

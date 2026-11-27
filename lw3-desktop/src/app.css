@@ -460,3 +460,15 @@ body.drw #app{margin-right:460px}
 
 /* графики на экране обработки (живые лабораторные) */
 .le-graph{max-width:620px; margin:10px auto}
+
+/* удаление учётной записи */
+.btn.fz-danger{background:var(--bad); border-color:var(--bad); color:#fff}
+.btn.fz-danger:hover{filter:brightness(1.08)}
+.fz-dangert{border-color:color-mix(in srgb, var(--bad) 35%, var(--line))}
+.fz-dangert h2 svg{color:var(--bad)}
+.fz-dell{display:inline-flex; align-items:center; gap:6px; margin-top:14px; color:var(--bad); font-size:13px; text-decoration:none}
+.fz-dell:hover{text-decoration:underline}
+.fz-dell svg{width:15px; height:15px}
+.fz-delbox{display:grid; gap:12px; max-width:520px}
+.fz-delbox p{margin:0}
+.fz-delact{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}

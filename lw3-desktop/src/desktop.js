@@ -74,7 +74,8 @@ function vHome() {
   const login = !ps.length ? `<p class="mute">На этом компьютере ещё нет учётных записей. Зарегистрируйтесь, это займёт минуту.</p>`
     : `<p class="mute small">Выбери свою учётную запись:</p><div class="fz-acc">${ps.map(p => `<button data-d="acc" data-v="${p.id}" class="${p.id === ASEL ? 'on' : ''}">${ava(p.fio)}<span><b>${esc(p.fio)}</b><small>${esc(p.group || 'класс не указан')}</small></span></button>`).join('')}</div>
       ${sel ? (acctHasPw(sel) ? `${pwField('au-pw', 'Пароль')}<button class="btn wide big mt" data-d="login" data-primary>Войти ${kbd('Enter')}</button><p class="mute small" style="margin-top:10px">Забыли пароль? Его сбросит преподаватель в режиме преподавателя.</p>`
-        : `<p class="mute small">${sel.pwReset ? 'Пароль сброшен преподавателем.' : 'У этой учётной записи ещё нет пароля.'} Придумай новый:</p>${pwField('au-n1', 'Новый пароль', 'new-password')}${pwField('au-n2', 'Ещё раз', 'new-password')}<button class="btn wide big mt" data-d="setpw" data-primary>Сохранить и войти ${kbd('Enter')}</button>`) : ''}`;
+        : `<p class="mute small">${sel.pwReset ? 'Пароль сброшен преподавателем.' : 'У этой учётной записи ещё нет пароля.'} Придумай новый:</p>${pwField('au-n1', 'Новый пароль', 'new-password')}${pwField('au-n2', 'Ещё раз', 'new-password')}<button class="btn wide big mt" data-d="setpw" data-primary>Сохранить и войти ${kbd('Enter')}</button>`) : ''}
+      ${sel ? `<button type="button" class="fz-lnk fz-dell" data-d="acc-del" data-v="${sel.id}">${ic('trash-2')} Удалить эту учётную запись</button>` : ''}`;
   const reg = `<div style="display:grid; gap:12px"><label class="field">ФИО<input id="np-fio" placeholder="Иванов Иван Иванович" autocomplete="off"></label>
       <label class="field">Класс<input id="np-group" placeholder="103" autocomplete="off"></label>${pwField('np-pw', 'Пароль', 'new-password')}${pwField('np-pw2', 'Пароль ещё раз', 'new-password')}
       <label class="fz-eula-ok"><input type="checkbox" id="np-eula"><span>Я принимаю условия <button type="button" class="fz-lnk" data-fz="eula">лицензионного соглашения</button></span></label>
@@ -323,6 +324,26 @@ function modal(title, body, actions = '') {
   const m = $('#modal'); m.innerHTML = `<div class="mbox"><header><h2>${title}</h2>${actions}<button class="btn line" data-d="mclose">${ic('x')} ${kbd('Esc')}</button></header><div class="mb">${body}</div></div>`; m.hidden = false;
 }
 function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; if (SCREEN === 'work' && PROFILE) { const L = curLab(), S = L.S(); if (S && L.steps[S.step][0] === 'report') $('#printroot').innerHTML = L.report(); } }
+/* Удаление учётной записи — из настроек профиля и с окна входа. Подтверждение паролем этой записи (если он задан). */
+function acctDelete(id) { store.set(PKEY, profiles().filter(x => x.id !== id)); labNums().forEach(n => store.del(LABS[n].key(id))); store.del(testKey(id)); }
+function askDelete(id) {
+  const p = profiles().find(x => x.id === id); if (!p) return;
+  modal(`${ic('trash-2')} Удалить учётную запись`, `<div class="fz-delbox">
+    <p>Будут удалены учётная запись <b>${esc(p.fio)}</b>${p.group ? ` (${esc(p.group)} класс)` : ''}, все её лабораторные работы и результаты тестов на этом компьютере. <b>Вернуть их будет нельзя.</b></p>
+    <p class="mute small">Файлы работ и экзаменов, уже сохранённые для преподавателя, не удаляются.</p>
+    ${acctHasPw(p) ? `<label class="field">Пароль этой учётной записи<input type="password" id="del-pw" autocomplete="current-password"></label>` : ''}
+    <p class="fz-msg" id="del-msg"></p>
+    <div class="fz-delact"><button class="btn fz-danger" data-d="acc-del-ok" data-v="${p.id}">${ic('trash-2')} Удалить навсегда</button><button class="btn line" data-d="mclose">Отмена</button></div></div>`);
+  setTimeout(() => { const f = $('#del-pw'); if (f) f.focus(); }, 0);
+}
+function confirmDelete(id) {
+  const p = profiles().find(x => x.id === id); if (!p) { closeModal(); return; }
+  const f = $('#del-pw'), m = $('#del-msg');
+  if (acctHasPw(p) && !acctCheck(p, f ? f.value : '')) { if (m) m.textContent = 'Неверный пароль. Учётная запись не удалена.'; if (f) f.select(); return; }
+  acctDelete(id); closeModal();
+  if (PROFILE && PROFILE.id === id) { PROFILE = null; SCREEN = 'home'; }
+  ASEL = ''; render(); toast('Учётная запись удалена');
+}
 /* Знакомство: 4 слайда после первого входа, потом — по F1 */
 const INTRO = [
   { t: 'Добро пожаловать в «Физпрактикум»', p: 'Слева — разделы программы. Работа сохраняется автоматически: программу можно закрыть и продолжить позже.',
@@ -384,6 +405,8 @@ document.addEventListener('click', e => {
   switch (d.d) {
     case 'atab': AUTH = d.v; render(); break;
     case 'acc': ASEL = d.v; render(); break;
+    case 'acc-del': askDelete(d.v); break;
+    case 'acc-del-ok': confirmDelete(d.v); break;
     case 'login': { const p = profiles().find(x => x.id === ASEL); if (acctCheck(p, $('#au-pw').value)) { ASEL = ''; openProfile(p); } else { auMsg('Неверный пароль.'); $('#au-pw').select(); } break; }
     case 'setpw': { const a = $('#au-n1').value, c = $('#au-n2').value; if (a.length < 4) { auMsg('Пароль — не короче 4 символов.'); break; } if (a !== c) { auMsg('Пароли не совпадают.'); break; }
       const p = acctSetPw(ASEL, a); ASEL = ''; if (p) { toast('Пароль сохранён'); openProfile(p); } break; }
@@ -435,6 +458,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'F11') { e.preventDefault(); toggleFull(); return; }
   if (e.key === 'F5' || (e.ctrlKey && e.code === 'KeyR')) { e.preventDefault(); return; }
   if (e.key === 'Escape' && !$('#modal').hidden) { closeModal(); return; }
+  if (e.key === 'Enter' && e.target.id === 'del-pw') { e.preventDefault(); const b = $('[data-d="acc-del-ok"]'); if (b) b.click(); return; }
   if (e.ctrlKey && e.code === 'KeyS') { e.preventDefault(); if (SCREEN === 'work' && PROFILE) saveWork(); return; }
   if (e.ctrlKey && e.code === 'KeyP') { e.preventDefault(); if (SCREEN === 'work' && PROFILE) { const L = curLab(), S = L.S(); if (S && L.steps[S.step][0] === 'report') window.print(); } return; }
   if (!$('#modal').hidden) return;
