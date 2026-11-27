@@ -205,7 +205,7 @@ function rbLoop() {
     const dt = Math.min(0.1, (now - rbLast) / 1000); rbLast = now;
     if (!RBG.paused && RBG.started && !RBG.done) rbTick(dt * RBG.speed);
     if (RBG.crash) rbCrashLoop(dt);
-    rbUpdate(); rbHintLoop(now); if (RBG.view === '3d' && !rbEpiS) r3Frame();   // под эпилогом 3D не рисуем — экономим слабую видеокарту rbRaf = requestAnimationFrame(f);
+    rbUpdate(); rbHintLoop(now); if (RBG.view === '3d' && !rbEpiS) r3Frame(); /* под эпилогом 3D не рисуем */ rbRaf = requestAnimationFrame(f);
   };
   rbRaf = requestAnimationFrame(f);
 }
