@@ -665,3 +665,25 @@ body.rbscr #app, body.rbscr main{max-width:none}
 .rb-crashbar p{flex:1; margin:0; font-size:14.5px; line-height:1.45} .rb-crashbar p.in{animation:rbHintIn .4s ease-out}
 .rb-cbi svg{width:26px; height:26px; color:#f87171} .rb-crashbar .btn{color:#fff; border-color:rgba(255,255,255,.35); background:transparent; white-space:nowrap}
 .rb-3dhud > *{flex:none}
+/* ---------- «Эпилог» ---------- */
+.rb-epi{position:absolute; inset:0; z-index:80; background:#000; overflow:hidden; color:#f3f4f6}
+.rb-epi img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.6s ease; transform-origin:50% 45%}
+.rb-epi img.on{opacity:1}
+.rb-epi-fx{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+.rb-epi-vig{position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(0,0,0,.55) 100%), linear-gradient(transparent 55%, rgba(0,0,0,.75))}
+.rb-epi::before, .rb-epi::after{content:''; position:absolute; left:0; right:0; height:6vh; background:#000; z-index:3}
+.rb-epi::before{top:0} .rb-epi::after{bottom:0}
+.rb-epi-flash{position:absolute; inset:0; background:#fff7e6; opacity:0; pointer-events:none; z-index:2}
+.rb-epi-flash.go{animation:epiFlash 1.4s ease-out}
+@keyframes epiFlash{0%{opacity:0}6%{opacity:1}100%{opacity:0}}
+.rb-epi.shake img{animation:epiShake .5s linear 2}
+@keyframes epiShake{20%{margin-left:6px; margin-top:-4px}40%{margin-left:-7px; margin-top:3px}60%{margin-left:4px; margin-top:5px}80%{margin-left:-3px; margin-top:-2px}}
+.rb-epi-cap{position:absolute; left:6vw; right:30vw; bottom:calc(6vh + 54px); z-index:4; display:grid; gap:8px; text-shadow:0 2px 12px rgba(0,0,0,.9)}
+.rb-epi-st{font:700 15px/1 ui-monospace, Consolas, monospace; letter-spacing:.12em; color:#fb923c; text-transform:uppercase}
+.rb-epi-t{margin:0; font-size:clamp(18px,1.9vw,27px); line-height:1.45; font-weight:500; min-height:3em}
+.rb-epi-ctl{position:absolute; right:24px; top:calc(6vh + 14px); z-index:4; display:flex; gap:8px}
+.rb-epi-ctl .btn{color:#fff; background:rgba(0,0,0,.45); border-color:rgba(255,255,255,.3); padding:6px 12px; min-height:0}
+.rb-epi-ctl kbd{background:rgba(255,255,255,.15); color:#fff; border-color:transparent}
+.rb-epi-dots{position:absolute; left:6vw; bottom:calc(6vh + 22px); z-index:4; display:flex; gap:6px}
+.rb-epi-dots i{width:26px; height:3px; border-radius:2px; background:rgba(255,255,255,.25)} .rb-epi-dots i.on{background:#fb923c}
+.rb-epi-src{position:absolute; right:24px; bottom:calc(6vh + 16px); z-index:4; margin:0; font-size:11px; color:rgba(255,255,255,.5); max-width:420px; text-align:right}

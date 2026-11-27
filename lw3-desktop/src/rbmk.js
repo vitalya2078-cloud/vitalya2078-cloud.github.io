@@ -70,6 +70,8 @@ const rbSnd = (() => {
     alarm() { tone(880, 0.18); setTimeout(() => tone(660, 0.18), 200); },
     sirenOn() { if (!on || siren) return; const a = ctx(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), l = a.createOscillator(), lg = a.createGain(); o.type = 'sawtooth'; o.frequency.value = 620; l.frequency.value = 0.8; lg.gain.value = 180; l.connect(lg); lg.connect(o.frequency); g.gain.value = 0.035; o.connect(g); g.connect(a.destination); o.start(); l.start(); siren = { o, l, g }; },
     boom(v = 1) { if (!on) return; const a = ctx(); if (!a) return; const n = Math.round(a.sampleRate * 2.2), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'lowpass'; f.frequency.value = 240; g.gain.value = 0.6 * v; s.buffer = buf; s.connect(f); f.connect(g); g.connect(a.destination); s.start(); },
+    drone(onn) { if (onn) { if (!on || this._dr) return; const a = ctx(); if (!a) return; const g = a.createGain(), o = a.createOscillator(), o2 = a.createOscillator(), f = a.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.value = 55; o2.type = 'sine'; o2.frequency.value = 82.4; f.type = 'lowpass'; f.frequency.value = 160; g.gain.setValueAtTime(0, a.currentTime); g.gain.linearRampToValueAtTime(0.05, a.currentTime + 3); o.connect(f); o2.connect(f); f.connect(g); g.connect(a.destination); o.start(); o2.start(); this._dr = { o, o2, g, a }; }
+      else if (this._dr) { const d = this._dr; this._dr = null; try { d.g.gain.linearRampToValueAtTime(0, d.a.currentTime + 1); setTimeout(() => { try { d.o.stop(); d.o2.stop(); } catch (e) {} }, 1100); } catch (e) {} } },
     sirenOff() { if (siren) { try { siren.o.stop(); siren.l.stop(); } catch (e) {} siren = null; } }
   };
 })();
@@ -203,7 +205,7 @@ function rbLoop() {
     const dt = Math.min(0.1, (now - rbLast) / 1000); rbLast = now;
     if (!RBG.paused && RBG.started && !RBG.done) rbTick(dt * RBG.speed);
     if (RBG.crash) rbCrashLoop(dt);
-    rbUpdate(); rbHintLoop(now); if (RBG.view === '3d') r3Frame(); rbRaf = requestAnimationFrame(f);
+    rbUpdate(); rbHintLoop(now); if (RBG.view === '3d' && !rbEpiS) r3Frame();   // под эпилогом 3D не рисуем — экономим слабую видеокарту rbRaf = requestAnimationFrame(f);
   };
   rbRaf = requestAnimationFrame(f);
 }
@@ -388,7 +390,7 @@ function rbEnd(kind) {
     <div class="rb-post"><b>Последние минуты: мощность и составляющие реактивности</b>${chart}<div class="rb-pleg"><span class="c-p">мощность</span><span class="c-tip">концевой эффект</span><span class="c-void">пар</span><span class="c-dop">Доплер</span><span class="c-rods">стержни</span></div></div>
     <div class="rb-res"><div><small>Время смены</small><b>${Math.floor(G.t / 60)}:${String(Math.floor(G.t % 60)).padStart(2, '0')}</b></div><div><small>Срабатываний АЗ-5</small><b>${G.score.az}</b></div><div><small>ОЗР < 15</small><b>${Math.round(G.score.ozr)} с</b></div><div><small>Оценка</small><b class="g-${g}">${g === 'X' ? '—' : g}</b>${G.usedHints ? '<em class="rb-hmk">с подсказками</em>' : ''}</div></div>
     ${kind === 'crash' ? `<p class="mute small">Как надо было: держать ОЗР не меньше 15 стержней, не работать на мощности ниже 700 МВт, не блокировать защиты; при провале мощности — заглушить реактор и ждать распада ксенона.</p>` : ''}
-    <div class="rb-opts"><button class="btn" data-rb="again" data-primary>${ic('rotate-ccw')} Ещё раз ${kbd('Enter')}</button><button class="btn line" data-rb="exit">${ic('chevron-left')} К выбору режима</button>${kind === 'crash' && r3Supported() ? `<button class="btn line" data-rb="crashreplay">${ic('box')} Посмотреть аварию ещё раз</button>` : ''}${kind === 'crash' ? `<button class="btn line" data-rb="help">${ic('book-open')} Справка по физике</button>` : ''}</div></div>`);
+    <div class="rb-opts"><button class="btn" data-rb="again" data-primary>${ic('rotate-ccw')} Ещё раз ${kbd('Enter')}</button><button class="btn line" data-rb="exit">${ic('chevron-left')} К выбору режима</button>${kind === 'crash' && bk === 'reactor' ? `<button class="btn line" data-rb="epi">${ic('history')} Как это было в 1986 году</button>` : ''}${kind === 'crash' && r3Supported() ? `<button class="btn line" data-rb="crashreplay">${ic('box')} Посмотреть аварию ещё раз</button>` : ''}${kind === 'crash' ? `<button class="btn line" data-rb="help">${ic('book-open')} Справка по физике</button>` : ''}</div></div>`);
   G.endHtml = $('#rb-ov') ? $('#rb-ov').innerHTML : ''; $('.rb') && $('.rb').classList.remove('rb-crashing', 'rb-lost'); $('#rb-crashbar') && ($('#rb-crashbar').hidden = true); rbHintShow(null);
   rbPostChart();
 }
@@ -500,7 +502,7 @@ function rbDraw() {
 function rbStart(mode, k) {
   RBG = rbNew(mode, k == null ? null : +k); RBG.started = false; SCREEN = 'rbmk'; rbKeys = {}; render();
 }
-function rbExit() { r3Hide(); cancelAnimationFrame(rbRaf); rbSnd.sirenOff(); RBG = null; rbKeys = {}; SCREEN = 'labs'; PAGE = 'rbmk'; render(); }
+function rbExit() { rbEpiClose(true); r3Hide(); cancelAnimationFrame(rbRaf); rbSnd.sirenOff(); RBG = null; rbKeys = {}; SCREEN = 'labs'; PAGE = 'rbmk'; render(); }
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-rb]'); if (!b) return; const d = b.dataset, G = RBG, S = G && G.S;
   switch (d.rb) {
@@ -527,6 +529,7 @@ document.addEventListener('click', e => {
     case 'hintok': G.hintMute = G.hintMute || {}; G.hintMute[d.v] = G.t + 60; rbHintShow(null); break;
     case 'hintmute': G.hintMute = G.hintMute || {}; G.hintMute[d.v] = Infinity; rbHintShow(null); break;
     case 'crashskip': if (G.crash && !G.done) rbEnd('crash'); else if (G.replay) rbCrashFxDone(); break;
+    case 'epi': { const html = $('#rb-ov') ? $('#rb-ov').innerHTML : G.endHtml; rbOverlayClose(); rbEpilogue(() => { rbOverlay(html); rbPostChart(); }); break; }
     case 'crashreplay': if (!G.crash) break; rbOverlayClose(); G.replay = true; G.crash.t = 0; R3.kind = G.crash.kind === 'drum' ? 'unit' : 'core'; G.view = '3d'; rbView(); rbCrashBar(true); break;
     case 'scene': document.querySelectorAll('.rb-3dsc .btn').forEach(x => x.classList.toggle('on', x === b)); R3.kind = d.v; if (R3.ok) { r3Build(d.v); if (G.crash && (!G.done || G.replay)) r3Boom(G.crash.kind); } break;
     case 'az': if (!G.cover) { toast('Сначала откройте крышку кнопки АЗ-5', 'bad'); break; } if (!S.az) { RB.scram(S, 'нажата кнопка на пульте'); if (G.hist) G.hist.choices.push('АЗ-5 нажата при ОЗР ' + RB.ozr(S).toFixed(1)); } break;
@@ -600,12 +603,12 @@ function rbCrashLoop(dt) {
     c.stage = 1; rbSnd.sirenOff(); const r = $('.rb'); if (r) r.classList.remove('rb-crashing');
     if (r3Supported()) { R3.kind = c.kind === 'drum' ? 'unit' : 'core'; G.view = '3d'; rbView(); } else { c.no3d = true; rbCrashCap('Связь с датчиками потеряна. Реактор разрушен.'); }
   }
-  if (!G.done && ((c.no3d && c.t > 6) || (c.stage === 1 && G.view !== '3d' && c.t > 6) || c.t > 22)) rbEnd('crash');
+  if (!G.done && !c.epi && ((c.no3d && c.t > 6) || (c.stage === 1 && G.view !== '3d' && c.t > 6) || c.t > 22)) { if (c.no3d) rbCrashFxDone(); else rbEnd('crash'); }
 }
 function rbCrashFxDone() {
   const G = RBG; if (!G) return;
   if (G.replay) { G.replay = false; rbCrashBar(false); rbOverlay(G.endHtml); rbPostChart(); return; }
-  if (G.crash && !G.done) rbEnd('crash');
+  if (G.crash && !G.done) { if (G.hist && G.crash.kind === 'reactor' && !G.epiSeen) { G.epiSeen = true; G.crash.epi = true; rbCrashBar(false); rbEpilogue(() => rbEnd('crash')); } else rbEnd('crash'); }
 }
 
 /* ---------- живые подсказки (включаются кнопкой или клавишей L; с ними высшая оценка — A) ---------- */
@@ -637,3 +640,77 @@ function rbHintShow(h) {
   if (h.sel && RBG.view === '3d') document.querySelectorAll('.rb-3dhud ' + h.sel).forEach(t => t.classList.add('rb-hl'));
   if (RBG.view === '3d' && typeof R3 !== 'undefined') R3.hint = h.obj || null;
 }
+
+/* ---------- «Эпилог»: что было на самом деле 26 апреля 1986 г. (кадры-диорамы, движение камеры, искры, текст) ----------
+   Факты: НКДАР ООН (UNSCEAR 2008), World Nuclear Association, ЧАЭС (chnpp.gov.ua). */
+const RB_EPI = [
+  { img: 1, d: 8, kb: [1.04, 1.12, '0%', '-1.5%'], stamp: '26.04.1986 · 01:23', t: 'Чернобыльская АЭС, 4-й энергоблок. Ночь. Идёт испытание выбега турбогенератора.' },
+  { img: 2, d: 10, kb: [1.12, 1.2, '-1.5%', '-3%'], flash: true, fx: 'fire', stamp: '01:23:40', t: 'Нажата кнопка АЗ-5. Через несколько секунд два взрыва разрушили реактор и здание энергоблока.' },
+  { img: 3, d: 10, kb: [1.02, 1.1, '1%', '0%'], fx: 'fire', stamp: '26.04.1986 · ночь', t: 'Первыми к горящему энергоблоку приехали пожарные. Они тушили огонь на крышах среди обломков с высокой радиоактивностью. В ту ночь погибли два работника станции.' },
+  { img: 3, d: 8, kb: [1.1, 1.16, '0%', '-1%'], fx: 'fire', stamp: '1986', t: 'Острую лучевую болезнь подтвердили у 134 участников первых работ. 28 из них умерли в первые месяцы.' },
+  { img: 4, d: 10, kb: [1.0, 1.08, '0%', '1%'], stamp: '27.04.1986', t: 'Из Припяти вывезли около 49 тысяч жителей — колонной больше чем из тысячи автобусов. Всего в 1986 году переселили около 116 тысяч человек.' },
+  { img: 5, d: 9, kb: [1.06, 1.0, '1%', '0%'], stamp: 'Зона отчуждения', t: 'Город опустел навсегда. Вокруг станции — зона отчуждения.' },
+  { img: 6, d: 11, kb: [1.0, 1.08, '-1%', '0%'], stamp: '1986 · 2016', t: 'За 206 дней над разрушенным реактором построили укрытие — «саркофаг» (акт о вводе подписан 30 ноября 1986 г.). В 2016 году его накрыли новой аркой высотой 108 м.' },
+  { img: 7, d: 11, kb: [1.0, 1.1, '0%', '0%'], fx: 'calm', stamp: 'Что изменили', t: 'После аварии в РБМК подняли запас реактивности до 43–48 стержней, добавили 80–90 поглотителей, повысили обогащение топлива с 2 до 2,4 %, переделали стержни и ускорили аварийную защиту. Паровой эффект снизили примерно до +1 β.' },
+  { img: 7, d: 9, kb: [1.1, 1.14, '0%', '0%'], fx: 'calm', stamp: '', t: 'Памяти погибших и всех, кто ликвидировал последствия аварии.', last: true },
+];
+let rbEpiS = null;
+function rbEpilogue(done) {
+  const r = $('.rb'); if (!r || rbEpiS) return; rbEpiClose(true);
+  const el = document.createElement('div'); el.className = 'rb-epi'; el.id = 'rb-epi';
+  el.innerHTML = `<img alt=""><img alt=""><canvas class="rb-epi-fx"></canvas><div class="rb-epi-flash"></div><div class="rb-epi-vig"></div>
+    <div class="rb-epi-cap"><small class="rb-epi-st"></small><p class="rb-epi-t"></p></div>
+    <div class="rb-epi-ctl"><button class="btn line" data-epi="pause">${ic('pause')}</button><button class="btn line" data-epi="next">Дальше ${ic('chevron-right')}</button><button class="btn line" data-epi="close">Закрыть ${kbd('Esc')}</button></div>
+    <div class="rb-epi-dots">${RB_EPI.map(() => '<i></i>').join('')}</div><p class="rb-epi-src">Источники: НКДАР ООН (UNSCEAR), World Nuclear Association, ЧАЭС. Изображения — художественная реконструкция.</p>`;
+  r.appendChild(el);
+  rbEpiS = { el, done, k: -1, t: 0, paused: false, cur: 0, anim: null, parts: [], last: performance.now(), raf: 0, typed: 0 };
+  rbSnd.drone(true); rbEpiGo(0); rbEpiS.raf = requestAnimationFrame(rbEpiLoop);
+}
+function rbEpiGo(k) {
+  const E = rbEpiS; if (!E) return; if (k >= RB_EPI.length) return rbEpiClose();
+  const f = RB_EPI[k], imgs = E.el.querySelectorAll('img'), prev = RB_EPI[E.k];
+  E.k = k; E.t = 0; E.typed = 0;
+  const same = prev && prev.img === f.img, im = same ? imgs[E.cur] : imgs[E.cur ^ 1];
+  if (!same) { E.cur ^= 1; im.src = 'img/rbmk/epi-' + f.img + '.webp'; imgs.forEach(x => x.classList.toggle('on', x === im)); }
+  if (E.anim) E.anim.cancel && !same && E.anim.cancel();
+  if (im.animate) { E.anim = im.animate([{ transform: `scale(${f.kb[0]}) translate(${f.kb[2]},0)` }, { transform: `scale(${f.kb[1]}) translate(${f.kb[3]},0)` }], { duration: f.d * 1000, easing: 'linear', fill: 'forwards' }); if (E.paused) E.anim.pause(); }
+  if (f.flash) { const fl = E.el.querySelector('.rb-epi-flash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); rbSnd.boom(1); E.el.classList.remove('shake'); void E.el.offsetWidth; E.el.classList.add('shake'); }
+  E.el.querySelector('.rb-epi-st').textContent = f.stamp; E.el.querySelector('.rb-epi-t').textContent = '';
+  E.el.querySelectorAll('.rb-epi-dots i').forEach((d, j) => d.classList.toggle('on', j <= k));
+  const nb = E.el.querySelector('[data-epi="next"]'); if (nb) nb.innerHTML = f.last ? `К разбору ${ic('chevron-right')}` : `Дальше ${ic('chevron-right')}`;
+}
+function rbEpiLoop(now) {
+  const E = rbEpiS; if (!E) return; const dt = Math.min(0.1, (now - E.last) / 1000); E.last = now;
+  if (!E.paused) {
+    E.t += dt; const f = RB_EPI[E.k], n = Math.min(f.t.length, Math.floor(E.t * 34));
+    if (n !== E.typed) { E.typed = n; E.el.querySelector('.rb-epi-t').textContent = f.t.slice(0, n); }
+    if (E.t > f.d) rbEpiGo(E.k + 1);
+  }
+  // искры и дым поверх кадров с пожаром, огоньки свечей в конце
+  const cv = E.el.querySelector('.rb-epi-fx'); if (cv) {
+    const W = cv.clientWidth, H = cv.clientHeight; if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    const c = cv.getContext('2d'), fx = (RB_EPI[E.k] || {}).fx; c.clearRect(0, 0, W, H);
+    if (!E.paused && fx === 'fire') for (let i = 0; i < 3; i++) E.parts.push({ x: W * (0.42 + Math.random() * 0.38), y: H * (0.38 + Math.random() * 0.12), vx: (Math.random() - 0.3) * 30, vy: -40 - Math.random() * 80, life: 2 + Math.random() * 2.5, age: 0, r: 1 + Math.random() * 2.2, k: 'e' });
+    if (!E.paused && fx === 'fire' && Math.random() < 0.15) E.parts.push({ x: W * (0.5 + Math.random() * 0.3), y: H * 0.35, vx: 8 + Math.random() * 10, vy: -12 - Math.random() * 10, life: 6, age: 0, r: 40 + Math.random() * 50, k: 's' });
+    if (!E.paused && fx === 'calm' && Math.random() < 0.3) E.parts.push({ x: W * (0.1 + Math.random() * 0.8), y: H * (0.35 + Math.random() * 0.4), vx: (Math.random() - 0.5) * 6, vy: -6 - Math.random() * 8, life: 4 + Math.random() * 3, age: 0, r: 1 + Math.random() * 1.5, k: 'e' });
+    E.parts = E.parts.filter(p => (p.age += E.paused ? 0 : dt) < p.life);
+    E.parts.forEach(p => {
+      if (!E.paused) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx += Math.sin(p.age * 3 + p.y * 0.01) * 6 * dt; }
+      const a = Math.sin(Math.PI * p.age / p.life);
+      if (p.k === 'e') { c.fillStyle = `rgba(255,${150 + Math.floor(60 * a)},70,${0.85 * a})`; c.shadowColor = 'rgba(255,120,40,.9)'; c.shadowBlur = 8; c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI * 2); c.fill(); c.shadowBlur = 0; }
+      else { const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * (1 + p.age / 3)); g.addColorStop(0, `rgba(30,30,34,${0.22 * a})`); g.addColorStop(1, 'rgba(30,30,34,0)'); c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, p.r * (1 + p.age / 3), 0, Math.PI * 2); c.fill(); }
+    });
+  }
+  E.raf = requestAnimationFrame(rbEpiLoop);
+}
+function rbEpiClose(silent) {
+  const E = rbEpiS; if (!E) return; cancelAnimationFrame(E.raf); E.el.remove(); rbSnd.drone(false); rbEpiS = null;
+  if (!silent && E.done) E.done();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-epi]'); if (!b || !rbEpiS) return; const E = rbEpiS;
+  if (b.dataset.epi === 'close') rbEpiClose();
+  else if (b.dataset.epi === 'next') { const f = RB_EPI[E.k]; if (E.typed < f.t.length) { E.typed = f.t.length; E.t = Math.max(E.t, f.t.length / 34); E.el.querySelector('.rb-epi-t').textContent = f.t; } else rbEpiGo(E.k + 1); }
+  else if (b.dataset.epi === 'pause') { E.paused = !E.paused; b.innerHTML = ic(E.paused ? 'play' : 'pause'); if (E.anim) E.paused ? E.anim.pause() : E.anim.play(); }
+});
+document.addEventListener('keydown', e => { if (!rbEpiS) return; if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); rbEpiClose(); } else if (e.code === 'Space' || e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); e.stopImmediatePropagation(); rbEpiS.el.querySelector('[data-epi="next"]').click(); } }, true);

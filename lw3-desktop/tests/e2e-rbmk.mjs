@@ -94,6 +94,11 @@ await W(2600); await shot('crash-viz'); await page.click('#rb-crashbar [data-rb=
 g = await G(); must(g.broken === 'reactor' && g.done === 'crash', 'АЗ-5 при малом ОЗР не привела к разгону: ' + JSON.stringify(g));
 must(await page.locator('#rb-ov .rb-why li').count() >= 2 && /концевой эффект/.test(await page.textContent('#rb-ov .rb-why')), 'нет разбора причин аварии');
 await shot('crash');
+// «Эпилог»: как это было в 1986 году — открывается из разбора, закрывается Esc, разбор возвращается
+await page.click('#rb-ov [data-rb="epi"]'); await W(2500);
+must(await page.locator('#rb-epi').isVisible() && (await page.textContent('#rb-epi .rb-epi-t')).length > 5, 'эпилог не открылся');
+await shot('epilogue'); await page.keyboard.press('Escape'); await W(400);
+must(await page.locator('#rb-epi').count() === 0 && await page.locator('#rb-ov .rb-why').count() === 1, 'после эпилога не вернулся разбор аварии');
 const R = await rec(); must(R.history.played === 2 && R.history.safe === 1 && R.history.crash === 1, 'статистика «Ночи 26 апреля» не сохранена ' + JSON.stringify(R.history));
 await page.click('#rb-ov [data-rb="exit"]'); await W(300);
 must(await page.evaluate(() => SCREEN === 'labs' && PAGE === 'rbmk'), 'выход из тренажёра не вернул в раздел');
