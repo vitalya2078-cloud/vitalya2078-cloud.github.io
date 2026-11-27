@@ -601,3 +601,20 @@ body.rbscr #app, body.rbscr main{max-width:none}
 .rb-live{grid-column:1 / -1} .rb-live ul{margin:0; padding-left:20px; display:grid; gap:6px} .rb-live li.bad{color:#e11d48; font-weight:600} .rb-live li.warn{color:#d97706}
 .rb-tpause{display:flex; align-items:center; gap:8px; justify-content:center; color:var(--mute); margin:12px 0} .rb-tpause svg{width:16px; height:16px}
 @media (max-width:1400px){ .rb-tabs button{padding:6px 8px} .rb-tt small{max-width:22vw} }
+
+/* тренажёр: картинки */
+.rb-hero{display:flex; gap:18px; align-items:center; margin:-4px 0 18px; padding:12px; border-radius:18px; border:1px solid var(--line); background:var(--card)}
+.rb-hero img{width:260px; aspect-ratio:16/10; object-fit:cover; border-radius:12px} .rb-hero b{display:block; font-size:20px; margin-bottom:4px} .rb-hero span{color:var(--mute); line-height:1.5}
+.rb-mode{grid-template-columns:120px 1fr} .rb-mode img{grid-row:1 / span 3; width:120px; aspect-ratio:16/10; object-fit:cover; border-radius:10px; align-self:center} .rb-mode > svg{display:none}
+.rb-pump{grid-template-columns:auto auto 1fr} .rb-pump img{grid-row:1; width:22px; height:22px; object-fit:contain} .rb-pump .fl, .rb-mini{grid-column:1 / -1}
+.rb-h3i{width:26px; height:20px; object-fit:contain}
+.rb-azc{width:84px !important; height:84px !important}
+.rb-azc .rb-cover{position:absolute; inset:0; border:0; padding:0; background:none; transform:none !important; opacity:1 !important; cursor:pointer}
+.rb-azc .rb-cover img, .rb-azopen img{width:100%; height:100%; object-fit:contain; display:block}
+.rb-azopen{position:absolute; inset:0; display:none}
+.rb-azc.open .rb-cover{display:none} .rb-azc.open .rb-azopen{display:block}
+.rb-azlid{position:absolute; left:0; right:0; top:0; height:30%; border:0; background:none; cursor:pointer}
+.rb-azc .rb-azb{position:absolute; left:28%; right:28%; top:46%; bottom:10%; border-radius:50%; border:0; background:none; box-shadow:none; color:transparent; font-size:0; cursor:pointer}
+.rb-azc .rb-azb:active{background:rgba(0,0,0,.15)}
+.rb-azc.fired .rb-azopen img{filter:drop-shadow(0 0 10px #ef4444); animation:rbBlink .6s steps(2) infinite}
+.rb-azc.fired .rb-azb{background:none; animation:none}

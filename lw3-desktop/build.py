@@ -117,6 +117,7 @@ with open(os.path.join(DIST, 'notes', 'notes.json'), 'w', encoding='utf-8') as f
 shutil.copytree(os.path.join(D, 'vendor', 'katex'), os.path.join(DIST, 'katex'), dirs_exist_ok=True)
 # three.js для 3D-вида тренажёра РБМК (загружается по требованию) и текстуры моделей assets/rbmk3d/*.webp
 shutil.copytree(os.path.join(D, 'vendor', 'three'), os.path.join(DIST, 'three'), dirs_exist_ok=True)
+if os.path.isdir(os.path.join(D, 'assets', 'rbmk')): shutil.copytree(os.path.join(D, 'assets', 'rbmk'), os.path.join(DIST, 'img', 'rbmk'), dirs_exist_ok=True)
 if os.path.isdir(os.path.join(D, 'assets', 'rbmk3d')): shutil.copytree(os.path.join(D, 'assets', 'rbmk3d'), os.path.join(DIST, 'img', 'rbmk3d'), dirs_exist_ok=True)
 if os.path.isdir(os.path.join(D, 'assets', 'video')):
     shutil.copytree(os.path.join(D, 'assets', 'video'), os.path.join(DIST, 'video'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('src*', '*.txt', '*.json'))

@@ -80,11 +80,12 @@ function pgRbmk() {
       <span class="rb-shn">${k + 1}</span><span class="rb-sht"><b>${esc(s.t)}</b><small>${s.history ? 'Реконструкция событий по шагам' : esc(s.goal)}</small></span>
       <span class="rb-shg">${done(k) ? `<i class="g-${done(k).g}">${done(k).g}</i>` : open(k) ? ic('chevron-right') : ic('lock')}</span></button>`;
   return pgHead('Тренажёр «Пульт РБМК-1000»', 'Вы — старший инженер управления реактором 4-го энергоблока. Физика реактора считается по-настоящему: кинетика нейтронов, ксенон, паровой эффект, концевой эффект стержней.') +
-    `<div class="rb-land">
+    `<div class="rb-hero"><img src="img/rbmk/cover-main.webp" alt=""><div><b>Пульт РБМК-1000</b><span>Карьера из 7 смен, свободная смена и реконструкция ночи 26 апреля. 2D-пульт, 3D-вид реактора и энергоблока, вкладка «Задача» с рисками.</span></div></div>
+    <div class="rb-land">
       <section class="fz-tile rb-modes">
-        <button class="rb-mode" data-rb="start" data-m="free">${ic('atom')}<b>Свободная смена</b><span>Без конца: диспетчер меняет задания, случаются неисправности. Сложность растёт.</span><em>${R.free ? 'Рекорд: ' + Math.floor(R.free / 60) + ' мин ' + (R.free % 60) + ' с' : 'Ещё не играли'}</em></button>
-        <button class="rb-mode hist" data-rb="start" data-m="history">${ic('history')}<b>Ночь 25–26 апреля 1986 г.</b><span>Испытание выбега турбогенератора. Можно повторить решения смены — или поступить по регламенту.</span><em>${R.history.played ? `Сыграно: ${R.history.played} · без аварии: ${R.history.safe}` : 'Ещё не играли'}</em></button>
-        <button class="rb-mode help" data-rb="help">${ic('book-open')}<b>Как устроен РБМК</b><span>Стержни, ОЗР, ксенон, паровой и концевой эффекты, защиты. Коротко и по делу.</span><em>Справка · клавиша H</em></button>
+        <button class="rb-mode" data-rb="start" data-m="free"><img src="img/rbmk/cover-free.webp" alt="">${ic('atom')}<b>Свободная смена</b><span>Без конца: диспетчер меняет задания, случаются неисправности. Сложность растёт.</span><em>${R.free ? 'Рекорд: ' + Math.floor(R.free / 60) + ' мин ' + (R.free % 60) + ' с' : 'Ещё не играли'}</em></button>
+        <button class="rb-mode hist" data-rb="start" data-m="history"><img src="img/rbmk/cover-night.webp" alt="">${ic('history')}<b>Ночь 25–26 апреля 1986 г.</b><span>Испытание выбега турбогенератора. Можно повторить решения смены — или поступить по регламенту.</span><em>${R.history.played ? `Сыграно: ${R.history.played} · без аварии: ${R.history.safe}` : 'Ещё не играли'}</em></button>
+        <button class="rb-mode help" data-rb="help"><img src="img/rbmk/cover-help.webp" alt="">${ic('book-open')}<b>Как устроен РБМК</b><span>Стержни, ОЗР, ксенон, паровой и концевой эффекты, защиты. Коротко и по делу.</span><em>Справка · клавиша H</em></button>
       </section>
       <section class="fz-tile"><h2>${ic('graduation-cap')} Карьера: 7 смен</h2><p class="mute">Каждая смена добавляет новую систему. Следующая открывается после предыдущей.</p><div class="rb-shifts">${RB_SHIFTS.map((s, k) => card(k, s)).join('')}</div></section>
     </div>`;
@@ -95,7 +96,7 @@ function vRbmk() {
   const G = RBG; if (!G) { SCREEN = 'labs'; return render(); }
   document.body.classList.add('noside', 'rbscr'); ui.side.innerHTML = '';
   const S = G.S, title = G.mode === 'free' ? 'Свободная смена' : G.mode === 'history' ? 'Ночь 25–26 апреля 1986 г.' : `Смена ${G.k + 1}. ${G.sh.t}`;
-  const pump = i => `<button class="rb-pump" data-rb="pump" data-v="${i}" id="rb-pump${i}"><b>ГЦН-${i + 1}</b><span class="st"></span><span class="rb-mini"><i></i></span><small class="fl"></small></button>`;
+  const pump = i => `<button class="rb-pump" data-rb="pump" data-v="${i}" id="rb-pump${i}"><img src="img/rbmk/pump.webp" alt=""><b>ГЦН-${i + 1}</b><span class="st"></span><span class="rb-mini"><i></i></span><small class="fl"></small></button>`;
   ui.main.innerHTML = `<div class="rb">
     <header class="rb-top">
       <button class="btn line" data-rb="exit">${ic('chevron-left')} Выйти</button>
@@ -114,7 +115,7 @@ function vRbmk() {
     <div class="rb-ann" id="rb-ann">${RB_ANN.map(([k, t]) => `<span data-a="${k}">${t}</span>`).join('')}</div>
     <div class="rb-grid">
       <section class="rb-col">
-        <div class="rb-p"><h3>${ic('atom')} Картограмма активной зоны</h3><canvas id="rb-core" width="360" height="300"></canvas>
+        <div class="rb-p"><h3><img class="rb-h3i" src="img/rbmk/core.webp" alt="">Картограмма активной зоны</h3><canvas id="rb-core" width="360" height="300"></canvas>
           <div class="rb-leg"><span><i class="lg-rr"></i>РР</span><span><i class="lg-ar"></i>АР</span><span><i class="lg-usp"></i>УСП</span><span class="mute">цвет — мощность каналов</span></div></div>
         <div class="rb-p rb-ax"><h3>Поле по высоте</h3><div class="rb-axw"><canvas id="rb-axial" width="70" height="140"></canvas><div class="rb-axt"><p><b id="rb-axv">—</b><br><small>смещение потока к низу зоны</small></p><p class="mute small">Когда мощность мала, ксенона много, а стержни выведены, поток прижимается к низу — и концевой эффект стержней становится опасным.</p></div></div></div>
         <div class="rb-p"><h3>Отравление</h3>
@@ -139,13 +140,13 @@ function vRbmk() {
           <div class="rb-rod rb-arr"><span><b>АР</b><small>12 стержней, автомат</small></span><div class="rb-rodv"><i><s id="rb-ar"></s></i><b id="rb-arv">—</b></div>
             <div class="rb-btns"><button class="btn line" data-rb="ar" id="rb-arbtn">—</button><span class="rb-arauto"><button class="btn line" data-rb="arset" data-v="-0.025" title="Уставка −80 МВт">−</button><b class="rb-arset" id="rb-arset">—</b><button class="btn line" data-rb="arset" data-v="0.025" title="Уставка +80 МВт">+</button></span>
               <span class="rb-arman"><button class="btn line" data-rb="rod" data-g="AR" data-v="-1" title="Вывести вручную">▲</button><button class="btn line" data-rb="rod" data-g="AR" data-v="1" title="Погрузить вручную">▼</button></span></div></div>
-          <div class="rb-az"><div class="rb-azc ${G.cover ? 'open' : ''}" id="rb-azc"><button class="rb-cover" data-rb="cover" title="Откройте крышку">${ic('shield-check')}<span>Крышка АЗ-5</span></button><button class="rb-azb" data-rb="az">АЗ-5</button></div>
+          <div class="rb-az"><div class="rb-azc ${G.cover ? 'open' : ''}" id="rb-azc">${rbAzHtml()}</div>
             <p class="small"><b>Аварийная защита</b><br><span class="mute">все стержни вниз со скоростью 0,4 м/с: полное погружение за 18 с</span></p></div>
         </div>
       </section>
       <section class="rb-col">
         <div class="rb-p"><h3>Главные циркуляционные насосы <span class="mute small" id="rb-flow"></span></h3><div class="rb-pumps"><div><small>Левая половина</small>${[0, 1, 2, 3].map(pump).join('')}</div><div><small>Правая половина</small>${[4, 5, 6, 7].map(pump).join('')}</div></div></div>
-        <div class="rb-p rb-bs"><h3>Барабаны-сепараторы</h3>
+        <div class="rb-p rb-bs"><h3><img class="rb-h3i" src="img/rbmk/drum.webp" alt="">Барабаны-сепараторы</h3>
           <div class="rb-gauges"><div class="rb-gauge"><canvas id="rb-press" width="150" height="96"></canvas><b id="rb-pv">—</b><small>давление, МПа</small></div>
             <div class="rb-lvl"><i><s id="rb-lvl"></s><u></u></i><b id="rb-lv">—</b><small>уровень, мм</small></div></div>
           <div class="rb-rowb"><button class="btn line" data-rb="bru" id="rb-bru">БРУ-К: закрыт</button><button class="btn line" data-rb="fwauto" id="rb-fwa">Питание: авто</button></div>
@@ -160,10 +161,10 @@ function vRbmk() {
     </div>
     <div class="rb-3dw" id="rb-3dw" hidden><div class="rb-3dc" id="rb-3dc"></div>
       <div class="rb-3dhud"><div class="rb-3dnum"><div><small>Мощность</small><b id="rb-pt3">—</b><em>МВт</em></div><div><small>Период</small><b id="rb-per3">—</b><em>с</em></div><div><small>ОЗР</small><b id="rb-ozr3">—</b><em>стержней</em></div></div>
-        <div class="rb-3dsc"><button class="btn line on" data-rb="scene" data-v="core">Реактор в разрезе</button><button class="btn line" data-rb="scene" data-v="unit">Энергоблок</button></div>
+        <div class="rb-3dsc"><button class="btn line on" data-rb="scene" data-v="core">Реактор в разрезе</button><button class="btn line" data-rb="scene" data-v="unit">Энергоблок</button><button class="btn line" data-rb="scene" data-v="desk">Щит управления</button></div>
         <div class="rb-3dinfo" id="rb-3dinfo"></div>
         <p class="mute small">Мышь — вращать, колесо — приблизить, щелчок — что это. Стержни: W/S, A/D.</p>
-        <div class="rb-az rb-az3"><div class="rb-azc ${G.cover ? 'open' : ''}"><button class="rb-cover" data-rb="cover" title="Откройте крышку">${ic('shield-check')}<span>Крышка АЗ-5</span></button><button class="rb-azb" data-rb="az">АЗ-5</button></div></div></div></div>
+        <div class="rb-az rb-az3"><div class="rb-azc ${G.cover ? 'open' : ''}">${rbAzHtml()}</div></div></div></div>
     <div class="rb-taskw" id="rb-taskw" hidden></div>
     <div class="rb-ov" id="rb-ov" hidden></div>
   </div>`;
@@ -180,6 +181,9 @@ function rbView() {
   if (v === 'task') { if (G.started && !G.done && !G.paused) { G.paused = true; G.taskPaused = true; } $('#rb-taskw').innerHTML = rbTaskHtml() + (G.taskPaused ? `<p class="rb-tpause">${ic('pause')} Смена на паузе, пока открыта вкладка «Задача».</p>` : ''); }
   else if (G.taskPaused) { G.taskPaused = false; G.paused = false; }
 }
+// кнопка АЗ-5 картинками: закрытая крышка — щелчок открывает; открытая — верх (крышка) закрывает, кнопка — АЗ-5
+const rbAzHtml = () => `<button class="rb-cover" data-rb="cover" title="Открыть крышку АЗ-5"><img src="img/rbmk/az-closed.webp" alt="Крышка АЗ-5"></button>
+  <span class="rb-azopen"><img src="img/rbmk/az-open.webp" alt=""><button class="rb-azlid" data-rb="cover" title="Закрыть крышку"></button><button class="rb-azb" data-rb="az" title="АЗ-5">АЗ-5</button></span>`;
 const RB_ANN = [['az', 'АЗ-5'], ['ozr', 'ОЗР < 15'], ['per', 'Период < 20 с'], ['pw', 'Мощность > 105 %'], ['press', 'Давление БС'], ['lvl', 'Уровень БС'], ['pump', 'ГЦН'], ['arof', 'АР отключён'], ['xe', 'Ксенон'], ['fault', 'Неисправность']];
 
 /* ---------- игровой цикл ---------- */
